@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 
 	"gorm.io/driver/sqlite"
@@ -8,12 +9,21 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func GetDBConnection() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open("codebox.db"), &gorm.Config{
+var (
+	DB         *gorm.DB
+	SqlDB      *sql.DB
+	DBMigrator gorm.Migrator
+)
+
+func InitDBConnection() error {
+	var err error
+	DB, err = gorm.Open(sqlite.Open("codebox.db"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect database %s", err)
+		return fmt.Errorf("failed to connect database %s", err)
 	}
-	return db, nil
+	SqlDB, _ = DB.DB()
+	DBMigrator = DB.Migrator()
+	return nil
 }

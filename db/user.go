@@ -14,6 +14,7 @@ type User struct {
 	LastName      string
 	SshPrivateKey string `gorm:"not null;"`
 	SshPublicKey  string `gorm:"not null;"`
+	IsSuperUser   bool   `gorm:"default:false"`
 }
 
 func hashPassword(password string) (string, error) {

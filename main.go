@@ -8,23 +8,36 @@ import (
 	"os"
 	"strings"
 
+	_ "database/sql"
+
+	_ "codebox.com/migrations"
+
 	"codebox.com/api"
 	"codebox.com/db"
 	"github.com/gin-gonic/gin"
+	"github.com/pressly/goose/v3"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
 func main() {
+	// test della connessione con il database
+	err := db.InitDBConnection()
+	if err != nil {
+		log.Fatalf("Cannot init connection with DB '%s'\n", err)
+		os.Exit(1)
+	}
+
 	if len(os.Args) < 2 {
 		log.Fatalln("A command is expected")
 		os.Exit(1)
 	}
 
-	// test della connessione con il database
-	dbConn, err := db.GetDBConnection()
-	if err != nil {
-		log.Fatalf("Cannot open connection with DB '%s'\n", err)
-		os.Exit(1)
+	// apply migrations
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		panic(err)
+	}
+	if err := goose.Up(db.SqlDB, "migrations"); err != nil {
+		panic(err)
 	}
 
 	switch os.Args[1] {
@@ -38,7 +51,6 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("Enter email: ")
 		email, _ := reader.ReadString('\n')
-
 		email = strings.TrimSpace(email)
 
 		// controllo se la l'indirizzo email è valido
@@ -50,7 +62,7 @@ func main() {
 
 		// check if email already exists
 		var users []db.User
-		result := dbConn.Model(db.User{Email: email}).Find(&users)
+		result := db.DB.Model(db.User{Email: email}).Find(&users)
 		if result.Error != nil {
 			fmt.Println("An error occured creating new superuser")
 			os.Exit(1)
@@ -90,7 +102,7 @@ func main() {
 		}
 
 		user := db.User{Email: email, FirstName: "", LastName: "", Password: password}
-		result = dbConn.Create(&user)
+		result = db.DB.Create(&user)
 
 		if result.Error != nil {
 			fmt.Println("An error occured creating new superuser")
