@@ -15,11 +15,14 @@ import (
 	"codebox.com/api"
 	"codebox.com/db"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
 func main() {
+	godotenv.Load("codebox.env")
+
 	// test della connessione con il database
 	err := db.InitDBConnection()
 	if err != nil {
@@ -33,7 +36,7 @@ func main() {
 	}
 
 	// apply migrations
-	if err := goose.SetDialect("sqlite3"); err != nil {
+	if err := goose.SetDialect(os.Getenv("CODEBOX_DB_DRIVER")); err != nil {
 		panic(err)
 	}
 	if err := goose.Up(db.SqlDB, "migrations"); err != nil {
@@ -43,6 +46,7 @@ func main() {
 	switch os.Args[1] {
 	case "runserver":
 		// avvio del server http
+		// gin.SetMode(gin.ReleaseMode)
 		r := gin.Default()
 		api.V1ApiRoutes(r)
 		r.Run(":8080")
@@ -61,14 +65,14 @@ func main() {
 		}
 
 		// check if email already exists
-		var users []db.User
-		result := db.DB.Model(db.User{Email: email}).Find(&users)
+		var foundUser db.User
+		result := db.DB.Where("email=?", email).Find(&foundUser)
 		if result.Error != nil {
 			fmt.Println("An error occured creating new superuser")
 			os.Exit(1)
 		}
 
-		if len(users) > 0 {
+		if foundUser.Id != 0 {
 			fmt.Println("User with this email already exists")
 			os.Exit(1)
 		}

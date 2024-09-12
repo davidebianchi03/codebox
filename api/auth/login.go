@@ -22,8 +22,8 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
-	var users []db.User
-	result := db.DB.Model(db.User{Email: parsedBody.Email}).Find(&users)
+	var user db.User
+	result := db.DB.Where("email=?", parsedBody.Email).Find(&user)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -31,14 +31,13 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
-	if len(users) != 1 {
+	if user.Id == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"detail": "invalid credentials",
 		})
 		return
 	}
 
-	user := users[0]
 	if !user.CheckPassword(parsedBody.Password) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"detail": "invalid credentials",
@@ -46,7 +45,23 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
+	token, err := db.CreateToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	result = db.DB.Create(&token)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"detail": "success",
+		"token": token.Token,
 	})
 }
