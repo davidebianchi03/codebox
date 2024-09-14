@@ -6,50 +6,57 @@ import (
 	"log"
 	"net/mail"
 	"os"
+	"strconv"
 	"strings"
 
 	_ "database/sql"
 
+	"codebox.com/bgtasks"
+	"codebox.com/env"
 	_ "codebox.com/migrations"
 
 	"codebox.com/api"
 	"codebox.com/db"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"github.com/pressly/goose/v3"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+func a() {
+	fmt.Println("Hello world")
+}
+
 func main() {
-	godotenv.Load("codebox.env")
+	err := env.InitCodeBoxEnv()
+	if err != nil {
+		log.Fatalf("Failed to load server configuration from environment: '%s'\n", err)
+		return
+	}
 
 	// test della connessione con il database
-	err := db.InitDBConnection()
+	err = db.InitDBConnection(env.CodeBoxEnv.DbDriver, env.CodeBoxEnv.DbURL)
 	if err != nil {
-		log.Fatalf("Cannot init connection with DB '%s'\n", err)
-		os.Exit(1)
+		log.Fatalf("Cannot init connection with DB: '%s'\n", err)
+		return
 	}
 
 	if len(os.Args) < 2 {
 		log.Fatalln("A command is expected")
-		os.Exit(1)
-	}
-
-	// apply migrations
-	if err := goose.SetDialect(os.Getenv("CODEBOX_DB_DRIVER")); err != nil {
-		panic(err)
-	}
-	if err := goose.Up(db.SqlDB, "migrations"); err != nil {
-		panic(err)
+		return
 	}
 
 	switch os.Args[1] {
 	case "runserver":
+		// avvio dei background tasks
+		err = bgtasks.InitBgTasks(env.CodeBoxEnv.RedisHost, env.CodeBoxEnv.RedisPort, uint(env.CodeBoxEnv.WorkspaceRelatedTasksConcurrency), "")
+		if err != nil {
+			log.Fatalln("cannot start background tasks")
+			return
+		}
+
 		// avvio del server http
-		// gin.SetMode(gin.ReleaseMode)
 		r := gin.Default()
 		api.V1ApiRoutes(r)
-		r.Run(":8080")
+		r.Run(fmt.Sprintf(":%s", strconv.Itoa(env.CodeBoxEnv.ServerPort)))
 	case "create-superuser":
 		// creazione superuser
 		reader := bufio.NewReader(os.Stdin)
@@ -119,40 +126,4 @@ func main() {
 		log.Fatalf("Invalid command '%s'", os.Args[1])
 		os.Exit(1)
 	}
-
-	// var users []db.User
-	// result := dbConn.Find(&users)
-	// if result.Error != nil {
-	// 	// handle error
-	// }
-
-	// if len(users) == 0 {
-	// 	// create first user
-	// }
-
-	// fmt.Println(result.RowsAffected)
-	// fmt.Println(result.Error)
-	// fmt.Println(users)
-
-	// stmts, err := gormschema.New("sqlite").Load(&db.User{})
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "failed to load gorm schema: %v\n", err)
-	// 	os.Exit(1)
-	// }
-	// io.WriteString(os.Stdout, stmts)
-
-	// db_name := "codebox.sqlite3"
-
-	// _, err := gorm.Open(sqlite.Open(db_name), &gorm.Config{})
-	// if err != nil {
-	// 	fmt.Errorf("failed to connect database %s", err)
-	// }
-
-	// r := gin.Default()
-	// r.GET("/ping", func(ctx *gin.Context) {
-	// 	ctx.JSON(200, gin.H{
-	// 		"message": "pong",
-	// 	})
-	// })
-
 }

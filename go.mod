@@ -10,11 +10,14 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
+	github.com/gocraft/work v0.5.1 // indirect
+	github.com/gomodule/redigo v1.9.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

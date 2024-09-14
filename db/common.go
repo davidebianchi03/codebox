@@ -3,8 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
+	"github.com/pressly/goose/v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -16,11 +16,11 @@ var (
 	DBMigrator gorm.Migrator
 )
 
-func InitDBConnection() error {
-	dbDriver := os.Getenv("CODEBOX_DB_DRIVER")
+func InitDBConnection(dbDriver string, dbUrl string) error {
+	// connect to DB
 	var err error
 	if dbDriver == "mysql" {
-		DB, err = gorm.Open(mysql.Open(os.Getenv("CODEBOX_DB_URL")), &gorm.Config{
+		DB, err = gorm.Open(mysql.Open(dbUrl), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		})
 	} else {
@@ -31,5 +31,16 @@ func InitDBConnection() error {
 	}
 	SqlDB, _ = DB.DB()
 	DBMigrator = DB.Migrator()
+
+	// apply migrations
+	if err := goose.SetDialect(dbDriver); err != nil {
+		return err
+	}
+
+	migrationsFolder := "migrations"
+	if err := goose.Up(SqlDB, migrationsFolder); err != nil {
+		return err
+	}
+
 	return nil
 }
