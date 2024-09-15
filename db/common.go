@@ -44,3 +44,12 @@ func InitDBConnection(dbDriver string, dbUrl string) error {
 
 	return nil
 }
+
+func isItemInArray(item string, array []string) bool {
+	for _, v := range array {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}

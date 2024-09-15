@@ -12,11 +12,11 @@ var secretKey = []byte("secret-key") // TODO: replace on build
 
 type Token struct {
 	gorm.Model
-	Id             uint   `gorm:"unique;primaryKey;autoIncrement"`
-	Token          string `gorm:"size:1024;unique;"`
-	ExpirationDate time.Time
-	UserID         uint
-	User           User `gorm:"foreignKey:UserID;references:Id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Id             uint      `gorm:"unique;primaryKey;autoIncrement"`
+	Token          string    `gorm:"size:1024;unique;"`
+	ExpirationDate time.Time `gorm:""`
+	UserID         uint      `gorm:""`
+	User           User      `gorm:"foreignKey:UserID;references:Id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func generateJWTToken(userId uint, expiration time.Time) (string, error) {

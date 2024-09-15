@@ -10,8 +10,8 @@ type User struct {
 	Id            uint   `gorm:"unique;primaryKey;autoIncrement"`
 	Email         string `gorm:"unique;not null;"`
 	Password      string `gorm:"not null;"`
-	FirstName     string
-	LastName      string
+	FirstName     string `gorm:""`
+	LastName      string `gorm:""`
 	SshPrivateKey string `gorm:"not null;"`
 	SshPublicKey  string `gorm:"not null;"`
 	IsSuperUser   bool   `gorm:"default:false"`
