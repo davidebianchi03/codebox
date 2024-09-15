@@ -1,7 +1,16 @@
 package db
 
 import (
+	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
+	"io"
+
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
 )
 
@@ -22,6 +31,30 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
+func generateSshKeys() (string, string, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		return "", "", err
+	}
+
+	// generate private key
+	var privateKeyBuf bytes.Buffer
+	privateKeyBufW := io.Writer(&privateKeyBuf)
+	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
+	pem.Encode(privateKeyBufW, privateKeyPEM)
+	privateKeyStr := privateKeyBuf.String()
+
+	// generate public key
+	pub, err := ssh.NewPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return "", "", err
+	}
+	pubKeyBytes := ssh.MarshalAuthorizedKey(pub)
+	publicKeyStr := string(pubKeyBytes)
+
+	return privateKeyStr, publicKeyStr, nil
+}
+
 func (u *User) BeforeSave(tx *gorm.DB) (err error) {
 	// hash della password se la password è cambiata
 	if tx.Statement.Changed("Password") {
@@ -39,9 +72,10 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if err != nil {
 		return err
 	}
-	// creo la coppia ssh public/private key
-	u.SshPrivateKey = "SshPrivateKey"
-	u.SshPublicKey = "SshPublicKey"
+	u.SshPrivateKey, u.SshPublicKey, err = generateSshKeys()
+	if err != nil {
+		return fmt.Errorf("failed to create ssh keys: %s", err)
+	}
 	return nil
 }
 
