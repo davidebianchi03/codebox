@@ -5,9 +5,7 @@ import (
 )
 
 type WorkspaceTaskContext struct {
-	// actionRequestedBy *db.User
-	// actionRequestedOn time.Time
-	workspaceId int
+	workspaceId uint
 }
 
 func (ctx *WorkspaceTaskContext) StartWorkspace(job *work.Job) error {

@@ -16,14 +16,13 @@ import (
 
 type User struct {
 	gorm.Model
-	Id            uint   `gorm:"unique;primaryKey;autoIncrement"`
-	Email         string `gorm:"unique;not null;"`
-	Password      string `gorm:"not null;"`
-	FirstName     string `gorm:""`
-	LastName      string `gorm:""`
-	SshPrivateKey string `gorm:"not null;"`
-	SshPublicKey  string `gorm:"not null;"`
-	IsSuperUser   bool   `gorm:"default:false"`
+	Email         string `gorm:"column:email; unique;not null;"`
+	Password      string `gorm:"column:password; not null;"`
+	FirstName     string `gorm:"column:first_name;"`
+	LastName      string `gorm:"column:last_name;"`
+	SshPrivateKey string `gorm:"column:ssh_private_key; not null;"`
+	SshPublicKey  string `gorm:"column:ssh_public_key; not null;"`
+	IsSuperuser   bool   `gorm:"column:is_superuser; default:false"`
 }
 
 func hashPassword(password string) (string, error) {

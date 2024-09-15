@@ -43,31 +43,31 @@ var workspaceContainerStatusChoices = [...]string{
 
 type WorkspaceContainer struct {
 	gorm.Model
-	Type                       string           `gorm:"size:255; default:docker_container;"`
-	Name                       string           `gorm:"size:255;"`
-	ContainerUser              string           `gorm:"size:255; default:root;"`
-	ContainerStatus            string           `gorm:"size:20; default:starting;"`
-	AgentStatus                string           `gorm:"size:20; default:starting;"`
-	AgentExternalPort          uint             `gorm:""`
-	CanConnectRemoteDeveloping bool             `gorm:"default:false"`
-	WorkspacePathInContainer   string           `gorm:"size:1024;"`
-	ExternalIPv4               string           `gorm:"size:15;"`
+	Type                       string           `gorm:"column:type; size:255; default:docker_container;"`
+	Name                       string           `gorm:"column:name; size:255;"`
+	ContainerUser              string           `gorm:"column:container_user; size:255; default:root;"`
+	ContainerStatus            string           `gorm:"column:container_status; size:20; default:starting;"`
+	AgentStatus                string           `gorm:"column:agent_status; size:20; default:starting;"`
+	AgentExternalPort          uint             `gorm:"column:agent_external_port;"`
+	CanConnectRemoteDeveloping bool             `gorm:"column:can_connect_remote_developing; default:false"`
+	WorkspacePathInContainer   string           `gorm:"column:workspace_path_in_container; size:1024;"`
+	ExternalIPv4               string           `gorm:"column:external_ipv4; size:15;"`
 	ForwardedPorts             []*ForwardedPort `gorm:"many2many:workspace_container_forwarded_ports;"`
 }
 
 func (wc *WorkspaceContainer) FullClean() (err error) {
 	// validate field Type
-	if !isItemInArray(wc.Type, WorkspaceContainerTypeChoices[:]) {
+	if !IsItemInArray(wc.Type, WorkspaceContainerTypeChoices[:]) {
 		return fmt.Errorf("%s is not a valid value for field 'Type'", wc.Type)
 	}
 
 	// validate field ContainerStatus
-	if !isItemInArray(wc.ContainerStatus, workspaceContainerStatusChoices[:]) {
+	if !IsItemInArray(wc.ContainerStatus, workspaceContainerStatusChoices[:]) {
 		return fmt.Errorf("%s is not a valid value for field 'ContainerStatus'", wc.Type)
 	}
 
 	// validate field AgentStatus
-	if !isItemInArray(wc.AgentStatus, workspaceContainerAgentStatusChoices[:]) {
+	if !IsItemInArray(wc.AgentStatus, workspaceContainerAgentStatusChoices[:]) {
 		return fmt.Errorf("%s is not a valid value for field 'AgentStatus'", wc.Type)
 	}
 
@@ -75,7 +75,7 @@ func (wc *WorkspaceContainer) FullClean() (err error) {
 }
 
 func (wc *WorkspaceContainer) BeforeCreate(tx *gorm.DB) (err error) {
-	return wc.FullClean()
+	return nil
 }
 
 func (wc *WorkspaceContainer) BeforeSave(tx *gorm.DB) (err error) {

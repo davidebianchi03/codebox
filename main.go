@@ -79,7 +79,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		if foundUser.Id != 0 {
+		if foundUser.ID != 0 {
 			fmt.Println("User with this email already exists")
 			os.Exit(1)
 		}

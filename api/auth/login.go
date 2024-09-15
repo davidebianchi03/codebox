@@ -31,7 +31,7 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
-	if user.Id == 0 {
+	if user.ID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"detail": "invalid credentials",
 		})
