@@ -142,7 +142,7 @@ func HandleCreateWorkspace(ctx *gin.Context) {
 	}
 
 	// start bg task
-	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace": workspace.ID})
+	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
 
-	ctx.JSON(http.StatusInternalServerError, workspaceResponseObj)
+	ctx.JSON(http.StatusOK, workspaceResponseObj)
 }

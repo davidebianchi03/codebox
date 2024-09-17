@@ -2,17 +2,19 @@ package db
 
 import (
 	"fmt"
+	"os"
 	"time"
 
+	"codebox.com/env"
 	"gorm.io/gorm"
 )
 
 const (
-	TypeDevcontainer = "devcontainer"
+	WorkspaceTypeDevcontainer = "devcontainer"
 )
 
 var WorkspaceTypeChoices = [...]string{
-	TypeDevcontainer,
+	WorkspaceTypeDevcontainer,
 }
 
 // workspace status
@@ -51,7 +53,7 @@ type Workspace struct {
 }
 
 func (w *Workspace) FullClean() (err error) {
-	if w.Type != TypeDevcontainer {
+	if w.Type != WorkspaceTypeDevcontainer {
 		return fmt.Errorf("workspace type: '%s' is not supported", w.Type)
 	}
 
@@ -67,4 +69,18 @@ func (w *Workspace) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (w *Workspace) BeforeSave(tx *gorm.DB) (err error) {
 	return w.FullClean()
+}
+
+func (w *Workspace) GetConfigFilePath() (string, error) {
+	path := fmt.Sprintf("%s/workspace-configs", env.CodeBoxEnv.UploadsPath)
+	_, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			os.MkdirAll(path, os.FileMode(0777))
+		} else {
+			return "", fmt.Errorf("unknown error: %s", err)
+		}
+	}
+	os.Chown(path, -1, -1)
+	return fmt.Sprintf("%s/workspace_%d.tar.gz", path, w.ID), nil
 }

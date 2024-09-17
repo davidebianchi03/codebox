@@ -15,6 +15,7 @@ type codeBoxEnv struct {
 	DbURL                            string
 	RedisHost                        string
 	RedisPort                        int
+	UploadsPath                      string
 }
 
 var CodeBoxEnv *codeBoxEnv
@@ -60,5 +61,8 @@ func InitCodeBoxEnv() error {
 	if err != nil {
 		return fmt.Errorf("invalid value for CODEBOX_REDIS_PORT env var")
 	}
+
+	// uploads
+	CodeBoxEnv.UploadsPath = envVarOrDefault("CODEBOX_UPLOADS_PATH", "./uploads")
 	return nil
 }
