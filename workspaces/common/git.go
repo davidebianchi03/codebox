@@ -44,7 +44,7 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 	newBytes := cloneLogsBuf.Bytes()[logsEndIndex:]
 	if len(newBytes) > 0 {
 		workspace.Logs += string(newBytes)
-		db.DB.Save(&workspace)
+		db.DB.Save(workspace)
 	}
 
 	if err != nil {
@@ -75,6 +75,9 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 	if err != nil {
 		return fmt.Errorf("cannot create targz archive: %s", err)
 	}
+
+	workspace.WorkspaceConfigurationFiles = outputFilePath
+	db.DB.Save(workspace)
 
 	return nil
 }
