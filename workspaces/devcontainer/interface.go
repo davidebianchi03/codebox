@@ -55,7 +55,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	}
 
 	// caricamento della configurazione dal file .devcontainer.json
-	devcontainerConfig := InitDevcontainerJson(path.Join(configFilesLocation, "devcontainer.json"))
+	devcontainerConfig := InitDevcontainerJson(dw.Workspace, path.Join(configFilesLocation, "devcontainer.json"))
 	err = devcontainerConfig.LoadConfigFromFiles()
 	if err != nil {
 		dw.Workspace.Logs += err.Error() + "\n"
