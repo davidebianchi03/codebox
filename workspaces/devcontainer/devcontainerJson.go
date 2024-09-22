@@ -11,6 +11,7 @@ import (
 
 	"codebox.com/db"
 	"codebox.com/utils"
+	"codebox.com/utils/cast"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/tailscale/hujson"
@@ -127,7 +128,7 @@ func getWorkspaceVolumeId(workspace db.Workspace) string {
 
 const STACK_WORKSPACE_VOLUME_NAME = "codebox_workspace"
 
-func getUsedPorts() ([]uint, error) {
+func getUsedPorts() ([]int, error) {
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("cannot initialize docker client: %s", err)
@@ -139,11 +140,11 @@ func getUsedPorts() ([]uint, error) {
 		return nil, fmt.Errorf("failed to list existing docker containers: %s", err)
 	}
 
-	var usedPorts []uint
+	var usedPorts []int
 
 	for _, container := range containers {
 		for _, port := range container.Ports {
-			usedPorts = append(usedPorts, uint(port.PublicPort))
+			usedPorts = append(usedPorts, int(port.PublicPort))
 		}
 	}
 
@@ -179,68 +180,127 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 			return fmt.Errorf("missing or invalid key 'service' in devcontainer.json")
 		}
 
-		dockerComposeServices, found := js.dockerComposeYaml["services"].(map[interface{}]interface{})
-		if !found {
-			return fmt.Errorf("missing 'services' tag in docker-compose.yml")
+		// get names of docker compose services
+		services, err := dockerComposeRetrieveListOfServices(js.dockerComposeYaml)
+		if err != nil {
+			return err
 		}
 
-		var dockerStackContainerNames []string
-		for serviceName, serviceDefinition := range dockerComposeServices {
-			dockerStackContainerNames = append(dockerStackContainerNames, serviceName.(string))
+		// assign a port to each container
+		usedPorts, err := getUsedPorts()
+		if err != nil {
+			return err
+		}
+		// var composeAssignedPorts map[string]int
+		composeAssignedPorts := make(map[string]int)
+		for _, service := range services {
+			for i := forwardedPortsMinInterval; i < forwardedPortsMaxInterval; i++ {
+				if !utils.ItemInIntegersList(usedPorts, i) {
+					usedPorts = append(usedPorts, i)
+					composeAssignedPorts[service] = i
+					break
+				}
 
-			service, err := utils.Interface2StringMap(serviceDefinition)
+				if i >= forwardedPortsMaxInterval-1 {
+					return fmt.Errorf("no free ports available")
+				}
+			}
+		}
+
+		// get workspace volume name
+		composeWorkspaceVolume, err := dockerComposeGetWorkspaceVolumeName(
+			js.dockerComposeYaml,
+			composeServiceName,
+			js.devcontainerJson["workspaceFolder"].(string),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		servicesMap, err := dockerComposeRetrieveServicesMap(js.dockerComposeYaml)
+		if err != nil {
+			return err
+		}
+
+		codeBoxWorkspaceVolumeName := "codebox_workspace_volume"
+		for serviceName, serviceDefinition := range servicesMap {
+			// update volumes
+			serviceDefinitionMap, err := cast.Interface2StringMap(serviceDefinition)
 			if err != nil {
-				return fmt.Errorf("invalid docker compose syntax for service '%s'", serviceName)
+				return fmt.Errorf("Invalid docker compose syntax")
 			}
 
-			// gestione dei volumi
-			volumes, found := service["volumes"]
+			serviceVolumes, found := serviceDefinitionMap["volumes"]
 			if found {
-				volumesList, ok := volumes.([]interface{})
-				if !ok {
-					return fmt.Errorf("invalid docker compose syntax for service '%s', 'volumes' tag is not a list", serviceName)
+				serviceVolumesArray, err := cast.Interface2StringArray(serviceVolumes)
+				if err != nil {
+					return fmt.Errorf("Invalid docker compose syntax")
 				}
 
-				// ottengo il nome del volume dove è verrà clonato il repository
-				workspaceVolume := ""
-				for _, volume := range volumesList {
-					volumeStr, ok := volume.(string)
-					if !ok {
-						return fmt.Errorf("invalid docker compose syntax for service '%s', volume %s is not a string", serviceName, volume)
-					}
+				var newVolumesArray []string
+				for _, volumeStr := range serviceVolumesArray {
 					volumeParts := strings.Split(volumeStr, ":")
-					if len(volumeParts) != 2 {
-						return fmt.Errorf("invalid docker compose syntax for service '%s'", serviceName)
+					if len(volumeParts) < 2 {
+						return fmt.Errorf("Invalid docker compose syntax")
 					}
 
-					workspaceMountPoint := volumeParts[1]
-
-					if workspaceMountPoint == js.devcontainerJson["workspaceFolder"] && composeServiceName == serviceName {
-						// questo è il volume del workspace, sostituire il bind alla macchina locale con un volume
-						workspaceVolume = volumeParts[0]
-						break
+					if volumeParts[0] == composeWorkspaceVolume {
+						newVolumesArray = append(newVolumesArray, fmt.Sprintf("%s:%s", codeBoxWorkspaceVolumeName, strings.Join(volumeParts[1:], ":")))
+					} else {
+						newVolumesArray = append(newVolumesArray, volumeStr)
 					}
 				}
 
-				for _, volume := range volumesList {
-					volumeStr, ok := volume.(string)
-					if !ok {
-						return fmt.Errorf("invalid docker compose syntax for service '%s', volume %s is not a string", serviceName, volume)
-					}
-					volumeParts := strings.Split(volumeStr, ":")
-					if len(volumeParts) != 2 {
-						return fmt.Errorf("invalid docker compose syntax for service '%s'", serviceName)
-					}
-
-					if volumeParts[0] == workspaceVolume {
-						volume = STACK_WORKSPACE_VOLUME_NAME
-					}
-				}
-
-				service["volumes"] = volumesList
+				serviceDefinitionMap["volumes"] = newVolumesArray
 			}
 
-			// gestione delle porte
+			// update ports
+			var exposedPorts = []string{fmt.Sprintf("%d:55088", composeAssignedPorts[serviceName])}
+			serviceDefinitionMap["ports"] = exposedPorts
+
+			// update labels
+			labels, found := serviceDefinitionMap["labels"]
+			labelsMap := make(map[string]interface{})
+			if found {
+				labelsMap, err = cast.Interface2StringMap(labels)
+				if err != nil {
+					return fmt.Errorf("Invalid docker compose syntax")
+				}
+			}
+			labelsMap["com.codebox.workspace_id"] = js.workspace.ID
+			serviceDefinitionMap["labels"] = labelsMap
+
+			// TODO: override entrypoint
+
+			servicesMap[serviceName] = serviceDefinitionMap
+		}
+
+		fixedYaml := make(map[string]interface{})
+		for key, value := range js.dockerComposeYaml {
+			fixedYaml[key] = value
+		}
+		fixedYaml["services"] = servicesMap
+		stackVolumes, found := fixedYaml["volumes"]
+		stackVolumesList := make(map[string]interface{})
+		if found {
+			stackVolumesList, err = cast.Interface2StringMap(stackVolumes)
+			if err != nil {
+				return fmt.Errorf("Invalid docker compose syntax")
+			}
+		}
+		stackVolumesList[codeBoxWorkspaceVolumeName] = nil
+		fixedYaml["volumes"] = stackVolumesList
+
+		// update yaml file
+		fixedComposeBytes, err := yaml.Marshal(&fixedYaml)
+		if err != nil {
+			return fmt.Errorf("cannot serialize docker compose %s", err)
+		}
+
+		err = os.WriteFile(js.dockerComposeFilePath, fixedComposeBytes, 0644)
+		if err != nil {
+			return fmt.Errorf("cannot write docker compose file %s", err)
 		}
 	} else {
 		agentExternalPort := -1
@@ -264,6 +324,16 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 			"--label",
 			fmt.Sprintf("com.codebox.workspace_id=%d", js.workspace.ID),
 		}
+	}
+
+	// update json config file
+	configFileBytes, err := json.Marshal(&js.devcontainerJson)
+	if err != nil {
+		return fmt.Errorf("cannot serialize devcontainer.json %s", err)
+	}
+	err = os.WriteFile(js.devcontainerJsonFilePath, configFileBytes, 0644)
+	if err != nil {
+		return fmt.Errorf("cannot write devcontainer.json file %s", err)
 	}
 
 	return nil
