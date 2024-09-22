@@ -45,6 +45,15 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	}
 	defer os.RemoveAll(workingDir)
 
+	workingDir = path.Join(workingDir, fmt.Sprintf("codebox_workspace_%d", dw.Workspace.ID))
+	err = os.MkdirAll(workingDir, 0777)
+	if err != nil {
+		dw.Workspace.Logs += "cannot create temp working directory, " + err.Error() + "\n"
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+
 	configFilesLocation := path.Join(workingDir, dw.Workspace.GitRepoConfigurationFolder)
 	err = utils.ExtractTarGz(dw.Workspace.WorkspaceConfigurationFiles, configFilesLocation)
 	if err != nil {
@@ -55,7 +64,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	}
 
 	// caricamento della configurazione dal file .devcontainer.json
-	devcontainerConfig := InitDevcontainerJson(dw.Workspace, path.Join(configFilesLocation, "devcontainer.json"))
+	devcontainerConfig := InitDevcontainerJson(dw.Workspace, configFilesLocation)
 	err = devcontainerConfig.LoadConfigFromFiles()
 	if err != nil {
 		dw.Workspace.Logs += err.Error() + "\n"
@@ -66,4 +75,19 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 
 	// aggiustamento dei file di configurazione
 	err = devcontainerConfig.FixConfigFiles()
+	if err != nil {
+		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+
+	// creazione e avvio dei containers
+	err = devcontainerConfig.GoUp()
+	if err != nil {
+		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
 }

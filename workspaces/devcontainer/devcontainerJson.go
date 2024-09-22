@@ -1,10 +1,12 @@
 package devcontainer
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -25,6 +27,7 @@ type DevcontainerJson struct {
 	dockerComposeExists      bool
 	dockerComposeFilePath    string
 	dockerComposeYaml        map[string]interface{}
+	workingDir               string
 }
 
 var codeBoxDeniedDevcontainerJsonKeys = [...]string{
@@ -40,9 +43,10 @@ func standardizeJSON(b []byte) ([]byte, error) {
 	return ast.Pack(), nil
 }
 
-func InitDevcontainerJson(workspace *db.Workspace, devcontainerJsonFilePath string) *DevcontainerJson {
+func InitDevcontainerJson(workspace *db.Workspace, workingDir string) *DevcontainerJson {
 	var obj DevcontainerJson
-	obj.devcontainerJsonFilePath = devcontainerJsonFilePath
+	obj.devcontainerJsonFilePath = path.Join(workingDir, "devcontainer.json")
+	obj.workingDir = workingDir
 	obj.workspace = workspace
 	return &obj
 }
@@ -336,5 +340,36 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 		return fmt.Errorf("cannot write devcontainer.json file %s", err)
 	}
 
+	return nil
+}
+
+func (js *DevcontainerJson) GoUp() error {
+	var stdErrBuffer bytes.Buffer
+	var stdOutBuffer bytes.Buffer
+
+	cmd := exec.Command("devcontainer", "up", "--workspace-folder", filepath.Dir(js.workingDir))
+	cmd.Stderr = &stdErrBuffer
+	cmd.Stdout = &stdOutBuffer
+	cmdRunning := true
+	stdErrIndex := 0
+	stdOutIndex := 0
+	go func() {
+		// redirect logs to db field
+		newStdErrLogs := ""
+		newStdOutLogs := ""
+		for cmdRunning {
+			newStdErrLogs = stdErrBuffer.String()[stdErrIndex:]
+			newStdOutLogs = stdOutBuffer.String()[stdOutIndex:]
+
+			stdErrIndex += len(newStdErrLogs)
+			stdOutIndex += len(newStdOutLogs)
+
+			js.workspace.Logs += newStdErrLogs
+			db.DB.Save(js.workspace)
+		}
+	}()
+	err := cmd.Run()
+
+	_ = err
 	return nil
 }
