@@ -90,4 +90,14 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 		db.DB.Save(&dw.Workspace)
 		return
 	}
+
+	// mapping dei containers
+	err = devcontainerConfig.MapContainers()
+	if err != nil {
+		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+
 }

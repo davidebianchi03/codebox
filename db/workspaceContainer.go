@@ -26,21 +26,6 @@ var workspaceContainerAgentStatusChoices = [...]string{
 	WorkspaceContainerAgentStatusError,
 }
 
-// workspace container status
-const (
-	WorkspaceContainerStatusRunning  = "running"
-	WorkspaceContainerStatusStarting = "starting"
-	WorkspaceContainerStatusStopped  = "stopped"
-	WorkspaceContainerStatusError    = "error"
-)
-
-var workspaceContainerStatusChoices = [...]string{
-	WorkspaceContainerStatusRunning,
-	WorkspaceContainerStatusStarting,
-	WorkspaceContainerStatusStopped,
-	WorkspaceContainerStatusError,
-}
-
 type WorkspaceContainer struct {
 	gorm.Model
 	Type                       string           `gorm:"column:type; size:255; default:docker_container;"`
@@ -59,11 +44,6 @@ func (wc *WorkspaceContainer) FullClean() (err error) {
 	// validate field Type
 	if !IsItemInArray(wc.Type, WorkspaceContainerTypeChoices[:]) {
 		return fmt.Errorf("%s is not a valid value for field 'Type'", wc.Type)
-	}
-
-	// validate field ContainerStatus
-	if !IsItemInArray(wc.ContainerStatus, workspaceContainerStatusChoices[:]) {
-		return fmt.Errorf("%s is not a valid value for field 'ContainerStatus'", wc.Type)
 	}
 
 	// validate field AgentStatus

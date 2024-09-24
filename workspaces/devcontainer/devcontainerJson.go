@@ -9,16 +9,27 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"codebox.com/db"
 	"codebox.com/utils"
 	"codebox.com/utils/cast"
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"github.com/tailscale/hujson"
+	"github.com/docker/go-connections/nat"
 	"gopkg.in/yaml.v2"
 )
+
+type DevcontainerConfigInfo struct {
+	containerNames               []string
+	developmentContainerName     string
+	workspaceLocationInContainer string
+	containerId                  string
+	composeProjectName           string
+	remoteUser                   string
+	forwardedPorts               map[string][]uint
+}
 
 type DevcontainerJson struct {
 	workspace                *db.Workspace
@@ -28,19 +39,11 @@ type DevcontainerJson struct {
 	dockerComposeFilePath    string
 	dockerComposeYaml        map[string]interface{}
 	workingDir               string
+	devcontainersInfo        DevcontainerConfigInfo
 }
 
 var codeBoxDeniedDevcontainerJsonKeys = [...]string{
 	"workspaceMount",
-}
-
-func standardizeJSON(b []byte) ([]byte, error) {
-	ast, err := hujson.Parse(b)
-	if err != nil {
-		return b, err
-	}
-	ast.Standardize()
-	return ast.Pack(), nil
 }
 
 func InitDevcontainerJson(workspace *db.Workspace, workingDir string) *DevcontainerJson {
@@ -126,34 +129,7 @@ func (dj *DevcontainerJson) LoadConfigFromFiles() error {
 	return nil
 }
 
-func getWorkspaceVolumeId(workspace db.Workspace) string {
-	return fmt.Sprintf("codebox-workspace-%s-%d-data", workspace.Name, workspace.ID)
-}
-
 const STACK_WORKSPACE_VOLUME_NAME = "codebox_workspace"
-
-func getUsedPorts() ([]int, error) {
-	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		return nil, fmt.Errorf("cannot initialize docker client: %s", err)
-	}
-	defer dockerClient.Close()
-
-	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{All: true})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list existing docker containers: %s", err)
-	}
-
-	var usedPorts []int
-
-	for _, container := range containers {
-		for _, port := range container.Ports {
-			usedPorts = append(usedPorts, int(port.PublicPort))
-		}
-	}
-
-	return usedPorts, nil
-}
 
 // https://containers.dev/implementors/json_schema/
 func (js *DevcontainerJson) FixConfigFiles() error {
@@ -162,6 +138,7 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 	if !found {
 		js.devcontainerJson["workspaceFolder"] = "/workspace"
 	}
+	js.devcontainersInfo.workspaceLocationInContainer = js.devcontainerJson["workspaceFolder"].(string)
 
 	js.devcontainerJson["workspaceMount"] = fmt.Sprintf(
 		"source=%s,target=%s,type=volume",
@@ -189,6 +166,9 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 		if err != nil {
 			return err
 		}
+
+		js.devcontainersInfo.developmentContainerName = composeServiceName
+		js.devcontainersInfo.containerNames = services
 
 		// assign a port to each container
 		usedPorts, err := getUsedPorts()
@@ -310,11 +290,9 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 		agentExternalPort := -1
 		// aggiustamenti specifici per i workspaces senza lo stack
 		for i := forwardedPortsMinInterval; i < forwardedPortsMaxInterval; i++ {
-			for _, port := range usedPorts {
-				if i != int(port) {
-					agentExternalPort = i
-					break
-				}
+			if !utils.ItemInIntegersList(usedPorts, i) {
+				agentExternalPort = i
+				break
 			}
 		}
 
@@ -327,6 +305,28 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 			fmt.Sprintf("%d:55088", agentExternalPort),
 			"--label",
 			fmt.Sprintf("com.codebox.workspace_id=%d", js.workspace.ID),
+		}
+
+		forwardedPortsStrArray, ok := js.devcontainerJson["forwardPorts"].([]string)
+		if ok {
+			var forwardedPortsUIntArray []uint
+			ok = true
+			for _, port := range forwardedPortsStrArray {
+				intPort, err := strconv.Atoi(port)
+				if err != nil || intPort < 0 {
+					ok = false
+					break
+				}
+				forwardedPortsUIntArray = append(forwardedPortsUIntArray, uint(intPort))
+			}
+			if ok {
+				js.devcontainersInfo.forwardedPorts["development"] = forwardedPortsUIntArray
+			}
+		} else {
+			forwardedPortsUIntArray, ok := js.devcontainerJson["forwardPorts"].([]uint)
+			if ok {
+				js.devcontainersInfo.forwardedPorts["development"] = forwardedPortsUIntArray
+			}
 		}
 	}
 
@@ -369,7 +369,104 @@ func (js *DevcontainerJson) GoUp() error {
 		}
 	}()
 	err := cmd.Run()
+	if err != nil {
+		return err
+	}
 
-	_ = err
+	var parsedStdOut map[string]interface{}
+	err = json.Unmarshal(stdOutBuffer.Bytes(), &parsedStdOut)
+	if err != nil {
+		return fmt.Errorf("cannot parse stdout logs")
+	}
+
+	containerId, ok := parsedStdOut["containerId"].(string)
+	if !ok {
+		return fmt.Errorf("invalid stdout logs")
+	}
+	js.devcontainersInfo.containerId = containerId
+
+	remoteUser, ok := parsedStdOut["remoteUser"].(string)
+	if !ok {
+		return fmt.Errorf("invalid stdout logs")
+	}
+	js.devcontainersInfo.remoteUser = remoteUser
+
+	composeProjectNameInt, found := parsedStdOut["composeProjectName"]
+	if found {
+		composeProjectName := composeProjectNameInt.(string)
+		if !ok {
+			return fmt.Errorf("invalid stdout logs")
+		}
+		js.devcontainersInfo.composeProjectName = composeProjectName
+	}
+
+	return nil
+}
+
+func (js *DevcontainerJson) MapContainers() error {
+	if js.devcontainersInfo.composeProjectName != "" {
+		// list containers in stack
+	} else {
+		// mapping dei workspace con singolo container
+		dockerClient, err := client.NewClientWithOpts(client.FromEnv)
+		if err != nil {
+			return fmt.Errorf("cannot initialize docker client: %s", err)
+		}
+		defer dockerClient.Close()
+
+		containerInfo, err := dockerClient.ContainerInspect(context.Background(), js.devcontainersInfo.containerId)
+		if err != nil {
+			return fmt.Errorf("cannot retrieve container details: %s", err)
+		}
+
+		if len(containerInfo.HostConfig.PortBindings) != 1 {
+			return fmt.Errorf("there are more than one ports exposed for container %s", js.devcontainersInfo.containerId)
+		}
+
+		hostConfigKey, ok := reflect.ValueOf(containerInfo.HostConfig.PortBindings).MapKeys()[0].Interface().(nat.Port)
+		if !ok {
+			return fmt.Errorf("unknown error occured while trying to retrieve exposed ports for container %s", js.devcontainersInfo.containerId)
+		}
+
+		if hostConfigKey != "55088/tcp" {
+			return fmt.Errorf("unknown error occured while trying to retrieve exposed ports for container %s", js.devcontainersInfo.containerId)
+		}
+
+		if len(containerInfo.HostConfig.PortBindings[hostConfigKey]) != 1 {
+			return fmt.Errorf("agent port not exposed for container %s", js.devcontainersInfo.containerId)
+		}
+
+		agentPort := containerInfo.HostConfig.PortBindings[hostConfigKey][0].HostPort
+		agentPortUInt, err := strconv.Atoi(agentPort)
+		if err != nil {
+			return fmt.Errorf("unknown error occured while trying to retrieve exposed ports for container %s", js.devcontainersInfo.containerId)
+		}
+
+		workspaceContainer := db.WorkspaceContainer{
+			Type:                       "docker_container",
+			Name:                       "development",
+			ContainerUser:              js.devcontainersInfo.remoteUser,
+			ContainerStatus:            containerInfo.State.Status,
+			AgentStatus:                db.WorkspaceContainerAgentStatusStarting,
+			AgentExternalPort:          uint(agentPortUInt),
+			CanConnectRemoteDeveloping: true,
+			WorkspacePathInContainer:   js.devcontainersInfo.workspaceLocationInContainer,
+			// ExternalIPv4
+			// ForwardedPorts
+		}
+
+		// containerForwardedPorts, ok := js.devcontainersInfo.forwardedPorts["development"]
+		// if ok {
+		// 	for _, port := range containerForwardedPorts {
+		// 		portObj := db.ForwardedPort{
+		// 			PortNumber: port,
+		// 			ConnectionType: ConnectionTypeHttp
+		// 		}
+
+		// 		workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, &portObj)
+		// 	}
+		// }
+	}
+
 	return nil
 }

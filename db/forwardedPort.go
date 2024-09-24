@@ -9,10 +9,10 @@ const (
 
 type ForwardedPort struct {
 	gorm.Model
-	portNumber     uint   `gorm:"column:port_number;"`
-	active         bool   `gorm:"column:active; default:true"`
-	connectionType string `gorm:"column:connection_type; size:40; not null;default:http;"`
-	public         bool   `gorm:"column:public; default:false"`
+	PortNumber     uint   `gorm:"column:port_number;"`
+	Active         bool   `gorm:"column:active; default:true"`
+	ConnectionType string `gorm:"column:connection_type; size:40; not null;default:http;"`
+	Public         bool   `gorm:"column:public; default:false"`
 }
 
 func (*ForwardedPort) GetPublicUrl() string {
