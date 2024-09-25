@@ -28,16 +28,22 @@ var workspaceContainerAgentStatusChoices = [...]string{
 
 type WorkspaceContainer struct {
 	gorm.Model
-	Type                       string           `gorm:"column:type; size:255; default:docker_container;"`
-	Name                       string           `gorm:"column:name; size:255;"`
-	ContainerUser              string           `gorm:"column:container_user; size:255; default:root;"`
-	ContainerStatus            string           `gorm:"column:container_status; size:20; default:starting;"`
-	AgentStatus                string           `gorm:"column:agent_status; size:20; default:starting;"`
-	AgentExternalPort          uint             `gorm:"column:agent_external_port;"`
-	CanConnectRemoteDeveloping bool             `gorm:"column:can_connect_remote_developing; default:false"`
-	WorkspacePathInContainer   string           `gorm:"column:workspace_path_in_container; size:1024;"`
-	ExternalIPv4               string           `gorm:"column:external_ipv4; size:15;"`
-	ForwardedPorts             []*ForwardedPort `gorm:"many2many:workspace_container_forwarded_ports;"`
+	Type                       string          `gorm:"column:type; size:255; default:docker_container;"`
+	Name                       string          `gorm:"column:name; size:255;"`
+	ContainerUser              string          `gorm:"column:container_user; size:255; default:root;"`
+	ContainerStatus            string          `gorm:"column:container_status; size:20; default:starting;"`
+	AgentStatus                string          `gorm:"column:agent_status; size:20; default:starting;"`
+	AgentExternalPort          uint            `gorm:"column:agent_external_port;"`
+	CanConnectRemoteDeveloping bool            `gorm:"column:can_connect_remote_developing; default:false"`
+	WorkspacePathInContainer   string          `gorm:"column:workspace_path_in_container; size:1024;"`
+	ExternalIPv4               string          `gorm:"column:external_ipv4; size:15;"`
+	ForwardedPorts             []ForwardedPort `gorm:"many2many:workspace_container_forwarded_ports;"`
+}
+
+type WorkspaceContainerForwardedPorts struct {
+	gorm.Model
+	WorkspaceContainerID uint
+	ForwardedPortID      uint
 }
 
 func (wc *WorkspaceContainer) FullClean() (err error) {

@@ -31,6 +31,12 @@ func upCreateWorkspaceAndRelatedTables(ctx context.Context, tx *sql.Tx) error {
 		return err
 	}
 
+	// creazione della tabella di join
+	err = db.DBMigrator.CreateTable(&db.WorkspaceContainerForwardedPorts{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -52,5 +58,12 @@ func downCreateWorkspaceAndRelatedTables(ctx context.Context, tx *sql.Tx) error 
 	if err != nil {
 		return err
 	}
+
+	// drop della tabella di join
+	err = db.DBMigrator.DropTable(&db.WorkspaceContainerForwardedPorts{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

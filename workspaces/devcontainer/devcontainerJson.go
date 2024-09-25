@@ -455,17 +455,39 @@ func (js *DevcontainerJson) MapContainers() error {
 			// ForwardedPorts
 		}
 
-		// containerForwardedPorts, ok := js.devcontainersInfo.forwardedPorts["development"]
-		// if ok {
-		// 	for _, port := range containerForwardedPorts {
-		// 		portObj := db.ForwardedPort{
-		// 			PortNumber: port,
-		// 			ConnectionType: ConnectionTypeHttp
-		// 		}
+		developmentContainerSSHPortFound := false
+		containerForwardedPorts, ok := js.devcontainersInfo.forwardedPorts["development"]
+		if ok {
+			for _, port := range containerForwardedPorts {
+				portConnectionType := db.ConnectionTypeHttp
+				if port == 22 {
+					developmentContainerSSHPortFound = true
+					portConnectionType = db.ConnectionTypeWS
+				}
 
-		// 		workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, &portObj)
-		// 	}
-		// }
+				portObj := db.ForwardedPort{
+					PortNumber:     port,
+					ConnectionType: portConnectionType,
+					Public:         true,
+				}
+				workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
+			}
+		}
+
+		if !developmentContainerSSHPortFound {
+			portObj := db.ForwardedPort{
+				PortNumber:     22,
+				ConnectionType: db.ConnectionTypeWS,
+				Public:         true,
+			}
+			workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
+		}
+
+		result := db.DB.Create(&workspaceContainer)
+
+		if result.Error != nil {
+			return fmt.Errorf("failed to create workspace container in DB %s", result.Error)
+		}
 	}
 
 	return nil
