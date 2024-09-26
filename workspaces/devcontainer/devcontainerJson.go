@@ -16,6 +16,8 @@ import (
 	"codebox.com/db"
 	"codebox.com/utils"
 	"codebox.com/utils/cast"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"gopkg.in/yaml.v2"
@@ -404,16 +406,130 @@ func (js *DevcontainerJson) GoUp() error {
 }
 
 func (js *DevcontainerJson) MapContainers() error {
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		return fmt.Errorf("cannot initialize docker client: %s", err)
+	}
+	defer dockerClient.Close()
+
 	if js.devcontainersInfo.composeProjectName != "" {
 		// list containers in stack
+		stackContainers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+			Filters: filters.NewArgs(
+				filters.KeyValuePair{
+					Key:   "label",
+					Value: fmt.Sprintf("com.docker.compose.project=%s", js.devcontainersInfo.composeProjectName),
+				},
+			),
+		})
+		if err != nil {
+			return fmt.Errorf("cannot list stack containers %s", err)
+		}
+
+		// mapping dei containers
+		for _, container := range stackContainers {
+			// retrieve name of container inside the stack
+			containerNameInStack := ""
+			for labelKey, labelValue := range container.Labels {
+				if labelKey == "com.docker.compose.service" {
+					containerNameInStack = labelValue
+				}
+			}
+
+			if containerNameInStack == "" {
+				return fmt.Errorf("failed to list stack containers, unknown name for container %s", container.ID)
+			}
+
+			// retrieve more details about the container
+			containerInfo, err := dockerClient.ContainerInspect(context.Background(), container.ID)
+
+			if err != nil {
+				return fmt.Errorf("failed retrieve more details about container %s", container.ID)
+			}
+
+			// retrieve external agent port
+			if len(containerInfo.HostConfig.PortBindings) != 1 {
+				return fmt.Errorf("there are more than one ports exposed for container %s", container.ID)
+			}
+
+			hostConfigKey, ok := reflect.ValueOf(containerInfo.HostConfig.PortBindings).MapKeys()[0].Interface().(nat.Port)
+			if !ok {
+				return fmt.Errorf("unknown error occured while trying to retrieve exposed ports for container %s", container.ID)
+			}
+
+			if hostConfigKey != "55088/tcp" {
+				return fmt.Errorf("unknown error occured while trying to retrieve exposed ports for container %s", container.ID)
+			}
+
+			if len(containerInfo.HostConfig.PortBindings[hostConfigKey]) != 1 {
+				return fmt.Errorf("agent port not exposed for container %s", container.ID)
+			}
+
+			agentPort := containerInfo.HostConfig.PortBindings[hostConfigKey][0].HostPort
+			agentPortUInt, err := strconv.Atoi(agentPort)
+			if err != nil {
+				return fmt.Errorf("unknown error occured while trying to retrieve exposed ports for container %s", container.ID)
+			}
+
+			canConnectRemoteDeveloping := false
+			workspacePathInContainer := ""
+			remoteUser := "root"
+			if js.devcontainersInfo.developmentContainerName == containerNameInStack {
+				canConnectRemoteDeveloping = true
+				remoteUser = js.devcontainersInfo.remoteUser
+				workspacePathInContainer = js.devcontainersInfo.workspaceLocationInContainer
+			}
+
+			workspaceContainer := db.WorkspaceContainer{
+				Type:                       "docker_container",
+				Name:                       containerNameInStack,
+				ContainerUser:              remoteUser,
+				ContainerStatus:            container.State,
+				AgentStatus:                db.WorkspaceContainerAgentStatusStarting,
+				AgentExternalPort:          uint(agentPortUInt),
+				CanConnectRemoteDeveloping: canConnectRemoteDeveloping,
+				WorkspacePathInContainer:   workspacePathInContainer,
+				ExternalIPv4:               "172.17.0.1",
+			}
+
+			// mapping of exposed ports
+			developmentContainerSSHPortFound := false
+			containerForwardedPorts, ok := js.devcontainersInfo.forwardedPorts[containerNameInStack]
+			if ok {
+				for _, port := range containerForwardedPorts {
+					portConnectionType := db.ConnectionTypeHttp
+					if port == 22 {
+						developmentContainerSSHPortFound = true
+						portConnectionType = db.ConnectionTypeWS
+					}
+
+					portObj := db.ForwardedPort{
+						PortNumber:     port,
+						ConnectionType: portConnectionType,
+						Public:         true,
+					}
+					workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
+				}
+			}
+
+			if !developmentContainerSSHPortFound {
+				portObj := db.ForwardedPort{
+					PortNumber:     22,
+					ConnectionType: db.ConnectionTypeWS,
+					Public:         true,
+				}
+				workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
+			}
+
+			result := db.DB.Create(&workspaceContainer)
+
+			if result.Error != nil {
+				return fmt.Errorf("failed to create workspace container %s in DB %s", containerInfo.ID, result.Error)
+			}
+		}
+
 	} else {
 		// mapping dei workspace con singolo container
-		dockerClient, err := client.NewClientWithOpts(client.FromEnv)
-		if err != nil {
-			return fmt.Errorf("cannot initialize docker client: %s", err)
-		}
-		defer dockerClient.Close()
-
 		containerInfo, err := dockerClient.ContainerInspect(context.Background(), js.devcontainersInfo.containerId)
 		if err != nil {
 			return fmt.Errorf("cannot retrieve container details: %s", err)
@@ -451,8 +567,7 @@ func (js *DevcontainerJson) MapContainers() error {
 			AgentExternalPort:          uint(agentPortUInt),
 			CanConnectRemoteDeveloping: true,
 			WorkspacePathInContainer:   js.devcontainersInfo.workspaceLocationInContainer,
-			// ExternalIPv4
-			// ForwardedPorts
+			ExternalIPv4:               "172.17.0.1",
 		}
 
 		developmentContainerSSHPortFound := false
