@@ -100,4 +100,12 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 		return
 	}
 
+	// install and start agents
+	err = devcontainerConfig.StartAgents()
+	if err != nil {
+		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
 }

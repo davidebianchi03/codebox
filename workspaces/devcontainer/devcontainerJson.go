@@ -607,3 +607,68 @@ func (js *DevcontainerJson) MapContainers() error {
 
 	return nil
 }
+
+func (js *DevcontainerJson) StartAgents() error {
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		return fmt.Errorf("cannot initialize docker client: %s", err)
+	}
+	defer dockerClient.Close()
+
+	// list workspace containers
+	workspaceContainers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+		Filters: filters.NewArgs(
+			filters.KeyValuePair{
+				Key:   "label",
+				Value: fmt.Sprintf("com.codebox.workspace_id=%d", js.workspace.ID),
+			},
+		),
+	})
+	if err != nil {
+		return fmt.Errorf("cannot list workspace containers %s", err)
+	}
+
+	for _, container := range workspaceContainers {
+		containerInfo, err := dockerClient.ContainerInspect(context.Background(), container.ID)
+
+		if err != nil {
+			return fmt.Errorf("failed retrieve more details about container %s", container.ID)
+		}
+
+		containerName := "development"
+		if js.dockerComposeExists {
+			containerName = ""
+			for labelKey, labelValue := range containerInfo.Config.Labels {
+				if labelKey == "com.docker.compose.service" {
+					containerName = labelValue
+					break
+				}
+			}
+
+			if containerName == "" {
+				return fmt.Errorf("failed to retrieve container name in stack for container %s", containerInfo.ID)
+			}
+		}
+
+		// install agent
+		err = putFileInContainer(dockerClient, container.ID, "/opt", "./agent.bin")
+		if err != nil {
+			return fmt.Errorf("failed to add agent to container %s, %s", container.ID, err)
+		}
+
+		// start agent
+		logs, err := runCommandInContainer(dockerClient, container.ID, []string{"./agent.bin"}, "/opt", "root", []string{}, true)
+		if err != nil {
+			return fmt.Errorf("failed to start agent on container %s, %s", container.ID, err)
+		}
+
+		js.workspace.Logs += fmt.Sprintf("<Container: %s> %s\n", container.ID, logs)
+		db.DB.Save(js.workspace)
+
+		if js.devcontainersInfo.developmentContainerName == containerName {
+			// install ssh server in development containers
+		}
+	}
+
+	return nil
+}
