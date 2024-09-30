@@ -23,6 +23,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	AgentSSHServerPort = 2222
+)
+
 type DevcontainerConfigInfo struct {
 	containerNames               []string
 	developmentContainerName     string
@@ -575,7 +579,7 @@ func (js *DevcontainerJson) MapContainers() error {
 		if ok {
 			for _, port := range containerForwardedPorts {
 				portConnectionType := db.ConnectionTypeHttp
-				if port == 22 {
+				if port == AgentSSHServerPort {
 					developmentContainerSSHPortFound = true
 					portConnectionType = db.ConnectionTypeWS
 				}
@@ -591,7 +595,7 @@ func (js *DevcontainerJson) MapContainers() error {
 
 		if !developmentContainerSSHPortFound {
 			portObj := db.ForwardedPort{
-				PortNumber:     22,
+				PortNumber:     AgentSSHServerPort,
 				ConnectionType: db.ConnectionTypeWS,
 				Public:         true,
 			}
@@ -650,24 +654,38 @@ func (js *DevcontainerJson) StartAgents() error {
 			}
 		}
 
+		// create agent folder
+		logs, err := runCommandInContainer(dockerClient, container.ID, []string{"mkdir -p codebox"}, "/opt", "root", []string{}, true)
+		if err != nil {
+			return fmt.Errorf("failed create agent folder on container %s, %s", container.ID, err)
+		}
+
 		// install agent
-		err = putFileInContainer(dockerClient, container.ID, "/opt", "./agent.bin")
+		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", "./agent.bin")
 		if err != nil {
 			return fmt.Errorf("failed to add agent to container %s, %s", container.ID, err)
 		}
 
+		// add server private key
+		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", "./id_rsa")
+		if err != nil {
+			return fmt.Errorf("failed to add server's private key to container %s, %s", container.ID, err)
+		}
+
+		// add server public key
+		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", "./id_rsa.pub")
+		if err != nil {
+			return fmt.Errorf("failed to add server's public key to container %s, %s", container.ID, err)
+		}
+
 		// start agent
-		logs, err := runCommandInContainer(dockerClient, container.ID, []string{"./agent.bin"}, "/opt", "root", []string{}, true)
+		logs, err = runCommandInContainer(dockerClient, container.ID, []string{"./agent.bin"}, "/opt", "root", []string{}, true)
 		if err != nil {
 			return fmt.Errorf("failed to start agent on container %s, %s", container.ID, err)
 		}
 
 		js.workspace.Logs += fmt.Sprintf("<Container: %s> %s\n", container.ID, logs)
 		db.DB.Save(js.workspace)
-
-		if js.devcontainersInfo.developmentContainerName == containerName {
-			// install ssh server in development containers
-		}
 	}
 
 	return nil
