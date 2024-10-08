@@ -8,8 +8,12 @@ import (
 )
 
 func V1ApiRoutes(router *gin.Engine) {
+
+	// middlewares
+	router.Use(middleware.CORSMiddleware)
 	v1 := router.Group("/api/v1")
 	{
+		// endpoints
 		authApis := v1.Group("/auth")
 		{
 			authApis.POST("/login", auth.HandleLogin)

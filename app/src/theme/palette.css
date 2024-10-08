@@ -1,0 +1,17 @@
+:root {
+    --background-color: #05070A;
+    --background-color-paper: #0C1017;
+    --background-divider: hsla(220, 20%, 25%, 0.6);
+    --blue: #066fd1;
+    --indigo: #4263eb;
+    --purple: #ae3ec9;
+    --pink: #d6336c;
+    --red: #d63939;
+    --orange: #f76707;
+    --yellow: #f59f00;
+    --green: #2fb344;
+    --teal: #0ca678;
+    --cyan: #17a2b8;
+    --black: #000000;
+    --white: #ffffff;
+}

@@ -1,0 +1,16 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.basepage-container{
+    height: 100vh;
+    background-color: #272727;
+    display: flex;
+    flex-direction: column;
+}
+
+.basepage-container .basepage-content{
+    height: 100%;
+    overflow-y: auto;
+}

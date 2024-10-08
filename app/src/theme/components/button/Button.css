@@ -1,0 +1,12 @@
+@import url("../../palette.css");
+
+.button{
+    padding: 7pt 25pt;
+    font-size: 11pt;
+    color: var(--white);
+    background-color: var(--blue);
+    border: none;
+    border-radius: 5pt;
+    font-family: "Inter";
+    cursor: pointer;
+}
