@@ -49,7 +49,7 @@ export class Http {
         let errorDescription = "";
 
         if (!jwtToken) {
-            return [RequestStatus.NOT_AUTHENTICATED, -1, null, errorDescription];
+            return [RequestStatus.NOT_AUTHENTICATED, 401, null, errorDescription];
         }
         let requestConfig: AxiosRequestConfig = {
             url: url,

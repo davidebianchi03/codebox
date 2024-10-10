@@ -23,7 +23,7 @@ export default class StatusBar extends Component{
     render(): ReactNode {
         return (
             <div className="statusbar">
-                <span className="app-name">Codebox</span>
+                {/* <span className="app-name">Codebox</span> */}
                 <span style={{width: "100%"}}></span>
                 <div style={{display: "flex", alignItems: "center"}}>
                     <b style={{marginRight: "10px"}}>Transmission: </b>

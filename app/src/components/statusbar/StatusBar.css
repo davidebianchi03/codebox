@@ -1,9 +1,11 @@
+@import url("../../theme/palette.css");
+
 .statusbar {
     width: 100%;
     height: 30px;
     display: flex;
     align-items: center;
-    background-color: #303030;
+    background-color: var(--background-color-paper);
     color: #fff;
     font-family: Consolas, monaco, monospace;
     font-size: 12px;

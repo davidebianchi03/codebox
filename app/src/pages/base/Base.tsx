@@ -1,3 +1,4 @@
+import { Navbar } from "../../components/navbar/Navbar";
 import StatusBar from "../../components/statusbar/StatusBar";
 import "./Base.css"
 import { Component, ReactNode } from "react";
@@ -18,6 +19,7 @@ export default class BasePage extends Component<BasePageProps, BasePageState> {
     render(): ReactNode {
         return (
             <div className="basepage-container">
+                <Navbar/>
                 <div className="basepage-content">
                     {this.props.children}
                 </div>

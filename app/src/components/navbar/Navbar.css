@@ -1,0 +1,47 @@
+@import url("../../theme/palette.css");
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--background-color-paper);
+    color: #fff;
+    padding: 5pt;
+}
+
+.navbar-links {
+    display: flex;
+    list-style: none;
+    margin-right: 10pt;
+}
+
+.navbar-links li {
+    margin-left: 20pt;
+}
+
+.navbar-links a {
+    color: var(--white);
+    text-decoration: none;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    margin-right: 10pt;
+}
+
+.navbar-user {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.navbar-user img {
+    border-radius: 100%;
+    margin-left: 10px;
+}
+
+.divider{
+    border: solid var(--background-divider) 1px;
+    height: 30px;
+    margin: 0 10pt;
+}
