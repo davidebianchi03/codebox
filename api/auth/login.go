@@ -62,6 +62,7 @@ func HandleLogin(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": token.Token,
+		"token":      token.Token,
+		"expiration": token.ExpirationDate,
 	})
 }

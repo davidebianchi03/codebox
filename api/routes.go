@@ -11,17 +11,20 @@ func V1ApiRoutes(router *gin.Engine) {
 
 	// middlewares
 	router.Use(middleware.CORSMiddleware)
+	router.Use(middleware.TokenAuthMiddleware)
+
+	// endpoints
 	v1 := router.Group("/api/v1")
 	{
 		// endpoints
 		authApis := v1.Group("/auth")
 		{
 			authApis.POST("/login", auth.HandleLogin)
+			authApis.GET("/whoami", auth.HandleWhoAmI)
 		}
 
 		workspaceApis := v1.Group("/workspace")
 		{
-			workspaceApis.Use(middleware.TokenAuthMiddleware)
 			workspaceApis.GET("/", workspaces.HandleListWorkspaces)
 			workspaceApis.POST("/", workspaces.HandleCreateWorkspace)
 		}

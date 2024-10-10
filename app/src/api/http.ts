@@ -1,10 +1,15 @@
-import axios from "axios";
-import { LoginStatus } from "./types";
+import axios, { AxiosRequestConfig } from "axios";
+import { LoginStatus, RequestStatus } from "./types";
+import { GetCookie } from "./cookies";
 
 export class Http {
 
-    private static GetServerURL() {
+    public static GetServerURL() {
         return "http://127.0.0.1:8080"
+    }
+
+    private static GetJWTTokenFromCookies(): string | null {
+        return GetCookie("jwtToken");
     }
 
     /**
@@ -13,7 +18,7 @@ export class Http {
      * @param password user's password
      * @returns result, token
      */
-    public static async Login(email: string, password: string): Promise<[LoginStatus, string]> {
+    public static async Login(email: string, password: string): Promise<[LoginStatus, string, Date]> {
         // prepare
         let requestUrl = `${this.GetServerURL()}/api/v1/auth/login`;
         let requestBody = JSON.stringify({
@@ -27,15 +32,46 @@ export class Http {
                 requestUrl, requestBody
             );
             if (response.status >= 200 && response.status <= 299) {
-                return [LoginStatus.OK, response.data.token];
+                return [LoginStatus.OK, response.data.token, new Date(response.data.expiration)];
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                if(error.status === 401){
-                    return [LoginStatus.INVALID_CREDENTIALS, ""];
+                if (error.status === 401) {
+                    return [LoginStatus.INVALID_CREDENTIALS, "", new Date(Date.now())];
                 }
             }
         }
-        return [LoginStatus.UNKNOWN_ERROR, ""];
+        return [LoginStatus.UNKNOWN_ERROR, "", new Date(Date.now())];
+    }
+
+    public static async Request(url: string, method: string, requestBody: any): Promise<[status: RequestStatus, statusCode:number|undefined, responseData: any, description:string]> {
+        let jwtToken = this.GetJWTTokenFromCookies();
+        let errorDescription = "";
+
+        if (!jwtToken) {
+            return [RequestStatus.NOT_AUTHENTICATED, -1, null, errorDescription];
+        }
+        let requestConfig: AxiosRequestConfig = {
+            url: url,
+            headers: {
+                Authorization: `Bearer ${jwtToken}`,
+            },
+            method: method,
+            data: requestBody,
+        }
+        
+        try {
+            let response = await axios.request(requestConfig);
+            return [RequestStatus.OK, response.status, response.data, errorDescription];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if(error.response?.status === 401) {
+                    return [RequestStatus.NOT_AUTHENTICATED, error.response?.status, error.response?.data, errorDescription];
+                } else {
+                    return [RequestStatus.UNKNOWN_ERROR, error.response?.status, error.response?.data, errorDescription];
+                }
+            }
+            return [RequestStatus.UNKNOWN_ERROR, -1, null, errorDescription];
+        }
     }
 }

@@ -1,6 +1,5 @@
-import "../assets/css/base.css"
+// import "../assets/css/base.css"
 import { Component, ReactNode } from "react";
-import BasePage from "./base/Base";
 import "../theme/theme.css"
 import Card from "../theme/components/card/Card";
 

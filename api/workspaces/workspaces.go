@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"codebox.com/api/middleware"
+	"codebox.com/api/utils"
 	"codebox.com/bgtasks"
 	"codebox.com/db"
 	"github.com/gin-gonic/gin"
@@ -102,7 +102,7 @@ func HandleCreateWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	owner, err := middleware.GetUserFromContext(ctx)
+	owner, err := utils.GetUserFromContext(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
