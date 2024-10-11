@@ -25,8 +25,8 @@ func V1ApiRoutes(router *gin.Engine) {
 
 		workspaceApis := v1.Group("/workspace")
 		{
-			workspaceApis.GET("/", workspaces.HandleListWorkspaces)
-			workspaceApis.POST("/", workspaces.HandleCreateWorkspace)
+			workspaceApis.GET("", workspaces.HandleListWorkspaces)
+			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
 		}
 	}
 }

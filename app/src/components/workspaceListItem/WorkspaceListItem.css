@@ -1,0 +1,21 @@
+@import url("../../theme/palette.css");
+
+.workspaces-list-item {
+    padding: 10pt 5pt;
+    margin: 0;
+    width: 100%;
+    position: relative;
+    display: flex;
+    cursor: pointer;
+}
+
+.workspaces-list-item::before {
+    --offset-left: 35pt;
+    content: '';
+    width: calc(100% - var(--offset-left));
+    border-bottom: solid 1px var(--background-divider);
+    position: absolute;
+    left: calc(var(--offset-left) / 2);
+    top: 0;
+    z-index: 1;
+}
