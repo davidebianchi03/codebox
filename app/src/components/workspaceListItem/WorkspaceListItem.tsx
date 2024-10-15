@@ -1,8 +1,10 @@
+import { Link } from "react-router-dom";
 import "./WorkspaceListItem.css";
 import { Component, ReactNode } from "react";
 
 interface WorkspaceListItemProps {
     workspaceName: string
+    workspaceId: number
 }
 
 interface WorkspaceListItemState {
@@ -12,7 +14,7 @@ interface WorkspaceListItemState {
 export class WorkspaceListItem extends Component<WorkspaceListItemProps, WorkspaceListItemState> {
     render(): ReactNode {
         return (
-            <div className="workspaces-list-item">
+            <Link className="workspaces-list-item" to={`/workspaces/${this.props.workspaceId}`}>
                 <div style={{
                     width: "60px",
                     height: "60px",
@@ -30,7 +32,7 @@ export class WorkspaceListItem extends Component<WorkspaceListItemProps, Workspa
                     {this.props.workspaceName.toUpperCase()[0]}
                 </div>
                 <h4 style={{ marginLeft: "20pt" }}>{this.props.workspaceName}</h4>
-            </div>
+            </Link>
         );
     }
 }

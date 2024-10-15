@@ -100,6 +100,7 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
                         onTextChanged={(event) => { this.setState({ loginEmail: event.target.value }) }}
                         onKeyDown={(event) => { if (event.key === "Enter") { this.HandleLoginButtonPress(null) } }}
                         autocomplete="email"
+                        name="email"
                     />
                     <TextInput
                         label={"Password"}
@@ -109,6 +110,7 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
                         onTextChanged={(event) => { this.setState({ loginPassword: event.target.value }) }}
                         onKeyDown={(event) => { if (event.key === "Enter") { this.HandleLoginButtonPress(null) } }}
                         autocomplete="password"
+                        name="password"
                     />
                     <Button
                         style={{

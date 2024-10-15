@@ -7,6 +7,8 @@
     position: relative;
     display: flex;
     cursor: pointer;
+    color: var(--white) !important;
+    text-decoration: none;
 }
 
 .workspaces-list-item::before {

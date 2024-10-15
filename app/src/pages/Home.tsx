@@ -88,7 +88,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
                                 (
                                     filteredWorkspaces.map((workspace) => {
                                         return (
-                                            <WorkspaceListItem workspaceName={workspace.name} key={workspace.id} />
+                                            <WorkspaceListItem workspaceName={workspace.name} workspaceId={workspace.id} key={workspace.id} />
                                         )
                                     })
                                 )

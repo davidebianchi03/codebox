@@ -7,8 +7,9 @@ interface TextInputProps {
     secure?: boolean
     style?: CSSProperties
     autocomplete?: string
-    onTextChanged?: ChangeEventHandler<HTMLInputElement> 
-    onKeyDown?: KeyboardEventHandler<HTMLInputElement> 
+    name?: string
+    onTextChanged?: ChangeEventHandler<HTMLInputElement>
+    onKeyDown?: KeyboardEventHandler<HTMLInputElement>
 }
 
 export default class TextInput extends Component<TextInputProps> {
@@ -16,12 +17,13 @@ export default class TextInput extends Component<TextInputProps> {
         return (
             <div className="text-input" style={this.props.style}>
                 <label>{this.props.label}</label>
-                <input 
-                    type={this.props.secure ? "password" : "text"} 
-                    placeholder={this.props.placeholder} 
+                <input
+                    type={this.props.secure ? "password" : "text"}
+                    placeholder={this.props.placeholder}
                     onChange={this.props.onTextChanged}
                     onKeyDown={this.props.onKeyDown}
                     autoComplete={this.props.autocomplete}
+                    name={this.props.name}
                 />
             </div>
         )
