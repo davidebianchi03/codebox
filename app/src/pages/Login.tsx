@@ -46,7 +46,9 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
         }
     }
 
-    private HandleLoginButtonPress = async (event: any) => {
+    private SubmitLoginForm = async (event: any) => {
+        event.preventDefault();
+        
         // validate fields
         if (this.state.loginEmail === "") {
             this.setState({ errorMessage: "Missing email" });
@@ -93,36 +95,37 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
                     <div style={{ textAlign: "center", marginBottom: "10pt", color: "var(--red)" }}>
                         {this.state.errorMessage}
                     </div>
-                    <TextInput
-                        label={"Email"}
-                        placeholder={"john@doe.com"}
-                        style={{ width: "calc(100% - 15pt)" }}
-                        onTextChanged={(event) => { this.setState({ loginEmail: event.target.value }) }}
-                        onKeyDown={(event) => { if (event.key === "Enter") { this.HandleLoginButtonPress(null) } }}
-                        autocomplete="email"
-                        name="email"
-                    />
-                    <TextInput
-                        label={"Password"}
-                        placeholder={"password"}
-                        secure={true}
-                        style={{ width: "calc(100% - 15pt)", marginTop: "10pt" }}
-                        onTextChanged={(event) => { this.setState({ loginPassword: event.target.value }) }}
-                        onKeyDown={(event) => { if (event.key === "Enter") { this.HandleLoginButtonPress(null) } }}
-                        autocomplete="password"
-                        name="password"
-                    />
-                    <Button
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "200px",
-                            margin: "auto",
-                            marginTop: "30pt"
-                        }}
-                        onClick={this.HandleLoginButtonPress}>
-                        Login
-                    </Button>
+                    <form onSubmit={this.SubmitLoginForm}>
+                        <TextInput
+                            label={"Email"}
+                            placeholder={"john@doe.com"}
+                            style={{ width: "calc(100% - 15pt)" }}
+                            onTextChanged={(event) => { this.setState({ loginEmail: event.target.value }) }}
+                            autocomplete="email"
+                            name="email"
+                        />
+                        <TextInput
+                            label={"Password"}
+                            placeholder={"password"}
+                            secure={true}
+                            style={{ width: "calc(100% - 15pt)", marginTop: "10pt" }}
+                            onTextChanged={(event) => { this.setState({ loginPassword: event.target.value }) }}
+                            autocomplete="password"
+                            name="password"
+                        />
+                        <Button
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                width: "200px",
+                                margin: "auto",
+                                marginTop: "30pt"
+                            }}
+                            type="submit"
+                        >
+                            Login
+                        </Button>
+                    </form>
                 </Card>
             </div>
         )

@@ -26,3 +26,8 @@
     flex: 1;
     font-family: "Inter";
 }
+
+.text-input input.error{
+    border: solid var(--red) 1px;
+    outline: none;
+}

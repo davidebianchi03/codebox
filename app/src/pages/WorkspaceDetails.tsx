@@ -56,7 +56,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
         (async () => {
             let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}/logs`, "GET", null);
             if(status === RequestStatus.OK) {
-                setWorkspaceLogs(data.logs);
+                setWorkspaceLogs(data.logs.replaceAll("\r", "\n"));
             }
         })();
     }, []);

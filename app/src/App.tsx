@@ -6,6 +6,8 @@ import {
 import LoginPage from './pages/Login';
 import HomePage from "./pages/Home";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
+import PageNotFound from "./pages/PageNotFound";
+import CreateWorkspace from "./pages/CreateWorkspace";
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path='/login/' element={<LoginPage />} />
         <Route path='/' element={<HomePage />} />
         <Route path='/workspaces/:workspaceId' element={<WorkspaceDetails />}  />
+        <Route path='/create-workspace' element={<CreateWorkspace />}  />
+        <Route path='*' element={<PageNotFound />}  />
       </Routes>
     </Router>
   );

@@ -3,7 +3,7 @@ import "../theme/theme.css"
 import BasePage from "./base/Base";
 import { Http } from "../api/http";
 import { RequestStatus } from "../api/types";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import Card from "../theme/components/card/Card";
 import { WorkspaceListItem } from "../components/workspaceListItem/WorkspaceListItem";
 import Button from "../theme/components/button/Button";
@@ -75,7 +75,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
                 <Card style={{ width: "90%", minWidth: "450px", margin: "auto", marginTop: "40pt", marginBottom: "30pt" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <h3>Workspaces</h3>
-                        <Button style={{ height: "40px" }}>Create Workspace</Button>
+                        <Link style={{ textDecoration: "none" }} className="button" to={"/create-workspace"}>Create Workspace</Link>
                     </div>
                     <TextInput
                         style={{ width: "calc(100% - 15pt)" }}
@@ -88,7 +88,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
                                 (
                                     filteredWorkspaces.map((workspace) => {
                                         return (
-                                            <WorkspaceListItem workspaceName={workspace.name} workspaceId={workspace.id} key={workspace.id} />
+                                            <WorkspaceListItem workspace={workspace} key={workspace.id} />
                                         )
                                     })
                                 )
