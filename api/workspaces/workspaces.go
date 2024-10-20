@@ -171,7 +171,6 @@ func HandleCreateWorkspace(ctx *gin.Context) {
 		Status:                     db.WorkspaceStatusCreating,
 		GitRepoUrl:                 parsedBody.GitRepoUrl,
 		GitRepoConfigurationFolder: parsedBody.GitRepoConfigurationFolder,
-		Logs:                       "Creating workspace...",
 		LastActivityOn:             time.Now(),
 		LastStartOn:                time.Now(),
 	}
@@ -182,6 +181,7 @@ func HandleCreateWorkspace(ctx *gin.Context) {
 		})
 		return
 	}
+	workspace.AppendLogs("Creating workspace...")
 
 	workspaceResponseObj := WorkspaceWithoutDetailsResponse{
 		Id:             workspace.ID,

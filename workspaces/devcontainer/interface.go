@@ -19,17 +19,17 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	if dw.Workspace.WorkspaceConfigurationFiles == "" {
 		err := common.RetrieveWorkspaceConfigFilesFromGitRepo(dw.Workspace)
 		if err != nil {
-			dw.Workspace.Logs += err.Error() + "\n"
+			dw.Workspace.AppendLogs(err.Error() + "\n")
 			dw.Workspace.Status = db.WorkspaceStatusError
 			db.DB.Save(&dw.Workspace)
 			return
 		}
-		dw.Workspace.Logs += "\n"
+		dw.Workspace.AppendLogs("\n")
 		db.DB.Save(&dw.Workspace)
 	}
 
 	if dw.Workspace.WorkspaceConfigurationFiles == "" {
-		dw.Workspace.Logs += "missing workspace configuration files, if problem persists contact us\n"
+		dw.Workspace.AppendLogs("missing workspace configuration files, if problem persists contact us\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -38,7 +38,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	// estraggo i file di configurazione in una cartella temporanea
 	workingDir, err := os.MkdirTemp("", fmt.Sprintf("tmp_workspace_%d", dw.Workspace.ID))
 	if err != nil {
-		dw.Workspace.Logs += "cannot create temp working directory, " + err.Error() + "\n"
+		dw.Workspace.AppendLogs("cannot create temp working directory, " + err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -48,7 +48,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	workingDir = path.Join(workingDir, fmt.Sprintf("codebox_workspace_%d", dw.Workspace.ID))
 	err = os.MkdirAll(workingDir, 0777)
 	if err != nil {
-		dw.Workspace.Logs += "cannot create temp working directory, " + err.Error() + "\n"
+		dw.Workspace.AppendLogs("cannot create temp working directory, " + err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -57,7 +57,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	configFilesLocation := path.Join(workingDir, dw.Workspace.GitRepoConfigurationFolder)
 	err = utils.ExtractTarGz(dw.Workspace.WorkspaceConfigurationFiles, configFilesLocation)
 	if err != nil {
-		dw.Workspace.Logs += "cannot extract configuration files from targz archive, " + err.Error() + "\n"
+		dw.Workspace.AppendLogs("cannot extract configuration files from targz archive, " + err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -67,7 +67,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	devcontainerConfig := InitDevcontainerJson(dw.Workspace, configFilesLocation)
 	err = devcontainerConfig.LoadConfigFromFiles()
 	if err != nil {
-		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.AppendLogs(err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -76,7 +76,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	// aggiustamento dei file di configurazione
 	err = devcontainerConfig.FixConfigFiles()
 	if err != nil {
-		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.AppendLogs(err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -85,7 +85,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	// creazione e avvio dei containers
 	err = devcontainerConfig.GoUp()
 	if err != nil {
-		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.AppendLogs(err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -94,7 +94,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	// mapping dei containers
 	err = devcontainerConfig.MapContainers()
 	if err != nil {
-		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.AppendLogs(err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
@@ -103,9 +103,14 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	// install and start agents
 	err = devcontainerConfig.StartAgents()
 	if err != nil {
-		dw.Workspace.Logs += err.Error() + "\n"
+		dw.Workspace.AppendLogs(err.Error() + "\n")
 		dw.Workspace.Status = db.WorkspaceStatusError
 		db.DB.Save(&dw.Workspace)
 		return
 	}
+	dw.Workspace.AppendLogs("All agents are up and running\n")
+	db.DB.Save(&dw.Workspace)
+
+	dw.Workspace.Status = db.WorkspaceStatusRunning
+	db.DB.Save(&dw.Workspace)
 }

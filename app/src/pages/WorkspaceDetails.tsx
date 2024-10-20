@@ -40,25 +40,40 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
         })();
     }, []);
 
-
     // retrieve workspace details
-    useEffect(() => {
-        (async () => {
-            let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}`, "GET", null);
-            if(status === RequestStatus.OK) {
-                setWorkspaceDetails(data);
-            }
-        })();
-    }, []);
+    const UpdateWorkspaceDetails = async () => {
+        let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}`, "GET", null);
+        if (status === RequestStatus.OK) {
+            setWorkspaceDetails(data);
+        }
+    };
 
     // retrieve workspace logs
+    const retrieveWorkspaceLogs = async () => {
+        let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}/logs`, "GET", null);
+        if (status === RequestStatus.OK) {
+            setWorkspaceLogs(data.logs.replaceAll("\r", "\n"));
+        }
+    };
+
+    // use effect to check if is ne
+    let updateWorkspaceLogsInterval: NodeJS.Timer | null = null;
     useEffect(() => {
-        (async () => {
-            let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}/logs`, "GET", null);
-            if(status === RequestStatus.OK) {
-                setWorkspaceLogs(data.logs.replaceAll("\r", "\n"));
-            }
-        })();
+        if (workspaceDetails.status === "creating" || workspaceDetails.status === "starting" || workspaceDetails.status === "stopping") {
+            retrieveWorkspaceLogs();
+            // updateWorkspaceLogsInterval = setInterval(retrieveWorkspaceLogs, 800);
+        } else {
+            // if (updateWorkspaceLogsInterval !== null) {
+            //     clearInterval(updateWorkspaceLogsInterval);
+            // }
+        }
+    }, [workspaceDetails]);
+
+
+    useEffect(() => {
+        UpdateWorkspaceDetails();
+        retrieveWorkspaceLogs();
+        setInterval((UpdateWorkspaceDetails), 5000);
     }, []);
 
     let borderColorCssVar = RetrieveColorForWorkspaceStatus(workspaceDetails.status)
@@ -107,7 +122,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         overflowY: "auto",
                         fontFamily: "Consolas, monaco, monospace",
                         fontSize: "14px",
-                        whiteSpace:"pre-wrap"
+                        whiteSpace: "pre-wrap"
                     }}>
                         {workspaceLogs}
                     </div>

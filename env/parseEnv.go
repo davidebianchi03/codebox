@@ -63,6 +63,6 @@ func InitCodeBoxEnv() error {
 	}
 
 	// uploads
-	CodeBoxEnv.UploadsPath = envVarOrDefault("CODEBOX_UPLOADS_PATH", "./uploads")
+	CodeBoxEnv.UploadsPath = envVarOrDefault("CODEBOX_UPLOADS_PATH", "./data")
 	return nil
 }

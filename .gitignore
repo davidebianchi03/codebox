@@ -2,4 +2,6 @@ codebox.db
 *__debug*
 codebox.env
 uploads/
+data/
 agent.bin
+codebox-agent-linux-amd64

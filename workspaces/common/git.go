@@ -26,7 +26,7 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 		for cloning {
 			newBytes := cloneLogsBuf.Bytes()[logsEndIndex:]
 			if len(newBytes) > 0 {
-				workspace.Logs += string(newBytes)
+				workspace.AppendLogs(string(newBytes))
 				db.DB.Save(&workspace)
 				logsEndIndex += len(newBytes)
 			}
@@ -43,7 +43,7 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 	// retrieve dei log rimanenti
 	newBytes := cloneLogsBuf.Bytes()[logsEndIndex:]
 	if len(newBytes) > 0 {
-		workspace.Logs += string(newBytes)
+		workspace.AppendLogs(string(newBytes))
 		db.DB.Save(workspace)
 	}
 

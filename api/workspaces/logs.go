@@ -41,7 +41,8 @@ func HandleRetrieveWorkspaceLogs(ctx *gin.Context) {
 		return
 	}
 
+	logs, _ := workspace.RetrieveLogs()
 	ctx.JSON(http.StatusOK, gin.H{
-		"logs": workspace.Logs,
+		"logs": logs,
 	})
 }

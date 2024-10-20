@@ -370,7 +370,7 @@ func (js *DevcontainerJson) GoUp() error {
 			stdErrIndex += len(newStdErrLogs)
 			stdOutIndex += len(newStdOutLogs)
 
-			js.workspace.Logs += newStdErrLogs
+			js.workspace.AppendLogs(newStdErrLogs)
 			db.DB.Save(js.workspace)
 		}
 	}()
@@ -655,36 +655,53 @@ func (js *DevcontainerJson) StartAgents() error {
 		}
 
 		// create agent folder
-		logs, err := runCommandInContainer(dockerClient, container.ID, []string{"mkdir -p codebox"}, "/opt", "root", []string{}, true)
+		logs, err := runCommandInContainer(dockerClient, container.ID, []string{"mkdir", "-p", "/opt/codebox"}, "/opt", "root", []string{}, true)
+		js.workspace.AppendLogs(logs)
+		db.DB.Save(js.workspace)
 		if err != nil {
 			return fmt.Errorf("failed create agent folder on container %s, %s", container.ID, err)
 		}
 
 		// install agent
-		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", "./agent.bin")
+		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox/", "./agent.bin")
 		if err != nil {
 			return fmt.Errorf("failed to add agent to container %s, %s", container.ID, err)
 		}
 
-		// add server private key
-		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", "./id_rsa")
+		// add public key
+		tempSSHPubKeyPath := path.Join(js.workingDir, "id_rsa.pub")
+		err = os.WriteFile(tempSSHPubKeyPath, []byte(js.workspace.Owner.SshPublicKey), 0777)
 		if err != nil {
-			return fmt.Errorf("failed to add server's private key to container %s, %s", container.ID, err)
+			return fmt.Errorf("error in writing 'id_rsa.pub' on local drive, %s", err)
 		}
 
-		// add server public key
-		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", "./id_rsa.pub")
+		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", tempSSHPubKeyPath)
 		if err != nil {
-			return fmt.Errorf("failed to add server's public key to container %s, %s", container.ID, err)
+			return fmt.Errorf("failed to add public key to container %s, %s", container.ID, err)
+		}
+
+		// add private key
+		tempSSHPrivKeyPath := path.Join(js.workingDir, "id_rsa")
+		err = os.WriteFile(tempSSHPrivKeyPath, []byte(js.workspace.Owner.SshPrivateKey), 0777)
+		if err != nil {
+			return fmt.Errorf("error in writing 'id_rsa' on local drive, %s", err)
+		}
+
+		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox", tempSSHPrivKeyPath)
+		if err != nil {
+			return fmt.Errorf("failed to add private key to container %s, %s", container.ID, err)
 		}
 
 		// start agent
-		logs, err = runCommandInContainer(dockerClient, container.ID, []string{"./agent.bin"}, "/opt", "root", []string{}, true)
+		logs, err = runCommandInContainer(dockerClient, container.ID, []string{"/bin/sh", "-c", "/opt/codebox/agent.bin &"}, "/opt/codebox", "root", []string{}, true)
+		js.workspace.AppendLogs(logs)
+		db.DB.Save(js.workspace)
+
 		if err != nil {
 			return fmt.Errorf("failed to start agent on container %s, %s", container.ID, err)
 		}
 
-		js.workspace.Logs += fmt.Sprintf("<Container: %s> %s\n", container.ID, logs)
+		js.workspace.AppendLogs(fmt.Sprintf("<Container: %s> %s\n", container.ID, logs))
 		db.DB.Save(js.workspace)
 	}
 
