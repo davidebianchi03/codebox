@@ -101,6 +101,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	}
 
 	// install and start agents
+	dw.Workspace.AppendLogs("Starting agents...")
 	err = devcontainerConfig.StartAgents()
 	if err != nil {
 		dw.Workspace.AppendLogs(err.Error() + "\n")
@@ -108,8 +109,16 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 		db.DB.Save(&dw.Workspace)
 		return
 	}
-	dw.Workspace.AppendLogs("All agents are up and running\n")
-	db.DB.Save(&dw.Workspace)
+
+	// ping agents
+	dw.Workspace.AppendLogs("Checking status of agents...")
+	err = devcontainerConfig.CheckAgents()
+	if err != nil {
+		dw.Workspace.AppendLogs(err.Error() + "\n")
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
 
 	dw.Workspace.Status = db.WorkspaceStatusRunning
 	db.DB.Save(&dw.Workspace)

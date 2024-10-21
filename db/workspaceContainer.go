@@ -28,6 +28,8 @@ var workspaceContainerAgentStatusChoices = [...]string{
 
 type WorkspaceContainer struct {
 	gorm.Model
+	WorkspaceId                uint            `gorm:"column:workspace_id;"`
+	Workspace                  Workspace       `gorm:"foreignKey:WorkspaceId; references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;not null;"`
 	Type                       string          `gorm:"column:type; size:255; default:docker_container;"`
 	Name                       string          `gorm:"column:name; size:255;"`
 	ContainerUser              string          `gorm:"column:container_user; size:255; default:root;"`

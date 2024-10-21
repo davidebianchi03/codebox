@@ -49,7 +49,7 @@ func InitCodeBoxEnv() error {
 	}
 
 	// database
-	CodeBoxEnv.DbDriver = envVarOrDefault("CODEBOX_DB_DRIVER", "mysql")
+	CodeBoxEnv.DbDriver = envVarOrDefault("CODEBOX_DB_DRIVER", "sqlite3")
 	CodeBoxEnv.DbURL = envVarOrDefault("CODEBOX_DB_URL", "")
 	if CodeBoxEnv.DbURL == "" {
 		return fmt.Errorf("CODEBOX_DB_URL not defined")

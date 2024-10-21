@@ -6,6 +6,7 @@ import (
 
 	"github.com/pressly/goose/v3"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -21,6 +22,10 @@ func InitDBConnection(dbDriver string, dbUrl string) error {
 	var err error
 	if dbDriver == "mysql" {
 		DB, err = gorm.Open(mysql.Open(dbUrl), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Silent),
+		})
+	} else if dbDriver == "sqlite3" {
+		DB, err = gorm.Open(sqlite.Open(dbUrl), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		})
 	} else {

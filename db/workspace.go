@@ -40,16 +40,15 @@ var workspaceStatusChoices = [...]string{
 
 type Workspace struct {
 	gorm.Model
-	Name                       string    `gorm:"column:name; size:100; not null;"`
-	Status                     string    `gorm:"column:status; size:40; not null;default:creating;"`
-	OwnerId                    uint      `gorm:"column:owner_id;"`
-	Owner                      User      `gorm:"foreignKey:OwnerId; references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;not null;"`
-	Type                       string    `gorm:"column:type; size:100; not null; default:devcontainer;"`
-	GitRepoUrl                 string    `gorm:"column:git_repo_url; size:1024;"`
-	GitRepoConfigurationFolder string    `gorm:"column:git_repo_configuration_folder; size:255;"`
-	LastActivityOn             time.Time `gorm:"column:last_activity_on;"`
-	LastStartOn                time.Time `gorm:"column:last_start_on;"`
-	// Logs                        string                 `gorm:"column:logs;"`
+	Name                        string                 `gorm:"column:name; size:100; not null;"`
+	Status                      string                 `gorm:"column:status; size:40; not null;default:creating;"`
+	OwnerId                     uint                   `gorm:"column:owner_id;"`
+	Owner                       User                   `gorm:"foreignKey:OwnerId; references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;not null;"`
+	Type                        string                 `gorm:"column:type; size:100; not null; default:devcontainer;"`
+	GitRepoUrl                  string                 `gorm:"column:git_repo_url; size:1024;"`
+	GitRepoConfigurationFolder  string                 `gorm:"column:git_repo_configuration_folder; size:255;"`
+	LastActivityOn              time.Time              `gorm:"column:last_activity_on;"`
+	LastStartOn                 time.Time              `gorm:"column:last_start_on;"`
 	WorkspaceConfigurationFiles string                 `gorm:"column:workspace_configuration_files; size:1024;"`
 	CustomConfig                map[string]interface{} `gorm:"column:custom_config; serializer:json"` // configurazione che varia dal tipo di workspace
 }
@@ -122,7 +121,7 @@ func (w *Workspace) AppendLogs(logs string) error {
 	log.SetOutput(f)
 	logs = strings.TrimSpace(logs)
 	if logs != "" {
-		log.Print(logs)
+		log.Println(logs)
 	}
 	return nil
 }

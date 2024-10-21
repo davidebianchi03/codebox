@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -485,6 +487,7 @@ func (js *DevcontainerJson) MapContainers() error {
 			}
 
 			workspaceContainer := db.WorkspaceContainer{
+				Workspace:                  *js.workspace,
 				Type:                       "docker_container",
 				Name:                       containerNameInStack,
 				ContainerUser:              remoteUser,
@@ -563,6 +566,7 @@ func (js *DevcontainerJson) MapContainers() error {
 		}
 
 		workspaceContainer := db.WorkspaceContainer{
+			Workspace:                  *js.workspace,
 			Type:                       "docker_container",
 			Name:                       "development",
 			ContainerUser:              js.devcontainersInfo.remoteUser,
@@ -703,6 +707,72 @@ func (js *DevcontainerJson) StartAgents() error {
 
 		js.workspace.AppendLogs(fmt.Sprintf("<Container: %s> %s\n", container.ID, logs))
 		db.DB.Save(js.workspace)
+	}
+
+	return nil
+}
+
+/*
+Checks that workspace agents are running
+*/
+func (js *DevcontainerJson) CheckAgents() error {
+	workspaceContainers := []db.WorkspaceContainer{}
+	result := db.DB.Where(map[string]interface{}{"workspace_id": js.workspace.ID}).Find(&workspaceContainers)
+	if result.Error != nil {
+		return fmt.Errorf("failed to retrieve workspace containers")
+	}
+
+	client := &http.Client{}
+	for _, container := range workspaceContainers {
+		req, _ := http.NewRequest("GET", fmt.Sprintf("http://%s:%d", container.ExternalIPv4, container.AgentExternalPort), nil)
+		req.Header.Set("X-CodeBox-Forward-Scheme", "ping")
+		req.Header.Set("X-CodeBox-Forward-Host", "127.0.0.1")
+		req.Header.Set("X-CodeBox-Forward-Port", "0")
+		req.Header.Set("X-CodeBox-Forward-Domain", "localhost")
+		req.Header.Set("X-CodeBox-Forward-Protocol", "http")
+		res, err := client.Do(req)
+		if err != nil {
+			container.AgentStatus = db.WorkspaceContainerAgentStatusError
+			db.DB.Save(&container)
+			continue
+		}
+
+		if res.StatusCode != http.StatusOK {
+			container.AgentStatus = db.WorkspaceContainerAgentStatusError
+			db.DB.Save(&container)
+			continue
+		}
+
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			container.AgentStatus = db.WorkspaceContainerAgentStatusError
+			db.DB.Save(&container)
+			continue
+		}
+
+		var bodyMap map[string]interface{}
+		err = json.Unmarshal(body, &bodyMap)
+		if err != nil {
+			container.AgentStatus = db.WorkspaceContainerAgentStatusError
+			db.DB.Save(&container)
+			continue
+		}
+
+		response, found := bodyMap["response"]
+		if !found {
+			container.AgentStatus = db.WorkspaceContainerAgentStatusError
+			db.DB.Save(&container)
+			continue
+		}
+
+		if response != "Pong!" {
+			container.AgentStatus = db.WorkspaceContainerAgentStatusError
+			db.DB.Save(&container)
+			continue
+		}
+
+		container.AgentStatus = db.WorkspaceContainerAgentStatusRunning
+		db.DB.Save(&container)
 	}
 
 	return nil

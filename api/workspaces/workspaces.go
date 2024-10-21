@@ -23,6 +23,39 @@ type WorkspaceWithoutDetailsResponse struct {
 	LastStartOn    time.Time `json:"last_start_on"`
 }
 
+type ForwardedPortDetails struct {
+	PortNumber     uint   `json:"port_number"`
+	Active         bool   `json:"active"`
+	ConnectionType string `json:"connection_type"`
+	Public         bool   `json:"public"`
+}
+
+type WorkspaceContainerDetails struct {
+	Type                       string                 `json:"type"`
+	Name                       string                 `json:"name"`
+	ContainerUser              string                 `json:"container_user"`
+	ContainerStatus            string                 `json:"container_status"`
+	AgentStatus                string                 `json:"agent_status"`
+	CanConnectRemoteDeveloping bool                   `json:"can_connect_remote_developing"`
+	WorkspacePathInContainer   string                 `json:"workspace_path_in_container"`
+	ForwardedPorts             []ForwardedPortDetails `json:"forwarded_ports"`
+}
+
+type WorkspaceWithDetailsResponse struct {
+	Id             uint                        `json:"id"`
+	Name           string                      `json:"name"`
+	Status         string                      `json:"status"`
+	Type           string                      `json:"type"`
+	GitRepoUrl     string                      `json:"git_repo_url"`
+	Containers     []WorkspaceContainerDetails `json:"containers"`
+	CreatedAt      time.Time                   `json:"created_on"`
+	LastActivityOn time.Time                   `json:"last_activity_on"`
+	LastStartOn    time.Time                   `json:"last_start_on"`
+}
+
+/*
+GET api/v1/workspace
+*/
 func HandleListWorkspaces(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -58,6 +91,9 @@ func HandleListWorkspaces(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, responseObjs)
 }
 
+/*
+GET api/v1/workspace/:id
+*/
 func HandleRetrieveWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -91,7 +127,17 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, WorkspaceWithoutDetailsResponse{
+	// retrieve workspace containers
+	workspaceContainers := []db.WorkspaceContainer{}
+	result = db.DB.Where(map[string]interface{}{"workspace_id": workspace.ID}).Preload("ForwardedPorts").Find(&workspaceContainers)
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	responseObj := WorkspaceWithDetailsResponse{
 		Id:             workspace.ID,
 		Name:           workspace.Name,
 		Status:         workspace.Status,
@@ -100,9 +146,37 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 		CreatedAt:      workspace.CreatedAt,
 		LastActivityOn: workspace.LastActivityOn,
 		LastStartOn:    workspace.LastStartOn,
-	})
+	}
+
+	for _, container := range workspaceContainers {
+		containerResponseObj := WorkspaceContainerDetails{
+			Type:                       container.Type,
+			Name:                       container.Name,
+			ContainerUser:              container.ContainerUser,
+			ContainerStatus:            container.ContainerStatus,
+			AgentStatus:                container.AgentStatus,
+			CanConnectRemoteDeveloping: container.CanConnectRemoteDeveloping,
+			WorkspacePathInContainer:   container.WorkspacePathInContainer,
+		}
+
+		for _, forwardedPort := range container.ForwardedPorts {
+			containerResponseObj.ForwardedPorts = append(containerResponseObj.ForwardedPorts, ForwardedPortDetails{
+				PortNumber:     forwardedPort.PortNumber,
+				Active:         forwardedPort.Active,
+				ConnectionType: forwardedPort.ConnectionType,
+				Public:         forwardedPort.Public,
+			})
+		}
+
+		responseObj.Containers = append(responseObj.Containers, containerResponseObj)
+	}
+
+	ctx.JSON(http.StatusOK, responseObj)
 }
 
+/*
+POST api/v1/workspace
+*/
 func HandleCreateWorkspace(ctx *gin.Context) {
 	type RequestBody struct {
 		Name                       string `json:"name"`
