@@ -16,6 +16,9 @@ type codeBoxEnv struct {
 	RedisHost                        string
 	RedisPort                        int
 	UploadsPath                      string
+	NPMEndpoint                      string
+	NPMUser                          string
+	NPMPassword                      string
 }
 
 var CodeBoxEnv *codeBoxEnv
@@ -64,5 +67,11 @@ func InitCodeBoxEnv() error {
 
 	// uploads
 	CodeBoxEnv.UploadsPath = envVarOrDefault("CODEBOX_UPLOADS_PATH", "./data")
+
+	// nginx proxy manager
+	CodeBoxEnv.NPMEndpoint = envVarOrDefault("CODEBOX_NPM_ENDPOINT", "http://reverse-proxy")
+	CodeBoxEnv.NPMUser = envVarOrDefault("CODEBOX_NPM_USER", "admin@example.com")
+	CodeBoxEnv.NPMPassword = envVarOrDefault("CODEBOX_NPM_PASSWORD", "changeme")
+
 	return nil
 }
