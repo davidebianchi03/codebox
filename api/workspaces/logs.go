@@ -17,7 +17,7 @@ func HandleRetrieveWorkspaceLogs(ctx *gin.Context) {
 		return
 	}
 
-	id, found := ctx.Params.Get("id")
+	id, found := ctx.Params.Get("workspaceId")
 	if !found {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",

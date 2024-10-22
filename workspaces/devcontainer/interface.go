@@ -6,8 +6,6 @@ import (
 	"path"
 
 	"codebox.com/db"
-	"codebox.com/env"
-	"codebox.com/proxy"
 	"codebox.com/utils"
 	"codebox.com/workspaces/common"
 )
@@ -123,15 +121,6 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	}
 
 	// configure reverse proxy
-	proxyInterface, err := proxy.InitNPMInterface(env.CodeBoxEnv.NPMEndpoint, env.CodeBoxEnv.NPMUser, env.CodeBoxEnv.NPMPassword)
-	if err != nil {
-		dw.Workspace.AppendLogs(err.Error() + "\n")
-		dw.Workspace.Status = db.WorkspaceStatusError
-		db.DB.Save(&dw.Workspace)
-		return
-	}
-
-	_ = proxyInterface
 
 	dw.Workspace.Status = db.WorkspaceStatusRunning
 	db.DB.Save(&dw.Workspace)

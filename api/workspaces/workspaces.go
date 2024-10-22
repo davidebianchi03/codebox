@@ -31,6 +31,7 @@ type ForwardedPortDetails struct {
 }
 
 type WorkspaceContainerDetails struct {
+	Id                         int                    `json:"id"`
 	Type                       string                 `json:"type"`
 	Name                       string                 `json:"name"`
 	ContainerUser              string                 `json:"container_user"`
@@ -103,7 +104,7 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	id, found := ctx.Params.Get("id")
+	id, found := ctx.Params.Get("workspaceId")
 	if !found {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
@@ -150,6 +151,7 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 
 	for _, container := range workspaceContainers {
 		containerResponseObj := WorkspaceContainerDetails{
+			Id:                         int(container.ID),
 			Type:                       container.Type,
 			Name:                       container.Name,
 			ContainerUser:              container.ContainerUser,
