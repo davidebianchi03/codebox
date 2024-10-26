@@ -6,3 +6,4 @@ data/
 agent.bin
 codebox-agent-linux-amd64
 *.journal
+*.db-journal

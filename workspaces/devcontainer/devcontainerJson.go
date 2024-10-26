@@ -505,7 +505,7 @@ func (js *DevcontainerJson) MapContainers() error {
 			if ok {
 				for _, port := range containerForwardedPorts {
 					portConnectionType := db.ConnectionTypeHttp
-					if port == 22 {
+					if port == AgentSSHServerPort {
 						developmentContainerSSHPortFound = true
 						portConnectionType = db.ConnectionTypeWS
 					}
@@ -521,7 +521,7 @@ func (js *DevcontainerJson) MapContainers() error {
 
 			if !developmentContainerSSHPortFound {
 				portObj := db.ForwardedPort{
-					PortNumber:     22,
+					PortNumber:     AgentSSHServerPort,
 					ConnectionType: db.ConnectionTypeWS,
 					Public:         true,
 				}
@@ -697,7 +697,15 @@ func (js *DevcontainerJson) StartAgents() error {
 		}
 
 		// start agent
-		logs, err = runCommandInContainer(dockerClient, container.ID, []string{"/bin/sh", "-c", "/opt/codebox/agent.bin &"}, "/opt/codebox", "root", []string{}, true)
+		logs, err = runCommandInContainer(
+			dockerClient,
+			container.ID,
+			[]string{"nohup", "/opt/codebox/agent.bin", "&"},
+			"/opt/codebox",
+			"root",
+			[]string{},
+			true,
+		)
 		js.workspace.AppendLogs(logs)
 		db.DB.Save(js.workspace)
 

@@ -12,6 +12,7 @@ import (
 func HandleForwardContainerPort(ctx *gin.Context) {
 	// TODO: autenticazione se la porta non è pubblica
 	// TODO: security, non permettere la connessione a porte nn consentite
+	// TODO: gli headers devono essere impostati dal server
 	// user, err := utils.GetUserFromContext(ctx)
 	// if err != nil {
 	// 	ctx.JSON(http.StatusInternalServerError, gin.H{

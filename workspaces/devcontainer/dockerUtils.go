@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
@@ -39,7 +40,7 @@ func putFileInContainer(dockerClient *client.Client, containerID string, destina
 
 func runCommandInContainer(dockerClient *client.Client, containerID string, command []string, workingDir string, user string, env []string, detach bool) (logs string, err error) {
 	ctx := context.Background()
-	execConfig := types.ExecConfig{
+	execConfig := container.ExecOptions{
 		Cmd:          command, // The command to run
 		AttachStdout: true,    // Attach stdout
 		AttachStderr: true,    // Attach stderr
@@ -54,23 +55,35 @@ func runCommandInContainer(dockerClient *client.Client, containerID string, comm
 	if err != nil {
 		return "", fmt.Errorf("failed to create exec instance: %v", err)
 	}
+
 	// Start the exec instance
-	execStartCheck := types.ExecStartCheck{
-		Tty: false,
-	}
+	if detach {
+		execStartCheck := container.ExecStartOptions{
+			Tty:    false,
+			Detach: true,
+		}
+		err := dockerClient.ContainerExecStart(ctx, execIDResp.ID, execStartCheck)
+		if err != nil {
+			return "", fmt.Errorf("failed to start exec instance: %v", err)
+		}
+		return "", nil
+	} else {
+		execStartCheck := container.ExecAttachOptions{
+			Tty: false,
+		}
+		resp, err := dockerClient.ContainerExecAttach(ctx, execIDResp.ID, execStartCheck)
+		if err != nil {
+			return "", fmt.Errorf("failed to start exec instance: %v", err)
+		}
+		defer resp.Close()
 
-	resp, err := dockerClient.ContainerExecAttach(ctx, execIDResp.ID, execStartCheck)
-	if err != nil {
-		return "", fmt.Errorf("failed to start exec instance: %v", err)
-	}
-	defer resp.Close()
+		// Read output from the command
+		var logsBuf bytes.Buffer
+		_, err = io.Copy(&logsBuf, resp.Reader)
+		if err != nil && err != io.EOF {
+			return "", fmt.Errorf("error reading exec output: %v", err)
+		}
 
-	// Read output from the command
-	var logsBuf bytes.Buffer
-	_, err = io.Copy(&logsBuf, resp.Reader)
-	if err != nil && err != io.EOF {
-		return "", fmt.Errorf("error reading exec output: %v", err)
+		return logsBuf.String(), nil
 	}
-
-	return logsBuf.String(), nil
 }
