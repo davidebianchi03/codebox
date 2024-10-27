@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"codebox.com/db"
 	"codebox.com/utils"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
 func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
@@ -32,11 +35,26 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 			}
 		}
 	}()
+
+	// manage authentication
+	var gitAuth transport.AuthMethod
+	if strings.HasPrefix(workspace.GitRepoUrl, "http") {
+		gitAuth = nil // TODO: support for authentication with token
+	} else {
+		gitAuth, err = ssh.NewPublicKeys("git", []byte(workspace.Owner.SshPrivateKey), "")
+		if err != nil {
+			return fmt.Errorf("Git authentication failure %s", err)
+		}
+	}
+
 	_, err = git.PlainClone(dir, false, &git.CloneOptions{
 		URL:             workspace.GitRepoUrl,
 		InsecureSkipTLS: true,
 		Progress:        &cloneLogsBuf,
-		// TODO: auth with ssh keys
+		Depth:           1, // retrieve only latest commit
+		SingleBranch:    true,
+		Auth:            gitAuth,
+		// TODO: retrieve configuration
 	})
 	cloning = false
 
@@ -48,7 +66,11 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("Failed to clone remote repository %s", err)
+		if strings.HasPrefix(workspace.GitRepoUrl, "http") {
+			return fmt.Errorf("Failed to clone remote repository %s", err)
+		} else {
+			return fmt.Errorf("Have you added the Codebox SSH public key to the remote Git server? %s", err)
+		}
 	}
 
 	configurationFolderPath := filepath.Join(dir, workspace.GitRepoConfigurationFolder)
