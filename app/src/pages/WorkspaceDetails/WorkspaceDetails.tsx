@@ -1,11 +1,11 @@
-import React, { Component, ReactNode, useEffect, useState } from "react";
-import { Navigate, Params, RouteProps, useLocation, useNavigate, useParams } from "react-router-dom"
-import BasePage from "./base/Base";
-import { Http } from "../api/http";
-import { RequestStatus } from "../api/types";
-import Card from "../theme/components/card/Card";
-import Button from "../theme/components/button/Button";
-import { RetrieveBeautyNameForStatus, RetrieveColorForWorkspaceStatus } from "../utils/workspaceStatus";
+import "./WorkspaceDetails.css"
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom"
+import BasePage from "../base/Base";
+import { Http } from "../../api/http";
+import { RequestStatus } from "../../api/types";
+import Card from "../../theme/components/card/Card";
+import { RetrieveBeautyNameForStatus, RetrieveColorForWorkspaceStatus } from "../../utils/workspaceStatus";
 
 interface WorkspaceDetailsProps {
 
@@ -23,6 +23,8 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     const navigate = useNavigate();
     const [workspaceDetails, setWorkspaceDetails] = useState<WorkspaceDetails>({});
     const [workspaceLogs, setWorkspaceLogs] = useState<string>("");
+
+    var logsContainerRef = useRef<null | HTMLDivElement>(null);
 
     let params = useParams();
     let workspaceId = params.workspaceId;
@@ -53,6 +55,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
         let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}/logs`, "GET", null);
         if (status === RequestStatus.OK) {
             setWorkspaceLogs(data.logs.replaceAll("\r", "\n"));
+            logsContainerRef.current?.scroll({ top: logsContainerRef.current?.scrollHeight });
         }
     };
 
@@ -61,20 +64,46 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     useEffect(() => {
         if (workspaceDetails.status === "creating" || workspaceDetails.status === "starting" || workspaceDetails.status === "stopping") {
             retrieveWorkspaceLogs();
-            // updateWorkspaceLogsInterval = setInterval(retrieveWorkspaceLogs, 800);
+            updateWorkspaceLogsInterval = setInterval(retrieveWorkspaceLogs, 800);
         } else {
-            // if (updateWorkspaceLogsInterval !== null) {
-            //     clearInterval(updateWorkspaceLogsInterval);
-            // }
+            if (updateWorkspaceLogsInterval !== null) {
+                clearInterval(updateWorkspaceLogsInterval);
+            }
+        }
+
+        return () => {
+            if (updateWorkspaceLogsInterval !== null) {
+                clearInterval(updateWorkspaceLogsInterval);
+            }
         }
     }, [workspaceDetails]);
 
 
+    var updatedWorkspaceDetailsInterval: NodeJS.Timer | null = null;
     useEffect(() => {
         UpdateWorkspaceDetails();
         retrieveWorkspaceLogs();
-        setInterval((UpdateWorkspaceDetails), 5000);
+        if (updatedWorkspaceDetailsInterval != null) {
+            clearInterval(updatedWorkspaceDetailsInterval);
+        }
+        updatedWorkspaceDetailsInterval = setInterval((UpdateWorkspaceDetails), 5000);
+
+        return () => {
+            if (updatedWorkspaceDetailsInterval != null) {
+                clearInterval(updatedWorkspaceDetailsInterval);
+            }
+        }
     }, []);
+
+    const StartWorkspace = async () => {
+        await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}/start`, "POST", null);
+        UpdateWorkspaceDetails();
+    }
+
+    const StopWorkspace = async () => {
+        await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}/stop`, "POST", null);
+        UpdateWorkspaceDetails();
+    }
 
     let borderColorCssVar = RetrieveColorForWorkspaceStatus(workspaceDetails.status)
     return (
@@ -93,21 +122,47 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         <h3 style={{ marginBottom: 0, marginTop: 0 }}>{workspaceDetails.name}</h3>
                         <small style={{ color: "var(--grey-300)" }}>{workspaceDetails.type}</small>
                     </div>
-                    <div style={{
-                        background: `var(${borderColorCssVar})`,
-                        fontSize: "11pt",
-                        padding: "5px 10px",
-                        borderRadius: "15px",
-                        minWidth: "50px",
-                        textAlign: "center",
-                    }}>
-                        {RetrieveBeautyNameForStatus(workspaceDetails.status)}
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        {
+                            workspaceDetails.status != "creating" && workspaceDetails.status != "starting" && workspaceDetails.status != "stopping" ?
+                                <div
+                                    style={{
+                                        marginRight: "10pt",
+                                        padding: "5pt 10pt",
+                                        border: "solid var(--background-divider) 1.5px",
+                                        borderRadius: "5px",
+                                        cursor: "pointer"
+                                    }}
+                                    onClick={() => {
+                                        if (workspaceDetails.status != "running") {
+                                            StartWorkspace();
+                                        } else {
+                                            StopWorkspace();
+                                        }
+                                    }}
+                                >
+                                    {
+                                        workspaceDetails.status == "running" ?
+                                            "Stop workspace" :
+                                            "Start workspace"
+                                    }
+                                </div> : null
+                        }
+                        <div style={{
+                            background: `var(${borderColorCssVar})`,
+                            fontSize: "11pt",
+                            padding: "5px 10px",
+                            borderRadius: "15px",
+                            minWidth: "50px",
+                            textAlign: "center",
+                        }}>
+                            {RetrieveBeautyNameForStatus(workspaceDetails.status)}
+                        </div>
                     </div>
                 </div>
                 <div style={{
                     border: "solid var(--background-divider) 1px",
                     marginTop: "30px",
-                    // padding: "10pt",
                     borderRadius: "5pt",
                 }}>
                     <div style={{ padding: "10pt" }}>
@@ -122,7 +177,9 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         fontFamily: "Consolas, monaco, monospace",
                         fontSize: "14px",
                         whiteSpace: "pre-wrap"
-                    }}>
+                    }}
+                        className="workspace-logs-container"
+                        ref={logsContainerRef}>
                         {workspaceLogs}
                     </div>
                 </div>

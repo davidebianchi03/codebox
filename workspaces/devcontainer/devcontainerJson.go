@@ -381,6 +381,8 @@ func (js *DevcontainerJson) GoUp() error {
 		return err
 	}
 
+	cmdRunning = false
+
 	var parsedStdOut map[string]interface{}
 	err = json.Unmarshal(stdOutBuffer.Bytes(), &parsedStdOut)
 	if err != nil {

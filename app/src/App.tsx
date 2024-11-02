@@ -5,7 +5,7 @@ import {
 } from "react-router-dom";
 import LoginPage from './pages/Login';
 import HomePage from "./pages/Home";
-import WorkspaceDetails from "./pages/WorkspaceDetails";
+import WorkspaceDetails from "./pages/WorkspaceDetails/WorkspaceDetails";
 import PageNotFound from "./pages/PageNotFound";
 import CreateWorkspace from "./pages/CreateWorkspace";
 

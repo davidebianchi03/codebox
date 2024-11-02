@@ -1,0 +1,20 @@
+/* width */
+.workspace-logs-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+.workspace-logs-container::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+/* Handle */
+.workspace-logs-container::-webkit-scrollbar-thumb {
+    background: var(--grey-800);
+    border-radius: 4px;
+}
+
+/* Handle on hover */
+.workspace-logs-container::-webkit-scrollbar-thumb:hover {
+    background: var(--grey-700);
+}
