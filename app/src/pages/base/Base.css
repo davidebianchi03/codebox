@@ -1,10 +1,5 @@
 @import url("../../theme/palette.css");
 
-html, body {
-    margin: 0;
-    padding: 0;
-}
-
 .basepage-container{
     height: 100vh;
     background-color: var(--background-color);

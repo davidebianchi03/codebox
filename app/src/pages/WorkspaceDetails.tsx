@@ -81,7 +81,6 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
         <BasePage>
             <Card style={{
                 width: "90%",
-                minWidth: "450px",
                 margin: "auto",
                 marginTop: "40pt",
                 marginBottom: "30pt",

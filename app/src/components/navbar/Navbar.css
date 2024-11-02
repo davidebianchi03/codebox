@@ -5,7 +5,7 @@
     justify-content: space-between;
     background-color: var(--background-color-paper);
     color: #fff;
-    padding: 3pt;
+    padding: 5pt;
 }
 
 .navbar-links {
@@ -55,8 +55,36 @@
     color: var(--grey-400);
 }
 
-.divider{
+.divider {
     border: solid var(--background-divider) 1px;
     height: 30px;
     margin: 0 10pt;
+}
+
+.dropdown-menu-hamburger{
+    display: none;
+}
+
+@media only screen and (max-width: 600px) {
+    .navbar-links {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+        padding: 0;
+        width: 100%;
+        top: 38px;
+        display: none;
+    }
+
+    .navbar-links li {
+        padding: 7pt 5pt;
+        background-color: var(--background-color-paper);
+        margin-left: -7px;
+        border-top: solid var(--background-divider) 1px;
+    }
+
+    .dropdown-menu-hamburger{
+        display: block;
+    }
 }
