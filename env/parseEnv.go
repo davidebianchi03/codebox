@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -16,6 +17,7 @@ type codeBoxEnv struct {
 	RedisHost                        string
 	RedisPort                        int
 	UploadsPath                      string
+	UseGravatar                      bool
 }
 
 var CodeBoxEnv *codeBoxEnv
@@ -64,6 +66,9 @@ func InitCodeBoxEnv() error {
 
 	// uploads
 	CodeBoxEnv.UploadsPath = envVarOrDefault("CODEBOX_UPLOADS_PATH", "./data")
+
+	// use gravatar
+	CodeBoxEnv.UseGravatar = strings.ToLower(envVarOrDefault("CODEBOX_USE_GRAVATAR", "true")) == "true"
 
 	return nil
 }

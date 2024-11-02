@@ -40,7 +40,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
 
     private IsAuthenticated = async () => {
         // redirect to home if user is already authenticated
-        let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/whoami`, "GET", null);
+        let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
         if (status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
             this.setState({ redirect: true, redirectUrl: "/login" });
         }

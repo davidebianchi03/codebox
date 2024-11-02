@@ -1,13 +1,15 @@
 import "./Navbar.css";
-import CodeboxLogoWhite from "../../assets/images/logo-white.png";
+import CodeboxLogoSquare from "../../assets/images/logo-square.png";
 import DefaultAvatar from "../../assets/images/default-avatar.png";
 import { Component, ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
+import CryptoJS from "crypto-js";
 
 interface NavbarProps {
-    username: string
+    firstName: string
+    lastName: string
+    email: string
+    useGravatar: boolean,
 }
 
 interface NavbarState {
@@ -23,9 +25,8 @@ export class Navbar extends Component<NavbarProps, NavbarState> {
     render(): ReactNode {
         return (
             <div className="navbar">
-                <div></div>
-                {/* <img src={CodeboxLogoWhite} alt="Codebox logo" width={"200px"}/> */}
-                <div className="navbar-right">
+                <div style={{display:"flex", alignItems:"center"}}>
+                    <img src={CodeboxLogoSquare} alt="Codebox logo" width={"40px"}/>
                     <ul className="navbar-links">
                         <li>
                             <Link to={"/"}>Workspaces</Link>
@@ -34,12 +35,19 @@ export class Navbar extends Component<NavbarProps, NavbarState> {
                             <Link to={"/"}>Users</Link>
                         </li>
                     </ul>
-                    <span className="divider" />
+                </div>
+                <div className="navbar-right">
                     <div className="navbar-user">
-                        <span>
-                            {this.props.username}
+                        <span className="user-details">
+                            <span>{this.props.firstName} {this.props.lastName}</span>
+                            <small>{this.props.email}</small>
                         </span>
-                        <img src={DefaultAvatar} alt="User avatar" width={"40px"} height={"40px"} />
+                        { 
+                            this.props.useGravatar ?
+                            <img src={DefaultAvatar} alt="User avatar" width={"35px"} height={"35px"} /> 
+                            :
+                            <img src={`https://www.gravatar.com/avatar/${CryptoJS.SHA256(this.props.email)}`} alt="User avatar" width={"35px"} height={"35px"} /> 
+                        }
                     </div>
                 </div>
             </div>

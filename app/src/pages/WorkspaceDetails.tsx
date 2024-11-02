@@ -33,7 +33,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     // check that users are authenticated
     useEffect(() => {
         (async () => {
-            let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/whoami`, "GET", null);
+            let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
             if (status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
                 navigate("/login")
             }

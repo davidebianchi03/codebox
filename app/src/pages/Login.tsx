@@ -40,7 +40,7 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
 
     private IsAuthenticated = async () => {
         // redirect to home if user is already authenticated
-        let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/whoami`, "GET", null);
+        let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
         if(status === RequestStatus.OK && statusCode === 200) {
             this.setState({ redirect: true, redirectUrl: "/" });
         }
