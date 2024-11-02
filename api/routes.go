@@ -30,6 +30,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
 			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
 			workspaceApis.Any("/:workspaceId/container/:containerId/forward", workspaces.HandleForwardContainerPort)
+			workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
 			workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
 		}
 	}

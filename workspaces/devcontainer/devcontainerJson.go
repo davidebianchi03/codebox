@@ -841,7 +841,7 @@ func (js *DevcontainerJson) CloneRepoInWorkspace() error {
 	logs, err = runCommandInContainer(
 		dockerClient,
 		js.devcontainersInfo.containerId,
-		[]string{"ls", js.devcontainersInfo.workspaceLocationInContainer},
+		[]string{"ls", "-al", js.devcontainersInfo.workspaceLocationInContainer},
 		"/",
 		dbDevelopmentContainer.ContainerUser,
 		[]string{},

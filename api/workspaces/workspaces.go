@@ -312,19 +312,74 @@ func HandleStopWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	workspaceResponseObj := WorkspaceWithoutDetailsResponse{
-		Id:             workspace.ID,
-		Name:           workspace.Name,
-		Status:         workspace.Status,
-		Type:           workspace.Type,
-		GitRepoUrl:     workspace.GitRepoUrl,
-		CreatedAt:      workspace.CreatedAt,
-		LastActivityOn: workspace.LastActivityOn,
-		LastStartOn:    workspace.LastStartOn,
+	if workspace.Status == db.WorkspaceStatusStopping || workspace.Status == db.WorkspaceStatusStopped {
+		ctx.JSON(http.StatusConflict, gin.H{
+			"detail": "workspace is already stopped",
+		})
+		return
 	}
+
+	workspace.Status = db.WorkspaceStatusStopping
+	db.DB.Save(&workspace)
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("stop_workspace", work.Q{"workspace_id": workspace.ID})
 
-	ctx.JSON(http.StatusOK, workspaceResponseObj)
+	ctx.JSON(http.StatusOK, gin.H{
+		"detail": "stopping workspace...",
+	})
+}
+
+/*
+POST api/v1/workspace/:id/start
+*/
+func HandleStartWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	id, found := ctx.Params.Get("workspaceId")
+	if !found {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	var workspace db.Workspace
+	result := db.DB.Where(map[string]interface{}{"ID": id, "owner_id": user.ID}).Find(&workspace)
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	if workspace.Status == db.WorkspaceStatusCreating || workspace.Status == db.WorkspaceStatusStarting || workspace.Status == db.WorkspaceStatusRunning {
+		ctx.JSON(http.StatusConflict, gin.H{
+			"detail": "workspace is already running",
+		})
+		return
+	}
+
+	workspace.Status = db.WorkspaceStatusStarting
+	db.DB.Save(&workspace)
+
+	// start bg task
+	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"detail": "starting workspace...",
+	})
 }

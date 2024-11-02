@@ -21,6 +21,8 @@ func (ctx *WorkspaceTaskContext) StartWorkspace(job *work.Job) error {
 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
 	}
 
+	workspace.ClearLogs()
+
 	if workspace.Type == db.WorkspaceTypeDevcontainer {
 		workspaceInterface := devcontainer.DevcontainerWorkspace{}
 		workspaceInterface.Workspace = workspace
@@ -40,6 +42,8 @@ func (ctx *WorkspaceTaskContext) StopWorkspace(job *work.Job) error {
 	if result.Error != nil {
 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
 	}
+
+	workspace.ClearLogs()
 
 	if workspace.Type == db.WorkspaceTypeDevcontainer {
 		workspaceInterface := devcontainer.DevcontainerWorkspace{}

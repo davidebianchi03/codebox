@@ -141,7 +141,6 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 }
 
 func (dw *DevcontainerWorkspace) StopWorkspace() {
-	dw.Workspace.ClearLogs()
 	dw.Workspace.AppendLogs("Stopping workspace...")
 	dw.Workspace.Status = db.WorkspaceStatusStopping
 	db.DB.Save(&dw.Workspace)
@@ -210,6 +209,24 @@ func (dw *DevcontainerWorkspace) StopWorkspace() {
 				strings.Join(pruneReport.NetworksDeleted, ","),
 			),
 		)
+	}
+
+	// remove containers from DB
+	dbContainers := []db.WorkspaceContainer{}
+	result := db.DB.Where(map[string]interface{}{"workspace_id": dw.Workspace.ID}).Preload("ForwardedPorts").Find(&dbContainers)
+	if result.Error != nil {
+		dw.Workspace.AppendLogs(fmt.Sprintf("cannot retrieve workspace containers from db, %s", result.Error))
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+
+	for _, container := range dbContainers {
+		// remove exposed ports from db
+		for _, port := range container.ForwardedPorts {
+			db.DB.Delete(&port)
+		}
+		db.DB.Delete(&container)
 	}
 
 	dw.Workspace.AppendLogs("Workspace has been stopped...")
