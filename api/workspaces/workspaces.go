@@ -275,3 +275,56 @@ func HandleCreateWorkspace(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, workspaceResponseObj)
 }
+
+/*
+POST api/v1/workspace/:id/stop
+*/
+func HandleStopWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	id, found := ctx.Params.Get("workspaceId")
+	if !found {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	var workspace db.Workspace
+	result := db.DB.Where(map[string]interface{}{"ID": id, "owner_id": user.ID}).Find(&workspace)
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	workspaceResponseObj := WorkspaceWithoutDetailsResponse{
+		Id:             workspace.ID,
+		Name:           workspace.Name,
+		Status:         workspace.Status,
+		Type:           workspace.Type,
+		GitRepoUrl:     workspace.GitRepoUrl,
+		CreatedAt:      workspace.CreatedAt,
+		LastActivityOn: workspace.LastActivityOn,
+		LastStartOn:    workspace.LastStartOn,
+	}
+
+	// start bg task
+	bgtasks.BgTasksEnqueuer.Enqueue("stop_workspace", work.Q{"workspace_id": workspace.ID})
+
+	ctx.JSON(http.StatusOK, workspaceResponseObj)
+}

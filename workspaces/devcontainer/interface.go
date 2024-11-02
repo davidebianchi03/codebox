@@ -1,13 +1,18 @@
 package devcontainer
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"codebox.com/db"
 	"codebox.com/utils"
 	"codebox.com/workspaces/common"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 )
 
 type DevcontainerWorkspace struct {
@@ -130,10 +135,84 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 		return
 	}
 
+	dw.Workspace.AppendLogs("Workspace is now running...")
 	dw.Workspace.Status = db.WorkspaceStatusRunning
 	db.DB.Save(&dw.Workspace)
 }
 
 func (dw *DevcontainerWorkspace) StopWorkspace() {
+	dw.Workspace.ClearLogs()
+	dw.Workspace.AppendLogs("Stopping workspace...")
+	dw.Workspace.Status = db.WorkspaceStatusStopping
+	db.DB.Save(&dw.Workspace)
 
+	// retrieve workspace containers
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		dw.Workspace.AppendLogs(fmt.Sprintf("cannot initialize docker client: %s", err))
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+	defer dockerClient.Close()
+
+	// list workspace containers
+	workspaceContainers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+		Filters: filters.NewArgs(
+			filters.KeyValuePair{
+				Key:   "label",
+				Value: fmt.Sprintf("com.codebox.workspace_id=%d", dw.Workspace.ID),
+			},
+		),
+	})
+	if err != nil {
+		dw.Workspace.AppendLogs(fmt.Sprintf("cannot list workspace containers %s", err))
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+
+	// stop and remove containers
+	allContainersStopped := true
+	for _, workspaceContainer := range workspaceContainers {
+		dw.Workspace.AppendLogs(fmt.Sprintf("stopping container %s...", workspaceContainer.ID))
+		err = dockerClient.ContainerStop(context.Background(), workspaceContainer.ID, container.StopOptions{})
+		if err != nil {
+			dw.Workspace.AppendLogs(fmt.Sprintf("cannot stop container %s, %s", workspaceContainer.ID, err))
+			allContainersStopped = false
+			continue
+		}
+
+		dw.Workspace.AppendLogs(fmt.Sprintf("removing container %s...", workspaceContainer.ID))
+		err = dockerClient.ContainerRemove(context.Background(), workspaceContainer.ID, container.RemoveOptions{})
+		if err != nil {
+			dw.Workspace.AppendLogs(fmt.Sprintf("cannot remove container %s, %s", workspaceContainer.ID, err))
+			allContainersStopped = false
+			continue
+		}
+	}
+
+	if !allContainersStopped {
+		dw.Workspace.AppendLogs("error, cannot stop some containers")
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+
+	// remove unused networks
+	pruneReport, err := dockerClient.NetworksPrune(context.Background(), filters.Args{})
+	if err != nil {
+		dw.Workspace.AppendLogs(fmt.Sprintf("failed to remove unused networks %s", err))
+	} else {
+		dw.Workspace.AppendLogs(
+			fmt.Sprintf("successfully removed %d networks: %s",
+				len(pruneReport.NetworksDeleted),
+				strings.Join(pruneReport.NetworksDeleted, ","),
+			),
+		)
+	}
+
+	dw.Workspace.AppendLogs("Workspace has been stopped...")
+	dw.Workspace.Status = db.WorkspaceStatusStopped
+	db.DB.Save(&dw.Workspace)
 }
