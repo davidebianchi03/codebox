@@ -120,8 +120,20 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 		return
 	}
 
-	// configure reverse proxy
+	// clone repo in development container
+	dw.Workspace.AppendLogs("Cloning repository...")
+	err = devcontainerConfig.CloneRepoInWorkspace()
+	if err != nil {
+		dw.Workspace.AppendLogs(err.Error() + "\n")
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
 
 	dw.Workspace.Status = db.WorkspaceStatusRunning
 	db.DB.Save(&dw.Workspace)
+}
+
+func (dw *DevcontainerWorkspace) StopWorkspace() {
+
 }

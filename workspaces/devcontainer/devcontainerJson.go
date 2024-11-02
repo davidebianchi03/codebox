@@ -785,3 +785,103 @@ func (js *DevcontainerJson) CheckAgents() error {
 
 	return nil
 }
+
+func (js *DevcontainerJson) CloneRepoInWorkspace() error {
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		return fmt.Errorf("cannot initialize docker client: %s", err)
+	}
+	defer dockerClient.Close()
+
+	// retrieve development container
+	dbDevelopmentContainer := db.WorkspaceContainer{}
+	result := db.DB.Where(map[string]interface{}{"workspace_id": js.workspace.ID, "can_connect_remote_developing": true}).Find(&dbDevelopmentContainer)
+	if result.Error != nil {
+		return fmt.Errorf("failed to retrieve development container")
+	}
+
+	if result.RowsAffected != 1 {
+		return fmt.Errorf("development container not found")
+	}
+
+	// list workspace containers
+	if js.devcontainersInfo.containerId == "" {
+		return fmt.Errorf("development container with name %s not found", dbDevelopmentContainer.Name)
+	}
+
+	// set ssh private key
+	tempSSHPrivKeyPath := path.Join(js.workingDir, "id_rsa")
+	err = os.WriteFile(tempSSHPrivKeyPath, []byte(js.workspace.Owner.SshPrivateKey), 0777)
+	if err != nil {
+		return fmt.Errorf("error in writing 'id_rsa' on local drive, %s", err)
+	}
+
+	containerSSHKeysTargetDir := fmt.Sprintf("/home/%s/.ssh/", dbDevelopmentContainer.ContainerUser)
+	logs, err := runCommandInContainer(
+		dockerClient,
+		js.devcontainersInfo.containerId,
+		[]string{"mkdir", "-p", containerSSHKeysTargetDir},
+		"/",
+		dbDevelopmentContainer.ContainerUser,
+		[]string{},
+		false,
+	)
+	js.workspace.AppendLogs(logs)
+
+	if err != nil {
+		return fmt.Errorf("failed to create folder for ssh keys inside container %s, %s", js.devcontainersInfo.containerId, err)
+	}
+
+	err = putFileInContainer(dockerClient, js.devcontainersInfo.containerId, containerSSHKeysTargetDir, tempSSHPrivKeyPath)
+	if err != nil {
+		return fmt.Errorf("failed to add private key to container %s, %s", js.devcontainersInfo.containerId, err)
+	}
+
+	// check if repository already exists in container
+	logs, err = runCommandInContainer(
+		dockerClient,
+		js.devcontainersInfo.containerId,
+		[]string{"ls", js.devcontainersInfo.workspaceLocationInContainer},
+		"/",
+		dbDevelopmentContainer.ContainerUser,
+		[]string{},
+		false,
+	)
+	js.workspace.AppendLogs(logs)
+
+	if err != nil {
+		return fmt.Errorf("cannot check if repository already exists inside container %s, %s", js.devcontainersInfo.containerId, err)
+	}
+
+	// no children so clone repo in this folder
+	if logs == "" {
+		js.workspace.AppendLogs("Cloning repository...")
+
+		logs, err = runCommandInContainer(
+			dockerClient,
+			js.devcontainersInfo.containerId,
+			[]string{"chown", "-R", fmt.Sprintf("%s", dbDevelopmentContainer.ContainerUser), js.devcontainersInfo.workspaceLocationInContainer},
+			"/",
+			"root",
+			[]string{},
+			false,
+		)
+		js.workspace.AppendLogs(logs)
+
+		logs, err = runCommandInContainer(
+			dockerClient,
+			js.devcontainersInfo.containerId,
+			[]string{"git", "clone", js.workspace.GitRepoUrl, js.devcontainersInfo.workspaceLocationInContainer},
+			"/",
+			dbDevelopmentContainer.ContainerUser,
+			[]string{
+				"GIT_SSH_COMMAND=ssh -o StrictHostKeyChecking=no",
+			},
+			false,
+		)
+
+		js.workspace.AppendLogs(logs)
+	}
+
+	return nil
+}

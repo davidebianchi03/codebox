@@ -38,7 +38,15 @@ func putFileInContainer(dockerClient *client.Client, containerID string, destina
 	return err
 }
 
-func runCommandInContainer(dockerClient *client.Client, containerID string, command []string, workingDir string, user string, env []string, detach bool) (logs string, err error) {
+func runCommandInContainer(
+	dockerClient *client.Client,
+	containerID string,
+	command []string,
+	workingDir string,
+	user string,
+	env []string,
+	detach bool,
+) (logs string, err error) {
 	ctx := context.Background()
 	execConfig := container.ExecOptions{
 		Cmd:          command, // The command to run

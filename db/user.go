@@ -1,16 +1,12 @@
 package db
 
 import (
-	"bytes"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
-	"io"
+	"os"
+	"os/exec"
+	"path/filepath"
 
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
 )
 
@@ -31,27 +27,42 @@ func hashPassword(password string) (string, error) {
 }
 
 func generateSshKeys() (string, string, error) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	// Create a temporary directory
+	tempDir, err := os.MkdirTemp("", "sshkeygen")
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("error creating temp directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir) // Clean up the temporary directory
+
+	// Define file paths within the temporary directory
+	privateKeyPath := filepath.Join(tempDir, "id_rsa")
+	publicKeyPath := privateKeyPath + ".pub"
+
+	// Run ssh-keygen command to generate keys
+	cmd := exec.Command("ssh-keygen", "-t", "rsa", "-b", "2048", "-f", privateKeyPath, "-N", "")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return "", "", fmt.Errorf("error generating SSH keys: %w", err)
 	}
 
-	// generate private key
-	var privateKeyBuf bytes.Buffer
-	privateKeyBufW := io.Writer(&privateKeyBuf)
-	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
-	pem.Encode(privateKeyBufW, privateKeyPEM)
-	privateKeyStr := privateKeyBuf.String()
-
-	// generate public key
-	pub, err := ssh.NewPublicKey(&privateKey.PublicKey)
+	// Read the private key file content
+	privateKeyBytes, err := os.ReadFile(privateKeyPath)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("error reading private key file: %w", err)
 	}
-	pubKeyBytes := ssh.MarshalAuthorizedKey(pub)
-	publicKeyStr := string(pubKeyBytes)
+	privateKey := string(privateKeyBytes)
 
-	return privateKeyStr, publicKeyStr, nil
+	// Read the public key file content
+	publicKeyBytes, err := os.ReadFile(publicKeyPath)
+	if err != nil {
+		return "", "", fmt.Errorf("error reading public key file: %w", err)
+	}
+	publicKey := string(publicKeyBytes)
+
+	return privateKey, publicKey, nil
 }
 
 func (u *User) BeforeSave(tx *gorm.DB) (err error) {
@@ -62,20 +73,23 @@ func (u *User) BeforeSave(tx *gorm.DB) (err error) {
 			return err
 		}
 	}
+
+	if u.SshPrivateKey == "" || u.SshPublicKey == "" {
+		u.SshPrivateKey, u.SshPublicKey, err = generateSshKeys()
+		if err != nil {
+			return fmt.Errorf("failed to create ssh keys: %s", err)
+		}
+	}
+
 	return nil
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	// hash della password
 	u.Password, err = hashPassword(u.Password)
 	if err != nil {
 		return err
 	}
-	u.SshPrivateKey, u.SshPublicKey, err = generateSshKeys()
-	if err != nil {
-		return fmt.Errorf("failed to create ssh keys: %s", err)
-	}
-	return nil
+	return u.BeforeSave(tx)
 }
 
 func (u *User) CheckPassword(password string) bool {
