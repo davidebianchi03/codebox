@@ -18,3 +18,24 @@
 .workspace-logs-container::-webkit-scrollbar-thumb:hover {
     background: var(--grey-700);
 }
+
+.workspace-containers ul{
+    height: 100%;
+    padding: 0;
+    list-style: none;
+    width: 25%;
+    max-width: 450px;
+    min-width: 100px;
+    border: solid var(--background-divider) 1px;
+    border-radius: 4pt;
+}
+
+.workspace-containers ul li {
+    padding: 8pt 4pt;
+    border-top: solid var(--background-divider) 1px;
+    cursor: pointer;
+}
+
+.workspace-containers ul li:hover{
+    background: var(--background-color-paper);
+}

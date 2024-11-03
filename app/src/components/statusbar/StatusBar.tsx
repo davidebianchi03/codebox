@@ -28,7 +28,7 @@ export default class StatusBar extends Component<StatusBarProps, StatusBarState>
                 <span style={{ width: "200px", marginLeft: "5px" }}>&copy; Codebox 2024</span>
                 <span style={{ width: "100%" }}></span>
                 <div style={{ display: "flex", alignItems: "center" }}>
-                    <span style={{ width: "75px" }}>Ping: {this.props.serverPing}ms</span>
+                    <span style={{ width: "90px" }}>Ping: {this.props.serverPing}ms</span>
                 </div>
             </div>
         )

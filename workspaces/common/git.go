@@ -1,7 +1,6 @@
 package common
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,21 +20,6 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 	}
 	defer os.RemoveAll(dir)
 
-	// clone git repository
-	var cloneLogsBuf bytes.Buffer
-	cloning := true
-	logsEndIndex := 0
-	go func() {
-		for cloning {
-			newBytes := cloneLogsBuf.Bytes()[logsEndIndex:]
-			if len(newBytes) > 0 {
-				workspace.AppendLogs(string(newBytes))
-				db.DB.Save(&workspace)
-				logsEndIndex += len(newBytes)
-			}
-		}
-	}()
-
 	// manage authentication
 	var gitAuth transport.AuthMethod
 	if strings.HasPrefix(workspace.GitRepoUrl, "http") {
@@ -50,20 +34,11 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 	_, err = git.PlainClone(dir, false, &git.CloneOptions{
 		URL:             workspace.GitRepoUrl,
 		InsecureSkipTLS: true,
-		Progress:        &cloneLogsBuf,
 		Depth:           1, // retrieve only latest commit
 		SingleBranch:    true,
 		Auth:            gitAuth,
 		// TODO: retrieve configuration
 	})
-	cloning = false
-
-	// retrieve dei log rimanenti
-	newBytes := cloneLogsBuf.Bytes()[logsEndIndex:]
-	if len(newBytes) > 0 {
-		workspace.AppendLogs(string(newBytes))
-		db.DB.Save(workspace)
-	}
 
 	if err != nil {
 		if strings.HasPrefix(workspace.GitRepoUrl, "http") {
@@ -72,6 +47,8 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 			return fmt.Errorf("Have you added the Codebox SSH public key to the remote Git server? %s", err)
 		}
 	}
+
+	workspace.AppendLogs("Configuration has been retrieved from git repository")
 
 	configurationFolderPath := filepath.Join(dir, workspace.GitRepoConfigurationFolder)
 	pathInfo, err := os.Stat(configurationFolderPath)

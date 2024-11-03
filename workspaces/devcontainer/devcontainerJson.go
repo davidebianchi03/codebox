@@ -159,6 +159,10 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 		return err
 	}
 
+	if js.devcontainersInfo.forwardedPorts == nil {
+		js.devcontainersInfo.forwardedPorts = map[string][]uint{}
+	}
+
 	forwardedPortsMinInterval := 50000
 	forwardedPortsMaxInterval := 60000
 
@@ -248,7 +252,29 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 			}
 
 			// update ports
-			var exposedPorts = []string{fmt.Sprintf("%d:55088", composeAssignedPorts[serviceName])}
+			var exposedPorts []string
+			exposedPortsMap, found := serviceDefinitionMap["ports"]
+			if found {
+				exposedPorts, err = cast.Interface2StringArray(exposedPortsMap)
+				if err != nil {
+					js.workspace.AppendLogs(fmt.Sprintf("Cannot retrieve ports for container %s from docker compose", serviceName))
+					continue
+				}
+
+				containerExposedPorts := []uint{}
+				for _, port := range exposedPorts {
+					portDef := strings.Split(port, ":")
+					if len(portDef) == 2 {
+						portN, err := strconv.Atoi(portDef[1])
+						if err == nil {
+							containerExposedPorts = append(containerExposedPorts, uint(portN))
+						}
+					}
+				}
+				js.devcontainersInfo.forwardedPorts[serviceName] = containerExposedPorts
+			}
+
+			exposedPorts = []string{fmt.Sprintf("%d:55088", composeAssignedPorts[serviceName])}
 			serviceDefinitionMap["ports"] = exposedPorts
 
 			// update labels
