@@ -2,6 +2,7 @@ package api
 
 import (
 	"codebox.com/api/auth"
+	"codebox.com/api/cli"
 	"codebox.com/api/middleware"
 	"codebox.com/api/settings"
 	"codebox.com/api/workspaces"
@@ -38,5 +39,9 @@ func V1ApiRoutes(router *gin.Engine) {
 
 		// instance settings related apis
 		v1.GET("/instance-settings", settings.HandleRetrieveServerSettings)
+
+		// download cli
+		v1.GET("/download-cli", cli.HandleDownloadCLI)
+
 	}
 }

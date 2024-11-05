@@ -246,9 +246,12 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                             </div>
                             <div>
                                 <div>
-                                    <h5 style={{ marginBottom: "10pt" }}>Forwarded ports</h5>
+                                    <h5 style={{ marginBottom: "8pt" }}>Forwarded ports</h5>
                                 </div>
-                                <div style={{}}>
+                                <div style={{
+                                    display: "flex",
+                                    flexWrap: "wrap"
+                                }}>
                                     {
                                         selectedContainer.forwarded_ports?.map((port) => (
                                             <a style={{
@@ -258,7 +261,8 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                                 border: "solid var(--background-divider) 1px",
                                                 minWidth: "150px",
                                                 padding: "4pt 7pt",
-                                                borderRadius: "4pt"
+                                                borderRadius: "4pt",
+                                                margin: "2pt"
                                             }}
                                                 key={port.port_number}
                                             >
