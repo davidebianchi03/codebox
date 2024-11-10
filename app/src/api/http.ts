@@ -5,7 +5,11 @@ import { GetCookie } from "./cookies";
 export class Http {
 
     public static GetServerURL() {
-        return "http://127.0.0.1:8080"
+        if(process.env.NODE_ENV === "development") {
+            return "http://127.0.0.1:8080"
+        } else {
+            return "";
+        }
     }
 
     private static GetJWTTokenFromCookies(): string | null {

@@ -34,6 +34,8 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: 'Build frontend'
+        env:
+          CI: false
         run: |
           cd app
           npm i
