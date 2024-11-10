@@ -8,3 +8,4 @@ codebox-agent-linux-amd64
 *.journal
 *.db-journal
 *codebox-cli*
+bin/
