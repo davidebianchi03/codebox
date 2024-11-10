@@ -6,7 +6,6 @@ import { RequestStatus } from "../api/types";
 import { Link, Navigate } from "react-router-dom";
 import Card from "../theme/components/card/Card";
 import { WorkspaceListItem } from "../components/workspaceListItem/WorkspaceListItem";
-import Button from "../theme/components/button/Button";
 import TextInput from "../theme/components/textinput/TextInput";
 
 interface HomePageProps {
@@ -48,7 +47,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
 
     private ListWorkspaces = async () => {
         let [status, statusCode, responseData, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace`, "GET", null);
-        if (status == RequestStatus.OK) {
+        if (status === RequestStatus.OK) {
             this.setState({ workspaces: responseData });
         } else if (status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
             this.setState({ redirect: true, redirectUrl: "/login" });
@@ -64,7 +63,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
 
         let filteredWorkspaces: Array<any> = [];
         this.state.workspaces.forEach((workspace) => {
-            if ((workspace.name as string).indexOf(this.state.workspacesFilterText) != -1) {
+            if ((workspace.name as string).indexOf(this.state.workspacesFilterText) !== -1) {
 
                 filteredWorkspaces.push(workspace);
             }
@@ -96,7 +95,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
                                 (
                                     <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
                                         {
-                                            this.state.workspaces.length == 0 ?
+                                            this.state.workspaces.length === 0 ?
                                                 (
                                                     <span>
                                                         <a style={{ textDecoration: "underline" }}>Create your first workspace</a>

@@ -113,13 +113,13 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     useEffect(() => {
         UpdateWorkspaceDetails();
         retrieveWorkspaceLogs();
-        if (updatedWorkspaceDetailsInterval != null) {
+        if (updatedWorkspaceDetailsInterval !== null) {
             clearInterval(updatedWorkspaceDetailsInterval);
         }
         updatedWorkspaceDetailsInterval = setInterval((UpdateWorkspaceDetails), 5000);
 
         return () => {
-            if (updatedWorkspaceDetailsInterval != null) {
+            if (updatedWorkspaceDetailsInterval !== null) {
                 clearInterval(updatedWorkspaceDetailsInterval);
             }
         }
@@ -154,7 +154,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                     </div>
                     <div style={{ display: "flex", alignItems: "center" }}>
                         {
-                            workspaceDetails.status != "creating" && workspaceDetails.status != "starting" && workspaceDetails.status != "stopping" ?
+                            workspaceDetails.status !== "creating" && workspaceDetails.status !== "starting" && workspaceDetails.status !== "stopping" ?
                                 <div
                                     style={{
                                         marginRight: "10pt",
@@ -164,7 +164,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                         cursor: "pointer"
                                     }}
                                     onClick={() => {
-                                        if (workspaceDetails.status != "running") {
+                                        if (workspaceDetails.status !== "running") {
                                             StartWorkspace();
                                         } else {
                                             StopWorkspace();
@@ -172,7 +172,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                     }}
                                 >
                                     {
-                                        workspaceDetails.status == "running" ?
+                                        workspaceDetails.status === "running" ?
                                             "Stop workspace" :
                                             "Start workspace"
                                     }
@@ -228,12 +228,12 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         <h3 style={{ marginBottom: 0, marginTop: 0 }}>Containers</h3>
                     </div>
                 </div>
-                {workspaceDetails.containers != null ?
+                {workspaceDetails.containers !== null ?
                     <div style={{ display: "flex" }} className="workspace-containers">
                         <ul>
                             {
-                                workspaceDetails.containers.map((container, index) => (
-                                    <li style={index == 0 ? { borderTop: "none" } : {}} onClick={() => setSelectedContainer(container)} key={container.id}>
+                                workspaceDetails.containers?.map((container, index) => (
+                                    <li style={index === 0 ? { borderTop: "none" } : {}} onClick={() => setSelectedContainer(container)} key={container.id}>
                                         {container.name}
                                     </li>
                                 ))
