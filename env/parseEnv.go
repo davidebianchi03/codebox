@@ -10,6 +10,7 @@ import (
 )
 
 type codeBoxEnv struct {
+	DebugEnabled                     bool
 	ServerPort                       int
 	WorkspaceRelatedTasksConcurrency int
 	DbDriver                         string
@@ -18,6 +19,7 @@ type codeBoxEnv struct {
 	RedisPort                        int
 	UploadsPath                      string
 	UseGravatar                      bool
+	FrontendPath                     string
 }
 
 var CodeBoxEnv *codeBoxEnv
@@ -69,6 +71,12 @@ func InitCodeBoxEnv() error {
 
 	// use gravatar
 	CodeBoxEnv.UseGravatar = strings.ToLower(envVarOrDefault("CODEBOX_USE_GRAVATAR", "true")) == "true"
+
+	// debug
+	CodeBoxEnv.DebugEnabled = strings.ToLower(envVarOrDefault("CODEBOX_DEBUG", "true")) == "true"
+
+	// frontend folder
+	CodeBoxEnv.FrontendPath = strings.ToLower(envVarOrDefault("CODEBOX_FRONTEND_PATH", "/codebox/frontend"))
 
 	return nil
 }
