@@ -126,7 +126,6 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	}
 
 	// clone repo in development container
-	dw.Workspace.AppendLogs("Cloning repository...")
 	err = devcontainerConfig.CloneRepoInWorkspace()
 	if err != nil {
 		dw.Workspace.AppendLogs(err.Error() + "\n")

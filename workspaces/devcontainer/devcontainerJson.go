@@ -687,8 +687,8 @@ func (js *DevcontainerJson) StartAgents() error {
 		}
 
 		// create agent folder
-		logs, err := runCommandInContainer(dockerClient, container.ID, []string{"mkdir", "-p", "/opt/codebox"}, "/opt", "root", []string{}, true)
-		js.workspace.AppendLogs(logs)
+		cmdResp, err := runCommandInContainer(dockerClient, container.ID, []string{"mkdir", "-p", "/opt/codebox"}, "/opt", "root", []string{}, true)
+		js.workspace.AppendLogs(cmdResp.stdOut + "\n" + cmdResp.stdErr)
 		db.DB.Save(js.workspace)
 		if err != nil {
 			return fmt.Errorf("failed create agent folder on container %s, %s", container.ID, err)
@@ -725,7 +725,7 @@ func (js *DevcontainerJson) StartAgents() error {
 		}
 
 		// start agent
-		logs, err = runCommandInContainer(
+		cmdResp, err = runCommandInContainer(
 			dockerClient,
 			container.ID,
 			[]string{"nohup", "/opt/codebox/agent.bin", "&"},
@@ -734,14 +734,14 @@ func (js *DevcontainerJson) StartAgents() error {
 			[]string{},
 			true,
 		)
-		js.workspace.AppendLogs(logs)
+		js.workspace.AppendLogs(cmdResp.stdOut + "\n" + cmdResp.stdErr)
 		db.DB.Save(js.workspace)
 
 		if err != nil {
 			return fmt.Errorf("failed to start agent on container %s, %s", container.ID, err)
 		}
 
-		js.workspace.AppendLogs(fmt.Sprintf("<Container: %s> %s\n", container.ID, logs))
+		js.workspace.AppendLogs(fmt.Sprintf("<Container: %s> %s\n", container.ID, cmdResp.stdOut+"\n"+cmdResp.stdErr))
 		db.DB.Save(js.workspace)
 	}
 
@@ -845,7 +845,7 @@ func (js *DevcontainerJson) CloneRepoInWorkspace() error {
 	}
 
 	containerSSHKeysTargetDir := fmt.Sprintf("/home/%s/.ssh/", dbDevelopmentContainer.ContainerUser)
-	logs, err := runCommandInContainer(
+	cmdResp, err := runCommandInContainer(
 		dockerClient,
 		js.devcontainersInfo.containerId,
 		[]string{"mkdir", "-p", containerSSHKeysTargetDir},
@@ -854,7 +854,7 @@ func (js *DevcontainerJson) CloneRepoInWorkspace() error {
 		[]string{},
 		false,
 	)
-	js.workspace.AppendLogs(logs)
+	js.workspace.AppendLogs(cmdResp.stdOut + "\n" + cmdResp.stdErr)
 
 	if err != nil {
 		return fmt.Errorf("failed to create folder for ssh keys inside container %s, %s", js.devcontainersInfo.containerId, err)
@@ -866,26 +866,28 @@ func (js *DevcontainerJson) CloneRepoInWorkspace() error {
 	}
 
 	// check if repository already exists in container
-	logs, err = runCommandInContainer(
+	cmdResp, err = runCommandInContainer(
 		dockerClient,
 		js.devcontainersInfo.containerId,
-		[]string{"ls", "-al", js.devcontainersInfo.workspaceLocationInContainer},
+		[]string{"ls", "-a1", js.devcontainersInfo.workspaceLocationInContainer},
 		"/",
 		dbDevelopmentContainer.ContainerUser,
 		[]string{},
 		false,
 	)
-	js.workspace.AppendLogs(logs)
+	js.workspace.AppendLogs(cmdResp.stdOut + "\n" + cmdResp.stdErr)
 
 	if err != nil {
 		return fmt.Errorf("cannot check if repository already exists inside container %s, %s", js.devcontainersInfo.containerId, err)
 	}
 
+	folderChildrenElements := strings.Split(strings.TrimSpace(cmdResp.stdOut), "\n")
+
 	// no children so clone repo in this folder
-	if logs == "" {
+	if len(folderChildrenElements) <= 2 {
 		js.workspace.AppendLogs("Cloning repository...")
 
-		logs, err = runCommandInContainer(
+		cmdResp, err = runCommandInContainer(
 			dockerClient,
 			js.devcontainersInfo.containerId,
 			[]string{"chown", "-R", fmt.Sprintf("%s", dbDevelopmentContainer.ContainerUser), js.devcontainersInfo.workspaceLocationInContainer},
@@ -894,9 +896,9 @@ func (js *DevcontainerJson) CloneRepoInWorkspace() error {
 			[]string{},
 			false,
 		)
-		js.workspace.AppendLogs(logs)
+		js.workspace.AppendLogs(cmdResp.stdOut + "\n" + cmdResp.stdErr)
 
-		logs, err = runCommandInContainer(
+		cmdResp, err = runCommandInContainer(
 			dockerClient,
 			js.devcontainersInfo.containerId,
 			[]string{"git", "clone", js.workspace.GitRepoUrl, js.devcontainersInfo.workspaceLocationInContainer},
@@ -908,7 +910,9 @@ func (js *DevcontainerJson) CloneRepoInWorkspace() error {
 			false,
 		)
 
-		js.workspace.AppendLogs(logs)
+		js.workspace.AppendLogs(cmdResp.stdOut + "\n" + cmdResp.stdErr)
+	} else {
+		js.workspace.AppendLogs("Repository already exists")
 	}
 
 	return nil

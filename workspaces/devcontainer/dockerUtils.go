@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -38,6 +39,46 @@ func putFileInContainer(dockerClient *client.Client, containerID string, destina
 	return err
 }
 
+func parseDockerMultiplexedStream(streamReader io.Reader) (stdout string, stderr string, err error) {
+	header := make([]byte, 8)
+	for {
+		// Read the 8-byte header
+		_, err := io.ReadFull(streamReader, header)
+		if err == io.EOF {
+			break // End of stream
+		}
+		if err != nil {
+			return "", "", fmt.Errorf("failed to read header: %v", err)
+		}
+
+		// Parse the header
+		streamType := header[0] // 1 for stdout, 2 for stderr
+		payloadSize := binary.BigEndian.Uint32(header[4:8])
+
+		// Read the payload
+		payload := make([]byte, payloadSize)
+		_, err = io.ReadFull(streamReader, payload)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to read payload: %v", err)
+		}
+
+		// Append to the appropriate output
+		if streamType == 1 {
+			stdout += string(payload)
+		} else if streamType == 2 {
+			stderr += string(payload)
+		}
+	}
+	return stdout, stderr, nil
+}
+
+type DockerCommandOutput struct {
+	detached bool
+	exitCode int
+	stdOut   string
+	stdErr   string
+}
+
 func runCommandInContainer(
 	dockerClient *client.Client,
 	containerID string,
@@ -46,7 +87,7 @@ func runCommandInContainer(
 	user string,
 	env []string,
 	detach bool,
-) (logs string, err error) {
+) (cmdOut DockerCommandOutput, err error) {
 	ctx := context.Background()
 	execConfig := container.ExecOptions{
 		Cmd:          command, // The command to run
@@ -61,7 +102,7 @@ func runCommandInContainer(
 
 	execIDResp, err := dockerClient.ContainerExecCreate(ctx, containerID, execConfig)
 	if err != nil {
-		return "", fmt.Errorf("failed to create exec instance: %v", err)
+		return DockerCommandOutput{}, fmt.Errorf("failed to create exec instance: %v", err)
 	}
 
 	// Start the exec instance
@@ -72,26 +113,34 @@ func runCommandInContainer(
 		}
 		err := dockerClient.ContainerExecStart(ctx, execIDResp.ID, execStartCheck)
 		if err != nil {
-			return "", fmt.Errorf("failed to start exec instance: %v", err)
+			return DockerCommandOutput{}, fmt.Errorf("failed to start exec instance: %v", err)
 		}
-		return "", nil
+		return DockerCommandOutput{detached: true}, nil
 	} else {
 		execStartCheck := container.ExecAttachOptions{
 			Tty: false,
 		}
-		resp, err := dockerClient.ContainerExecAttach(ctx, execIDResp.ID, execStartCheck)
+		attachResp, err := dockerClient.ContainerExecAttach(ctx, execIDResp.ID, execStartCheck)
 		if err != nil {
-			return "", fmt.Errorf("failed to start exec instance: %v", err)
+			return DockerCommandOutput{}, fmt.Errorf("failed to start exec instance: %v", err)
 		}
-		defer resp.Close()
+		defer attachResp.Close()
 
-		// Read output from the command
-		var logsBuf bytes.Buffer
-		_, err = io.Copy(&logsBuf, resp.Reader)
-		if err != nil && err != io.EOF {
-			return "", fmt.Errorf("error reading exec output: %v", err)
+		inspectResp, err := dockerClient.ContainerExecInspect(ctx, execIDResp.ID)
+		if err != nil {
+			return DockerCommandOutput{}, fmt.Errorf("failed to inspect exec instance: %v", err)
 		}
 
-		return logsBuf.String(), nil
+		stdOut, stdErr, err := parseDockerMultiplexedStream(attachResp.Reader)
+		if err != nil {
+			return DockerCommandOutput{}, fmt.Errorf("failed to parse logs stream, %s", err)
+		}
+
+		return DockerCommandOutput{
+			detached: false,
+			exitCode: inspectResp.ExitCode,
+			stdOut:   stdOut,
+			stdErr:   stdErr,
+		}, nil
 	}
 }
