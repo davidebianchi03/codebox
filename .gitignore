@@ -3,7 +3,7 @@ codebox.db
 codebox.env
 uploads/
 data/
-agent.bin
+agent
 codebox-agent-linux-amd64
 *.journal
 *.db-journal

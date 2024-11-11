@@ -2,7 +2,7 @@ FROM nginx:1.27.2
 
 ENV USERNAME=codebox
 
-# Install docker
+# Install docker and redis
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
     ca-certificates \
@@ -25,14 +25,16 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
-# Create new user
-RUN adduser --disabled-password --gecos '' ${USERNAME} && \
-    usermod -a -G sudo ${USERNAME} && \
-    usermod -a -G docker ${USERNAME} && \
-    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> \
-    /etc/sudoers
-
-USER ${USERNAME}
-
 COPY --chown=${USERNAME}:${USERNAME} ./bin/ /codebox/bin
+COPY --chown=${USERNAME}:${USERNAME} ./docker/production.env /codebox/bin/codebox.env
 COPY --chown=${USERNAME}:${USERNAME} ./app/build /codebox/frontend
+COPY --chown=${USERNAME}:${USERNAME} ./docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --chown=${USERNAME}:${USERNAME} ./docker/startgin.sh /docker-entrypoint.d/
+
+RUN chmod +x /docker-entrypoint.d/startgin.sh && \
+    mkdir -p /codebox/bin/migrations
+
+EXPOSE 8000
+
+VOLUME [ "/codebox/db" ]
+VOLUME [ "/codebox/data" ]

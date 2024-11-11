@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:7.4.1
+    restart: always
+
+  codebox:
+    image: codebox:latest
+    ports:
+      - ${CODEBOX_PORT:-12800}:8000
+    volumes:
+      - codeboxdb:/codebox/db
+      - codeboxdata:/codebox/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CODEBOX_USE_GRAVATAR=true
+    restart: always
+
+volumes:
+  codeboxdb:
+  codeboxdata:

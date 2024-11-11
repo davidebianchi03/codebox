@@ -6,18 +6,10 @@ import (
 	"codebox.com/api/middleware"
 	"codebox.com/api/settings"
 	"codebox.com/api/workspaces"
-	"codebox.com/env"
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
 func V1ApiRoutes(router *gin.Engine) {
-
-	// static files
-	if !env.CodeBoxEnv.DebugEnabled {
-		router.Use(static.Serve("/", static.LocalFile(env.CodeBoxEnv.FrontendPath, true)))
-	}
-
 	// middlewares
 	router.Use(middleware.CORSMiddleware)
 	router.Use(middleware.TokenAuthMiddleware)

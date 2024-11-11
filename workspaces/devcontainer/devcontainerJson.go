@@ -695,7 +695,7 @@ func (js *DevcontainerJson) StartAgents() error {
 		}
 
 		// install agent
-		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox/", "./agent.bin")
+		err = putFileInContainer(dockerClient, container.ID, "/opt/codebox/", "./agent")
 		if err != nil {
 			return fmt.Errorf("failed to add agent to container %s, %s", container.ID, err)
 		}
@@ -728,7 +728,7 @@ func (js *DevcontainerJson) StartAgents() error {
 		cmdResp, err = runCommandInContainer(
 			dockerClient,
 			container.ID,
-			[]string{"nohup", "/opt/codebox/agent.bin", "&"},
+			[]string{"nohup", "/opt/codebox/agent", "&"},
 			"/opt/codebox",
 			"root",
 			[]string{},

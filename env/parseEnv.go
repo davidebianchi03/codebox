@@ -67,16 +67,13 @@ func InitCodeBoxEnv() error {
 	}
 
 	// uploads
-	CodeBoxEnv.UploadsPath = envVarOrDefault("CODEBOX_UPLOADS_PATH", "./data")
+	CodeBoxEnv.UploadsPath = envVarOrDefault("CODEBOX_DATA_PATH", "./data")
 
 	// use gravatar
 	CodeBoxEnv.UseGravatar = strings.ToLower(envVarOrDefault("CODEBOX_USE_GRAVATAR", "true")) == "true"
 
 	// debug
 	CodeBoxEnv.DebugEnabled = strings.ToLower(envVarOrDefault("CODEBOX_DEBUG", "true")) == "true"
-
-	// frontend folder
-	CodeBoxEnv.FrontendPath = strings.ToLower(envVarOrDefault("CODEBOX_FRONTEND_PATH", "/codebox/frontend"))
 
 	return nil
 }
