@@ -63,6 +63,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          ls
           cd bin
           source ../docker/download-agent.sh
           source ../docker/download-cli.sh
