@@ -60,7 +60,7 @@ jobs:
         uses: actions/download-artifact@v4
 
       - name: Fix artifacts paths
-        run:
+        run: |
           mkdir -p bin
           cp ./codebox-backend ./bin/codebox
           unzip ./codebox-frontend.zip -d ./app/build
