@@ -60,11 +60,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: codebox-backend
+          path: bin/codebox
 
       - name: Download codebox frontend
         uses: actions/download-artifact@v4
         with:
           name: codebox-frontend
+          path: app/build/
 
       # - name: Download all workflow run artifacts
       #   uses: actions/download-artifact@v4
