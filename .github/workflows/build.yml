@@ -68,21 +68,14 @@ jobs:
           name: codebox-frontend
           path: app/build/
 
-      # - name: Download all workflow run artifacts
-      #   uses: actions/download-artifact@v4
-
-      # - name: Fix artifacts paths
-      #   run: |
-      #     mkdir -p bin
-      #     cp ./codebox-backend ./bin/codebox
-      #     unzip ./codebox-frontend.zip -d ./app/build
-
       - name: Download agent binaries and cli binaries
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          ls
           cd bin
+          mv ./codebox ./codebox-dir
+          mv ./codebox-dir/codebox ./codebox
+          rm -rf codebox-dir
           source ../docker/download-agent.sh
           source ../docker/download-cli.sh
           cd ..
