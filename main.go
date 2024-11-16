@@ -54,6 +54,11 @@ func main() {
 		}
 
 		// avvio del server http
+		if env.CodeBoxEnv.DebugEnabled {
+			gin.SetMode(gin.DebugMode)
+		} else {
+			gin.SetMode(gin.ReleaseMode)
+		}
 		r := gin.Default()
 		api.V1ApiRoutes(r)
 		r.Run(fmt.Sprintf(":%s", strconv.Itoa(env.CodeBoxEnv.ServerPort)))

@@ -1,7 +1,5 @@
 FROM nginx:1.27.2
 
-ENV USERNAME=codebox
-
 # Install docker and redis
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
@@ -25,13 +23,16 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
-COPY --chown=${USERNAME}:${USERNAME} ./bin/ /codebox/bin
-COPY --chown=${USERNAME}:${USERNAME} ./docker/production.env /codebox/bin/codebox.env
-COPY --chown=${USERNAME}:${USERNAME} ./app/build /codebox/frontend
-COPY --chown=${USERNAME}:${USERNAME} ./docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --chown=${USERNAME}:${USERNAME} ./docker/startgin.sh /docker-entrypoint.d/
+COPY ./bin/ /codebox/bin
+COPY ./docker/production.env /codebox/bin/codebox.env
+COPY ./app/build /codebox/frontend
+COPY ./docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./docker/startgin.sh /docker-entrypoint.d/
 
 RUN chmod +x /docker-entrypoint.d/startgin.sh && \
+    chmod +x /codebox/bin/codebox && \
+    chmod +x /codebox/bin/codebox-cli-linux-amd64 && \
+    chmod +x /codebox/bin/agent && \
     mkdir -p /codebox/bin/migrations
 
 EXPOSE 8000
