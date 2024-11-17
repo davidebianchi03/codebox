@@ -13,3 +13,25 @@ html, body {
     color: var(--white);
     font-family: "Inter";
 }
+
+/* Scrollbars */
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: var(--grey-800);
+    border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: var(--grey-700);
+}

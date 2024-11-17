@@ -132,6 +132,9 @@ export default function CreateWorkspace(props: CreateWorkspaceProps) {
                         errorMessage={workspaceGitRepoConfigurationFolderError}
                     />
                     <div style={{ marginTop: "20pt", display: "flex", justifyContent: "end" }}>
+                        <Button type="link" extraClass="outline-white" style={{marginRight:"10px"}} linkHref="/">
+                            Cancel
+                        </Button>
                         <Button type="submit">
                             Create workspace
                         </Button>

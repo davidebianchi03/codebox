@@ -6,7 +6,7 @@ services:
     restart: always
 
   codebox:
-    image: codebox:latest
+    image: dadebia/codebox:latest
     ports:
       - ${CODEBOX_PORT:-12800}:8000
     volumes:

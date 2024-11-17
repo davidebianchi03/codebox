@@ -2,9 +2,12 @@ import "./Navbar.css";
 import CodeboxLogoSquare from "../../assets/images/logo-square.png";
 import DefaultAvatar from "../../assets/images/default-avatar.png";
 import MenuIcon from "../../assets/images/menu.png";
-import { Component, ReactNode, createRef } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import CryptoJS from "crypto-js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+
 
 interface NavbarProps {
     firstName: string
@@ -13,79 +16,77 @@ interface NavbarProps {
     useGravatar: boolean,
 }
 
-interface NavbarState {
-    showActionDropdows: boolean
-}
+export function Navbar(props: NavbarProps) {
 
-export class Navbar extends Component<NavbarProps, NavbarState> {
+    const [showActionsDropdown, setShowActionsDropdown] = useState<boolean>(false);
+    const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
 
-    mouseDownEventListener: any
-    menuDropdownRef: any
+    const handleClickOutsideMenuDropDown = (e: MouseEvent) => {
+        setShowActionsDropdown(false);
+        setShowUserDropdown(false);
+    };
 
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            showActionDropdows: false
+    useEffect(() => {
+        document.addEventListener("mousedown", handleClickOutsideMenuDropDown);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutsideMenuDropDown);
         }
-        this.menuDropdownRef = createRef();
-    }
+    }, [])
 
-    componentDidMount(): void {
-        document.addEventListener("mousedown", this.handleClickOutsideMenuDropDown);
-    }
-
-    componentWillUnmount(): void {
-        document.removeEventListener("mousedown", this.handleClickOutsideMenuDropDown);
-    }
-
-    handleClickOutsideMenuDropDown = (e: MouseEvent) => {
-        if (!this.menuDropdownRef.current.contains(e.target)) {
-            if (this.state.showActionDropdows) {
-                this.setState({ showActionDropdows: false })
-            }
-        }
-    }
-
-    render(): ReactNode {
-        return (
-            <div className="navbar">
-                <div style={{ display: "flex", alignItems: "center" }}>
-                    <Link to={"/"}>
-                        <img src={CodeboxLogoSquare} alt="Codebox logo" width={"40px"} />
-                    </Link>
-                    <img src={MenuIcon}
-                        className="dropdown-menu-hamburger"
-                        alt="Menu"
-                        width={"30px"}
-                        onClick={() => this.setState({ showActionDropdows: !this.state.showActionDropdows })}
-                        style={{
-                            marginLeft: "10pt"
-                        }}
-                    />
-                    <ul className="navbar-links" style={this.state.showActionDropdows ? { display: "block" } : undefined} ref={this.menuDropdownRef}>
+    return (
+        <div className="navbar">
+            {/* Menu */}
+            <div style={{ display: "flex", alignItems: "center" }}>
+                <Link to={"/"}>
+                    <img src={CodeboxLogoSquare} alt="Codebox logo" width={"40px"} />
+                </Link>
+                <img src={MenuIcon}
+                    className="dropdown-menu-hamburger"
+                    alt="Menu"
+                    width={"30px"}
+                    onClick={() => setShowActionsDropdown(!showActionsDropdown)}
+                    style={{
+                        marginLeft: "10pt"
+                    }}
+                />
+                <ul className="navbar-links" style={showActionsDropdown ? { display: "block" } : undefined}>
+                    <li>
+                        <Link to={"/"}>Workspaces</Link>
+                    </li>
+                    <li>
+                        <Link to={"/"}>Users</Link>
+                    </li>
+                </ul>
+            </div>
+            {/* User */}
+            <div className="navbar-right">
+                <div className="navbar-user" onClick={()=>setShowUserDropdown(!showUserDropdown)}>
+                    {/* User details */}
+                    <span className="user-details">
+                        <span>{props.firstName} {props.lastName}</span>
+                        <small>{props.email}</small>
+                    </span>
+                    {
+                        props.useGravatar ?
+                            <img src={DefaultAvatar} alt="User avatar" width={"35px"} height={"35px"} />
+                            :
+                            <img src={`https://www.gravatar.com/avatar/${CryptoJS.SHA256(props.email)}`} alt="User avatar" width={"35px"} height={"35px"} />
+                    }
+                    {/* Dropdown */}
+                    <ul className="user-dropdown" 
+                        style={showUserDropdown ? { display: "block" } : { display: "none" }}  
+                    >
                         <li>
-                            <Link to={"/"}>Workspaces</Link>
+                            <FontAwesomeIcon icon={faUser} />
+                            <span>Profile</span>
                         </li>
                         <li>
-                            <Link to={"/"}>Users</Link>
+                            <FontAwesomeIcon icon={faRightFromBracket} />
+                            <span>Logout</span>
                         </li>
                     </ul>
                 </div>
-                <div className="navbar-right">
-                    <div className="navbar-user">
-                        <span className="user-details">
-                            <span>{this.props.firstName} {this.props.lastName}</span>
-                            <small>{this.props.email}</small>
-                        </span>
-                        {
-                            this.props.useGravatar ?
-                                <img src={DefaultAvatar} alt="User avatar" width={"35px"} height={"35px"} />
-                                :
-                                <img src={`https://www.gravatar.com/avatar/${CryptoJS.SHA256(this.props.email)}`} alt="User avatar" width={"35px"} height={"35px"} />
-                        }
-                    </div>
-                </div>
             </div>
-        );
-    }
+        </div>
+    );
 }

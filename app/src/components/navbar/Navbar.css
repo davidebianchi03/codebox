@@ -33,6 +33,7 @@
     display: flex;
     align-items: center;
     cursor: pointer;
+    position: relative;
 }
 
 .navbar-user img {
@@ -53,6 +54,28 @@
 .navbar-user .user-details small {
     font-size: 8.5pt;
     color: var(--grey-400);
+}
+
+.navbar-user .user-dropdown {
+    position: absolute;
+    background-color: var(--background-color-paper);
+    z-index: 1;
+    bottom: -80pt;
+    list-style: none;
+    width: calc(100% + 15pt);
+    padding: 0;
+}
+
+.navbar-user .user-dropdown li {
+    padding: 10px 7px;
+}
+
+.navbar-user .user-dropdown li span {
+    margin-left: 10pt;
+}
+
+.navbar-user .user-dropdown li:hover {
+    background-color: var(--background-divider);
 }
 
 .divider {

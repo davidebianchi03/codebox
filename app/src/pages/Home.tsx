@@ -7,6 +7,7 @@ import { Link, Navigate } from "react-router-dom";
 import Card from "../theme/components/card/Card";
 import { WorkspaceListItem } from "../components/workspaceListItem/WorkspaceListItem";
 import TextInput from "../theme/components/textinput/TextInput";
+import Button from "../theme/components/button/Button";
 
 interface HomePageProps {
 
@@ -74,7 +75,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
                 <Card style={{ width: "90%", margin: "auto", marginTop: "40pt", marginBottom: "30pt" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <h3>Workspaces</h3>
-                        <Link style={{ textDecoration: "none" }} className="button" to={"/create-workspace"}>Create Workspace</Link>
+                        <Button type="link" extraClass={"primary"} linkHref={"/create-workspace"}>Create Workspace</Button>
                     </div>
                     <TextInput
                         style={{ width: "calc(100% - 15pt)" }}
