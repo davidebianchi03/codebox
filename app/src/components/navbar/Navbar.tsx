@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+import { Http } from "../../api/http";
 
 
 interface NavbarProps {
@@ -35,6 +36,12 @@ export function Navbar(props: NavbarProps) {
         }
     };
 
+    const logoutUser = async() => {
+        Http.Request(`${Http.GetServerURL()}/api/v1/auth/logout`, "POST", "");
+        document.cookie = `jwtToken=loggedout;expires=${new Date(1970, 1, 1).toUTCString()}`;
+        navigate("/login");
+    }
+
     useEffect(() => {
         document.addEventListener("mousedown", handleClickOutsideMenuDropDown);
         return () => {
@@ -59,12 +66,12 @@ export function Navbar(props: NavbarProps) {
                     }}
                 />
                 <ul className="navbar-links" style={showActionsDropdown ? { display: "block" } : undefined} ref={actionsDropdown}>
-                    <li>
+                    {/* <li>
                         <Link to={"/"}>Workspaces</Link>
                     </li>
                     <li>
                         <Link to={"/"}>Users</Link>
-                    </li>
+                    </li> */}
                 </ul>
             </div>
             {/* User */}
@@ -90,7 +97,7 @@ export function Navbar(props: NavbarProps) {
                             <FontAwesomeIcon icon={faUser} />
                             <span style={{ width: "100%" }}>Profile</span>
                         </li>
-                        <li>
+                        <li onClick={() => logoutUser()}>
                             <FontAwesomeIcon icon={faRightFromBracket} />
                             <span>Logout</span>
                         </li>

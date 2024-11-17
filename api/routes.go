@@ -21,6 +21,7 @@ func V1ApiRoutes(router *gin.Engine) {
 		authApis := v1.Group("/auth")
 		{
 			authApis.POST("/login", auth.HandleLogin)
+			authApis.POST("/logout", auth.HandleLogout)
 			authApis.GET("/user-details", auth.HandleRetriveUserDetails)
 			authApis.PATCH("/user-details", auth.HandleUpdateUserDetails)
 		}
