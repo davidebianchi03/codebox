@@ -1,77 +1,74 @@
 import "./Base.css"
 import { Http } from "../../api/http";
-import { Component, ReactNode } from "react";
+import { Component, ReactNode, useEffect, useState } from "react";
 import { RequestStatus } from "../../api/types";
 import { Navbar } from "../../components/navbar/Navbar";
 import StatusBar from "../../components/statusbar/StatusBar";
+import { useNavigate } from "react-router-dom";
 
 interface BasePageProps {
-    children: any
+    children: any,
+    authRequired?: boolean
 }
 
-interface BasePageState {
-    firstName: string,
-    lastName: string,
-    email: string,
-    serverPing: number
-    useGravatar: boolean,
-}
+export default function BasePage(props: BasePageProps) {
 
-export default class BasePage extends Component<BasePageProps, BasePageState> {
+    const [pingInterval, setPingInterval] = useState<number>(0);
+    const [useGravatar, setUseGravatar] = useState<boolean>(true);
+    const [firstName, setFirstName] = useState<string>("");
+    const [lastName, setLastName] = useState<string>("");
+    const [emailAddress, setEmailAddress] = useState<string>("");
 
-    updateUIInterval: NodeJS.Timer|null
+    const navigate = useNavigate();
 
-    constructor(props: BasePageProps) {
-        super(props);
-        this.state = {
-            firstName: "",
-            lastName: "",
-            email: "",
-            serverPing: 0,
-            useGravatar: false,
-        }
-        this.updateUIInterval = null;
-    }
+    var updateUIInterval: NodeJS.Timer | null = null;
 
-    componentDidMount(): void {
-        if(!this.updateUIInterval){
-            this.retrieveUsername();
-            this.updateUIInterval = setInterval(this.retrieveUsername, 30000);
-        }
-    }
-
-    retrieveUsername = async () => {
+    const retrieveUsername = async () => {
         let requestStart = new Date(Date.now());
         let [status, statusCode, responseData] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
         let requestEnd = new Date(Date.now());
-        this.setState({ serverPing: requestEnd.getMilliseconds() - requestStart.getMilliseconds() });
+        setPingInterval(requestEnd.getMilliseconds() - requestStart.getMilliseconds());
         if (status === RequestStatus.OK && statusCode === 200) {
-            this.setState({
-                firstName: responseData.first_name,
-                lastName: responseData.last_name,
-                email: responseData.email
-            })
+            setFirstName(responseData.first_name);
+            setLastName(responseData.last_name);
+            setEmailAddress(responseData.email);
+        } else if(status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
+            if(props.authRequired === undefined || props.authRequired === true) {
+                navigate("/login");
+                return;
+            }
         }
     }
 
-    retrieveSettings = async()=>{
-        let [status, statusCode, responseData] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/instance-settings`, "GET", null);
+    const retrieveSettings = async () => {
+        let [status, statusCode, responseData] = await Http.Request(`${Http.GetServerURL()}/api/v1/instance-settings`, "GET", null);
         if (status === RequestStatus.OK && statusCode === 200) {
-            this.setState({
-                useGravatar: responseData.use_gravatar
-            })
+            setUseGravatar(responseData.use_gravatar);
         }
     }
 
-    render(): ReactNode {
-        return (
-            <div className="basepage-container">
-                <Navbar firstName={this.state.firstName} lastName={this.state.lastName} email={this.state.email} useGravatar={this.state.useGravatar}/>
-                <div className="basepage-content">
-                    {this.props.children}
-                </div>
-                <StatusBar serverPing={this.state.serverPing} />
+    useEffect(() => {
+        if (updateUIInterval === null) {
+            updateUIInterval = setInterval(retrieveUsername, 30000);
+        }
+
+        retrieveUsername();
+        retrieveSettings();
+
+        return () => {
+            if (updateUIInterval !== null) {
+                clearInterval(updateUIInterval);
+            }
+        };
+    }, []);
+
+    return (
+        <div className="basepage-container">
+            <Navbar firstName={firstName} lastName={lastName} email={emailAddress} useGravatar={useGravatar} />
+            <div className="basepage-content">
+                {props.children}
             </div>
-        )
-    }
+            <StatusBar serverPing={pingInterval} />
+        </div>
+    )
 }

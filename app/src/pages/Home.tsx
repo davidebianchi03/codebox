@@ -14,8 +14,6 @@ interface HomePageProps {
 }
 
 interface HomePageState {
-    redirect: boolean
-    redirectUrl: string
     workspaces: Array<any>,
     workspacesFilterText: string,
 }
@@ -26,42 +24,25 @@ export default class HomePage extends Component<HomePageProps, HomePageState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            redirect: false,
-            redirectUrl: "",
             workspaces: [],
             workspacesFilterText: "",
         }
     }
 
     componentDidMount(): void {
-        this.IsAuthenticated();
         this.ListWorkspaces();
-    }
-
-    private IsAuthenticated = async () => {
-        // redirect to home if user is already authenticated
-        let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
-        if (status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
-            this.setState({ redirect: true, redirectUrl: "/login" });
-        }
     }
 
     private ListWorkspaces = async () => {
         let [status, statusCode, responseData, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace`, "GET", null);
         if (status === RequestStatus.OK) {
             this.setState({ workspaces: responseData });
-        } else if (status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
-            this.setState({ redirect: true, redirectUrl: "/login" });
         } else {
             console.log(`Error: received ${statusCode} from server`);
         }
     }
 
     render(): ReactNode {
-        if (this.state.redirect) {
-            return <Navigate to={this.state.redirectUrl} />
-        }
-
         let filteredWorkspaces: Array<any> = [];
         this.state.workspaces.forEach((workspace) => {
             if ((workspace.name as string).indexOf(this.state.workspacesFilterText) !== -1) {

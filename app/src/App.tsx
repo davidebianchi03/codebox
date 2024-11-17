@@ -8,6 +8,7 @@ import HomePage from "./pages/Home";
 import WorkspaceDetails from "./pages/WorkspaceDetails/WorkspaceDetails";
 import PageNotFound from "./pages/PageNotFound";
 import CreateWorkspace from "./pages/CreateWorkspace";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path='/' element={<HomePage />} />
         <Route path='/workspaces/:workspaceId' element={<WorkspaceDetails />}  />
         <Route path='/create-workspace' element={<CreateWorkspace />}  />
+        <Route path='/profile' element={<Profile />}  />
         <Route path='*' element={<PageNotFound />}  />
       </Routes>
     </Router>

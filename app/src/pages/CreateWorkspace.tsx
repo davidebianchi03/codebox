@@ -21,16 +21,6 @@ export default function CreateWorkspace(props: CreateWorkspaceProps) {
     const [workspaceGitRepoConfigurationFolder, setWorkspaceGitRepoConfigurationFolder] = useState<string>(".devcontainer");
     const [workspaceGitRepoConfigurationFolderError, setWorkspaceGitRepoConfigurationFolderError] = useState<string>("");
 
-    // check that users are authenticated
-    useEffect(() => {
-        (async () => {
-            let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
-            if (status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
-                navigate("/login")
-            }
-        })();
-    }, []);
-
     // form validation
     const validateWorkspaceName = (value: string) => {
         if (value === "") {
@@ -86,7 +76,7 @@ export default function CreateWorkspace(props: CreateWorkspaceProps) {
     };
 
     return (
-        <BasePage>
+        <BasePage authRequired={true}>
             <Card style={{
                 width: "90%",
                 margin: "auto",
@@ -132,7 +122,7 @@ export default function CreateWorkspace(props: CreateWorkspaceProps) {
                         errorMessage={workspaceGitRepoConfigurationFolderError}
                     />
                     <div style={{ marginTop: "20pt", display: "flex", justifyContent: "end" }}>
-                        <Button type="link" extraClass="outline-white" style={{marginRight:"10px"}} linkHref="/">
+                        <Button type="link" extraClass="outline-white" style={{ marginRight: "10px" }} linkHref="/">
                             Cancel
                         </Button>
                         <Button type="submit">

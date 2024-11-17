@@ -1,11 +1,11 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, Method } from "axios";
 import { LoginStatus, RequestStatus } from "./types";
 import { GetCookie } from "./cookies";
 
 export class Http {
 
     public static GetServerURL() {
-        if(process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "development") {
             return "http://127.0.0.1:8080"
         } else {
             return "";
@@ -48,7 +48,7 @@ export class Http {
         return [LoginStatus.UNKNOWN_ERROR, "", new Date(Date.now())];
     }
 
-    public static async Request(url: string, method: string, requestBody: any): Promise<[status: RequestStatus, statusCode:number|undefined, responseData: any, description:string]> {
+    public static async Request(url: string, method: Method, requestBody: any, contentType: string = "application/json"): Promise<[status: RequestStatus, statusCode: number | undefined, responseData: any, description: string]> {
         let jwtToken = this.GetJWTTokenFromCookies();
         let errorDescription = "";
 
@@ -59,17 +59,18 @@ export class Http {
             url: url,
             headers: {
                 Authorization: `Bearer ${jwtToken}`,
+                "Content-Type": contentType
             },
             method: method,
             data: requestBody,
         }
-        
+
         try {
             let response = await axios.request(requestConfig);
             return [RequestStatus.OK, response.status, response.data, errorDescription];
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                if(error.response?.status === 401) {
+                if (error.response?.status === 401) {
                     return [RequestStatus.NOT_AUTHENTICATED, error.response?.status, error.response?.data, errorDescription];
                 } else {
                     return [RequestStatus.UNKNOWN_ERROR, error.response?.status, error.response?.data, errorDescription];

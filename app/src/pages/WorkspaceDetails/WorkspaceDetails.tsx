@@ -55,16 +55,6 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
         navigate("/");
     }
 
-    // check that users are authenticated
-    useEffect(() => {
-        (async () => {
-            let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
-            if (status === RequestStatus.NOT_AUTHENTICATED && statusCode === 401) {
-                navigate("/login")
-            }
-        })();
-    }, []);
-
     // retrieve workspace details
     const UpdateWorkspaceDetails = async () => {
         let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}`, "GET", null);
@@ -137,7 +127,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
 
     let borderColorCssVar = RetrieveColorForWorkspaceStatus(workspaceDetails.status)
     return (
-        <BasePage>
+        <BasePage authRequired={true}>
             <Card style={{
                 width: "90%",
                 margin: "auto",

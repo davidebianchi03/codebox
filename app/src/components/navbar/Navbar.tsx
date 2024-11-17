@@ -2,8 +2,8 @@ import "./Navbar.css";
 import CodeboxLogoSquare from "../../assets/images/logo-square.png";
 import DefaultAvatar from "../../assets/images/default-avatar.png";
 import MenuIcon from "../../assets/images/menu.png";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
@@ -21,9 +21,18 @@ export function Navbar(props: NavbarProps) {
     const [showActionsDropdown, setShowActionsDropdown] = useState<boolean>(false);
     const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
 
+    const actionsDropdown = useRef<any>(null);
+    const userDropdown = useRef<any>(null);
+
+    const navigate = useNavigate();
+
     const handleClickOutsideMenuDropDown = (e: MouseEvent) => {
-        setShowActionsDropdown(false);
-        setShowUserDropdown(false);
+        if (!actionsDropdown.current.contains(e.target)) {
+            setShowActionsDropdown(false);
+        }
+        if (!userDropdown.current.contains(e.target)) {
+            setShowUserDropdown(false);
+        }
     };
 
     useEffect(() => {
@@ -31,7 +40,7 @@ export function Navbar(props: NavbarProps) {
         return () => {
             document.removeEventListener("mousedown", handleClickOutsideMenuDropDown);
         }
-    }, [])
+    }, []);
 
     return (
         <div className="navbar">
@@ -49,7 +58,7 @@ export function Navbar(props: NavbarProps) {
                         marginLeft: "10pt"
                     }}
                 />
-                <ul className="navbar-links" style={showActionsDropdown ? { display: "block" } : undefined}>
+                <ul className="navbar-links" style={showActionsDropdown ? { display: "block" } : undefined} ref={actionsDropdown}>
                     <li>
                         <Link to={"/"}>Workspaces</Link>
                     </li>
@@ -60,25 +69,26 @@ export function Navbar(props: NavbarProps) {
             </div>
             {/* User */}
             <div className="navbar-right">
-                <div className="navbar-user" onClick={()=>setShowUserDropdown(!showUserDropdown)}>
+                <div className="navbar-user" onClick={() => setShowUserDropdown(!showUserDropdown)}>
                     {/* User details */}
                     <span className="user-details">
                         <span>{props.firstName} {props.lastName}</span>
                         <small>{props.email}</small>
                     </span>
                     {
-                        props.useGravatar ?
+                        !props.useGravatar ?
                             <img src={DefaultAvatar} alt="User avatar" width={"35px"} height={"35px"} />
                             :
                             <img src={`https://www.gravatar.com/avatar/${CryptoJS.SHA256(props.email)}`} alt="User avatar" width={"35px"} height={"35px"} />
                     }
                     {/* Dropdown */}
-                    <ul className="user-dropdown" 
-                        style={showUserDropdown ? { display: "block" } : { display: "none" }}  
+                    <ul className="user-dropdown"
+                        style={showUserDropdown ? { display: "block" } : { display: "none" }}
+                        ref={userDropdown}
                     >
-                        <li>
+                        <li onClick={() => navigate("/profile")}>
                             <FontAwesomeIcon icon={faUser} />
-                            <span>Profile</span>
+                            <span style={{ width: "100%" }}>Profile</span>
                         </li>
                         <li>
                             <FontAwesomeIcon icon={faRightFromBracket} />
