@@ -125,6 +125,23 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
         UpdateWorkspaceDetails();
     }
 
+    const OpenRemoteDeveloping = () => {
+        if (
+            workspaceDetails.id !== undefined &&
+            selectedContainer.id !== undefined &&
+            selectedContainer.container_user !== undefined &&
+            selectedContainer.workspace_path_in_container !== undefined
+        ) {
+            var urlQueryParams = new URLSearchParams();
+            urlQueryParams.set("workspace_id", workspaceDetails.id?.toString());
+            urlQueryParams.set("container_id", selectedContainer.id?.toString());
+            urlQueryParams.set("container_port", "2222");
+            urlQueryParams.set("container_user", selectedContainer.container_user);
+            urlQueryParams.set("workspace_path", encodeURI(selectedContainer.workspace_path_in_container));
+            document.location.href = `vscode://davidebianchi.codebox-remote/open?${urlQueryParams.toString()}`;
+        }
+    }
+
     let borderColorCssVar = RetrieveColorForWorkspaceStatus(workspaceDetails.status)
     return (
         <BasePage authRequired={true}>
@@ -154,15 +171,15 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                         cursor: "pointer"
                                     }}
                                     onClick={() => {
-                                        if (workspaceDetails.status !== "running") {
-                                            StartWorkspace();
-                                        } else {
+                                        if (workspaceDetails.status === "running" || workspaceDetails.status === "error") {
                                             StopWorkspace();
+                                        } else {
+                                            StartWorkspace();
                                         }
                                     }}
                                 >
                                     {
-                                        workspaceDetails.status === "running" ?
+                                        workspaceDetails.status === "running" || workspaceDetails.status === "error" ?
                                             "Stop workspace" :
                                             "Start workspace"
                                     }
@@ -262,26 +279,43 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                                         :
                                                         <img alt="Authentication required" src={LockIcon} width={"20px"} height={"20px"} />
                                                 }
-                                                <span
-                                                    style={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flexWrap: "wrap",
-                                                        marginLeft: "5pt"
-                                                    }}
-                                                >
-                                                    <span>
-                                                        {port.port_number}
-                                                        {port.port_number === 2222 ?
+
+                                                {port.port_number === 2222 ?
+                                                    <span
+                                                        style={{
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                            flexWrap: "wrap",
+                                                            marginLeft: "5pt",
+                                                            cursor: "pointer",
+                                                        }}
+                                                        onClick={() => OpenRemoteDeveloping()}
+                                                    >
+                                                        <span>
+                                                            {port.port_number}
                                                             <small style={{ fontSize: "9pt", marginLeft: "4pt" }}>(remote developing)</small>
-                                                            :
-                                                            null
-                                                        }
+                                                        </span>
+                                                        <small style={{ fontSize: "8pt", color: "var(--grey-300)", }}>
+                                                            {port.connection_type === "ws" ? "TCP over WS" : "HTTP"}
+                                                        </small>
                                                     </span>
-                                                    <small style={{ fontSize: "8pt", color: "var(--grey-300)", }}>
-                                                        {port.connection_type === "ws" ? "TCP over WS" : "HTTP"}
-                                                    </small>
-                                                </span>
+                                                    :
+                                                    <span
+                                                        style={{
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                            flexWrap: "wrap",
+                                                            marginLeft: "5pt"
+                                                        }}
+                                                    >
+                                                        <span>
+                                                            {port.port_number}
+                                                        </span>
+                                                        <small style={{ fontSize: "8pt", color: "var(--grey-300)", }}>
+                                                            {port.connection_type === "ws" ? "TCP over WS" : "HTTP"}
+                                                        </small>
+                                                    </span>
+                                                }
                                             </a>
                                         ))
                                     }
@@ -290,8 +324,24 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         </div>
                     </div>
                     :
-                    <div>
-
+                    <div style={{ textAlign: "center" }}>
+                        <h5 style={{ margin: "10pt" }}>No running containers
+                            {
+                                workspaceDetails.status === "stopped" ?
+                                    <span>
+                                        ,&nbsp;
+                                        <a style={{
+                                            textDecoration: "underline",
+                                            cursor: "pointer"
+                                        }}
+                                            onClick={() => StartWorkspace()}
+                                        >
+                                            start workspace
+                                        </a>
+                                    </span>
+                                    : null
+                            }
+                        </h5>
                     </div>
                 }
             </Card>

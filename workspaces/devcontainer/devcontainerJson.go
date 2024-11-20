@@ -541,7 +541,7 @@ func (js *DevcontainerJson) MapContainers() error {
 					portObj := db.ForwardedPort{
 						PortNumber:     port,
 						ConnectionType: portConnectionType,
-						Public:         true,
+						Public:         false,
 					}
 					workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
 				}
@@ -551,7 +551,7 @@ func (js *DevcontainerJson) MapContainers() error {
 				portObj := db.ForwardedPort{
 					PortNumber:     AgentSSHServerPort,
 					ConnectionType: db.ConnectionTypeWS,
-					Public:         true,
+					Public:         false,
 				}
 				workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
 			}
@@ -619,7 +619,7 @@ func (js *DevcontainerJson) MapContainers() error {
 				portObj := db.ForwardedPort{
 					PortNumber:     port,
 					ConnectionType: portConnectionType,
-					Public:         true,
+					Public:         false,
 				}
 				workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
 			}
@@ -629,7 +629,7 @@ func (js *DevcontainerJson) MapContainers() error {
 			portObj := db.ForwardedPort{
 				PortNumber:     AgentSSHServerPort,
 				ConnectionType: db.ConnectionTypeWS,
-				Public:         true,
+				Public:         false,
 			}
 			workspaceContainer.ForwardedPorts = append(workspaceContainer.ForwardedPorts, portObj)
 		}
