@@ -62,7 +62,7 @@ func HandleForwardContainerPort(ctx *gin.Context) {
 	// retrieve development container
 	developmentContainer := db.WorkspaceContainer{}
 	result = db.DB.Where(
-		map[string]interface{}{"workspace_id": workspace.ID, "can_connect_remote_developing": true, "ID": containerId}).Preload("ForwardedPorts").Find(&developmentContainer)
+		map[string]interface{}{"workspace_id": workspace.ID, "ID": containerId}).Preload("ForwardedPorts").Find(&developmentContainer)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
