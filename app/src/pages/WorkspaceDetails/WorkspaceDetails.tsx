@@ -18,6 +18,7 @@ interface ForwardedPortsDetails {
     active: boolean
     connection_type: string
     public: boolean
+    url?: string
 }
 
 interface ContainerDetails {
@@ -45,9 +46,12 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     const navigate = useNavigate();
     const [workspaceDetails, setWorkspaceDetails] = useState<WorkspaceDetails>({});
     const [workspaceLogs, setWorkspaceLogs] = useState<string>("");
+    const [selectedContainerIndex, setSelectedContainerIndex] = useState<number>(0);
     const [selectedContainer, setSelectedContainer] = useState<ContainerDetails>({});
+    const [instanceSettings, setInstanceSettings] = useState<any>({});
 
     var logsContainerRef = useRef<null | HTMLDivElement>(null);
+
 
     let params = useParams();
     let workspaceId = params.workspaceId;
@@ -56,17 +60,36 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     }
 
     // retrieve workspace details
-    const UpdateWorkspaceDetails = async () => {
-        let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}`, "GET", null);
-        if (status === RequestStatus.OK) {
-            setWorkspaceDetails(data);
-            if (selectedContainer.id === undefined) {
-                if (data.containers) {
-                    if (data.containers.length > 0) {
-                        setSelectedContainer(data.containers[0])
+    useEffect(() => {
+        if (workspaceDetails.containers) {
+            if (selectedContainerIndex < 0 || selectedContainerIndex > workspaceDetails.containers?.length) {
+                setSelectedContainerIndex(0);
+                return;
+            }
+
+            var selectedContainer = workspaceDetails.containers[selectedContainerIndex];
+            if (instanceSettings && selectedContainer.forwarded_ports) {
+                for (let i = 0; i < selectedContainer.forwarded_ports.length; i++) {
+                    if (selectedContainer.forwarded_ports[i].connection_type === "http" && instanceSettings.server_hostname) {
+                        if(instanceSettings.use_subdomains) {
+                            selectedContainer.forwarded_ports[i].url = `http://codebox--w${workspaceDetails.id}--c${selectedContainer.name}--p${selectedContainer.forwarded_ports[i].port_number}.${instanceSettings.server_hostname}`;
+                        } else {
+                            selectedContainer.forwarded_ports[i].url = `http://${instanceSettings.server_hostname}/api/v1/workspace/${workspaceDetails.id}/container/${selectedContainer.id}/forward/${selectedContainer.forwarded_ports[i].port_number}`;
+                        }
                     }
                 }
             }
+
+            setSelectedContainer(selectedContainer);
+        }
+    }, [workspaceDetails, selectedContainerIndex, instanceSettings]);
+
+    const UpdateWorkspaceDetails = async () => {
+        let [, , is] = await Http.Request(`${Http.GetServerURL()}/api/v1/instance-settings`, "GET", null);
+        setInstanceSettings(is);
+        let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}`, "GET", null);
+        if (status === RequestStatus.OK) {
+            setWorkspaceDetails(data);
         }
     };
 
@@ -240,7 +263,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         <ul>
                             {
                                 workspaceDetails.containers?.map((container, index) => (
-                                    <li style={index === 0 ? { borderTop: "none" } : {}} onClick={() => setSelectedContainer(container)} key={container.id}>
+                                    <li style={index === 0 ? { borderTop: "none" } : {}} onClick={() => { setSelectedContainerIndex(index); UpdateWorkspaceDetails(); }} key={container.id}>
                                         {container.name}
                                     </li>
                                 ))
@@ -305,7 +328,15 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                                             display: "flex",
                                                             flexDirection: "column",
                                                             flexWrap: "wrap",
-                                                            marginLeft: "5pt"
+                                                            marginLeft: "5pt",
+                                                            cursor: port.url && port.url !== "" ? "pointer": "default",
+                                                        }}
+                                                        onClick={() => {
+                                                            if (port.url) {
+                                                                if (port.url !== "") {
+                                                                    window.open(port.url, "_blank")?.focus();
+                                                                }
+                                                            }
                                                         }}
                                                     >
                                                         <span>

@@ -8,8 +8,9 @@ import (
 )
 
 func HandleRetrieveServerSettings(ctx *gin.Context) {
-
 	ctx.JSON(http.StatusOK, gin.H{
-		"use_gravatar": env.CodeBoxEnv.UseGravatar,
+		"use_gravatar":    env.CodeBoxEnv.UseGravatar,
+		"use_subdomains":  env.CodeBoxEnv.UseSubDomains,
+		"server_hostname": ctx.Request.Host,
 	})
 }

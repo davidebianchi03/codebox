@@ -15,6 +15,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - CODEBOX_USE_GRAVATAR=true
+      - CODEBOX_USE_SUBDOMAINS=true
     restart: always
 
 volumes:

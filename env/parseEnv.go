@@ -19,6 +19,7 @@ type codeBoxEnv struct {
 	RedisPort                        int
 	UploadsPath                      string
 	UseGravatar                      bool
+	UseSubDomains                    bool
 	FrontendPath                     string
 }
 
@@ -71,6 +72,9 @@ func InitCodeBoxEnv() error {
 
 	// use gravatar
 	CodeBoxEnv.UseGravatar = strings.ToLower(envVarOrDefault("CODEBOX_USE_GRAVATAR", "true")) == "true"
+
+	// use gravatar
+	CodeBoxEnv.UseSubDomains = strings.ToLower(envVarOrDefault("CODEBOX_USE_SUBDOMAINS", "true")) == "true"
 
 	// debug
 	CodeBoxEnv.DebugEnabled = strings.ToLower(envVarOrDefault("CODEBOX_DEBUG", "true")) == "true"
