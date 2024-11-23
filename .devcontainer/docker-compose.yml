@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:7.4.1
+    restart: always
+
+  codebox:
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
