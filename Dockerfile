@@ -1,6 +1,6 @@
 FROM nginx:1.27.2
 
-# Install docker and redis
+# Install docker
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
     ca-certificates \
@@ -22,6 +22,19 @@ RUN apt-get update && apt-get install -y \
     docker-compose-plugin \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
+
+# Install NVM
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+
+# Load NVM into the current shell session
+RUN export NVM_DIR="$HOME/.nvm" && \
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && \
+    nvm install 20.12.2 && \
+    nvm alias default 20.12.2
+
+# Install devcontainers CLI
+RUN npm install -g @devcontainers/cli
 
 COPY ./bin/ /codebox/bin
 COPY ./docker/production.env /codebox/bin/codebox.env

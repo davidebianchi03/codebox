@@ -23,16 +23,28 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
-# Install NVM
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-
-# Load NVM into the current shell session
-RUN export NVM_DIR="$HOME/.nvm" && \
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && \
-    nvm install 20.12.2 && \
-    nvm alias default 20.12.2
-
 # Create user "vscode"
 RUN useradd -rm -d /home/vscode -s /bin/bash -g root -G sudo -u 1000 vscode && \
     echo "vscode:password" | chpasswd
+
+USER vscode
+
+ENV NVM_DIR=/home/vscode/.nvm
+ENV NODE_VERSION=20.12.2
+
+# Install NVM
+RUN mkdir -p ${NVM_DIR} && \
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash && \
+    \. $NVM_DIR/nvm.sh && \
+    \. $NVM_DIR/bash_completion && \
+    nvm install $NODE_VERSION && \
+    nvm alias default $NODE_VERSION && \
+    nvm use default
+
+# add node and npm to path so the commands are available
+ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+RUN npm install -g @devcontainers/cli
+
+USER root
