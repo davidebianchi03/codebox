@@ -1,14 +1,12 @@
 <div align="center">
-    <img src="./app/src/assets/images/logo-black.png#gh-light-mode-only" style="max-width: 250px">
-    <img src="./app/src/assets/images/logo-white.png#gh-dark-mode-only" style="max-width: 250px">
+    <img src="./app/src/assets/images/logo-black.png#gh-light-mode-only" style="width: 200px">
+    <img src="./app/src/assets/images/logo-white.png#gh-dark-mode-only" style="width: 200px">
 
   <h3>
     Remote Development Environments based on Devcontainer
   </h3>
-    <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size
-    ">
-    <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls
-    ">
+    <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size">
+    <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls">
 
   <br>
   <br>
