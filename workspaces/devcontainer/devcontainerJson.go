@@ -249,6 +249,11 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 					}
 				}
 
+				// add new volume if it does not exist
+				if composeWorkspaceVolume == "" {
+					newVolumesArray = append(newVolumesArray, fmt.Sprintf("%s:%s", codeBoxWorkspaceVolumeName, js.devcontainerJson["workspaceFolder"].(string)))
+				}
+
 				serviceDefinitionMap["volumes"] = newVolumesArray
 			}
 

@@ -67,7 +67,7 @@ export default function Profile(props: CreateWorkspaceProps) {
                     <TextInput
                         style={{ width: "calc(100% - 15pt)", marginTop: "15pt" }}
                         placeholder="Doe"
-                        onTextChanged={(event) => setFirstName(event.target.value)}
+                        onTextChanged={(event) => setLastName(event.target.value)}
                         value={lastName}
                         label="Last Name"
                     />
