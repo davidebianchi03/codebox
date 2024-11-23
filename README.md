@@ -54,3 +54,4 @@ You can connect to a running workspace container using [**codebox-cli**](https:/
 
 ## Disclaimer
 
+This project is built upon devcontainers but is not affiliated with or endorsed by Microsoft or the devcontainers development team.
