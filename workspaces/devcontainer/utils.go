@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"codebox.com/db"
+	"codebox.com/env"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/tailscale/hujson"
@@ -45,5 +46,5 @@ func getUsedPorts() ([]int, error) {
 }
 
 func getWorkspaceVolumeId(workspace db.Workspace) string {
-	return fmt.Sprintf("codebox-workspace-%s-%d-data", workspace.Name, workspace.ID)
+	return fmt.Sprintf("%s-workspace-%s-%d-data", env.CodeBoxEnv.WorkspaceObjectsPrefix, workspace.Name, workspace.ID)
 }

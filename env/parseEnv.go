@@ -21,6 +21,7 @@ type codeBoxEnv struct {
 	UseGravatar                      bool
 	UseSubDomains                    bool
 	FrontendPath                     string
+	WorkspaceObjectsPrefix           string
 }
 
 var CodeBoxEnv *codeBoxEnv
@@ -78,6 +79,9 @@ func InitCodeBoxEnv() error {
 
 	// debug
 	CodeBoxEnv.DebugEnabled = strings.ToLower(envVarOrDefault("CODEBOX_DEBUG", "true")) == "true"
+
+	// prefix for workspace objects such as containers, stacks, volumes...
+	CodeBoxEnv.WorkspaceObjectsPrefix = strings.ToLower(envVarOrDefault("CODEBOX_WORKSPACE_OBJECTS_PREFIX", "codebox"))
 
 	return nil
 }

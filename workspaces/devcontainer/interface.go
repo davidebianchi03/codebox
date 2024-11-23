@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"codebox.com/db"
+	"codebox.com/env"
 	"codebox.com/utils"
 	"codebox.com/workspaces/common"
 	"github.com/docker/docker/api/types/container"
@@ -50,7 +51,7 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 	}
 	defer os.RemoveAll(workingDir)
 
-	workingDir = path.Join(workingDir, fmt.Sprintf("codebox_workspace_%d", dw.Workspace.ID))
+	workingDir = path.Join(workingDir, fmt.Sprintf("%s_workspace_%d", env.CodeBoxEnv.WorkspaceObjectsPrefix, dw.Workspace.ID))
 	err = os.MkdirAll(workingDir, 0777)
 	if err != nil {
 		dw.Workspace.AppendLogs("cannot create temp working directory, " + err.Error() + "\n")
@@ -159,7 +160,7 @@ func (dw *DevcontainerWorkspace) StopWorkspace() {
 		Filters: filters.NewArgs(
 			filters.KeyValuePair{
 				Key:   "label",
-				Value: fmt.Sprintf("com.codebox.workspace_id=%d", dw.Workspace.ID),
+				Value: fmt.Sprintf("com.%s.workspace_id=%d", env.CodeBoxEnv.WorkspaceObjectsPrefix, dw.Workspace.ID),
 			},
 		),
 	})

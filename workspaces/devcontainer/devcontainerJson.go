@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"codebox.com/db"
+	"codebox.com/env"
 	"codebox.com/utils"
 	"codebox.com/utils/cast"
 	"github.com/docker/docker/api/types/container"
@@ -286,7 +287,8 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 					return fmt.Errorf("Invalid docker compose syntax")
 				}
 			}
-			labelsMap["com.codebox.workspace_id"] = js.workspace.ID
+			workspaceIdLabelKey := fmt.Sprintf("com.%s.workspace_id", env.CodeBoxEnv.WorkspaceObjectsPrefix)
+			labelsMap[workspaceIdLabelKey] = js.workspace.ID
 			serviceDefinitionMap["labels"] = labelsMap
 
 			// TODO: override entrypoint
@@ -338,7 +340,7 @@ func (js *DevcontainerJson) FixConfigFiles() error {
 			"--publish",
 			fmt.Sprintf("%d:55088", agentExternalPort),
 			"--label",
-			fmt.Sprintf("com.codebox.workspace_id=%d", js.workspace.ID),
+			fmt.Sprintf("com.%s.workspace_id=%d", env.CodeBoxEnv.WorkspaceObjectsPrefix, js.workspace.ID),
 		}
 
 		forwardedPortsStrArray, ok := js.devcontainerJson["forwardPorts"].([]string)
@@ -656,7 +658,7 @@ func (js *DevcontainerJson) StartAgents() error {
 		Filters: filters.NewArgs(
 			filters.KeyValuePair{
 				Key:   "label",
-				Value: fmt.Sprintf("com.codebox.workspace_id=%d", js.workspace.ID),
+				Value: fmt.Sprintf("com.%s.workspace_id=%d", env.CodeBoxEnv.WorkspaceObjectsPrefix, js.workspace.ID),
 			},
 		),
 	})

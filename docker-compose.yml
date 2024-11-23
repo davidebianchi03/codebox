@@ -16,6 +16,7 @@ services:
     environment:
       - CODEBOX_USE_GRAVATAR=true
       - CODEBOX_USE_SUBDOMAINS=true
+      - CODEBOX_WORKSPACE_OBJECTS_PREFIX=codebox
     restart: always
 
 volumes:
