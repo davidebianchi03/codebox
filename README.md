@@ -1,8 +1,19 @@
-<div style="display: flex; align-items:center; justify-content:center;">
-    <img src="./app/src/assets/images/logo-square.png" width="60px">
-    <p style="font-size:40px; font-weight: bold; margin-top:10px; margin-left: 7px; font-family: Consolas;">Codebox</p>
+<div align="center">
+    <img src="./app/src/assets/images/logo-black.png#gh-light-mode-only" style="max-width: 250px">
+    <img src="./app/src/assets/images/logo-white.png#gh-dark-mode-only" style="max-width: 250px">
+
+  <h3>
+    Remote Development Environments based on Devcontainer
+  </h3>
+    <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size
+    ">
+    <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls
+    ">
+
+  <br>
+  <br>
+
 </div>
-<hr/>
 
 **Codebox** is a service that allows developers to create remote workspaces based on docker containers. Codebox workspaces are based on [Devcontainers specification](https://containers.dev/). 
 
@@ -40,3 +51,6 @@ volumes:
 ## Connect to workspace container
 
 You can connect to a running workspace container using [**codebox-cli**](https://github.com/davidebianchi03/codebox-cli). Use official [**VS Code Extension**](https://github.com/davidebianchi03/codebox-cli) to open any workspace in VS Code with a single click.
+
+## Disclaimer
+
