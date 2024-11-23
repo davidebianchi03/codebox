@@ -11,6 +11,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	cryptossh "golang.org/x/crypto/ssh"
 )
 
 func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
@@ -29,6 +30,7 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 		if err != nil {
 			return fmt.Errorf("Git authentication failure %s", err)
 		}
+		gitAuth.(*ssh.PublicKeys).HostKeyCallback = cryptossh.InsecureIgnoreHostKey()
 	}
 
 	_, err = git.PlainClone(dir, false, &git.CloneOptions{
@@ -37,7 +39,6 @@ func RetrieveWorkspaceConfigFilesFromGitRepo(workspace *db.Workspace) error {
 		Depth:           1, // retrieve only latest commit
 		SingleBranch:    true,
 		Auth:            gitAuth,
-		// TODO: retrieve configuration
 	})
 
 	if err != nil {

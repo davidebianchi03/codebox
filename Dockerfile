@@ -26,12 +26,20 @@ RUN apt-get update && apt-get install -y \
 # Install NVM
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
 
+ENV NVM_DIR="/root/.nvm"
+ENV NODE_VERSION=20.12.2
+
 # Load NVM into the current shell session
-RUN export NVM_DIR="$HOME/.nvm" && \
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && \
-    nvm install 20.12.2 && \
-    nvm alias default 20.12.2
+RUN mkdir -p ${NVM_DIR} && \
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash && \
+    \. $NVM_DIR/nvm.sh && \
+    \. $NVM_DIR/bash_completion && \
+    nvm install $NODE_VERSION && \
+    nvm alias default $NODE_VERSION && \
+    nvm use default
+
+ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
 # Install devcontainers CLI
 RUN npm install -g @devcontainers/cli
