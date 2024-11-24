@@ -28,16 +28,20 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -rm -d /home/vscode -s /bin/bash -G sudo vscode && \
     echo "vscode:password" | chpasswd
     
-# RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 USER vscode
 
-# Install golang
-RUN wget https://go.dev/dl/go1.23.1.linux-amd64.tar.gz -O go.tar.gz && \
-    sudo tar -xzvf go.tar.gz -C /usr/local && \
-    echo export PATH=$HOME/go/bin:/usr/local/go/bin:$PATH >> ~/.profile
+ENV HOME=/home/vscode
 
-ENV NVM_DIR=/home/vscode/.nvm
+# Install golang
+RUN cd /tmp && \
+    wget https://go.dev/dl/go1.23.1.linux-amd64.tar.gz -O go.tar.gz && \
+    sudo tar -xzvf go.tar.gz -C /usr/local && \
+    echo export PATH=$HOME/go/bin:/usr/local/go/bin:$PATH >> ~/.profile && \
+    rm -rf /tmp/go.tar.gz
+
+ENV NVM_DIR=$HOME/.nvm
 ENV NODE_VERSION=20.12.2
 
 # Install NVM
