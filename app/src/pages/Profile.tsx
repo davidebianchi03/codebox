@@ -17,6 +17,8 @@ export default function Profile(props: CreateWorkspaceProps) {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [sshPublicKey, setSshPublicKey] = useState("");
+    const [sshPublicKeyContainerBorderStyle, setSshPublicKeyContainerBorderStyle] = useState("solid var(--background-divider) 1px");
+    const [showPublicKeyCopiedMessage, setShowPublicKeyCopiedMessage] = useState(false);
 
     const navigate = useNavigate();
 
@@ -92,9 +94,19 @@ export default function Profile(props: CreateWorkspaceProps) {
                 <p style={{ padding: 0, margin: 0 }}>
                     <small>Add this key to your Git server to enable authentication.</small>
                 </p>
+                <span style={{
+                    fontSize: "12px",
+                    fontFamily: "Consolas",
+                    marginRight: "15px",
+                    float: "right",
+                    display: showPublicKeyCopiedMessage ? "block" : "none",
+                }}>
+                    Copied to clibboard!
+                </span>
                 <div style={{
-                    border: "solid var(--background-divider) 1px",
+                    border: sshPublicKeyContainerBorderStyle,
                     margin: "10pt",
+                    marginTop:"16pt",
                     borderRadius: "4pt",
                     padding: "10pt",
                     fontSize: "11pt",
@@ -105,8 +117,13 @@ export default function Profile(props: CreateWorkspaceProps) {
                 }}
                     onClick={() => {
                         navigator.clipboard.writeText(sshPublicKey);
+                        setSshPublicKeyContainerBorderStyle("solid var(--blue) 1px");
+                        setShowPublicKeyCopiedMessage(true);
+                        setTimeout(() => {
+                            setSshPublicKeyContainerBorderStyle("solid var(--background-divider) 1px");                            
+                            setShowPublicKeyCopiedMessage(false);
+                        }, 250);
                     }}
-
                 >
                     <span style={{
                         position: "absolute",
