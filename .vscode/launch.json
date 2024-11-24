@@ -10,9 +10,11 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "args": ["runserver"],
+            "args": [
+                "runserver"
+            ],
             "env": {
-                "DOCKER_API_VERSION":"1.45"
+                "DOCKER_API_VERSION": "1.45",
             }
         },
         {
@@ -21,7 +23,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "args": ["create-superuser"],
+            "args": [
+                "create-superuser"
+            ],
             "console": "integratedTerminal"
         }
     ]

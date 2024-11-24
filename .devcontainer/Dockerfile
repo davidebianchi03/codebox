@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     docker-buildx-plugin \
     docker-compose-plugin \
     wget \
+    build-essential \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
