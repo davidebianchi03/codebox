@@ -1,6 +1,6 @@
 module codebox.com
 
-go 1.23.1
+go 1.23
 
 require (
 	gorm.io/driver/sqlite v1.5.6

@@ -1,6 +1,6 @@
 FROM nginx:1.27.2
 
-# Install docker
+# Install dependecies
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
     ca-certificates \
@@ -20,14 +20,22 @@ RUN apt-get update && apt-get install -y \
     containerd.io \
     docker-buildx-plugin \
     docker-compose-plugin \
+    wget \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
 # Create user "vscode"
 RUN useradd -rm -d /home/vscode -s /bin/bash -G sudo vscode && \
     echo "vscode:password" | chpasswd
+    
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 USER vscode
+
+# Install golang
+RUN wget https://go.dev/dl/go1.23.1.linux-amd64.tar.gz -O go.tar.gz && \
+    sudo tar -xzvf go.tar.gz -C /usr/local && \
+    echo export PATH=$HOME/go/bin:/usr/local/go/bin:$PATH >> ~/.profile
 
 ENV NVM_DIR=/home/vscode/.nvm
 ENV NODE_VERSION=20.12.2

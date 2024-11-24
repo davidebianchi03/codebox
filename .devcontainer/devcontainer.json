@@ -16,7 +16,8 @@
 				"dsznajder.es7-react-js-snippets",
 				"mhutchie.git-graph",
 				"donjayamanne.githistory",
-				"eamodio.gitlens"
+				"eamodio.gitlens",
+				"ms-azuretools.vscode-docker"
 			]
 		},
 		// Set *default* container specific settings.json values on container create.
