@@ -46,6 +46,9 @@ func (ctx *WorkspaceTaskContext) StopWorkspace(job *work.Job) error {
 	workspace.ClearLogs()
 
 	if workspace.Type == db.WorkspaceTypeDevcontainer {
+		workspace.AppendLogs("Stopping workspace...")
+		workspace.Status = db.WorkspaceStatusStopping
+		db.DB.Save(&workspace)
 		workspaceInterface := devcontainer.DevcontainerWorkspace{}
 		workspaceInterface.Workspace = workspace
 		workspaceInterface.StopWorkspace()
@@ -72,9 +75,14 @@ func (ctx *WorkspaceTaskContext) DeleteWorkspace(job *work.Job) error {
 	workspace.ClearLogs()
 
 	if workspace.Type == db.WorkspaceTypeDevcontainer {
+		workspace.AppendLogs("Deleting workspace...")
+		workspace.Status = db.WorkspaceStatusDeleting
+		db.DB.Save(&workspace)
 		workspaceInterface := devcontainer.DevcontainerWorkspace{}
 		workspaceInterface.Workspace = workspace
 		workspaceInterface.StopWorkspace()
+		workspace.Status = db.WorkspaceStatusDeleting
+		db.DB.Save(&workspace)
 		workspaceInterface.DeleteWorkspace()
 	} else {
 		return fmt.Errorf("%s: unsupported workspace type", workspace.Type)

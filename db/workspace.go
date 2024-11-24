@@ -26,6 +26,7 @@ const (
 	WorkspaceStatusStopping = "stopping"
 	WorkspaceStatusStopped  = "stopped"
 	WorkspaceStatusStarting = "starting"
+	WorkspaceStatusDeleting = "deleting"
 	WorkspaceStatusError    = "error"
 )
 
@@ -35,6 +36,7 @@ var workspaceStatusChoices = [...]string{
 	WorkspaceStatusStopping,
 	WorkspaceStatusStopped,
 	WorkspaceStatusStarting,
+	WorkspaceStatusDeleting,
 	WorkspaceStatusError,
 }
 
@@ -70,6 +72,19 @@ func (w *Workspace) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (w *Workspace) BeforeSave(tx *gorm.DB) (err error) {
 	return w.FullClean()
+}
+
+func (w *Workspace) Delete() (err error) {
+	configFilePath, err := w.GetConfigFilePath()
+	if err == nil {
+		os.RemoveAll(configFilePath)
+	}
+	logsFilePath, err := w.GetLogsFilePath()
+	if err == nil {
+		os.RemoveAll(logsFilePath)
+	}
+	DB.Delete(&w)
+	return nil
 }
 
 func (w *Workspace) GetConfigFilePath() (string, error) {

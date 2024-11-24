@@ -1,6 +1,6 @@
 import "./WorkspaceDetails.css"
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom"
+import { redirect, useNavigate, useParams } from "react-router-dom"
 import BasePage from "../base/Base";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
@@ -8,6 +8,11 @@ import Card from "../../theme/components/card/Card";
 import { RetrieveBeautyNameForStatus, RetrieveColorForWorkspaceStatus } from "../../utils/workspaceStatus";
 import EarthIcon from "../../assets/images/earth.png";
 import LockIcon from "../../assets/images/padlock.png";
+import { faEllipsisV, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { Dropdown } from "../../theme/components/dropdown/Dropdown";
+import Modal from "../../theme/components/modal/Modal";
+import TextInput from "../../theme/components/textinput/TextInput";
+import Button from "../../theme/components/button/Button";
 
 interface WorkspaceDetailsProps {
 
@@ -49,6 +54,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     const [selectedContainerIndex, setSelectedContainerIndex] = useState<number>(0);
     const [selectedContainer, setSelectedContainer] = useState<ContainerDetails>({});
     const [instanceSettings, setInstanceSettings] = useState<any>({});
+    const [showDeleteWorkspaceModal, setShowDeleteWorkspaceModal] = useState(false);
 
     var logsContainerRef = useRef<null | HTMLDivElement>(null);
 
@@ -71,7 +77,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
             if (instanceSettings && selectedContainer.forwarded_ports) {
                 for (let i = 0; i < selectedContainer.forwarded_ports.length; i++) {
                     if (selectedContainer.forwarded_ports[i].connection_type === "http" && instanceSettings.server_hostname) {
-                        if(instanceSettings.use_subdomains) {
+                        if (instanceSettings.use_subdomains) {
                             selectedContainer.forwarded_ports[i].url = `http://codebox--w${workspaceDetails.id}--c${selectedContainer.name}--p${selectedContainer.forwarded_ports[i].port_number}.${instanceSettings.server_hostname}`;
                         } else {
                             selectedContainer.forwarded_ports[i].url = `http://${instanceSettings.server_hostname}/api/v1/workspace/${workspaceDetails.id}/container/${selectedContainer.id}/forward/${selectedContainer.forwarded_ports[i].port_number}`;
@@ -90,6 +96,10 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
         let [status, statusCode, data, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceId}`, "GET", null);
         if (status === RequestStatus.OK) {
             setWorkspaceDetails(data);
+        } else {
+            if (statusCode === 404) {
+                return navigate("/");
+            }
         }
     };
 
@@ -105,7 +115,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
     // use effect to check if is ne
     let updateWorkspaceLogsInterval: NodeJS.Timer | null = null;
     useEffect(() => {
-        if (workspaceDetails.status === "creating" || workspaceDetails.status === "starting" || workspaceDetails.status === "stopping") {
+        if (workspaceDetails.status === "creating" || workspaceDetails.status === "starting" || workspaceDetails.status === "stopping" || workspaceDetails.status === "deleting") {
             retrieveWorkspaceLogs();
             updateWorkspaceLogsInterval = setInterval(retrieveWorkspaceLogs, 800);
         } else {
@@ -218,6 +228,46 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         }}>
                             {RetrieveBeautyNameForStatus(workspaceDetails.status)}
                         </div>
+                        <Dropdown
+                            titleIcon={faEllipsisV}
+                            title=""
+                            options={[
+                                { title: "Delete", icon: faTrash },
+                                // { title: "Update config", icon: faTrash },
+                            ]}
+                            onSelect={(option: any) => {
+                                if (option.title === "Delete") {
+                                    setShowDeleteWorkspaceModal(true);
+                                }
+                            }}
+                            minWidth="200px"
+                            left="-150px"
+                        />
+                        <Modal isOpen={showDeleteWorkspaceModal} onClose={() => setShowDeleteWorkspaceModal(false)}>
+                            <h2 style={{ marginTop: 0 }}>Delete workspace</h2>
+                            <p>
+                                Are you sure that you want to delete workspace {workspaceDetails.name}?
+                            </p>
+                            <div style={{ float: "right" }}>
+                                <Button
+                                    type="button"
+                                    extraClass="outline-white"
+                                    style={{ marginRight: "10px" }}
+                                    onClick={() => setShowDeleteWorkspaceModal(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="button" extraClass="warning"
+                                    onClick={async () => {
+                                        await Http.Request(`${Http.GetServerURL()}/api/v1/workspace/${workspaceDetails.id}`, "DELETE", "");
+                                        UpdateWorkspaceDetails();
+                                        setShowDeleteWorkspaceModal(false);
+                                    }}
+                                >
+                                    Delete workspace
+                                </Button>
+                            </div>
+                        </Modal>
                     </div>
                 </div>
                 <div style={{
@@ -329,7 +379,7 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                                             flexDirection: "column",
                                                             flexWrap: "wrap",
                                                             marginLeft: "5pt",
-                                                            cursor: port.url && port.url !== "" ? "pointer": "default",
+                                                            cursor: port.url && port.url !== "" ? "pointer" : "default",
                                                         }}
                                                         onClick={() => {
                                                             if (port.url) {

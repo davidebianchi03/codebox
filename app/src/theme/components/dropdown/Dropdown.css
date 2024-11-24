@@ -1,0 +1,38 @@
+/* Add these styles to your CSS file */
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background-color: transparent;
+    color: var(--white);
+}
+
+.dropdown-menu {
+    position: absolute;
+    background-color: var(--background-color-paper);
+    border: 1px solid var(--background-divider);
+    border-radius: 4px;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-width: 150px;
+    z-index: 1;
+}
+
+.dropdown-item {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color:  var(--grey-900);
+}

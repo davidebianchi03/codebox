@@ -26,3 +26,9 @@
     border: solid var(--blue) 1px;
     background: transparent;
 }
+
+.button.warning{
+    color: var(--white);
+    background-color: var(--orange);
+    border: none;
+}

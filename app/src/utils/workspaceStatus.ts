@@ -4,11 +4,13 @@ export function RetrieveColorForWorkspaceStatus(status: string | undefined) {
     } else if (status === "running") {
         return "--green";
     } else if (status === "stopping") {
-        return "--orange";
+        return "--yellow";
     } else if (status === "starting") {
         return "--blue";
     } else if (status === "error") {
         return "--red";
+    } else if (status === "deleting") {
+        return "--orange";
     } else {
         return "--background-divider";
     }
@@ -25,6 +27,8 @@ export function RetrieveBeautyNameForStatus(status: string | undefined) {
         return "Starting";
     } else if (status === "error") {
         return "Error";
+    } else if (status === "deleting") {
+        return "Deleting";
     } else {
         return "Stopped";
     }

@@ -420,7 +420,7 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	workspace.Status = db.WorkspaceStatusStopping
+	workspace.Status = db.WorkspaceStatusDeleting
 	db.DB.Save(&workspace)
 
 	// start bg task

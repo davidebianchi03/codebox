@@ -6,7 +6,7 @@ interface ButtonProps {
     style?: CSSProperties
     onClick?: MouseEventHandler<HTMLButtonElement>
     type?: "button" | "submit" | "reset" | "link" | undefined
-    extraClass?: "primary" | "outline-primary" | "outline-white" | undefined
+    extraClass?: "primary" | "warning" | "outline-primary" | "outline-white" | undefined
     linkHref?: string | undefined
 }
 

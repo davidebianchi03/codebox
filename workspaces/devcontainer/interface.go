@@ -142,10 +142,6 @@ func (dw *DevcontainerWorkspace) StartWorkspace() {
 }
 
 func (dw *DevcontainerWorkspace) StopWorkspace() {
-	dw.Workspace.AppendLogs("Stopping workspace...")
-	dw.Workspace.Status = db.WorkspaceStatusStopping
-	db.DB.Save(&dw.Workspace)
-
 	// retrieve workspace containers
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
@@ -301,5 +297,5 @@ func (dw *DevcontainerWorkspace) DeleteWorkspace() {
 	}
 
 	dw.Workspace.ClearLogs()
-	db.DB.Delete(&dw.Workspace)
+	dw.Workspace.Delete()
 }
