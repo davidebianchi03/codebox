@@ -13,6 +13,7 @@ import (
 	"codebox.com/workspaces/common"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 )
 
@@ -232,4 +233,73 @@ func (dw *DevcontainerWorkspace) StopWorkspace() {
 	dw.Workspace.AppendLogs("Workspace has been stopped...")
 	dw.Workspace.Status = db.WorkspaceStatusStopped
 	db.DB.Save(&dw.Workspace)
+}
+
+func (dw *DevcontainerWorkspace) DeleteWorkspace() {
+	dw.Workspace.AppendLogs("Deleting workspace...")
+	dw.Workspace.Status = db.WorkspaceStatusStopping
+	db.DB.Save(&dw.Workspace)
+
+	// retrieve workspace containers
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		dw.Workspace.AppendLogs(fmt.Sprintf("cannot initialize docker client: %s", err))
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+	defer dockerClient.Close()
+
+	// remove workspace volume
+	var workspaceVolumesIds []string
+	volumes, err := dockerClient.VolumeList(context.Background(), volume.ListOptions{})
+	if err != nil {
+		dw.Workspace.AppendLogs(fmt.Sprintf("failed to list workspace volumes, %s", err))
+	}
+
+	for _, volume := range volumes.Volumes {
+		// check if volume is member of a docker compose stack
+		composeProjectName, found := volume.Labels["com.docker.compose.project"]
+		if found {
+			if strings.HasPrefix(composeProjectName, fmt.Sprintf("%s_workspace_%d", env.CodeBoxEnv.WorkspaceObjectsPrefix, dw.Workspace.ID)) {
+				workspaceVolumesIds = append(workspaceVolumesIds, volume.Name)
+				continue
+			}
+		}
+
+		// otherwise workspace is a single container workspace, so find volume and delete it
+		if strings.HasPrefix(volume.Name, getWorkspaceVolumeId(*dw.Workspace)) {
+			workspaceVolumesIds = append(workspaceVolumesIds, volume.Name)
+			continue
+		}
+	}
+
+	for _, volumeId := range workspaceVolumesIds {
+		dw.Workspace.AppendLogs(fmt.Sprintf("removing volume %s", volumeId))
+		err = dockerClient.VolumeRemove(context.Background(), volumeId, true)
+		if err != nil {
+			dw.Workspace.AppendLogs(fmt.Sprintf("failed to remove volume %s", volumeId))
+		}
+	}
+
+	// remove all related items from db
+	dbContainers := []db.WorkspaceContainer{}
+	result := db.DB.Where(map[string]interface{}{"workspace_id": dw.Workspace.ID}).Preload("ForwardedPorts").Find(&dbContainers)
+	if result.Error != nil {
+		dw.Workspace.AppendLogs(fmt.Sprintf("cannot retrieve workspace containers from db, %s", result.Error))
+		dw.Workspace.Status = db.WorkspaceStatusError
+		db.DB.Save(&dw.Workspace)
+		return
+	}
+
+	for _, container := range dbContainers {
+		// remove exposed ports from db
+		for _, port := range container.ForwardedPorts {
+			db.DB.Delete(&port)
+		}
+		db.DB.Delete(&container)
+	}
+
+	dw.Workspace.ClearLogs()
+	db.DB.Delete(&dw.Workspace)
 }

@@ -383,3 +383,50 @@ func HandleStartWorkspace(ctx *gin.Context) {
 		"detail": "starting workspace...",
 	})
 }
+
+/*
+DELETE api/v1/workspace/:id
+*/
+func HandleDeleteWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	id, found := ctx.Params.Get("workspaceId")
+	if !found {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	var workspace db.Workspace
+	result := db.DB.Where(map[string]interface{}{"ID": id, "owner_id": user.ID}).Find(&workspace)
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	workspace.Status = db.WorkspaceStatusStopping
+	db.DB.Save(&workspace)
+
+	// start bg task
+	bgtasks.BgTasksEnqueuer.Enqueue("delete_workspace", work.Q{"workspace_id": workspace.ID})
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"detail": "deleting workspace...",
+	})
+}
