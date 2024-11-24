@@ -13,8 +13,12 @@ interface CreateWorkspaceProps {
 
 export default function CreateWorkspace(props: CreateWorkspaceProps) {
 
+    const urlParams = new URLSearchParams(window.location.search);
+
+    var initialWorkspaceName: string | null = urlParams.get("name");
+
     const navigate = useNavigate();
-    const [workspaceName, setWorkspaceName] = useState<string>("");
+    const [workspaceName, setWorkspaceName] = useState<string>(initialWorkspaceName !== null ? initialWorkspaceName : "");
     const [workspaceNameError, setWorkspaceNameError] = useState<string>("");
     const [workspaceGitRepoURL, setWorkspaceGitRepoURL] = useState<string>("");
     const [workspaceGitRepoURLError, setWorkspaceGitRepoURLError] = useState<string>("");
@@ -96,6 +100,7 @@ export default function CreateWorkspace(props: CreateWorkspaceProps) {
                             validateWorkspaceName(event.target.value);
                         }}
                         errorMessage={workspaceNameError}
+                        value={workspaceName}
                     />
                     <TextInput
                         label={"Git repository URL"}
