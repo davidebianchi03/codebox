@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 # Create user "vscode"
-RUN useradd -rm -d /home/vscode -s /bin/bash -g root -G sudo vscode && \
+RUN useradd -rm -d /home/vscode -s /bin/bash -G sudo vscode && \
     echo "vscode:password" | chpasswd
 
 USER vscode
