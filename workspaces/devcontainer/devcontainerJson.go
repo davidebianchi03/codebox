@@ -922,5 +922,32 @@ func (js *DevcontainerJson) CloneRepoInWorkspace() error {
 		js.workspace.AppendLogs("Repository already exists")
 	}
 
+	// set git user.name and user.email
+	_, err = runCommandInContainer(
+		dockerClient,
+		js.devcontainersInfo.containerId,
+		[]string{"git", "config", "--global", "user.email", js.workspace.Owner.Email},
+		"/",
+		dbDevelopmentContainer.ContainerUser,
+		[]string{},
+		false,
+	)
+	if err != nil {
+		js.workspace.AppendLogs("Failed to set git user.email")
+	}
+
+	_, err = runCommandInContainer(
+		dockerClient,
+		js.devcontainersInfo.containerId,
+		[]string{"git", "config", "--global", "user.name", fmt.Sprintf("\"%s %s\"", js.workspace.Owner.FirstName, js.workspace.Owner.LastName)},
+		"/",
+		dbDevelopmentContainer.ContainerUser,
+		[]string{},
+		false,
+	)
+	if err != nil {
+		js.workspace.AppendLogs("Failed to set git user.name")
+	}
+
 	return nil
 }
