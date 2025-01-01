@@ -57,6 +57,7 @@ RUN mkdir -p ${NVM_DIR} && \
 # add node and npm to path so the commands are available
 ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+ENV PATH=$PATH:/home/node/.npm-global/bin
 
 RUN npm install -g @devcontainers/cli
 

@@ -388,7 +388,7 @@ func (js *DevcontainerJson) GoUp() error {
 	var stdErrBuffer bytes.Buffer
 	var stdOutBuffer bytes.Buffer
 
-	cmd := exec.Command("devcontainer", "up", "--workspace-folder", filepath.Dir(js.workingDir))
+	cmd := exec.Command(env.CodeBoxEnv.DevcontainerCmd, "up", "--workspace-folder", filepath.Dir(js.workingDir))
 	cmd.Stderr = &stdErrBuffer
 	cmd.Stdout = &stdOutBuffer
 	cmdRunning := true

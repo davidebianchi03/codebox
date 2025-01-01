@@ -22,6 +22,7 @@ type codeBoxEnv struct {
 	UseSubDomains                    bool
 	FrontendPath                     string
 	WorkspaceObjectsPrefix           string
+	DevcontainerCmd                  string
 }
 
 var CodeBoxEnv *codeBoxEnv
@@ -83,5 +84,7 @@ func InitCodeBoxEnv() error {
 	// prefix for workspace objects such as containers, stacks, volumes...
 	CodeBoxEnv.WorkspaceObjectsPrefix = strings.ToLower(envVarOrDefault("CODEBOX_WORKSPACE_OBJECTS_PREFIX", "codebox"))
 
+	// command to create an environment based on devcontainers
+	CodeBoxEnv.DevcontainerCmd = envVarOrDefault("CODEBOX_DEVCONTAINERS_COMMAND", "devcontainer")
 	return nil
 }

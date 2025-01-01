@@ -3,6 +3,7 @@ package workspaces
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"codebox.com/api/utils"
@@ -44,7 +45,7 @@ func HandleForwardContainerPort(ctx *gin.Context) {
 	}
 
 	var workspace db.Workspace
-	result := db.DB.Where(map[string]interface{}{"ID": workspaceId /* "owner_id": user.ID*/}).Find(&workspace)
+	result := db.DB.Where(map[string]interface{}{"ID": workspaceId}).Find(&workspace)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -119,7 +120,15 @@ func HandleForwardContainerPort(ctx *gin.Context) {
 		}
 	}
 
-	proxyTargetUrl := fmt.Sprintf("http://%s:%d", developmentContainer.ExternalIPv4, developmentContainer.AgentExternalPort)
+	parsedUrl, err := url.Parse(ctx.Request.URL.Path)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	proxyTargetUrl := fmt.Sprintf("http://%s:%d%s", developmentContainer.ExternalIPv4, developmentContainer.AgentExternalPort, parsedUrl.Query().Get("request_path"))
 
 	proxyHeaders := http.Header{}
 	proxyHeaders.Set("X-CodeBox-Forward-Host", "127.0.0.1")
