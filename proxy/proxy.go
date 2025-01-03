@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func CreateReverseProxy(targetStr string, timeout time.Duration, keepAlign time.Duration, skipSSLVerify bool, headers map[string][]string) (*httputil.ReverseProxy, error) {
+func CreateReverseProxy(targetStr string, timeout time.Duration, keepAlive time.Duration, skipSSLVerify bool, headers map[string][]string) (*httputil.ReverseProxy, error) {
 	target, err := url.Parse(targetStr)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse target, %s", err)
@@ -27,7 +27,7 @@ func CreateReverseProxy(targetStr string, timeout time.Duration, keepAlign time.
 		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
 			Timeout:   timeout * time.Second,
-			KeepAlive: keepAlign * time.Second,
+			KeepAlive: keepAlive * time.Second,
 		}).Dial,
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     &tls.Config{InsecureSkipVerify: skipSSLVerify},

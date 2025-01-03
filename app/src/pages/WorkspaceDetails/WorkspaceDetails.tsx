@@ -78,9 +78,9 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                 for (let i = 0; i < selectedContainer.forwarded_ports.length; i++) {
                     if (selectedContainer.forwarded_ports[i].connection_type === "http" && instanceSettings.server_hostname) {
                         if (instanceSettings.use_subdomains) {
-                            selectedContainer.forwarded_ports[i].url = `http://codebox--w${workspaceDetails.id}--c${selectedContainer.name}--p${selectedContainer.forwarded_ports[i].port_number}.${instanceSettings.server_hostname}`;
+                            selectedContainer.forwarded_ports[i].url = `http://codebox--${workspaceDetails.id}--${selectedContainer.name}--${selectedContainer.forwarded_ports[i].port_number}.${instanceSettings.server_hostname}`;
                         } else {
-                            selectedContainer.forwarded_ports[i].url = `http://${instanceSettings.server_hostname}/api/v1/workspace/${workspaceDetails.id}/container/${selectedContainer.id}/forward/${selectedContainer.forwarded_ports[i].port_number}`;
+                            selectedContainer.forwarded_ports[i].url = `http://${instanceSettings.server_hostname}/api/v1/workspace/${workspaceDetails.id}/container/${selectedContainer.name}/forward/${selectedContainer.forwarded_ports[i].port_number}`;
                         }
                     }
                 }

@@ -388,33 +388,37 @@ func (js *DevcontainerJson) GoUp() error {
 	var stdErrBuffer bytes.Buffer
 	var stdOutBuffer bytes.Buffer
 
-	cmd := exec.Command(env.CodeBoxEnv.DevcontainerCmd, "up", "--workspace-folder", filepath.Dir(js.workingDir))
+	fmt.Println(os.Getenv("PATH"))
+
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("%s up --workspace-folder %s", env.CodeBoxEnv.DevcontainerCmd, filepath.Dir(js.workingDir)))
 	cmd.Stderr = &stdErrBuffer
 	cmd.Stdout = &stdOutBuffer
-	cmdRunning := true
-	stdErrIndex := 0
-	stdOutIndex := 0
-	go func() {
-		// redirect logs to db field
-		newStdErrLogs := ""
-		newStdOutLogs := ""
-		for cmdRunning {
-			newStdErrLogs = stdErrBuffer.String()[stdErrIndex:]
-			newStdOutLogs = stdOutBuffer.String()[stdOutIndex:]
+	// cmdRunning := true
+	// stdErrIndex := 0
+	// stdOutIndex := 0
+	// go func() {
+	// 	// redirect logs to db field
+	// 	newStdErrLogs := ""
+	// 	newStdOutLogs := ""
+	// 	for cmdRunning {
+	// 		newStdErrLogs = stdErrBuffer.String()[stdErrIndex:]
+	// 		newStdOutLogs = stdOutBuffer.String()[stdOutIndex:]
 
-			stdErrIndex += len(newStdErrLogs)
-			stdOutIndex += len(newStdOutLogs)
+	// 		stdErrIndex += len(newStdErrLogs)
+	// 		stdOutIndex += len(newStdOutLogs)
 
-			js.workspace.AppendLogs(newStdErrLogs)
-			db.DB.Save(js.workspace)
-		}
-	}()
+	// 		js.workspace.AppendLogs(newStdErrLogs)
+	// 		db.DB.Save(js.workspace)
+	// 	}
+	// }()
 	err := cmd.Run()
+	js.workspace.AppendLogs(stdOutBuffer.String())
+	js.workspace.AppendLogs(stdErrBuffer.String())
 	if err != nil {
 		return err
 	}
 
-	cmdRunning = false
+	// cmdRunning = false
 
 	var parsedStdOut map[string]interface{}
 	err = json.Unmarshal(stdOutBuffer.Bytes(), &parsedStdOut)

@@ -36,7 +36,7 @@ func HandleForwardContainerPort(ctx *gin.Context) {
 		})
 		return
 	}
-	containerId, found := ctx.Params.Get("containerId")
+	containerName, found := ctx.Params.Get("containerName")
 	if !found {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
@@ -63,7 +63,7 @@ func HandleForwardContainerPort(ctx *gin.Context) {
 	// retrieve development container
 	developmentContainer := db.WorkspaceContainer{}
 	result = db.DB.Where(
-		map[string]interface{}{"workspace_id": workspace.ID, "ID": containerId}).Preload("ForwardedPorts").Find(&developmentContainer)
+		map[string]interface{}{"workspace_id": workspace.ID, "Name": containerName}).Preload("ForwardedPorts").Find(&developmentContainer)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
