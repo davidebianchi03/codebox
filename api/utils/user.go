@@ -11,17 +11,28 @@ import (
 
 func GetUserFromContext(ctx *gin.Context) (db.User, error) {
 	authHeader := ctx.Request.Header.Get("Authorization")
-	if authHeader == "" {
+
+	jwtCookie, err := ctx.Cookie("jwtToken")
+	if err != nil {
+		jwtCookie = ""
+	}
+
+	if authHeader == "" && jwtCookie == "" {
 		return db.User{}, fmt.Errorf("missing or invalid authorization token")
 	}
 
-	headerParts := strings.Split(authHeader, "Bearer ")
+	jwtToken := ""
+	if authHeader != "" {
+		headerParts := strings.Split(authHeader, "Bearer ")
 
-	if len(headerParts) != 2 {
-		return db.User{}, fmt.Errorf("missing or invalid authorization token")
+		if len(headerParts) != 2 {
+			return db.User{}, fmt.Errorf("missing or invalid authorization token")
+		}
+
+		jwtToken = headerParts[1]
+	} else {
+		jwtToken = jwtCookie
 	}
-
-	jwtToken := headerParts[1]
 
 	var token db.Token
 	result := db.DB.Where("token=?", jwtToken).Preload("User").First(&token)

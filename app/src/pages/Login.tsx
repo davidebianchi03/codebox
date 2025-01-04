@@ -63,7 +63,7 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
         let [status, jwtToken, expirationDate] = await Http.Login(this.state.loginEmail, this.state.loginPassword);
         if (status === LoginStatus.OK) {
             this.setState({ errorMessage: "" });
-            document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()}`;
+            document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${window.location.hostname}`;
             this.setState({ redirect: true, redirectUrl: "/" });
         } else {
             document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
