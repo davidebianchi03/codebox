@@ -10,8 +10,6 @@ import (
 )
 
 func PortForwardingMiddleware(ctx *gin.Context) {
-	ctx.Request.Host = "codebox--3--phpmyadmin--80.codebox.davidebianchi.eu"
-
 	if len(strings.Split(ctx.Request.Host, ".")) > 1 {
 		codeboxSubDomain := strings.Split(ctx.Request.Host, ".")[0]
 
