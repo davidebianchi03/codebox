@@ -64,6 +64,7 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
         if (status === LoginStatus.OK) {
             this.setState({ errorMessage: "" });
             document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${window.location.hostname}`;
+            document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${window.location.hostname}`;
             this.setState({ redirect: true, redirectUrl: "/" });
         } else {
             document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
