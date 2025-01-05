@@ -117,6 +117,12 @@ func main() {
 			os.Exit(1)
 		}
 
+		password, err = db.HashPassword(password)
+		if err != nil {
+			fmt.Println("Password encryption error")
+			os.Exit(1)
+		}
+
 		user := db.User{Email: email, FirstName: "", LastName: "", Password: password}
 		result = db.DB.Create(&user)
 

@@ -38,7 +38,8 @@ export function Navbar(props: NavbarProps) {
 
     const logoutUser = async() => {
         Http.Request(`${Http.GetServerURL()}/api/v1/auth/logout`, "POST", "");
-        document.cookie = `jwtToken=loggedout;expires=${new Date(1970, 1, 1).toUTCString()}`;
+        document.cookie = `jwtToken=loggedout;expires=${new Date(1970, 1, 1).toUTCString()}domain=${window.location.hostname}`;
+        document.cookie = `jwtToken=loggedout;expires=${new Date(1970, 1, 1).toUTCString()}domain=.${window.location.hostname}`;
         navigate("/login");
     }
 

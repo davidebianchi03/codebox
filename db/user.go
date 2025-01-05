@@ -21,7 +21,7 @@ type User struct {
 	IsSuperuser   bool   `gorm:"column:is_superuser; default:false"`
 }
 
-func hashPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
 	return string(bytes), err
 }
@@ -66,14 +66,6 @@ func generateSshKeys() (string, string, error) {
 }
 
 func (u *User) BeforeSave(tx *gorm.DB) (err error) {
-	// hash della password se la password è cambiata
-	if tx.Statement.Changed("Password") {
-		u.Password, err = hashPassword(u.Password)
-		if err != nil {
-			return err
-		}
-	}
-
 	if u.SshPrivateKey == "" || u.SshPublicKey == "" {
 		u.SshPrivateKey, u.SshPublicKey, err = generateSshKeys()
 		if err != nil {
@@ -82,14 +74,6 @@ func (u *User) BeforeSave(tx *gorm.DB) (err error) {
 	}
 
 	return nil
-}
-
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	u.Password, err = hashPassword(u.Password)
-	if err != nil {
-		return err
-	}
-	return u.BeforeSave(tx)
 }
 
 func (u *User) CheckPassword(password string) bool {

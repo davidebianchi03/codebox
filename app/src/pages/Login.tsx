@@ -67,7 +67,8 @@ export default class LoginPage extends Component<LoginPageProps, LoginPageState>
             document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${window.location.hostname}`;
             this.setState({ redirect: true, redirectUrl: "/" });
         } else {
-            document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+            document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
+            document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
             if (status === LoginStatus.INVALID_CREDENTIALS) {
                 this.setState({ errorMessage: "Invalid credentials" });
             } else {

@@ -25,6 +25,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.POST("/logout", auth.HandleLogout)
 			authApis.GET("/user-details", auth.HandleRetriveUserDetails)
 			authApis.PATCH("/user-details", auth.HandleUpdateUserDetails)
+			authApis.POST("/change-password", auth.HandleChangePassword)
 		}
 
 		// workspace related apis
