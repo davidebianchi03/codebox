@@ -25,7 +25,7 @@ export default class StatusBar extends Component<StatusBarProps, StatusBarState>
     render(): ReactNode {
         return (
             <div className="statusbar">
-                <span style={{ width: "200px", marginLeft: "5px" }}>&copy; Codebox 2024</span>
+                <span style={{ width: "200px", marginLeft: "5px" }}>&copy; Codebox {new Date(Date.now()).getFullYear()}</span>
                 <span style={{ width: "100%" }}></span>
                 <div style={{ display: "flex", alignItems: "center" }}>
                     <span style={{ width: "90px" }}>Ping: {this.props.serverPing}ms</span>
