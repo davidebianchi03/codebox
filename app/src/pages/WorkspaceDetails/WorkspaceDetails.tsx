@@ -8,10 +8,10 @@ import Card from "../../theme/components/card/Card";
 import { RetrieveBeautyNameForStatus, RetrieveColorForWorkspaceStatus } from "../../utils/workspaceStatus";
 import EarthIcon from "../../assets/images/earth.png";
 import LockIcon from "../../assets/images/padlock.png";
+import VsCodeIcon from "../../assets/images/vscode.png";
 import { faEllipsisV, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { Dropdown } from "../../theme/components/dropdown/Dropdown";
 import Modal from "../../theme/components/modal/Modal";
-import TextInput from "../../theme/components/textinput/TextInput";
 import Button from "../../theme/components/button/Button";
 
 interface WorkspaceDetailsProps {
@@ -313,7 +313,11 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                         <ul>
                             {
                                 workspaceDetails.containers?.map((container, index) => (
-                                    <li style={index === 0 ? { borderTop: "none" } : {}} onClick={() => { setSelectedContainerIndex(index); UpdateWorkspaceDetails(); }} key={container.id}>
+                                    <li style={{
+                                        borderTop: index === 0 ? "none" : "auto",
+                                        background: selectedContainer.id === container.id ? "var(--background-divider)" : "transparent"
+                                        }} 
+                                        onClick={() => { setSelectedContainerIndex(index); UpdateWorkspaceDetails(); }} key={container.id}>
                                         {container.name}
                                     </li>
                                 ))
@@ -324,6 +328,38 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                 <h4 style={{ marginBottom: 0 }}>{selectedContainer.name}</h4>
                                 <small style={{ color: "var(--grey-300)" }}>{selectedContainer.type === "docker_container" ? "Docker container" : "N/A"}</small>
                             </div>
+                            <div style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                marginTop: "10px"
+                            }}>
+                                {
+                                    selectedContainer.can_connect_remote_developing ?
+                                        <a className="forwarded-port"
+                                            onClick={() => {
+                                                window.open(`vscode://davidebianchi.codebox-remote/open?workspace_id=${workspaceDetails.id}&container_name=${selectedContainer.name}&server_hostname=${instanceSettings.server_hostname}`);
+                                            }}
+                                        >
+                                            <img alt="Vscode" src={VsCodeIcon} width={"20px"} height={"20px"} />
+                                            <span
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    flexWrap: "wrap",
+                                                    marginLeft: "5pt",
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                <span>
+                                                    Visual studio code
+                                                </span>
+                                                <small style={{ fontSize: "8pt", color: "var(--grey-300)", }}>
+                                                    Open workspace in visual studio code
+                                                </small>
+                                            </span>
+                                        </a> : null
+                                }
+                            </div>
                             <div>
                                 <div>
                                     <h5 style={{ marginBottom: "8pt" }}>Forwarded ports</h5>
@@ -333,72 +369,53 @@ export default function WorkspaceDetails(props: WorkspaceDetailsProps) {
                                     flexWrap: "wrap"
                                 }}>
                                     {
-                                        selectedContainer.forwarded_ports?.map((port) => (
-                                            <a style={{
-                                                display: "flex",
-                                                flexDirection: "row",
-                                                alignItems: "center",
-                                                border: "solid var(--background-divider) 1px",
-                                                minWidth: "150px",
-                                                padding: "4pt 7pt",
-                                                borderRadius: "4pt",
-                                                margin: "2pt"
-                                            }}
-                                                key={port.port_number}
-                                            >
-                                                {
-                                                    port.public ?
-                                                        <img alt="Public access" src={EarthIcon} width={"20px"} height={"20px"} />
-                                                        :
-                                                        <img alt="Authentication required" src={LockIcon} width={"20px"} height={"20px"} />
-                                                }
-
-                                                {port.port_number === 2222 ?
-                                                    <span
-                                                        style={{
-                                                            display: "flex",
-                                                            flexDirection: "column",
-                                                            flexWrap: "wrap",
-                                                            marginLeft: "5pt",
-                                                            cursor: "pointer",
-                                                        }}
-                                                        onClick={() => OpenRemoteDeveloping()}
-                                                    >
-                                                        <span>
-                                                            {port.port_number}
-                                                            <small style={{ fontSize: "9pt", marginLeft: "4pt" }}>(remote developing)</small>
-                                                        </span>
-                                                        <small style={{ fontSize: "8pt", color: "var(--grey-300)", }}>
-                                                            {port.connection_type === "ws" ? "TCP over WS" : "HTTP"}
-                                                        </small>
-                                                    </span>
-                                                    :
-                                                    <span
-                                                        style={{
-                                                            display: "flex",
-                                                            flexDirection: "column",
-                                                            flexWrap: "wrap",
-                                                            marginLeft: "5pt",
-                                                            cursor: port.url && port.url !== "" ? "pointer" : "default",
-                                                        }}
-                                                        onClick={() => {
-                                                            if (port.url) {
-                                                                if (port.url !== "") {
-                                                                    window.open(port.url, "_blank")?.focus();
-                                                                }
+                                        selectedContainer.forwarded_ports ?
+                                            (
+                                                selectedContainer.forwarded_ports?.length > 1 ?
+                                                    selectedContainer.forwarded_ports?.map((port: any) => (
+                                                        <div>
+                                                            {
+                                                                port.port_number !== 2222 ?
+                                                                    <a className="forwarded-port"
+                                                                        key={port.port_number}
+                                                                        onClick={() => {
+                                                                            if (port.url) {
+                                                                                if (port.url !== "") {
+                                                                                    window.open(port.url, "_blank")?.focus();
+                                                                                }
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {
+                                                                            port.public ?
+                                                                                <img alt="Public access" src={EarthIcon} width={"20px"} height={"20px"} />
+                                                                                :
+                                                                                <img alt="Authentication required" src={LockIcon} width={"20px"} height={"20px"} />
+                                                                        }
+                                                                        <span
+                                                                            style={{
+                                                                                display: "flex",
+                                                                                flexDirection: "column",
+                                                                                flexWrap: "wrap",
+                                                                                marginLeft: "5pt",
+                                                                                cursor: port.url && port.url !== "" ? "pointer" : "default",
+                                                                            }}
+                                                                        >
+                                                                            <span>
+                                                                                {port.port_number}
+                                                                            </span>
+                                                                            <small style={{ fontSize: "8pt", color: "var(--grey-300)", }}>
+                                                                                {port.connection_type === "ws" ? "TCP over WS" : "HTTP"}
+                                                                            </small>
+                                                                        </span>
+                                                                    </a>
+                                                                    : null
                                                             }
-                                                        }}
-                                                    >
-                                                        <span>
-                                                            {port.port_number}
-                                                        </span>
-                                                        <small style={{ fontSize: "8pt", color: "var(--grey-300)", }}>
-                                                            {port.connection_type === "ws" ? "TCP over WS" : "HTTP"}
-                                                        </small>
-                                                    </span>
-                                                }
-                                            </a>
-                                        ))
+                                                        </div>
+                                                    )) :
+                                                    <span style={{ fontSize: "13px" }}>No port forwarded</span>
+                                            ) :
+                                            <span style={{ fontSize: "13px" }}>No port forwarded</span>
                                     }
                                 </div>
                             </div>

@@ -19,7 +19,7 @@
     background: var(--grey-700);
 }
 
-.workspace-containers ul{
+.workspace-containers ul {
     height: 100%;
     padding: 0;
     list-style: none;
@@ -36,6 +36,22 @@
     cursor: pointer;
 }
 
-.workspace-containers ul li:hover{
+.workspace-containers ul li:hover {
     background: var(--background-color-paper);
+}
+
+.forwarded-port {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border: solid var(--background-divider) 1px;
+    min-width: 150px;
+    padding: 4pt 7pt;
+    border-radius: 4pt;
+    margin: 2pt;
+    cursor: pointer;
+}
+
+.forwarded-port:hover {
+    box-shadow: -1px 0px 15px -5px var(--background-divider);
 }
