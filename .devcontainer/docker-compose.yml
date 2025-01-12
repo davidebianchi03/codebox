@@ -7,6 +7,10 @@ services:
 
   codebox:
     build: .
+    cap_add:
+      - NET_ADMIN
+      - cap_net_admin
+      - cap_net_raw
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always

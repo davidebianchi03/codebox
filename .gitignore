@@ -9,3 +9,4 @@ codebox-agent-linux-amd64
 *.db-journal
 *codebox-cli*
 bin/
+test-vpn/

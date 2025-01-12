@@ -22,14 +22,27 @@ RUN apt-get update && apt-get install -y \
     docker-compose-plugin \
     wget \
     build-essential \
+    openvpn \
+    zip \
+    unzip \
+    bridge-utils \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
+
+# Create tun device
+RUN mkdir -p /dev/net && \
+    mknod /dev/net/tun c 10 200 && \
+    chmod 666 /dev/net/tun
 
 # Create user "vscode"
 RUN useradd -rm -d /home/vscode -s /bin/bash -G sudo vscode && \
     echo "vscode:password" | chpasswd
     
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN groupadd wireguard && \
+    usermod -aG wireguard vscode && \
+    echo '%wireguard ALL=NOPASSWD: SETENV: /usr/bin/wg-quick' >> /etc/sudoers
 
 USER vscode
 
