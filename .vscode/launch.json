@@ -10,12 +10,15 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
+            "output": "${cwd}/codebox",
             "args": [
                 "runserver"
             ],
             "env": {
                 "DOCKER_API_VERSION": "1.45",
-            }
+            },
+            "preLaunchTask": "setcap",
+            
         },
         {
             "name": "Create superuser",

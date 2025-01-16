@@ -14,6 +14,7 @@ import (
 	"codebox.com/bgtasks"
 	"codebox.com/env"
 	_ "codebox.com/migrations"
+	"codebox.com/vpn"
 
 	"codebox.com/api"
 	"codebox.com/db"
@@ -21,11 +22,9 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func a() {
-	fmt.Println("Hello world")
-}
-
 func main() {
+
+	vpn.SetupVpn()
 	err := env.InitCodeBoxEnv()
 	if err != nil {
 		log.Fatalf("Failed to load server configuration from environment: '%s'\n", err)

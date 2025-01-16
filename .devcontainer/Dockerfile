@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y \
 # Create tun device
 RUN mkdir -p /dev/net && \
     mknod /dev/net/tun c 10 200 && \
-    chmod 666 /dev/net/tun
+    chmod 777 /dev/net/tun
 
 # Create user "vscode"
 RUN useradd -rm -d /home/vscode -s /bin/bash -G sudo vscode && \
@@ -74,4 +74,13 @@ ENV PATH=$PATH:/home/node/.npm-global/bin
 
 RUN npm install -g @devcontainers/cli
 
+# Install dlv and set permissions
+RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
+    sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
+
 USER root
+
+
+# sudo setcap cap_net_admin=eip /usr/local/go/bin/go
+# export PATH=/home/vscode/go/bin:/usr/local/go/bin:$PATH
+# sudo setcap cap_net_admin=+ep /home/vscode/go/bin/dlv
