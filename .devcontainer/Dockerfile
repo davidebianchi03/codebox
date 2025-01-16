@@ -55,6 +55,8 @@ RUN cd /tmp && \
     echo export PATH=$HOME/go/bin:/usr/local/go/bin:$PATH >> ~/.profile && \
     rm -rf /tmp/go.tar.gz
 
+ENV PATH=$PATH:$HOME/go/bin:/usr/local/go/bin
+
 ENV NVM_DIR=$HOME/.nvm
 ENV NODE_VERSION=20.12.2
 
