@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     bridge-utils \
+    libcap2-bin \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
