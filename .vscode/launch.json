@@ -8,17 +8,16 @@
             "name": "Run server",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/main.go",
-            "output": "${cwd}/codebox",
+            "mode": "exec",
+            "program": "${workspaceFolder}/codebox_debug",
             "args": [
                 "runserver"
             ],
             "env": {
                 "DOCKER_API_VERSION": "1.45",
             },
-            "preLaunchTask": "setcap",
-            
+            "preLaunchTask": "set-capability",
+            "postDebugTask": "remove-dbg-binaries"
         },
         {
             "name": "Create superuser",

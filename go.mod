@@ -59,6 +59,8 @@ require (
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
+	kernel.org/pub/linux/libs/security/libcap/cap v1.2.73 // indirect
+	kernel.org/pub/linux/libs/security/libcap/psx v1.2.73 // indirect
 )
 
 require (

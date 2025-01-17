@@ -10,3 +10,4 @@ codebox-agent-linux-amd64
 *codebox-cli*
 bin/
 test-vpn/
+codebox_debug/

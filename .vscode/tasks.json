@@ -1,0 +1,51 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-binaries",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "build",
+                "-o",
+                "${workspaceFolder}/codebox_debug",
+                "main.go",
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+        },
+        {
+            "label": "set-capability",
+            "type": "shell",
+            "command": "sudo",
+            "args": [
+                "setcap",
+                "cap_net_admin=+ep",
+                "${workspaceFolder}/codebox_debug"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "dependsOn":"build-binaries"
+        },
+        {
+            "label": "remove-dbg-binaries",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "${workspaceFolder}/codebox_debug"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+        }
+    ]
+}

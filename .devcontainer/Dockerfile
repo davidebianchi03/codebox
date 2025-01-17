@@ -87,3 +87,4 @@ USER root
 # sudo setcap cap_net_admin=eip /usr/local/go/bin/go
 # export PATH=/home/vscode/go/bin:/usr/local/go/bin:$PATH
 # sudo setcap cap_net_admin=+ep /home/vscode/go/bin/dlv
+# sudo setcap cap_net_admin=+ep /home/vscode/.vscode-server/cli/servers/Stable-fabdb6a30b49f79a7aba0f2ad9df9b399473380f/server/bin/remote-cli/code
