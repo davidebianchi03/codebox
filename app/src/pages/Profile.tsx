@@ -73,7 +73,7 @@ export default function Profile(props: CreateWorkspaceProps) {
         }
 
         let [, statusCode, responseData, description] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/change-password`, "POST", JSON.stringify(requestBody));
-        console.log(statusCode)
+        
         if (statusCode === 200) {
             // logout
             document.cookie = `jwtToken=loggedout;expires=${new Date(1970, 1, 1).toUTCString()}domain=${window.location.hostname}`;

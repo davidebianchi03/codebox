@@ -15,7 +15,7 @@
             ],
             "env": {
                 "DOCKER_API_VERSION": "1.45",
-            }
+            },
         },
         {
             "name": "Create superuser",

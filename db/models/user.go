@@ -1,4 +1,4 @@
-package db
+package models
 
 import (
 	"fmt"
@@ -12,18 +12,15 @@ import (
 
 type User struct {
 	gorm.Model
-	Email         string `gorm:"column:email; unique;not null;"`
-	Password      string `gorm:"column:password; not null;"`
-	FirstName     string `gorm:"column:first_name;"`
-	LastName      string `gorm:"column:last_name;"`
-	SshPrivateKey string `gorm:"column:ssh_private_key; not null;"`
-	SshPublicKey  string `gorm:"column:ssh_public_key; not null;"`
-	IsSuperuser   bool   `gorm:"column:is_superuser; default:false"`
-}
-
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
-	return string(bytes), err
+	ID            uint    `gorm:"primarykey"`
+	Email         string  `gorm:"size:255; unique; not null;"`
+	Password      string  `gorm:"not null;"`
+	FirstName     string  `gorm:"size:255;"`
+	LastName      string  `gorm:"size:255;"`
+	Groups        []Group `gorm:"many2many:user_groups;"`
+	SshPrivateKey string  `gorm:"not null;"`
+	SshPublicKey  string  `gorm:"not null;"`
+	IsSuperuser   bool    `gorm:"column:is_superuser; default:false"`
 }
 
 func generateSshKeys() (string, string, error) {
@@ -79,4 +76,9 @@ func (u *User) BeforeSave(tx *gorm.DB) (err error) {
 func (u *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
+}
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
+	return string(bytes), err
 }

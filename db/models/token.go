@@ -1,4 +1,4 @@
-package db
+package models
 
 import (
 	"fmt"
@@ -12,10 +12,11 @@ var secretKey = []byte("secret-key") // TODO: replace on build
 
 type Token struct {
 	gorm.Model
-	Token          string    `gorm:"column:token; size:1024;unique;"`
-	ExpirationDate time.Time `gorm:"column:expiration_date;"`
-	UserID         uint      `gorm:"column:user_id;"`
-	User           User      `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ID             uint   `gorm:"primarykey"`
+	Token          string `gorm:"size:1024;unique;"`
+	ExpirationDate time.Time
+	UserID         uint
+	User           User `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 func generateJWTToken(userId uint, expiration time.Time) (string, error) {
@@ -40,7 +41,7 @@ func CreateToken(user User) (Token, error) {
 	jwtToken, err := generateJWTToken(user.ID, tokenExpiration)
 
 	if err != nil {
-		return Token{}, fmt.Errorf("Cannot create token, %s", err)
+		return Token{}, fmt.Errorf("cannot create token, %s", err)
 	}
 
 	token := Token{

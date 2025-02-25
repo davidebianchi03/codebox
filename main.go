@@ -12,8 +12,8 @@ import (
 	_ "database/sql"
 
 	"codebox.com/bgtasks"
+	"codebox.com/db/models"
 	"codebox.com/env"
-	_ "codebox.com/migrations"
 
 	"codebox.com/api"
 	"codebox.com/db"
@@ -77,7 +77,7 @@ func main() {
 		}
 
 		// check if email already exists
-		var foundUser db.User
+		var foundUser models.User
 		result := db.DB.Where("email=?", email).Find(&foundUser)
 		if result.Error != nil {
 			fmt.Println("An error occured creating new superuser")
@@ -117,13 +117,13 @@ func main() {
 			os.Exit(1)
 		}
 
-		password, err = db.HashPassword(password)
+		password, err = models.HashPassword(password)
 		if err != nil {
 			fmt.Println("Password encryption error")
 			os.Exit(1)
 		}
 
-		user := db.User{Email: email, FirstName: "", LastName: "", Password: password}
+		user := models.User{Email: email, FirstName: "", LastName: "", Password: password}
 		result = db.DB.Create(&user)
 
 		if result.Error != nil {
