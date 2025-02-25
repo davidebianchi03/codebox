@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"codebox.com/db"
+	"codebox.com/db/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +23,7 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
-	var user db.User
+	var user models.User
 	result := db.DB.Where("email=?", parsedBody.Email).Find(&user)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -45,7 +46,7 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
-	token, err := db.CreateToken(user)
+	token, err := models.CreateToken(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",

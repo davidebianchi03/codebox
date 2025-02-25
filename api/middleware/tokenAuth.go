@@ -11,6 +11,7 @@ var AuthNotRequiredEndpoits = [...]string{
 	"/api/v1/auth/login",
 	"/api/v1/workspace/:workspaceId/container/:containerName/forward/:portNumber",
 	"/api/v1/download-cli",
+	"/api/v1/auth/signup",
 }
 
 func isAuthRequired(endpoint string) bool {

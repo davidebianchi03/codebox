@@ -17,13 +17,7 @@ func HandleRetriveUserDetails(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"email":        user.Email,
-		"first_name":   user.FirstName,
-		"last_name":    user.LastName,
-		"is_superuser": user.IsSuperuser,
-		"public_key":   user.SshPublicKey,
-	})
+	ctx.JSON(http.StatusOK, user)
 }
 
 func HandleUpdateUserDetails(ctx *gin.Context) {
@@ -59,11 +53,5 @@ func HandleUpdateUserDetails(ctx *gin.Context) {
 
 	db.DB.Save(&user)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"email":        user.Email,
-		"first_name":   user.FirstName,
-		"last_name":    user.LastName,
-		"is_superuser": user.IsSuperuser,
-		"public_key":   user.SshPublicKey,
-	})
+	ctx.JSON(http.StatusOK, user)
 }

@@ -26,7 +26,9 @@ type Workspace struct {
 	ID                   uint   `gorm:"primarykey"`
 	Name                 string `gorm:"size:255; not null;"`
 	UserID               uint
-	User                 User `gorm:"constraint:OnDelete:CASCADE;"`
+	User                 User   `gorm:"constraint:OnDelete:CASCADE;"`
+	Status               string `gorm:"size:30; not null;"`
+	Type                 string `gorm:"size:255; not null;"`
 	RunnerID             uint
 	Runner               Runner `gorm:"constraint:OnDelete:CASCADE;"`
 	ConfigSource         string `gorm:"size:20; not null;"`

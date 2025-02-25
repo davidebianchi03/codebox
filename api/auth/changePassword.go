@@ -5,6 +5,7 @@ import (
 
 	"codebox.com/api/utils"
 	"codebox.com/db"
+	"codebox.com/db/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,7 +39,7 @@ func HandleChangePassword(c *gin.Context) {
 		return
 	}
 
-	user.Password, err = db.HashPassword(parsedBody.NewPassword)
+	user.Password, err = models.HashPassword(parsedBody.NewPassword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",

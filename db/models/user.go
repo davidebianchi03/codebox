@@ -5,22 +5,25 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	ID            uint    `gorm:"primarykey"`
-	Email         string  `gorm:"size:255; unique; not null;"`
-	Password      string  `gorm:"not null;"`
-	FirstName     string  `gorm:"size:255;"`
-	LastName      string  `gorm:"size:255;"`
-	Groups        []Group `gorm:"many2many:user_groups;"`
-	SshPrivateKey string  `gorm:"not null;"`
-	SshPublicKey  string  `gorm:"not null;"`
-	IsSuperuser   bool    `gorm:"column:is_superuser; default:false"`
+	ID            uint           `gorm:"primarykey" json:"-"`
+	Email         string         `gorm:"size:255; unique; not null;" json:"email"`
+	Password      string         `gorm:"not null;" json:"-"`
+	FirstName     string         `gorm:"size:255;" json:"first_name"`
+	LastName      string         `gorm:"size:255;" json:"last_name"`
+	Groups        []Group        `gorm:"many2many:user_groups;" json:"groups"`
+	SshPrivateKey string         `gorm:"not null;" json:"-"`
+	SshPublicKey  string         `gorm:"not null;" json:"-"`
+	IsSuperuser   bool           `gorm:"column:is_superuser; default:false" json:"is_superuser"`
+	CreatedAt     time.Time      `json:"-"`
+	UpdatedAt     time.Time      `json:"-"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func generateSshKeys() (string, string, error) {

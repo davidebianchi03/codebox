@@ -128,15 +128,17 @@ CREATE TABLE `workspaces` (
   `deleted_at` datetime NULL,
   `name` text NOT NULL,
   `user_id` integer NULL,
+  `status` text NOT NULL,
+  `type` text NOT NULL,
   `runner_id` integer NULL,
   `config_source` text NOT NULL,
   `template_version_id` integer NULL,
   `git_source_id` integer NULL,
   `environment_variables` text NULL,
+  CONSTRAINT `fk_workspaces_git_source` FOREIGN KEY (`git_source_id`) REFERENCES `git_workspace_sources` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT `fk_workspaces_template_version` FOREIGN KEY (`template_version_id`) REFERENCES `workspace_template_versions` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT `fk_workspaces_runner` FOREIGN KEY (`runner_id`) REFERENCES `runners` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT `fk_workspaces_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT `fk_workspaces_git_source` FOREIGN KEY (`git_source_id`) REFERENCES `git_workspace_sources` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+  CONSTRAINT `fk_workspaces_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE
 );
 -- Create index "idx_workspaces_deleted_at" to table: "workspaces"
 CREATE INDEX `idx_workspaces_deleted_at` ON `workspaces` (`deleted_at`);

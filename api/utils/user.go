@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"codebox.com/db"
+	"codebox.com/db/models"
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserFromContext(ctx *gin.Context) (db.User, error) {
+func GetUserFromContext(ctx *gin.Context) (models.User, error) {
 	authHeader := ctx.Request.Header.Get("Authorization")
 
 	jwtCookie, err := ctx.Cookie("jwtToken")
@@ -18,7 +19,7 @@ func GetUserFromContext(ctx *gin.Context) (db.User, error) {
 	}
 
 	if authHeader == "" && jwtCookie == "" {
-		return db.User{}, fmt.Errorf("missing or invalid authorization token")
+		return models.User{}, fmt.Errorf("missing or invalid authorization token")
 	}
 
 	jwtToken := ""
@@ -26,7 +27,7 @@ func GetUserFromContext(ctx *gin.Context) (db.User, error) {
 		headerParts := strings.Split(authHeader, "Bearer ")
 
 		if len(headerParts) != 2 {
-			return db.User{}, fmt.Errorf("missing or invalid authorization token")
+			return models.User{}, fmt.Errorf("missing or invalid authorization token")
 		}
 
 		jwtToken = headerParts[1]
@@ -34,14 +35,14 @@ func GetUserFromContext(ctx *gin.Context) (db.User, error) {
 		jwtToken = jwtCookie
 	}
 
-	var token db.Token
+	var token models.Token
 	result := db.DB.Where("token=?", jwtToken).Preload("User").First(&token)
 	if result.Error != nil {
-		return db.User{}, fmt.Errorf("missing or invalid authorization token")
+		return models.User{}, fmt.Errorf("missing or invalid authorization token")
 	}
 
 	if token.ExpirationDate.Compare(time.Now()) == -1 {
-		return db.User{}, fmt.Errorf("missing or invalid authorization token")
+		return models.User{}, fmt.Errorf("missing or invalid authorization token")
 	}
 
 	return token.User, nil

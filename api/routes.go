@@ -2,16 +2,13 @@ package api
 
 import (
 	"codebox.com/api/auth"
-	"codebox.com/api/cli"
 	"codebox.com/api/middleware"
-	"codebox.com/api/settings"
-	"codebox.com/api/workspaces"
 	"github.com/gin-gonic/gin"
 )
 
 func V1ApiRoutes(router *gin.Engine) {
 	// middlewares
-	router.Use(middleware.PortForwardingMiddleware)
+	// router.Use(middleware.PortForwardingMiddleware)
 	router.Use(middleware.CORSMiddleware)
 	router.Use(middleware.TokenAuthMiddleware)
 
@@ -26,26 +23,27 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.GET("/user-details", auth.HandleRetriveUserDetails)
 			authApis.PATCH("/user-details", auth.HandleUpdateUserDetails)
 			authApis.POST("/change-password", auth.HandleChangePassword)
+			authApis.POST("/signup", auth.HandleSignup)
 		}
 
-		// workspace related apis
-		workspaceApis := v1.Group("/workspace")
-		{
-			workspaceApis.GET("", workspaces.HandleListWorkspaces)
-			workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
-			workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
-			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
-			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
-			workspaceApis.Any("/:workspaceId/container/:containerName/forward/:portNumber", workspaces.HandleForwardContainerPort)
-			workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
-			workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
-		}
+		// // workspace related apis
+		// workspaceApis := v1.Group("/workspace")
+		// {
+		// 	workspaceApis.GET("", workspaces.HandleListWorkspaces)
+		// 	workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
+		// 	workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
+		// 	workspaceApis.POST("", workspaces.HandleCreateWorkspace)
+		// 	workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
+		// 	workspaceApis.Any("/:workspaceId/container/:containerName/forward/:portNumber", workspaces.HandleForwardContainerPort)
+		// 	workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
+		// 	workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
+		// }
 
-		// instance settings related apis
-		v1.GET("/instance-settings", settings.HandleRetrieveServerSettings)
+		// // instance settings related apis
+		// v1.GET("/instance-settings", settings.HandleRetrieveServerSettings)
 
-		// download cli
-		v1.GET("/download-cli", cli.HandleDownloadCLI)
+		// // download cli
+		// v1.GET("/download-cli", cli.HandleDownloadCLI)
 
 	}
 }
