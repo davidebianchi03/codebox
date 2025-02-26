@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"codebox.com/env"
+	"github.com/davidebianchi03/codebox/config"
 	"gorm.io/gorm"
 )
 
@@ -31,7 +31,7 @@ type Workspace struct {
 	Type                 string `gorm:"size:255; not null;"`
 	RunnerID             uint
 	Runner               Runner `gorm:"constraint:OnDelete:CASCADE;"`
-	ConfigSource         string `gorm:"size:20; not null;"`
+	ConfigSource         string `gorm:"size:20; not null;"` // template/git
 	TemplateVersionID    uint
 	TemplateVersion      WorkspaceTemplateVersion `gorm:"constraint:OnDelete:CASCADE;"`
 	GitSourceID          uint
@@ -40,7 +40,7 @@ type Workspace struct {
 }
 
 func (w *Workspace) GetLogsFilePath() (string, error) {
-	workspaceLogsBaseDir := fmt.Sprintf("%s/workspace-logs", env.CodeBoxEnv.UploadsPath)
+	workspaceLogsBaseDir := fmt.Sprintf("%s/workspace-logs", config.Environment.UploadsPath)
 
 	info, err := os.Stat(workspaceLogsBaseDir)
 	if err != nil {

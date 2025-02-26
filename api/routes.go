@@ -1,8 +1,8 @@
 package api
 
 import (
-	"codebox.com/api/auth"
-	"codebox.com/api/middleware"
+	"github.com/davidebianchi03/codebox/api/auth"
+	"github.com/davidebianchi03/codebox/api/middleware"
 	"github.com/gin-gonic/gin"
 )
 

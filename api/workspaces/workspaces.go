@@ -1,5 +1,11 @@
 package workspaces
 
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
 // type WorkspaceWithoutDetailsResponse struct {
 // 	Id             uint      `json:"id"`
 // 	Name           string    `json:"name"`
@@ -164,105 +170,123 @@ package workspaces
 // 	ctx.JSON(http.StatusOK, responseObj)
 // }
 
-// /*
-// POST api/v1/workspace
-// */
-// func HandleCreateWorkspace(ctx *gin.Context) {
-// 	type RequestBody struct {
-// 		Name                       string `json:"name"`
-// 		Type                       string `json:"type"`
-// 		GitRepoUrl                 string `json:"git_repo_url"`
-// 		GitRepoConfigurationFolder string `json:"git_repo_configuration_folder"`
-// 	}
+/*
+POST api/v1/workspace
+*/
+func HandleCreateWorkspace(ctx *gin.Context) {
+	type RequestBody struct {
+		Name                       string `json:"name" binding:"exists"`
+		Type                       string `json:"type" binding:"exists"`
+		RunnerID                   uint   `json:"runner_id" binding:"exists"`
+		ConfigSource               string `json:"config_source" binding:"exists"`
+		TemplateVersionID          uint   `json:"template_version_id"`
+		GitRepoUrl                 string `json:"git_repo_url"`
+		GitRepoConfigurationFolder string `json:"git_repo_configuration_folder"`
+	}
 
-// 	var parsedBody RequestBody
-// 	err := ctx.ShouldBindBodyWithJSON(&parsedBody)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{
-// 			"detail": err.Error(),
-// 		})
-// 		return
-// 	}
+	var parsedBody RequestBody
+	err := ctx.ShouldBindBodyWithJSON(&parsedBody)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"detail": err.Error(),
+		})
+		return
+	}
 
-// 	if parsedBody.Name == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{
-// 			"detail": "missing field 'name'",
-// 		})
-// 		return
-// 	}
+	// check if type is a valid option
 
-// 	if parsedBody.Type == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{
-// 			"detail": "missing field 'type'",
-// 		})
-// 		return
-// 	}
+	// workspace := models.Workspace{
+	// 	Name: parsedBody.Name,
+	// }
 
-// 	if parsedBody.GitRepoUrl == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{
-// 			"detail": "missing field 'git_repo_url'",
-// 		})
-// 		return
-// 	}
+	// var parsedBody RequestBody
+	// err := ctx.ShouldBindBodyWithJSON(&parsedBody)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"detail": err.Error(),
+	// 	})
+	// 	return
+	// }
 
-// 	if parsedBody.GitRepoConfigurationFolder == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{
-// 			"detail": "missing field 'git_repo_configuration_folder'",
-// 		})
-// 		return
-// 	}
+	// if parsedBody.Name == "" {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"detail": "missing field 'name'",
+	// 	})
+	// 	return
+	// }
 
-// 	if !db.IsItemInArray(parsedBody.Type, db.WorkspaceTypeChoices[:]) {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{
-// 			"detail": fmt.Sprintf("unsupported workspace type '%s'", parsedBody.Type),
-// 		})
-// 		return
-// 	}
+	// if parsedBody.Type == "" {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"detail": "missing field 'type'",
+	// 	})
+	// 	return
+	// }
 
-// 	owner, err := utils.GetUserFromContext(ctx)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
+	// if parsedBody.GitRepoUrl == "" {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"detail": "missing field 'git_repo_url'",
+	// 	})
+	// 	return
+	// }
 
-// 	// create workspace in db
-// 	workspace := models.Workspace{
-// 		Name:                       parsedBody.Name,
-// 		Type:                       parsedBody.Type,
-// 		User:                       owner,
-// 		Status:                     models.WorkspaceStatusCreating,
-// 		GitRepoUrl:                 parsedBody.GitRepoUrl,
-// 		GitRepoConfigurationFolder: parsedBody.GitRepoConfigurationFolder,
-// 		LastActivityOn:             time.Now(),
-// 		LastStartOn:                time.Now(),
-// 	}
-// 	result := db.DB.Create(&workspace)
-// 	if result.Error != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
-// 	workspace.AppendLogs("Creating workspace...")
+	// if parsedBody.GitRepoConfigurationFolder == "" {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"detail": "missing field 'git_repo_configuration_folder'",
+	// 	})
+	// 	return
+	// }
 
-// 	workspaceResponseObj := WorkspaceWithoutDetailsResponse{
-// 		Id:             workspace.ID,
-// 		Name:           workspace.Name,
-// 		Status:         workspace.Status,
-// 		Type:           workspace.Type,
-// 		GitRepoUrl:     workspace.GitRepoUrl,
-// 		CreatedAt:      workspace.CreatedAt,
-// 		LastActivityOn: workspace.LastActivityOn,
-// 		LastStartOn:    workspace.LastStartOn,
-// 	}
+	// if !db.IsItemInArray(parsedBody.Type, db.WorkspaceTypeChoices[:]) {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"detail": fmt.Sprintf("unsupported workspace type '%s'", parsedBody.Type),
+	// 	})
+	// 	return
+	// }
 
-// 	// start bg task
-// 	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
+	// owner, err := utils.GetUserFromContext(ctx)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{
+	// 		"detail": "internal server error",
+	// 	})
+	// 	return
+	// }
 
-// 	ctx.JSON(http.StatusOK, workspaceResponseObj)
-// }
+	// // create workspace in db
+	// workspace := models.Workspace{
+	// 	Name:                       parsedBody.Name,
+	// 	Type:                       parsedBody.Type,
+	// 	User:                       owner,
+	// 	Status:                     models.WorkspaceStatusCreating,
+	// 	GitRepoUrl:                 parsedBody.GitRepoUrl,
+	// 	GitRepoConfigurationFolder: parsedBody.GitRepoConfigurationFolder,
+	// 	LastActivityOn:             time.Now(),
+	// 	LastStartOn:                time.Now(),
+	// }
+	// result := db.DB.Create(&workspace)
+	// if result.Error != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{
+	// 		"detail": "internal server error",
+	// 	})
+	// 	return
+	// }
+	// workspace.AppendLogs("Creating workspace...")
+
+	// // workspaceResponseObj := WorkspaceWithoutDetailsResponse{
+	// // 	Id:             workspace.ID,
+	// // 	Name:           workspace.Name,
+	// // 	Status:         workspace.Status,
+	// // 	Type:           workspace.Type,
+	// // 	GitRepoUrl:     workspace.GitRepoUrl,
+	// // 	CreatedAt:      workspace.CreatedAt,
+	// // 	LastActivityOn: workspace.LastActivityOn,
+	// // 	LastStartOn:    workspace.LastStartOn,
+	// // }
+
+	// // start bg task
+	// bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
+
+	// ctx.JSON(http.StatusCreated, workspaceResponseObj)
+}
 
 // /*
 // POST api/v1/workspace/:id/stop

@@ -6,16 +6,16 @@ import (
 	"os"
 	"strconv"
 
-	"codebox.com/bgtasks"
-	"codebox.com/env"
+	"github.com/davidebianchi03/codebox/bgtasks"
+	"github.com/davidebianchi03/codebox/config"
 
-	"codebox.com/api"
-	"codebox.com/db"
+	"github.com/davidebianchi03/codebox/api"
+	"github.com/davidebianchi03/codebox/db"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	err := env.InitCodeBoxEnv()
+	err := config.InitCodeBoxEnv()
 	if err != nil {
 		log.Fatalf("Failed to load server configuration from environment: '%s'\n", err)
 		return
@@ -36,22 +36,21 @@ func main() {
 	switch os.Args[1] {
 	// TODO: command to reset the password for a user
 	case "runserver":
-		// avvio dei background tasks
-		err = bgtasks.InitBgTasks(env.CodeBoxEnv.RedisHost, env.CodeBoxEnv.RedisPort, uint(env.CodeBoxEnv.WorkspaceRelatedTasksConcurrency), "")
+		err = bgtasks.InitBgTasks(config.Environment.RedisHost, config.Environment.RedisPort, uint(config.Environment.TasksConcurrency), "")
 		if err != nil {
 			log.Fatalln("cannot start background tasks")
 			return
 		}
 
-		// avvio del server http
-		// if env.CodeBoxEnv.DebugEnabled {
-		gin.SetMode(gin.DebugMode)
-		// } else {
-		// 	gin.SetMode(gin.ReleaseMode)
-		// }
+		if config.Environment.DebugEnabled {
+			gin.SetMode(gin.DebugMode)
+		} else {
+			gin.SetMode(gin.ReleaseMode)
+		}
+
 		r := gin.Default()
 		api.V1ApiRoutes(r)
-		r.Run(fmt.Sprintf(":%s", strconv.Itoa(env.CodeBoxEnv.ServerPort)))
+		r.Run(fmt.Sprintf(":%s", strconv.Itoa(config.Environment.ServerPort)))
 	default:
 		log.Fatalf("Invalid command '%s'", os.Args[1])
 		os.Exit(1)

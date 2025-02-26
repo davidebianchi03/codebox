@@ -3,8 +3,8 @@ package bgtasks
 // import (
 // 	"fmt"
 
-// 	"codebox.com/db"
-// 	"codebox.com/workspaces/devcontainer"
+// 	"github.com/davidebianchi03/codebox/db"
+// 	"github.com/davidebianchi03/codebox/workspaces/devcontainer"
 // 	"github.com/gocraft/work"
 // )
 

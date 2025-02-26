@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"codebox.com/api/utils"
+	"github.com/davidebianchi03/codebox/api/utils"
 	"github.com/gin-gonic/gin"
 )
 

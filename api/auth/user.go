@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"codebox.com/api/utils"
-	"codebox.com/db"
+	"github.com/davidebianchi03/codebox/api/utils"
+	"github.com/davidebianchi03/codebox/db"
 	"github.com/gin-gonic/gin"
 )
 
