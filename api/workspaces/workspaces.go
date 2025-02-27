@@ -3,6 +3,10 @@ package workspaces
 import (
 	"net/http"
 
+	"github.com/davidebianchi03/codebox/api/utils"
+	"github.com/davidebianchi03/codebox/config"
+	"github.com/davidebianchi03/codebox/db"
+	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -173,25 +177,141 @@ import (
 /*
 POST api/v1/workspace
 */
-func HandleCreateWorkspace(ctx *gin.Context) {
+func HandleCreateWorkspace(c *gin.Context) {
 	type RequestBody struct {
-		Name                       string `json:"name" binding:"exists"`
-		Type                       string `json:"type" binding:"exists"`
-		RunnerID                   uint   `json:"runner_id" binding:"exists"`
-		ConfigSource               string `json:"config_source" binding:"exists"`
-		TemplateVersionID          uint   `json:"template_version_id"`
-		GitRepoUrl                 string `json:"git_repo_url"`
-		GitRepoConfigurationFolder string `json:"git_repo_configuration_folder"`
+		Name                       string   `json:"name" binding:"required"`
+		Type                       string   `json:"type" binding:"required"`
+		RunnerID                   uint     `json:"runner_id" binding:"required"`
+		ConfigSource               string   `json:"config_source" binding:"required"`
+		TemplateVersionID          uint     `json:"template_version_id"`
+		GitRepoUrl                 string   `json:"git_repo_url"`
+		GitRepoConfigurationFolder string   `json:"git_repo_configuration_folder"`
+		EnvironmentVariables       []string `json:"environment_variables" binding:"required"`
 	}
 
 	var parsedBody RequestBody
-	err := ctx.ShouldBindBodyWithJSON(&parsedBody)
+	err := c.ShouldBindBodyWithJSON(&parsedBody)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": err.Error(),
 		})
 		return
 	}
+
+	currentUser, err := utils.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	workspaceTypeFound := false
+	for _, t := range config.ListWorkspaceTypes() {
+		if t.ID == parsedBody.Type {
+			workspaceTypeFound = true
+			break
+		}
+	}
+
+	if !workspaceTypeFound {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "invalid workspace type",
+		})
+		return
+	}
+
+	// validate runner
+	runner := &models.Runner{}
+	db.DB.First(&runner, map[string]interface{}{
+		"ID":   parsedBody.RunnerID,
+		"Type": parsedBody.Type,
+	})
+
+	if runner.ID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "runner matching runner_id and type not found",
+		})
+		return
+	}
+	// TODO: check if user is allowed to use requested runner
+
+	// validate workspace configuration source
+	var gitSource models.GitWorkspaceSource
+	var templateVersion models.WorkspaceTemplateVersion
+	if parsedBody.ConfigSource == models.WorkspaceConfigSourceGit {
+		if parsedBody.GitRepoUrl == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"detail": "missing param 'git_repo_url",
+			})
+			return
+		}
+		if parsedBody.GitRepoConfigurationFolder == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"detail": "missing param 'git_repo_configuration_folder",
+			})
+			return
+		}
+
+		gitSource = models.GitWorkspaceSource{
+			RepositoryURL: parsedBody.GitRepoUrl,
+		}
+
+		r := db.DB.Create(&gitSource)
+		if r.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "internal server error",
+			})
+			return
+		}
+	} else if parsedBody.ConfigSource == models.WorkspaceConfigSourceTemplate {
+		db.DB.First(&templateVersion, map[string]interface{}{
+			"ID": parsedBody.TemplateVersionID,
+		})
+
+		if templateVersion.ID <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"detail": "requested template version does not exist",
+			})
+			return
+		}
+
+		if templateVersion.Template.Type != parsedBody.Type {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"detail": "requested template version does not exist",
+			})
+			return
+		}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "invalid value for 'config_source'",
+		})
+		return
+	}
+
+	// create new database row
+	workspace := models.Workspace{
+		Name:                 parsedBody.Name,
+		User:                 currentUser,
+		Status:               models.WorkspaceStatusCreating,
+		Type:                 parsedBody.Type,
+		Runner:               *runner,
+		ConfigSource:         parsedBody.ConfigSource,
+		TemplateVersion:      &templateVersion,
+		GitSource:            &gitSource,
+		ConfigSourceFilePath: parsedBody.GitRepoConfigurationFolder,
+		EnvironmentVariables: parsedBody.EnvironmentVariables,
+	}
+
+	r := db.DB.Create(&workspace)
+	if r.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, workspace)
 
 	// check if type is a valid option
 

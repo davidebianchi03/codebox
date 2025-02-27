@@ -7,7 +7,7 @@ type WorkspaceType struct {
 
 func ListWorkspaceTypes() []WorkspaceType {
 	return []WorkspaceType{
-		WorkspaceType{
+		{
 			ID:   "docker_compose",
 			Name: "Docker Compose",
 		},

@@ -21,22 +21,28 @@ const (
 	WorkspaceStatusError    = "error"
 )
 
+const (
+	WorkspaceConfigSourceGit      = "git"
+	WorkspaceConfigSourceTemplate = "template"
+)
+
 type Workspace struct {
 	gorm.Model
-	ID                   uint   `gorm:"primarykey"`
-	Name                 string `gorm:"size:255; not null;"`
-	UserID               uint
-	User                 User   `gorm:"constraint:OnDelete:CASCADE;"`
-	Status               string `gorm:"size:30; not null;"`
-	Type                 string `gorm:"size:255; not null;"`
-	RunnerID             uint
-	Runner               Runner `gorm:"constraint:OnDelete:CASCADE;"`
-	ConfigSource         string `gorm:"size:20; not null;"` // template/git
-	TemplateVersionID    uint
-	TemplateVersion      WorkspaceTemplateVersion `gorm:"constraint:OnDelete:CASCADE;"`
-	GitSourceID          uint
-	GitSource            GitWorkspaceSource `gorm:"constraint:OnDelete:CASCADE;"`
-	EnvironmentVariables []string           `gorm:"serializer:json"`
+	ID                   uint                      `gorm:"primarykey" json:"id"`
+	Name                 string                    `gorm:"size:255; not null;" json:"name"`
+	UserID               uint                      `json:"-"`
+	User                 User                      `gorm:"constraint:OnDelete:CASCADE;" json:"user"`
+	Status               string                    `gorm:"size:30; not null;" json:"status"`
+	Type                 string                    `gorm:"size:255; not null;" json:"type"`
+	RunnerID             uint                      `json:"-"`
+	Runner               Runner                    `gorm:"constraint:OnDelete:CASCADE;" json:"runner"`
+	ConfigSource         string                    `gorm:"size:20; not null;" json:"config_source"` // template/git
+	TemplateVersionID    uint                      `json:"-"`
+	TemplateVersion      *WorkspaceTemplateVersion `gorm:"constraint:OnDelete:CASCADE;" json:"template_version"`
+	GitSourceID          uint                      `json:"-"`
+	GitSource            *GitWorkspaceSource       `gorm:"constraint:OnDelete:CASCADE;" json:"git_source"`
+	ConfigSourceFilePath string                    `gorm:"size:1024;" json:"config_source_file_path"` // name or relative path of the configuration file relative to the template root or repository root folder
+	EnvironmentVariables []string                  `gorm:"serializer:json" json:"environment_variables"`
 }
 
 func (w *Workspace) GetLogsFilePath() (string, error) {

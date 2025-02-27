@@ -7,14 +7,14 @@ type RunnerChoice struct {
 	SupportedTypes []WorkspaceType `json:"supported_type"`
 }
 
-func ListAvailableWorkspaceTypes() []RunnerChoice {
+func ListAvailableRunnerTypes() []RunnerChoice {
 	return []RunnerChoice{
-		RunnerChoice{
+		{
 			ID:          "docker",
 			Name:        "Docker",
 			Description: "Runner for docker containers based environments",
 			SupportedTypes: []WorkspaceType{
-				WorkspaceType{
+				{
 					ID:   "docker_compose",
 					Name: "Docker Compose",
 				},
