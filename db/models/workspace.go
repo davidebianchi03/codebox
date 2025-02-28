@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/davidebianchi03/codebox/config"
 	"gorm.io/gorm"
@@ -27,7 +28,6 @@ const (
 )
 
 type Workspace struct {
-	gorm.Model
 	ID                   uint                      `gorm:"primarykey" json:"id"`
 	Name                 string                    `gorm:"size:255; not null;" json:"name"`
 	UserID               uint                      `json:"-"`
@@ -43,6 +43,9 @@ type Workspace struct {
 	GitSource            *GitWorkspaceSource       `gorm:"constraint:OnDelete:CASCADE;" json:"git_source"`
 	ConfigSourceFilePath string                    `gorm:"size:1024;" json:"config_source_file_path"` // name or relative path of the configuration file relative to the template root or repository root folder
 	EnvironmentVariables []string                  `gorm:"serializer:json" json:"environment_variables"`
+	CreatedAt            time.Time                 `json:"created_at"`
+	UpdatedAt            time.Time                 `json:"updated_at"`
+	DeletedAt            gorm.DeletedAt            `gorm:"index" json:"-"`
 }
 
 func (w *Workspace) GetLogsFilePath() (string, error) {

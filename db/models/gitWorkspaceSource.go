@@ -4,16 +4,19 @@ import (
 	"errors"
 	"path"
 	"strconv"
+	"time"
 
 	"github.com/davidebianchi03/codebox/config"
 	"gorm.io/gorm"
 )
 
 type GitWorkspaceSource struct {
-	gorm.Model
-	ID            uint   `gorm:"primarykey" json:"id"`
-	RepositoryURL string `gorm:"size:1024;not null;" json:"repository_url"`
-	Files         string `gorm:"size:1024;" json:"-"`
+	ID            uint           `gorm:"primarykey" json:"id"`
+	RepositoryURL string         `gorm:"size:1024;not null;" json:"repository_url"`
+	Files         string         `gorm:"size:1024;" json:"-"`
+	CreatedAt     time.Time      `json:"-"`
+	UpdatedAt     time.Time      `json:"-"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func (gws *GitWorkspaceSource) GetConfigFileAbsPath() (p string, err error) {

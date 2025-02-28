@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	"github.com/davidebianchi03/codebox/api/utils"
+	"github.com/davidebianchi03/codebox/bgtasks"
 	"github.com/davidebianchi03/codebox/config"
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
+	"github.com/gocraft/work"
 )
 
 // type WorkspaceWithoutDetailsResponse struct {
@@ -237,8 +239,8 @@ func HandleCreateWorkspace(c *gin.Context) {
 	// TODO: check if user is allowed to use requested runner
 
 	// validate workspace configuration source
-	var gitSource models.GitWorkspaceSource
-	var templateVersion models.WorkspaceTemplateVersion
+	var gitSource *models.GitWorkspaceSource
+	var templateVersion *models.WorkspaceTemplateVersion
 	if parsedBody.ConfigSource == models.WorkspaceConfigSourceGit {
 		if parsedBody.GitRepoUrl == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -253,11 +255,11 @@ func HandleCreateWorkspace(c *gin.Context) {
 			return
 		}
 
-		gitSource = models.GitWorkspaceSource{
+		gitSource = &models.GitWorkspaceSource{
 			RepositoryURL: parsedBody.GitRepoUrl,
 		}
 
-		r := db.DB.Create(&gitSource)
+		r := db.DB.Create(gitSource)
 		if r.Error != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"detail": "internal server error",
@@ -265,11 +267,11 @@ func HandleCreateWorkspace(c *gin.Context) {
 			return
 		}
 	} else if parsedBody.ConfigSource == models.WorkspaceConfigSourceTemplate {
-		db.DB.First(&templateVersion, map[string]interface{}{
+		db.DB.First(templateVersion, map[string]interface{}{
 			"ID": parsedBody.TemplateVersionID,
 		})
 
-		if templateVersion.ID <= 0 {
+		if templateVersion == nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"detail": "requested template version does not exist",
 			})
@@ -297,8 +299,8 @@ func HandleCreateWorkspace(c *gin.Context) {
 		Type:                 parsedBody.Type,
 		Runner:               *runner,
 		ConfigSource:         parsedBody.ConfigSource,
-		TemplateVersion:      &templateVersion,
-		GitSource:            &gitSource,
+		TemplateVersion:      templateVersion,
+		GitSource:            gitSource,
 		ConfigSourceFilePath: parsedBody.GitRepoConfigurationFolder,
 		EnvironmentVariables: parsedBody.EnvironmentVariables,
 	}
@@ -310,6 +312,9 @@ func HandleCreateWorkspace(c *gin.Context) {
 		})
 		return
 	}
+
+	workspace.AppendLogs("Creating workspace...")
+	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
 
 	c.JSON(http.StatusCreated, workspace)
 

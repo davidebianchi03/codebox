@@ -1,5 +1,13 @@
 package bgtasks
 
+import (
+	"fmt"
+
+	"github.com/davidebianchi03/codebox/db"
+	"github.com/davidebianchi03/codebox/db/models"
+	"github.com/gocraft/work"
+)
+
 // import (
 // 	"fmt"
 
@@ -8,18 +16,17 @@ package bgtasks
 // 	"github.com/gocraft/work"
 // )
 
-// type WorkspaceTaskContext struct {
-// 	WorkspaceId uint
-// }
+func (ctx *WorkspaceTaskContext) StartWorkspace(job *work.Job) error {
+	workspaceId := job.ArgInt64("workspace_id")
 
-// func (ctx *WorkspaceTaskContext) StartWorkspace(job *work.Job) error {
-// 	workspaceId := job.ArgInt64("workspace_id")
+	var workspace *models.Workspace
+	result := db.DB.Where("ID=?", workspaceId).Preload("Owner").First(&workspace)
+	if result.Error != nil {
+		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
+	}
 
-// 	var workspace *db.Workspace
-// 	result := db.DB.Where("ID=?", workspaceId).Preload("Owner").First(&workspace)
-// 	if result.Error != nil {
-// 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
-// 	}
+	return nil
+}
 
 // 	workspace.ClearLogs()
 
