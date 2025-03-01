@@ -128,6 +128,7 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		return err
 	}
 
+	req.Header.Add("Authorization", ri.Runner.Token)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -142,12 +143,63 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 	return nil
 }
 
-func (ri *RunnerInterface) GetDetails() {
+func (ri *RunnerInterface) GetDetails(workspace *models.Workspace) (response RunnerWorkspaceStatusResponse, err error) {
+	url := fmt.Sprintf("%s/api/v1/workspace/%d/?type=%s", ri.getRunnerBaseUrl(), workspace.ID, workspace.Type)
 
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if err != nil {
+		return RunnerWorkspaceStatusResponse{}, err
+	}
+
+	req.Header.Add("Authorization", ri.Runner.Token)
+	res, err := client.Do(req)
+	if err != nil {
+		return RunnerWorkspaceStatusResponse{}, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return RunnerWorkspaceStatusResponse{}, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return RunnerWorkspaceStatusResponse{}, err
+	}
+
+	return response, nil
 }
 
-func (ri *RunnerInterface) GetLogs() {
+func (ri *RunnerInterface) GetLogs(workspace *models.Workspace) (logs string, err error) {
+	url := fmt.Sprintf("%s/api/v1/workspace/%d/logs", ri.getRunnerBaseUrl(), workspace.ID)
 
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Authorization", ri.Runner.Token)
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var parsedBody map[string]string
+	if err = json.Unmarshal(body, &parsedBody); err != nil {
+		return "", err
+	}
+
+	return parsedBody["logs"], nil
 }
 
 func (ri *RunnerInterface) StopWorkpace() {

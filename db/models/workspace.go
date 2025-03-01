@@ -12,15 +12,12 @@ import (
 )
 
 // workspace status
-const (
-	WorkspaceStatusCreating = "creating"
-	WorkspaceStatusRunning  = "running"
-	WorkspaceStatusStopping = "stopping"
-	WorkspaceStatusStopped  = "stopped"
-	WorkspaceStatusStarting = "starting"
-	WorkspaceStatusDeleting = "deleting"
-	WorkspaceStatusError    = "error"
-)
+const WorkspaceStatusStarting = "starting"
+const WorkspaceStatusRunning = "running"
+const WorkspaceStatusStopping = "stopping"
+const WorkspaceStatusStopped = "stopped"
+const WorkspaceStatusDeleting = "stopped"
+const WorkspaceStatusError = "error"
 
 const (
 	WorkspaceConfigSourceGit      = "git"
@@ -35,7 +32,7 @@ type Workspace struct {
 	Status               string                    `gorm:"size:30; not null;" json:"status"`
 	Type                 string                    `gorm:"size:255; not null;" json:"type"`
 	RunnerID             uint                      `json:"-"`
-	Runner               Runner                    `gorm:"constraint:OnDelete:CASCADE;" json:"runner"`
+	Runner               *Runner                   `gorm:"constraint:OnDelete:CASCADE;" json:"runner"`
 	ConfigSource         string                    `gorm:"size:20; not null;" json:"config_source"` // template/git
 	TemplateVersionID    uint                      `json:"-"`
 	TemplateVersion      *WorkspaceTemplateVersion `gorm:"constraint:OnDelete:CASCADE;" json:"template_version"`

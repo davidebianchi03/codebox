@@ -295,9 +295,9 @@ func HandleCreateWorkspace(c *gin.Context) {
 	workspace := models.Workspace{
 		Name:                 parsedBody.Name,
 		User:                 currentUser,
-		Status:               models.WorkspaceStatusCreating,
+		Status:               models.WorkspaceStatusStarting,
 		Type:                 parsedBody.Type,
-		Runner:               *runner,
+		Runner:               runner,
 		ConfigSource:         parsedBody.ConfigSource,
 		TemplateVersion:      templateVersion,
 		GitSource:            gitSource,
