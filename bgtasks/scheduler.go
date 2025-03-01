@@ -9,15 +9,10 @@ import (
 )
 
 var (
-	WorkspaceActionsPool *work.WorkerPool
-	BgTasksEnqueuer      *work.Enqueuer
+	BgTasksEnqueuer *work.Enqueuer
 )
 
-type WorkspaceTaskContext struct {
-	WorkspaceId uint
-}
-
-func InitBgTasks(redisHost string, redisPort int, workspaceActionsConcurrency uint, codeboxInstanceId string) error {
+func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInstanceId string) error {
 	var redisPool = &redis.Pool{
 		MaxActive: 5,
 		MaxIdle:   5,
@@ -32,18 +27,22 @@ func InitBgTasks(redisHost string, redisPort int, workspaceActionsConcurrency ui
 	BgTasksEnqueuer = work.NewEnqueuer(appNamespace, redisPool)
 
 	// pool per i background tasks relativi ai workspace
-	WorkspaceActionsPool = work.NewWorkerPool(
-		WorkspaceTaskContext{},
-		workspaceActionsConcurrency,
+	pool := work.NewWorkerPool(
+		Context{},
+		concurrency,
 		appNamespace,
 		redisPool,
 	)
 
-	WorkspaceActionsPool.Job("start_workspace", (*WorkspaceTaskContext).StartWorkspace)
+	pool.Job("start_workspace", (*Context).StartWorkspace)
 	// WorkspaceActionsPool.Job("stop_workspace", (*WorkspaceTaskContext).StopWorkspace)
 	// WorkspaceActionsPool.Job("restart_workspace", (*WorkspaceTaskContext).RestartWorkspace)
 	// WorkspaceActionsPool.Job("delete_workspace", (*WorkspaceTaskContext).DeleteWorkspace)
-	// WorkspaceActionsPool.Start()
+	pool.Start()
 
 	return nil
+}
+
+type Context struct {
+	WorkspaceID uint
 }

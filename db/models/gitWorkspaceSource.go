@@ -2,8 +2,9 @@ package models
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"path"
-	"strconv"
 	"time"
 
 	"github.com/davidebianchi03/codebox/config"
@@ -20,9 +21,13 @@ type GitWorkspaceSource struct {
 }
 
 func (gws *GitWorkspaceSource) GetConfigFileAbsPath() (p string, err error) {
-	if gws.ID <= 0 || gws.Files == "" {
+	if gws.ID <= 0 {
 		return "", errors.New("object does not exist")
 	}
-	p = path.Join(config.Environment.UploadsPath, "git-sources", strconv.Itoa(int(gws.ID)))
+	folder := path.Join(config.Environment.UploadsPath, "git-sources")
+	if err = os.MkdirAll(folder, 0777); err != nil {
+		return "", err
+	}
+	p = path.Join(folder, fmt.Sprintf("%d.tar.gz", gws.ID))
 	return p, nil
 }

@@ -1,4 +1,4 @@
-package utils
+package targz
 
 import (
 	"archive/tar"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func CreateNewTarGzArchive(srcDir string, outputFilePath string) error {
+func CreateArchive(srcDir string, outputFilePath string) error {
 	// Create the output file
 	outFile, err := os.Create(outputFilePath)
 	if err != nil {

@@ -50,22 +50,10 @@ type Workspace struct {
 
 func (w *Workspace) GetLogsFilePath() (string, error) {
 	workspaceLogsBaseDir := fmt.Sprintf("%s/workspace-logs", config.Environment.UploadsPath)
-
-	info, err := os.Stat(workspaceLogsBaseDir)
+	err := os.MkdirAll(workspaceLogsBaseDir, 0777)
 	if err != nil {
-		if os.IsNotExist(err) {
-			err = os.MkdirAll(workspaceLogsBaseDir, 0777)
-			if err != nil {
-				return "", fmt.Errorf("cannot create path '%s'", workspaceLogsBaseDir)
-			}
-		}
-		return "", fmt.Errorf("unknown error")
+		return "", fmt.Errorf("cannot create path '%s'", workspaceLogsBaseDir)
 	}
-
-	if !info.IsDir() {
-		return "", fmt.Errorf("logs path is not a directory '%s'", workspaceLogsBaseDir)
-	}
-
 	return fmt.Sprintf("%s/workspace_%d.log", workspaceLogsBaseDir, w.ID), nil
 }
 
@@ -102,6 +90,15 @@ func (w *Workspace) RetrieveLogs() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot retrieve logs file path, %s", err)
 	}
+
+	_, err = os.Stat(logsFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", nil
+		}
+		return "", err
+	}
+
 	fileContent, err := os.ReadFile(logsFile)
 	if err != nil {
 		return "", fmt.Errorf("cannot read logs from file, %s", err)
