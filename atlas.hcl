@@ -24,6 +24,8 @@ env "codebox" {
   }
 }
 
+# curl -sSf https://atlasgo.sh | sh
+# go get ariga.io/atlas-go-sdk/atlasexec
 # atlas migrate diff  --env codebox
 # atlas migrate apply --env codebox --url "sqlite://test.db"
 # atlas migrate apply --env codebox

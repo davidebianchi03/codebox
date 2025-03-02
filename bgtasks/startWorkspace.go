@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/davidebianchi03/codebox/db"
@@ -120,6 +121,43 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 	if err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 		return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
+	}
+
+	// map container
+	for _, c := range details.Containers {
+		containerUserId, err := strconv.Atoi(c.ContainerUserID)
+		if err != nil {
+			containerUserId = 0
+		}
+
+		workspaceContainer := models.WorkspaceContainer{
+			Workspace:         workspace,
+			ContainerID:       c.ID,
+			ContainerName:     c.Name,
+			ContainerImage:    c.Image,
+			ContainerUserID:   uint(containerUserId),
+			ContainerUserName: c.ContainerUserName,
+		}
+
+		db.DB.Create(&workspaceContainer)
+
+		// map ports
+		for _, p := range c.ExposedPorts {
+			port := models.WorkspaceContainerPort{
+				Container:   workspaceContainer,
+				ServiceName: p.ServiceName,
+				PortNumber:  uint(p.PortNumber),
+				Public:      p.Public,
+			}
+
+			db.DB.Create(&port)
+		}
+
+		// ping agent
+		if ri.PingAgent(&workspaceContainer) {
+			workspaceContainer.AgentLastContact = time.Now()
+			db.DB.Save(&workspaceContainer)
+		}
 	}
 
 	workspace.Status = details.Status

@@ -181,14 +181,14 @@ POST api/v1/workspace
 */
 func HandleCreateWorkspace(c *gin.Context) {
 	type RequestBody struct {
-		Name                       string   `json:"name" binding:"required"`
-		Type                       string   `json:"type" binding:"required"`
-		RunnerID                   uint     `json:"runner_id" binding:"required"`
-		ConfigSource               string   `json:"config_source" binding:"required"`
-		TemplateVersionID          uint     `json:"template_version_id"`
-		GitRepoUrl                 string   `json:"git_repo_url"`
-		GitRepoConfigurationFolder string   `json:"git_repo_configuration_folder"`
-		EnvironmentVariables       []string `json:"environment_variables" binding:"required"`
+		Name                 string   `json:"name" binding:"required"`
+		Type                 string   `json:"type" binding:"required"`
+		RunnerID             uint     `json:"runner_id" binding:"required"`
+		ConfigSource         string   `json:"config_source" binding:"required"`
+		TemplateVersionID    uint     `json:"template_version_id"`
+		GitRepoUrl           string   `json:"git_repo_url"`
+		ConfigSourceFilePath string   `json:"config_source_path"`
+		EnvironmentVariables []string `json:"environment_variables" binding:"required"`
 	}
 
 	var parsedBody RequestBody
@@ -248,9 +248,9 @@ func HandleCreateWorkspace(c *gin.Context) {
 			})
 			return
 		}
-		if parsedBody.GitRepoConfigurationFolder == "" {
+		if parsedBody.ConfigSourceFilePath == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"detail": "missing param 'git_repo_configuration_folder",
+				"detail": "missing param 'config_source_path",
 			})
 			return
 		}
@@ -301,7 +301,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 		ConfigSource:         parsedBody.ConfigSource,
 		TemplateVersion:      templateVersion,
 		GitSource:            gitSource,
-		ConfigSourceFilePath: parsedBody.GitRepoConfigurationFolder,
+		ConfigSourceFilePath: parsedBody.ConfigSourceFilePath,
 		EnvironmentVariables: parsedBody.EnvironmentVariables,
 	}
 

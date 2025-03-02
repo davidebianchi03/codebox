@@ -8,6 +8,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -160,6 +161,10 @@ func (ri *RunnerInterface) GetDetails(workspace *models.Workspace) (response Run
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return RunnerWorkspaceStatusResponse{}, fmt.Errorf("recived status %d", res.StatusCode)
+	}
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return RunnerWorkspaceStatusResponse{}, err
@@ -189,6 +194,10 @@ func (ri *RunnerInterface) GetLogs(workspace *models.Workspace) (logs string, er
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return "", fmt.Errorf("recived status %d", res.StatusCode)
+	}
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
@@ -208,4 +217,39 @@ func (ri *RunnerInterface) StopWorkpace() {
 
 func (ri *RunnerInterface) RemoveWorkspace() {
 
+}
+
+func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool {
+	url := fmt.Sprintf(
+		"%s/api/v1/agent-forward/?path=%s&workspace_guid=%s&container_id=%s",
+		ri.getRunnerBaseUrl(),
+		url.QueryEscape("/"),
+		strconv.Itoa(int(container.WorkspaceID)),
+		container.ContainerID,
+	)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if err != nil {
+		return false
+	}
+
+	req.Header.Add("X-CodeBox-Forward-Scheme", "ping")
+	req.Header.Add("X-CodeBox-Forward-Host", "127.0.0.1")
+	req.Header.Add("X-CodeBox-Forward-Port", "2222")
+	req.Header.Add("X-CodeBox-Forward-Protocol", "http")
+	req.Header.Add("Authorization", ri.Runner.Token)
+
+	res, err := client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return false
+	}
+
+	return true
 }
