@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/davidebianchi03/codebox/db/models"
+	"github.com/davidebianchi03/codebox/proxy"
 )
 
 type RunnerInterface struct {
@@ -252,4 +253,35 @@ func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool 
 	}
 
 	return true
+}
+
+func (ri *RunnerInterface) ForwardHttp(
+	workspace *models.Workspace,
+	container *models.WorkspaceContainer,
+	port *models.WorkspaceContainerPort,
+	path string,
+	rw http.ResponseWriter,
+	req *http.Request,
+) error {
+	url := fmt.Sprintf(
+		"%s/api/v1/agent-forward/?path=%s&workspace_guid=%s&container_id=%s",
+		ri.getRunnerBaseUrl(),
+		url.QueryEscape(path),
+		strconv.Itoa(int(workspace.ID)),
+		container.ContainerID,
+	)
+
+	proxyHeaders := http.Header{}
+	proxyHeaders.Set("X-CodeBox-Forward-Host", "127.0.0.1")
+	proxyHeaders.Set("X-CodeBox-Forward-Port", strconv.Itoa(int(port.PortNumber)))
+	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
+	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "http")
+
+	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
+	if err != nil {
+		return err
+	}
+
+	proxy.ServeHTTP(rw, req)
+	return nil
 }

@@ -1,51 +1,61 @@
 package middleware
 
-// func PortForwardingMiddleware(ctx *gin.Context) {
-// 	if len(strings.Split(ctx.Request.Host, ".")) > 1 {
-// 		codeboxSubDomain := strings.Split(ctx.Request.Host, ".")[0]
+import (
+	"fmt"
+	"net/url"
+	"strings"
 
-// 		if strings.HasPrefix(codeboxSubDomain, "codebox--") {
-// 			splittedSubDomain := strings.Split(codeboxSubDomain, "--")
+	"github.com/davidebianchi03/codebox/api/workspaces"
+	"github.com/gin-gonic/gin"
+)
 
-// 			if len(splittedSubDomain) != 4 {
-// 				ctx.JSON(400, gin.H{
-// 					"detail": "invalid hostname",
-// 				})
-// 				ctx.Abort()
-// 				return
-// 			}
+func PortForwardingMiddleware(ctx *gin.Context) {
+	// ctx.Request.Host = "codebox--56--grafana--3000.codebox.example.com"
+	if len(strings.Split(ctx.Request.Host, ".")) > 1 {
+		codeboxSubDomain := strings.Split(ctx.Request.Host, ".")[0]
 
-// 			workspaceId := splittedSubDomain[1]
-// 			containerName := splittedSubDomain[2]
-// 			portNumber := splittedSubDomain[3]
+		if strings.HasPrefix(codeboxSubDomain, "codebox--") {
+			splittedSubDomain := strings.Split(codeboxSubDomain, "--")
 
-// 			if ctx.Request.URL.RawQuery == "" {
-// 				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path))
-// 			} else {
-// 				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path+"?"+ctx.Request.URL.RawQuery))
-// 			}
+			if len(splittedSubDomain) != 4 {
+				ctx.JSON(400, gin.H{
+					"detail": "invalid hostname",
+				})
+				ctx.Abort()
+				return
+			}
 
-// 			newRequestParams := []gin.Param{
-// 				{
-// 					Key:   "workspaceId",
-// 					Value: workspaceId,
-// 				},
-// 				{
-// 					Key:   "containerName",
-// 					Value: containerName,
-// 				},
-// 				{
-// 					Key:   "portNumber",
-// 					Value: portNumber,
-// 				},
-// 			}
-// 			ctx.Params = newRequestParams
+			workspaceId := splittedSubDomain[1]
+			containerName := splittedSubDomain[2]
+			portNumber := splittedSubDomain[3]
 
-// 			workspaces.HandleForwardContainerPort(ctx)
-// 			ctx.Abort()
-// 			return
-// 		}
-// 	}
+			if ctx.Request.URL.RawQuery == "" {
+				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward-http/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path))
+			} else {
+				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward-http/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path+"?"+ctx.Request.URL.RawQuery))
+			}
 
-// 	ctx.Next()
-// }
+			newRequestParams := []gin.Param{
+				{
+					Key:   "workspaceId",
+					Value: workspaceId,
+				},
+				{
+					Key:   "containerName",
+					Value: containerName,
+				},
+				{
+					Key:   "portNumber",
+					Value: portNumber,
+				},
+			}
+			ctx.Params = newRequestParams
+
+			workspaces.HandleForwardHttp(ctx)
+			ctx.Abort()
+			return
+		}
+	}
+
+	ctx.Next()
+}

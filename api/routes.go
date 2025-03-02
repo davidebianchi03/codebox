@@ -9,7 +9,7 @@ import (
 
 func V1ApiRoutes(router *gin.Engine) {
 	// middlewares
-	// router.Use(middleware.PortForwardingMiddleware)
+	router.Use(middleware.PortForwardingMiddleware)
 	router.Use(middleware.CORSMiddleware)
 	router.Use(middleware.TokenAuthMiddleware)
 
@@ -35,7 +35,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			// workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
 			// workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
-			// workspaceApis.Any("/:workspaceId/container/:containerName/forward/:portNumber", workspaces.HandleForwardContainerPort)
+			workspaceApis.Any("/:workspaceId/container/:containerName/forward-http/:portNumber", workspaces.HandleForwardHttp)
 			// workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
 			// workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
 		}
