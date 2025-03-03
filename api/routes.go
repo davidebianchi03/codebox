@@ -32,8 +32,8 @@ func V1ApiRoutes(router *gin.Engine) {
 		// workspace related apis
 		workspaceApis := v1.Group("/workspace")
 		{
-			// workspaceApis.GET("", workspaces.HandleListWorkspaces)
-			// workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
+			workspaceApis.GET("", workspaces.HandleListWorkspaces)
+			workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
 			// workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
 			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
@@ -48,6 +48,5 @@ func V1ApiRoutes(router *gin.Engine) {
 
 		// download cli
 		v1.GET("/download-cli", cli.HandleDownloadCLI)
-
 	}
 }

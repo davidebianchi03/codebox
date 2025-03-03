@@ -12,169 +12,67 @@ import (
 	"github.com/gocraft/work"
 )
 
-// type WorkspaceWithoutDetailsResponse struct {
-// 	Id             uint      `json:"id"`
-// 	Name           string    `json:"name"`
-// 	Status         string    `json:"status"`
-// 	Type           string    `json:"type"`
-// 	GitRepoUrl     string    `json:"git_repo_url"`
-// 	CreatedAt      time.Time `json:"created_on"`
-// 	LastActivityOn time.Time `json:"last_activity_on"`
-// 	LastStartOn    time.Time `json:"last_start_on"`
-// }
+/*
+GET api/v1/workspace
+*/
+func HandleListWorkspaces(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
 
-// type ForwardedPortDetails struct {
-// 	PortNumber     uint   `json:"port_number"`
-// 	Active         bool   `json:"active"`
-// 	ConnectionType string `json:"connection_type"`
-// 	Public         bool   `json:"public"`
-// }
+	var workspaces []models.Workspace
+	result := db.DB.Find(&workspaces, map[string]interface{}{"user_id": user.ID})
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, workspaces)
+}
 
-// type WorkspaceContainerDetails struct {
-// 	Id                         int                    `json:"id"`
-// 	Type                       string                 `json:"type"`
-// 	Name                       string                 `json:"name"`
-// 	ContainerUser              string                 `json:"container_user"`
-// 	ContainerStatus            string                 `json:"container_status"`
-// 	AgentStatus                string                 `json:"agent_status"`
-// 	CanConnectRemoteDeveloping bool                   `json:"can_connect_remote_developing"`
-// 	WorkspacePathInContainer   string                 `json:"workspace_path_in_container"`
-// 	ForwardedPorts             []ForwardedPortDetails `json:"forwarded_ports"`
-// }
+/*
+GET api/v1/workspace/:id
+*/
+func HandleRetrieveWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
 
-// type WorkspaceWithDetailsResponse struct {
-// 	Id             uint                        `json:"id"`
-// 	Name           string                      `json:"name"`
-// 	Status         string                      `json:"status"`
-// 	Type           string                      `json:"type"`
-// 	GitRepoUrl     string                      `json:"git_repo_url"`
-// 	Containers     []WorkspaceContainerDetails `json:"containers"`
-// 	CreatedAt      time.Time                   `json:"created_on"`
-// 	LastActivityOn time.Time                   `json:"last_activity_on"`
-// 	LastStartOn    time.Time                   `json:"last_start_on"`
-// }
+	id, found := ctx.Params.Get("workspaceId")
+	if !found {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
 
-// /*
-// GET api/v1/workspace
-// */
-// func HandleListWorkspaces(ctx *gin.Context) {
-// 	user, err := utils.GetUserFromContext(ctx)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
+	var workspace models.Workspace
+	result := db.DB.Where(map[string]interface{}{"ID": id, "user_id": user.ID}).Find(&workspace)
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
 
-// 	var workspaces []models.Workspace
-// 	result := db.DB.Where(map[string]interface{}{"owner_id": user.ID}).Find(&workspaces)
-// 	if result.Error != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
 
-// 	responseObjs := make([]WorkspaceWithoutDetailsResponse, 0)
-// 	for _, workspace := range workspaces {
-// 		responseObjs = append(responseObjs, WorkspaceWithoutDetailsResponse{
-// 			Id:             workspace.ID,
-// 			Name:           workspace.Name,
-// 			Status:         workspace.Status,
-// 			Type:           workspace.Type,
-// 			GitRepoUrl:     workspace.GitRepoUrl,
-// 			CreatedAt:      workspace.CreatedAt,
-// 			LastActivityOn: workspace.LastActivityOn,
-// 			LastStartOn:    workspace.LastStartOn,
-// 		})
-// 	}
-
-// 	ctx.JSON(http.StatusOK, responseObjs)
-// }
-
-// /*
-// GET api/v1/workspace/:id
-// */
-// func HandleRetrieveWorkspace(ctx *gin.Context) {
-// 	user, err := utils.GetUserFromContext(ctx)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
-
-// 	id, found := ctx.Params.Get("workspaceId")
-// 	if !found {
-// 		ctx.JSON(http.StatusNotFound, gin.H{
-// 			"detail": "workspace not found",
-// 		})
-// 		return
-// 	}
-
-// 	var workspace models.Workspace
-// 	result := db.DB.Where(map[string]interface{}{"ID": id, "owner_id": user.ID}).Find(&workspace)
-// 	if result.Error != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
-
-// 	if result.RowsAffected == 0 {
-// 		ctx.JSON(http.StatusNotFound, gin.H{
-// 			"detail": "workspace not found",
-// 		})
-// 		return
-// 	}
-
-// 	// retrieve workspace containers
-// 	workspaceContainers := []models.WorkspaceContainer{}
-// 	result = db.DB.Where(map[string]interface{}{"workspace_id": workspace.ID}).Preload("ForwardedPorts").Find(&workspaceContainers)
-// 	if result.Error != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
-
-// 	responseObj := WorkspaceWithDetailsResponse{
-// 		Id:             workspace.ID,
-// 		Name:           workspace.Name,
-// 		Status:         workspace.Status,
-// 		Type:           workspace.Type,
-// 		GitRepoUrl:     workspace.GitRepoUrl,
-// 		CreatedAt:      workspace.CreatedAt,
-// 		LastActivityOn: workspace.LastActivityOn,
-// 		LastStartOn:    workspace.LastStartOn,
-// 	}
-
-// 	for _, container := range workspaceContainers {
-// 		containerResponseObj := WorkspaceContainerDetails{
-// 			Id:                         int(container.ID),
-// 			Type:                       container.Type,
-// 			Name:                       container.Name,
-// 			ContainerUser:              container.ContainerUser,
-// 			ContainerStatus:            container.ContainerStatus,
-// 			AgentStatus:                container.AgentStatus,
-// 			CanConnectRemoteDeveloping: container.CanConnectRemoteDeveloping,
-// 			WorkspacePathInContainer:   container.WorkspacePathInContainer,
-// 		}
-
-// 		for _, forwardedPort := range container.ForwardedPorts {
-// 			containerResponseObj.ForwardedPorts = append(containerResponseObj.ForwardedPorts, ForwardedPortDetails{
-// 				PortNumber:     forwardedPort.PortNumber,
-// 				Active:         forwardedPort.Active,
-// 				ConnectionType: forwardedPort.ConnectionType,
-// 				Public:         forwardedPort.Public,
-// 			})
-// 		}
-
-// 		responseObj.Containers = append(responseObj.Containers, containerResponseObj)
-// 	}
-
-// 	ctx.JSON(http.StatusOK, responseObj)
-// }
+	ctx.JSON(http.StatusOK, workspace)
+}
 
 /*
 POST api/v1/workspace
