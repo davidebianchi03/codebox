@@ -245,8 +245,37 @@ func (ri *RunnerInterface) StopWorkpace(workspace *models.Workspace) error {
 	return nil
 }
 
-func (ri *RunnerInterface) RemoveWorkspace() {
+func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
+	url := fmt.Sprintf("%s/api/v1/workspace/%d/remove", ri.getRunnerBaseUrl(), workspace.ID)
 
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
+	_ = writer.WriteField("type", "docker_compose")
+	err := writer.Close()
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPost, url, payload)
+
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return fmt.Errorf("recived status %d", res.StatusCode)
+	}
+
+	return nil
 }
 
 func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool {

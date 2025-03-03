@@ -11,7 +11,7 @@ import (
 	"github.com/gocraft/work"
 )
 
-func (jobContext *Context) StopWorkspace(job *work.Job) error {
+func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace models.Workspace
@@ -30,10 +30,10 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 		Runner: workspace.Runner,
 	}
 
-	if err := ri.StopWorkpace(&workspace); err != nil {
-		workspace.AppendLogs(fmt.Sprintf("failed to stop workspace, %s", err.Error()))
+	if err := ri.RemoveWorkspace(&workspace); err != nil {
+		workspace.AppendLogs(fmt.Sprintf("failed to remove workspace, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError
-		return errors.New("failed to stop workspace")
+		return errors.New("failed to remove workspace")
 	}
 
 	// fetch workspace details and logs
@@ -83,6 +83,6 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 		})
 		db.DB.Unscoped().Delete(&container)
 	}
-
+	db.DB.Delete(&workspace)
 	return nil
 }

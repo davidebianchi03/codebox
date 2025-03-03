@@ -34,7 +34,7 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			workspaceApis.GET("", workspaces.HandleListWorkspaces)
 			workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
-			// workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
+			workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
 			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-http/:portNumber", workspaces.HandleForwardHttp)
