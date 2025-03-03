@@ -55,9 +55,11 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 
 		logs, err := ri.GetLogs(&workspace)
 		if err == nil {
-			logs = logs[logsIndex:]
-			workspace.AppendLogs(logs)
-			logsIndex += len(logs)
+			if len(logs) > logsIndex {
+				logs = logs[logsIndex:]
+				workspace.AppendLogs(logs)
+				logsIndex += len(logs)
+			}
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
