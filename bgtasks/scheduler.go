@@ -35,7 +35,7 @@ func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInsta
 	)
 
 	pool.Job("start_workspace", (*Context).StartWorkspace)
-	// WorkspaceActionsPool.Job("stop_workspace", (*WorkspaceTaskContext).StopWorkspace)
+	pool.Job("stop_workspace", (*Context).StopWorkspace)
 	// WorkspaceActionsPool.Job("restart_workspace", (*WorkspaceTaskContext).RestartWorkspace)
 	// WorkspaceActionsPool.Job("delete_workspace", (*WorkspaceTaskContext).DeleteWorkspace)
 	pool.Start()

@@ -27,7 +27,7 @@ func HandleRetrieveWorkspaceLogs(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Where(map[string]interface{}{"ID": id, "owner_id": user.ID}).Find(&workspace)
+	result := db.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",

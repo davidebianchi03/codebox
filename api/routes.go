@@ -40,7 +40,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-http/:portNumber", workspaces.HandleForwardHttp)
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-ssh", workspaces.HandleForwardSsh)
 			// workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
-			// workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
+			workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
 		}
 
 		// instance settings related apis

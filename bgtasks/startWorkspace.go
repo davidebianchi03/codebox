@@ -89,6 +89,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 
 	if err := ri.StartWorkspace(&workspace); err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to start workspace, %s", err.Error()))
+		workspace.Status = models.WorkspaceStatusError
 		return errors.New("failed to start workspace")
 	}
 
@@ -99,6 +100,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 		details, err := ri.GetDetails(&workspace)
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
+			workspace.Status = models.WorkspaceStatusError
 			return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
 		}
 
@@ -120,6 +122,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 	details, err := ri.GetDetails(&workspace)
 	if err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
+		workspace.Status = models.WorkspaceStatusError
 		return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
 	}
 
@@ -163,44 +166,6 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 	workspace.Status = details.Status
 	return nil
 }
-
-// 	workspace.ClearLogs()
-
-// 	if workspace.Type == db.WorkspaceTypeDevcontainer {
-// 		workspaceInterface := devcontainer.DevcontainerWorkspace{}
-// 		workspaceInterface.Workspace = workspace
-// 		workspaceInterface.StartWorkspace()
-// 	} else {
-// 		return fmt.Errorf("%s: unsupported workspace type", workspace.Type)
-// 	}
-
-// 	return nil
-// }
-
-// func (ctx *WorkspaceTaskContext) StopWorkspace(job *work.Job) error {
-// 	workspaceId := job.ArgInt64("workspace_id")
-
-// 	var workspace *db.Workspace
-// 	result := db.DB.Where("ID=?", workspaceId).Preload("Owner").First(&workspace)
-// 	if result.Error != nil {
-// 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
-// 	}
-
-// 	workspace.ClearLogs()
-
-// 	if workspace.Type == db.WorkspaceTypeDevcontainer {
-// 		workspace.AppendLogs("Stopping workspace...")
-// 		workspace.Status = db.WorkspaceStatusStopping
-// 		db.DB.Save(&workspace)
-// 		workspaceInterface := devcontainer.DevcontainerWorkspace{}
-// 		workspaceInterface.Workspace = workspace
-// 		workspaceInterface.StopWorkspace()
-// 	} else {
-// 		return fmt.Errorf("%s: unsupported workspace type", workspace.Type)
-// 	}
-
-// 	return nil
-// }
 
 // func (ctx *WorkspaceTaskContext) RestartWorkspace(job *work.Job) error {
 // 	return nil

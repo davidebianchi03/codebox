@@ -25,7 +25,7 @@ func HandleListWorkspaces(ctx *gin.Context) {
 	}
 
 	var workspaces []models.Workspace
-	result := db.DB.Find(&workspaces, map[string]interface{}{"user_id": user.ID})
+	result := db.DB.Preload("GitSource").Preload("TemplateVersion").Find(&workspaces, map[string]interface{}{"user_id": user.ID})
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -56,7 +56,11 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Where(map[string]interface{}{"ID": id, "user_id": user.ID}).Find(&workspace)
+	result := db.DB.Preload("GitSource").Preload("TemplateVersion").Find(
+		&workspace,
+		map[string]interface{}{"ID": id, "user_id": user.ID},
+	)
+
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -217,59 +221,63 @@ func HandleCreateWorkspace(c *gin.Context) {
 	c.JSON(http.StatusCreated, workspace)
 }
 
-// /*
-// POST api/v1/workspace/:id/stop
-// */
-// func HandleStopWorkspace(ctx *gin.Context) {
-// 	user, err := utils.GetUserFromContext(ctx)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
+/*
+POST api/v1/workspace/:id/stop
+*/
+func HandleStopWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
 
-// 	id, found := ctx.Params.Get("workspaceId")
-// 	if !found {
-// 		ctx.JSON(http.StatusNotFound, gin.H{
-// 			"detail": "workspace not found",
-// 		})
-// 		return
-// 	}
+	id, found := ctx.Params.Get("workspaceId")
+	if !found {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
 
-// 	var workspace db.Workspace
-// 	result := db.DB.Where(map[string]interface{}{"ID": id, "owner_id": user.ID}).Find(&workspace)
-// 	if result.Error != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{
-// 			"detail": "internal server error",
-// 		})
-// 		return
-// 	}
+	var workspace models.Workspace
+	result := db.DB.Preload("GitSource").Preload("TemplateVersion").Find(
+		&workspace,
+		map[string]interface{}{"ID": id, "user_id": user.ID},
+	)
 
-// 	if result.RowsAffected == 0 {
-// 		ctx.JSON(http.StatusNotFound, gin.H{
-// 			"detail": "workspace not found",
-// 		})
-// 		return
-// 	}
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
 
-// 	if workspace.Status == db.WorkspaceStatusStopping || workspace.Status == db.WorkspaceStatusStopped {
-// 		ctx.JSON(http.StatusConflict, gin.H{
-// 			"detail": "workspace is already stopped",
-// 		})
-// 		return
-// 	}
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
 
-// 	workspace.Status = db.WorkspaceStatusStopping
-// 	db.DB.Save(&workspace)
+	if workspace.Status == models.WorkspaceStatusStopping || workspace.Status == models.WorkspaceStatusStopped {
+		ctx.JSON(http.StatusConflict, gin.H{
+			"detail": "workspace is already stopped",
+		})
+		return
+	}
 
-// 	// start bg task
-// 	bgtasks.BgTasksEnqueuer.Enqueue("stop_workspace", work.Q{"workspace_id": workspace.ID})
+	workspace.Status = models.WorkspaceStatusStopping
+	db.DB.Save(&workspace)
 
-// 	ctx.JSON(http.StatusOK, gin.H{
-// 		"detail": "stopping workspace...",
-// 	})
-// }
+	// start bg task
+	bgtasks.BgTasksEnqueuer.Enqueue("stop_workspace", work.Q{"workspace_id": workspace.ID})
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"detail": "stopping workspace...",
+	})
+}
 
 // /*
 // POST api/v1/workspace/:id/start
