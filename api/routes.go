@@ -2,7 +2,9 @@ package api
 
 import (
 	"github.com/davidebianchi03/codebox/api/auth"
+	"github.com/davidebianchi03/codebox/api/cli"
 	"github.com/davidebianchi03/codebox/api/middleware"
+	"github.com/davidebianchi03/codebox/api/settings"
 	"github.com/davidebianchi03/codebox/api/workspaces"
 	"github.com/gin-gonic/gin"
 )
@@ -27,24 +29,25 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.POST("/signup", auth.HandleSignup)
 		}
 
-		// // workspace related apis
+		// workspace related apis
 		workspaceApis := v1.Group("/workspace")
 		{
 			// workspaceApis.GET("", workspaces.HandleListWorkspaces)
 			// workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
 			// workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
-			// workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
+			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-http/:portNumber", workspaces.HandleForwardHttp)
+			workspaceApis.Any("/:workspaceId/container/:containerName/forward-ssh", workspaces.HandleForwardSsh)
 			// workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
 			// workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
 		}
 
-		// // instance settings related apis
-		// v1.GET("/instance-settings", settings.HandleRetrieveServerSettings)
+		// instance settings related apis
+		v1.GET("/instance-settings", settings.HandleRetrieveServerSettings)
 
-		// // download cli
-		// v1.GET("/download-cli", cli.HandleDownloadCLI)
+		// download cli
+		v1.GET("/download-cli", cli.HandleDownloadCLI)
 
 	}
 }

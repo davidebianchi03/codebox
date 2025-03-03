@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
@@ -46,7 +47,7 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
-	token, err := models.CreateToken(user)
+	token, err := models.CreateToken(user, time.Duration(time.Hour*24*20))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",

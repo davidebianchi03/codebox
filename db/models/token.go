@@ -35,8 +35,8 @@ func generateJWTToken(userId uint, expiration time.Time) (string, error) {
 	return tokenString, nil
 }
 
-func CreateToken(user User) (Token, error) {
-	tokenExpiration := time.Now().Add(time.Duration(time.Hour * 24))
+func CreateToken(user User, duration time.Duration) (Token, error) {
+	tokenExpiration := time.Now().Add(duration)
 
 	jwtToken, err := generateJWTToken(user.ID, tokenExpiration)
 
