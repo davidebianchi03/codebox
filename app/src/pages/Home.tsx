@@ -1,93 +1,113 @@
-import { Component, ReactNode, useEffect, useState } from "react";
-import "../theme/theme.css"
-import BasePage from "./base/Base";
-import { Http } from "../api/http";
-import { RequestStatus } from "../api/types";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import Card from "../theme/components/card/Card";
-import { WorkspaceListItem } from "../components/workspaceListItem/WorkspaceListItem";
-import TextInput from "../theme/components/textinput/TextInput";
-import Button from "../theme/components/button/Button";
 
-interface HomePageProps {
+import React from "react";
 
-}
+export default function HomePage() {
 
-interface HomePageState {
-    workspaces: Array<any>,
-    workspacesFilterText: string,
-}
+    // const [email, setEmail] = useState("");
+    // const [password, setPassword] = useState("");
+    // const [error, setError] = useState("");
 
-export default function HomePage(props: HomePageProps) {
+    // const navigate = useNavigate();
 
-    const [workspaces, setWorkspaces] = useState<any>([]);
-    const [workspacesCount, setWorkspacesCount] = useState(0);
-    const [workspacesFilterText, setWorkspacesFilterText] = useState<string>("");
+    // const IsAuthenticated = useCallback(async () => {
+    //     // redirect to home if user is already authenticated
+    //     let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
+    //     if (status === RequestStatus.OK && statusCode === 200) {
+    //         navigate("/")
+    //         return
+    //     }
+    // }, [navigate])
 
-    const navigate = useNavigate();
+    // useEffect(() => {
+    //     IsAuthenticated();
+    // }, [IsAuthenticated]);
 
-    useEffect(() => {
-        (async () => {
-            let [status, statusCode, responseData, errorDescription] = await Http.Request(`${Http.GetServerURL()}/api/v1/workspace`, "GET", null);
-            if (status === RequestStatus.OK) {
-                setWorkspacesCount(responseData.length);
-                let filteredWorkspaces: Array<any> = [];
-                responseData.forEach((workspace: any) => {
-                    if ((workspace.name as string).indexOf(workspacesFilterText) !== -1) {
+    // const SubmitLoginForm = async (event: any) => {
+    //     event.preventDefault();
 
-                        filteredWorkspaces.push(workspace);
-                    }
-                });
-                setWorkspaces(filteredWorkspaces);
-            } else {
-                console.log(`Error: received ${statusCode} from server`);
-            }
-        })();
-    }, [workspacesFilterText]);
+    //     // validate fields
+    //     if (email === "" || password === "") {
+    //         setError("Missing email or password");
+    //         return;
+    //     }
 
+    //     // process login
+    //     let [status, jwtToken, expirationDate] = await Http.Login(email, password);
+    //     if (status === LoginStatus.OK) {
+    //         setError("");
+    //         document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${window.location.hostname}`;
+    //         document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${window.location.hostname}`;
+    //         navigate("/")
+    //         return
+    //     } else {
+    //         document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
+    //         document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
+    //         if (status === LoginStatus.INVALID_CREDENTIALS) {
+    //             setError("Invalid credentials");
+    //         } else {
+    //             setError("Unknown error, check that server is reachable");
+    //         }
+    //     }
+    // }
+
+    // return (
+    //     <div style={{
+    //         display: "flex",
+    //         alignItems: "center",
+    //         justifyContent: "center",
+    //         width: "100%",
+    //         height: "100%",
+    //         background: "var(--background-color)"
+    //     }}>
+    //         <div style={{ width: "350px", display: "flex", flexDirection: "column" }}>
+    //             <div style={{ display: "flex", justifyContent: "center", marginTop: "10pt", marginBottom: "20pt" }}>
+    //                 <img src={CodeboxLogoWhite} style={{ maxWidth: "250px" }} alt="Codebox logo" />
+    //             </div>
+    //             <div style={{ textAlign: "center", marginBottom: "10pt", color: "var(--red)" }}>
+    //                 {error}
+    //             </div>
+    //             <form onSubmit={SubmitLoginForm}>
+    //                 <TextInput
+    //                     label={"Email"}
+    //                     placeholder={"john@doe.com"}
+    //                     style={{ width: "calc(100% - 15pt)" }}
+    //                     onTextChanged={(event) => setEmail(event.target.value)}
+    //                     autocomplete="email"
+    //                     name="email"
+    //                 />
+    //                 <TextInput
+    //                     label={"Password"}
+    //                     placeholder={"password"}
+    //                     secure={true}
+    //                     style={{ width: "calc(100% - 15pt)", marginTop: "10pt" }}
+    //                     onTextChanged={(event) => setPassword(event.target.value)}
+    //                     autocomplete="password"
+    //                     name="password"
+    //                 />
+    //                 <Button
+    //                     style={{
+    //                         display: "flex",
+    //                         justifyContent: "center",
+    //                         width: "200px",
+    //                         margin: "auto",
+    //                         marginTop: "30pt"
+    //                     }}
+    //                     type="submit"
+    //                 >
+    //                     Login
+    //                 </Button>
+    //                 <p style={{ color: "var(--grey-500)", textAlign: "center", fontSize: "9pt", marginTop:"20pt" }}>
+    //                     version: {process.env.REACT_APP_VERSION}
+    //                 </p>
+    //                 <p style={{ color: "var(--grey-500)", textAlign: "center", fontSize: "9pt" }}>
+    //                     &copy;{new Date().getFullYear()} codebox
+    //                 </p>
+    //             </form>
+    //         </div>
+    //     </div>
+    // )
     return (
-        <BasePage>
-            <Card style={{ width: "90%", margin: "auto", marginTop: "40pt", marginBottom: "30pt" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3>Workspaces</h3>
-                    <Button type="link" extraClass={"primary"} linkHref={"/create-workspace"}>Create Workspace</Button>
-                </div>
-                <TextInput
-                    style={{ width: "calc(100% - 15pt)" }}
-                    placeholder="Filter workspaces"
-                    onTextChanged={(event) => { setWorkspacesFilterText(event.target.value) }}
-                />
-                <div style={{ marginTop: "20px" }}>
-                    {
-                        workspaces.length > 0 ?
-                            (
-                                workspaces.map((workspace: any) => {
-                                    return (
-                                        <WorkspaceListItem workspace={workspace} key={workspace.id} />
-                                    )
-                                })
-                            )
-                            :
-                            (
-                                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", cursor: "pointer" }}>
-                                    {
-                                        workspacesCount === 0 ?
-                                            (
-                                                <span onClick={() => { navigate(workspacesFilterText === "" ? `/create-workspace` : `/create-workspace?name=${encodeURIComponent(workspacesFilterText)}`) }}>
-                                                    <a style={{ textDecoration: "underline" }}>Create your first workspace</a>
-                                                </span>
-                                            ) :
-                                            (
-                                                <span onClick={() => { navigate(`/create-workspace?name=${encodeURIComponent(workspacesFilterText)}`) }}>
-                                                    No workspace found matching '{workspacesFilterText}', <a style={{ textDecoration: "underline" }}>create it</a>
-                                                </span>
-                                            )
-                                    }
-                                </span>
-                            )
-                    }
-                </div>
-            </Card>
-        </BasePage>
+        <React.Fragment>
+        </React.Fragment>
     )
 }

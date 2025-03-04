@@ -5,24 +5,16 @@ import {
 } from "react-router-dom";
 import LoginPage from './pages/Login';
 import HomePage from "./pages/Home";
-import WorkspaceDetails from "./pages/WorkspaceDetails/WorkspaceDetails";
-import PageNotFound from "./pages/PageNotFound";
-import CreateWorkspace from "./pages/CreateWorkspace";
-import Profile from "./pages/Profile";
+import "@tabler/core/dist/css/tabler.min.css";
 
-function App() {
+
+export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path='/login/' element={<LoginPage />} />
-        <Route path='/' element={<HomePage />} />
-        <Route path='/workspaces/:workspaceId' element={<WorkspaceDetails />}  />
-        <Route path='/create-workspace' element={<CreateWorkspace />}  />
-        <Route path='/profile' element={<Profile />}  />
-        <Route path='*' element={<PageNotFound />}  />
-      </Routes>
-    </Router>
+      <Router>
+        <Routes>
+          <Route path='/login/' element={<LoginPage />} />
+          <Route path='/' element={<HomePage />} />
+        </Routes>
+      </Router>
   );
 }
-
-export default App;

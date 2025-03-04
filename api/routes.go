@@ -34,8 +34,8 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			workspaceApis.GET("", workspaces.HandleListWorkspaces)
 			workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
-			workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
+			workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
 			workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
 			workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
