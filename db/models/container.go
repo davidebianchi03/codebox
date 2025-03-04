@@ -7,14 +7,16 @@ import (
 )
 
 type WorkspaceContainer struct {
-	gorm.Model
-	ID                uint `gorm:"primarykey"`
-	WorkspaceID       uint
-	Workspace         Workspace `gorm:"constraint:OnDelete:CASCADE;"`
-	ContainerID       string    `gorm:"size:255"`
-	ContainerName     string    `gorm:"size:255"`
-	ContainerImage    string    `gorm:"size:255"`
-	ContainerUserID   uint
-	ContainerUserName string `gorm:"size:255"`
-	AgentLastContact  time.Time
+	ID                uint           `gorm:"primarykey" json:"-"`
+	WorkspaceID       uint           `json:"-"`
+	Workspace         Workspace      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	ContainerID       string         `gorm:"size:255" json:"container_id"`
+	ContainerName     string         `gorm:"size:255" json:"container_name"`
+	ContainerImage    string         `gorm:"size:255" json:"container_image"`
+	ContainerUserID   uint           `json:"container_user_id"`
+	ContainerUserName string         `gorm:"size:255" json:"container_user_name"`
+	AgentLastContact  time.Time      `json:"agent_last_contact"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
 }
