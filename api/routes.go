@@ -39,8 +39,10 @@ func V1ApiRoutes(router *gin.Engine) {
 			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
 			workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
 			workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
-			workspaceApis.Any("/:workspaceId/container", workspaces.ListWorkspaceContainersByWorkspace)
-			workspaceApis.Any("/:workspaceId/container/:containerName", workspaces.RetrieveWorkspaceContainersByWorkspace)
+			workspaceApis.GET("/:workspaceId/container", workspaces.ListWorkspaceContainersByWorkspace)
+			workspaceApis.GET("/:workspaceId/container/:containerName", workspaces.RetrieveWorkspaceContainersByWorkspace)
+			workspaceApis.GET("/:workspaceId/container/:containerName/port", workspaces.ListContainerPortsByWorkspaceContainer)
+			workspaceApis.GET("/:workspaceId/container/:containerName/port/:portNumber", workspaces.RetrieveContainerPortsByWorkspaceContainer)
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-http/:portNumber", workspaces.HandleForwardHttp)
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-ssh", workspaces.HandleForwardSsh)
 		}
