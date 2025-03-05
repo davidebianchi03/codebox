@@ -1,8 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, CardBody, Container, Input, Label } from "reactstrap";
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  Container,
+  Input,
+  Label,
+} from "reactstrap";
 import { Workspace } from "../../types/workspace";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
+import {
+  GetBeautyNameForStatus,
+  GetWorkspaceStatusColor,
+} from "../../common/workspace";
 
 export default function HomePage() {
   const [searchText, setSearchText] = useState<string>("");
@@ -43,41 +55,74 @@ export default function HomePage() {
       <Card className="my-1">
         <CardBody>
           {workspaces.length &&
-          workspaces.filter((w) => w.name.indexOf(searchText) >= 0).length > 0 ? (
+          workspaces.filter((w) => w.name.indexOf(searchText) >= 0).length >
+            0 ? (
             <>
-              {workspaces.map((workspace: Workspace) => (
-                <>
-                  {workspace.name.indexOf(searchText) >= 0 && (
-                    <>
-                      <div className="d-flex align-items-center">
-                        <div
-                          style={{
-                            width: 50,
-                            height: 50,
-                            fontSize: 20,
-                            opacity: 0.5,
-                            borderRadius: 4,
-                          }}
-                          className="bg-primary text-white d-flex align-items-center justify-content-center"
-                        >
-                          {workspace.name[0].toUpperCase()}
+              {workspaces
+                .sort((w1: any, w2: any) => {
+                  var d1 = new Date(w1.updated_at);
+                  var d2 = new Date(w2.updated_at);
+                  if (d1 < d2) return 1;
+                  else if (d1 > d2) return -1;
+                  else return 0;
+                })
+                .map((workspace: Workspace) => (
+                  <>
+                    {workspace.name.indexOf(searchText) >= 0 && (
+                      <>
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div className="d-flex align-items-center">
+                            <div
+                              style={{
+                                width: 50,
+                                height: 50,
+                                fontSize: 20,
+                                opacity: 0.5,
+                                borderRadius: 4,
+                              }}
+                              className="bg-primary text-white d-flex align-items-center justify-content-center"
+                            >
+                              {workspace.name[0].toUpperCase()}
+                            </div>
+                            <div className="ms-4">
+                              <h3 className="mb-0">{workspace.name}</h3>
+                              <small className="text-muted">
+                                {workspace.type}
+                              </small>
+                            </div>
+                          </div>
+                          <div className="d-flex flex-column align-items-end">
+                            <Badge
+                              color={GetWorkspaceStatusColor(workspace.status)}
+                              className="text-white mb-2"
+                              style={{ fontSize: 11 }}
+                            >
+                              {GetBeautyNameForStatus(workspace.status)}
+                            </Badge>
+                            <p
+                              className="mb-0 text-muted"
+                              style={{ fontSize: 12 }}
+                            >
+                              <small>
+                                Last activity{" "}
+                                {new Date(
+                                  workspace.updated_at
+                                ).toLocaleString()}
+                              </small>
+                            </p>
+                          </div>
                         </div>
-                        <div className="ms-4">
-                          <h3 className="mb-0">{workspace.name}</h3>
-                          <small className="text-muted">{workspace.type}</small>
-                        </div>
-                      </div>
-                      <hr className="my-3" />
-                    </>
-                  )}
-                </>
-              ))}
+                        <hr className="my-3" />
+                      </>
+                    )}
+                  </>
+                ))}
             </>
           ) : (
             <p className="text-center">
               {workspaces.length > 0 ? (
                 <>
-                  No workspaces found matching '{searchText}'' {" "}
+                  No workspaces found matching '{searchText}''{" "}
                   <span>
                     <u>create it</u>
                   </span>

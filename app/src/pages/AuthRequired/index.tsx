@@ -44,12 +44,12 @@ function AuthRequired({ children }: Props) {
         <>
             <header className="navbar navbar-expand-md d-print-none">
                 <div className="container-xl">
-                    <div className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                    <a className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3" href="/">
                         <span className="d-flex align-items-center">
                             <img src={LogoSquare} alt="logo" width={35} />
                             <h2 className="mb-0 ms-2">Codebox</h2>
                         </span>
-                    </div>
+                    </a>
                     <div className="nav-item dropdown">
                         <span className="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Open user menu">
                             <img className="avatar avatar-sm" src={settings?.use_gravatar && user ? `https://www.gravatar.com/avatar/${sha256(user?.email)}` : DefaultAvatar} alt="avatar" />
