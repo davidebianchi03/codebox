@@ -21,6 +21,7 @@ func ListAvailableRunnerTypes() []RunnerChoice {
 						"git",
 						"template",
 					},
+					ConfigFilesDefaultPath: "docker-compose.yml",
 				},
 			},
 		},

@@ -15,11 +15,13 @@ import {
   GetBeautyNameForStatus,
   GetWorkspaceStatusColor,
 } from "../../common/workspace";
+import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
   const [searchText, setSearchText] = useState<string>("");
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
+  const navigate = useNavigate();
 
   const FetchWorkspaces = useCallback(async () => {
     let [status, statusCode, responseData] = await Http.Request(
@@ -53,9 +55,22 @@ export default function HomePage() {
   }, [FetchWorkspaces, FetchWorkspaceTypes]);
 
   return (
-    <Container className="pb-4">
-      <div className="mt-5 w-100 d-flex justify-content-end">
-        <Button color="primary">Create workspace</Button>
+    <Container className="pb-4 mt-4">
+      <div className="row g-2 align-items-center">
+        <div className="col">
+          <div className="page-pretitle">Overview</div>
+          <h2 className="page-title">Workspaces</h2>
+        </div>
+        <div className="col-auto ms-auto d-print-none">
+          <div className="btn-list">
+            <Button
+              color="primary"
+              onClick={() => navigate("/create-workspace")}
+            >
+              Create workspace
+            </Button>
+          </div>
+        </div>
       </div>
       <Card className="my-5">
         <CardBody>

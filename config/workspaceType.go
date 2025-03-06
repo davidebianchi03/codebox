@@ -4,6 +4,7 @@ type WorkspaceType struct {
 	ID                     string   `json:"id"`
 	Name                   string   `json:"name"`
 	SupportedConfigSources []string `json:"supported_config_sources"`
+	ConfigFilesDefaultPath string   `json:"config_files_default_path"`
 }
 
 func ListWorkspaceTypes() []WorkspaceType {
@@ -15,6 +16,7 @@ func ListWorkspaceTypes() []WorkspaceType {
 				"git",
 				"template",
 			},
+			ConfigFilesDefaultPath: "docker-compose.yml",
 		},
 	}
 }

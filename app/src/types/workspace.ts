@@ -24,5 +24,6 @@ export interface Workspace {
 export interface WorkspaceType {
     id: string
     name: string
-    supported_config_sources: string[]
+    supported_config_sources: string[],
+    config_files_default_path: string,
 }
