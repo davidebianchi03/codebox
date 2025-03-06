@@ -4,6 +4,7 @@ import (
 	"github.com/davidebianchi03/codebox/api/auth"
 	"github.com/davidebianchi03/codebox/api/cli"
 	"github.com/davidebianchi03/codebox/api/middleware"
+	"github.com/davidebianchi03/codebox/api/runners"
 	"github.com/davidebianchi03/codebox/api/settings"
 	"github.com/davidebianchi03/codebox/api/workspaces"
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,14 @@ func V1ApiRoutes(router *gin.Engine) {
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-http/:portNumber", workspaces.HandleForwardHttp)
 			workspaceApis.Any("/:workspaceId/container/:containerName/forward-ssh", workspaces.HandleForwardSsh)
 		}
+		v1.GET("/workspace-types", workspaces.HandleListWorkspaceTypes)
+
+		// runners related apis
+		runnersApis := v1.Group("/runners")
+		{
+			runnersApis.GET("", runners.HandleListRunners)
+		}
+		v1.GET("/runner-types", runners.HandleListRunnerTypes)
 
 		// instance settings related apis
 		v1.GET("/instance-settings", settings.HandleRetrieveServerSettings)

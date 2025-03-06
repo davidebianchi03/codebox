@@ -20,3 +20,9 @@ export interface Workspace {
     created_at: string
     updated_at: string
 }
+
+export interface WorkspaceType {
+    id: string
+    name: string
+    supported_config_sources: string[]
+}

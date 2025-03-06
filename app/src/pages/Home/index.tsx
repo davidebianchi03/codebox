@@ -8,7 +8,7 @@ import {
   Input,
   Label,
 } from "reactstrap";
-import { Workspace } from "../../types/workspace";
+import { Workspace, WorkspaceType } from "../../types/workspace";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import {
@@ -19,6 +19,7 @@ import {
 export default function HomePage() {
   const [searchText, setSearchText] = useState<string>("");
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
 
   const FetchWorkspaces = useCallback(async () => {
     let [status, statusCode, responseData] = await Http.Request(
@@ -33,9 +34,23 @@ export default function HomePage() {
     }
   }, []);
 
+  const FetchWorkspaceTypes = useCallback(async () => {
+    let [status, statusCode, responseData] = await Http.Request(
+      `${Http.GetServerURL()}/api/v1/workspace-types`,
+      "GET",
+      null
+    );
+    if (status === RequestStatus.OK) {
+      setWorkspaceTypes(responseData as WorkspaceType[]);
+    } else {
+      console.log(`Error: received ${statusCode} from server`);
+    }
+  }, []);
+
   useEffect(() => {
     FetchWorkspaces();
-  }, [FetchWorkspaces]);
+    FetchWorkspaceTypes();
+  }, [FetchWorkspaces, FetchWorkspaceTypes]);
 
   return (
     <Container className="pb-4">
@@ -67,7 +82,7 @@ export default function HomePage() {
                   else return 0;
                 })
                 .map((workspace: Workspace) => (
-                  <>
+                  <div key={workspace.id}>
                     {workspace.name.indexOf(searchText) >= 0 && (
                       <>
                         <div className="d-flex align-items-center justify-content-between">
@@ -87,7 +102,17 @@ export default function HomePage() {
                             <div className="ms-4">
                               <h3 className="mb-0">{workspace.name}</h3>
                               <small className="text-muted">
-                                {workspace.type}
+                                {(() => {
+                                  var prettyType = "Unknown type";
+                                  var workspaceType = workspaceTypes.find(
+                                    (wt: WorkspaceType) =>
+                                      wt.id === workspace.type
+                                  );
+                                  if (workspaceType) {
+                                    prettyType = workspaceType.name;
+                                  }
+                                  return prettyType;
+                                })()}
                               </small>
                             </div>
                           </div>
@@ -115,7 +140,7 @@ export default function HomePage() {
                         <hr className="my-3" />
                       </>
                     )}
-                  </>
+                  </div>
                 ))}
             </>
           ) : (

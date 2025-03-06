@@ -17,6 +17,10 @@ func ListAvailableRunnerTypes() []RunnerChoice {
 				{
 					ID:   "docker_compose",
 					Name: "Docker Compose",
+					SupportedConfigSources: []string{
+						"git",
+						"template",
+					},
 				},
 			},
 		},
