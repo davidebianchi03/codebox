@@ -18,15 +18,11 @@
             },
         },
         {
-            "name": "Create superuser",
-            "type": "go",
+            "name": "Debug react - chrome",
+            "type": "chrome",
             "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/main.go",
-            "args": [
-                "create-superuser"
-            ],
-            "console": "integratedTerminal"
-        }
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/app"
+        },
     ]
 }

@@ -8,17 +8,19 @@ import {
   Input,
   Label,
 } from "reactstrap";
-import { WorkspaceType } from "../../types/workspace";
+import { Workspace, WorkspaceType } from "../../types/workspace";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Runner } from "../../types/runner";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
   const [runners, setRunners] = useState<Runner[]>([]);
+  const navigate = useNavigate();
 
   const validation = useFormik({
     initialValues: {
@@ -30,20 +32,49 @@ export default function CreateWorkspace() {
       configFilesPath: "",
     },
     validationSchema: Yup.object({
-      workspaceName: Yup.string().required("Workspace name is required"),
+      workspaceName: Yup.string()
+        .required("Workspace name is required")
+        .matches(
+          /^\w+$/,
+          "Workspace name can only contain letters, numbers and underscores"
+        ),
       workspaceType: Yup.string().required("Workspace type is required"),
       configSource: Yup.string().required("Configuration source is required"),
       runner: Yup.number().min(0, "Runner is required"),
-      gitRepositoryURL: Yup.string().when('pin', {
+      gitRepositoryURL: Yup.string().when("configSource", {
         is: "git",
-        then: Yup.string().required(),
-        otherwise: Yup.string(),
+        then: (schema) => schema.required("Repository URL is required"),
+      }),
+      configFilesPath: Yup.string().when("configSource", {
+        is: "git",
+        then: (schema) => schema.required("Config file path is required"),
       }),
     }),
     validateOnChange: false,
     validateOnBlur: false,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values) => {
+      var data = {
+        name: values.workspaceName,
+        type: values.workspaceType,
+        runner_id: parseInt(values.runner.toString()),
+        config_source: values.configSource,
+        git_repo_url: values.gitRepositoryURL,
+        config_source_path: values.configFilesPath,
+        environment_variables: [],
+      };
+
+      var  [status, statusCode, responseData] = await Http.Request(
+        `${Http.GetServerURL()}/api/v1/workspace`,
+        "POST",
+        JSON.stringify(data),
+        "application/json"
+      );
+      if(status === RequestStatus.OK && statusCode === 201) {
+        var workspace = responseData as Workspace;
+        navigate(`/workspaces/${workspace.id}`)
+      } else {
+        toast.error(`Failed to create workspace, received status ${statusCode}`);
+      }
     },
   });
 
@@ -127,6 +158,9 @@ export default function CreateWorkspace() {
 
                     if (e.target.value === "") {
                       validation.setFieldValue("configSource", "");
+                      validation.setFieldValue("runner", "");
+                      validation.setFieldValue("gitRepositoryURL", "");
+                      validation.setFieldValue("configFilesPath", "");
                     }
                     validation.handleChange(e);
                   }}
@@ -147,7 +181,13 @@ export default function CreateWorkspace() {
                   className={`form-control`}
                   name="configSource"
                   disabled={validation.values.workspaceType === ""}
-                  onChange={validation.handleChange}
+                  onChange={(e) => {
+                    if (e.target.value !== "git") {
+                      validation.setFieldValue("gitRepositoryURL", "");
+                      validation.setFieldValue("configFilesPath", "");
+                    }
+                    validation.handleChange(e);
+                  }}
                   defaultValue={""}
                 >
                   {validation.values.workspaceType === "" ? (
@@ -255,6 +295,7 @@ export default function CreateWorkspace() {
             </form>
           </CardBody>
         </Card>
+        <ToastContainer />
       </Container>
     </>
   );
