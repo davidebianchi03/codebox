@@ -15,7 +15,7 @@ import {
   GetBeautyNameForStatus,
   GetWorkspaceStatusColor,
 } from "../../common/workspace";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function HomePage() {
   const [searchText, setSearchText] = useState<string>("");
@@ -115,7 +115,9 @@ export default function HomePage() {
                               {workspace.name[0].toUpperCase()}
                             </div>
                             <div className="ms-4">
-                              <h3 className="mb-0">{workspace.name}</h3>
+                              <h3 className="mb-0">
+                                <Link to={`/workspaces/${workspace.id}`}>{workspace.name}</Link>
+                              </h3>
                               <small className="text-muted">
                                 {(() => {
                                   var prettyType = "Unknown type";
