@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { Workspace } from "../../types/workspace";
 import { Col, Container, Row } from "reactstrap";
 import WorkspaceLogs from "./WorkspaceLogs";
+import WorkspaceContainers from "./WorkspaceContainers";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
@@ -47,7 +48,12 @@ export default function WorkspaceDetails() {
         <>
           <Row>
             <Col md={12}>
-              <WorkspaceLogs workspace={workspace} fetchInterval={1000}/>
+              <WorkspaceLogs workspace={workspace} fetchInterval={10000}/>
+            </Col>
+          </Row>
+          <Row className="mt-4">
+            <Col md={12}>
+              <WorkspaceContainers workspace={workspace} fetchInterval={10000}/>
             </Col>
           </Row>
         </>

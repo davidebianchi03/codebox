@@ -27,3 +27,22 @@ export interface WorkspaceType {
     supported_config_sources: string[],
     config_files_default_path: string,
 }
+
+export interface WorkspaceContainer {
+    container_id: string
+    container_name: string
+    container_image: string
+    container_user_id: number
+    container_user_name: string
+    agent_last_contact: string
+    created_at: string
+    updated_at: string
+}
+
+export interface ContainerPort {
+    service_name: string
+    port_number: number
+    public: boolean
+    created_at: string
+    updated_at: string
+}
