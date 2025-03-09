@@ -68,6 +68,10 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 					return nil
 				}
 
+				gitSource := workspace.GitSource
+				gitSource.Files, _ = gitSource.GetConfigFileAbsPath()
+				db.DB.Save(&gitSource)
+
 				workspace.AppendLogs("the git repository has been cloned")
 			}
 		} else {
