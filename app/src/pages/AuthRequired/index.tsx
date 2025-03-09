@@ -42,6 +42,19 @@ function AuthRequired({ children }: Props) {
     }
   }, []);
 
+  const HandleLogout = (e: any) => {
+    e.preventDefault();
+    Http.Request(`${Http.GetServerURL()}/api/v1/auth/logout`, "POST", null);
+    document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
+    document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
+    if (process.env.NODE_ENV === "development") {
+      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${
+        new URL(Http.GetServerURL()).hostname
+      }`;
+    }
+    navigate("/login");
+  };
+
   useEffect(() => {
     WhoAmI();
     FetchSettings();
@@ -100,7 +113,7 @@ function AuthRequired({ children }: Props) {
                 </>
               )}
               <div className="dropdown-divider"></div>
-              <a href="./sign-in.html" className="dropdown-item">
+              <a href="/" className="dropdown-item" onClick={HandleLogout}>
                 Logout
               </a>
             </div>
