@@ -3,11 +3,13 @@ import LoginPage from "./pages/Login";
 import HomePage from "./pages/Home";
 import "@tabler/core/dist/css/tabler.min.css";
 import "bootstrap/dist/js/bootstrap.js";
-import AuthRequired from "./pages/AuthRequired";
+import AuthRequired from "./components/AuthRequired";
 import CreateWorkspace from "./pages/CreateWorkspace";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { AdminRunners } from "./pages/AdminRunners";
+import SuperUserRequired from "./components/SuperUserRequired";
 
 export default function App() {
   return (
@@ -44,6 +46,14 @@ export default function App() {
             <AuthRequired>
               <Profile />
             </AuthRequired>
+          }
+        />
+        <Route
+          path="/admin/runners"
+          element={
+            <SuperUserRequired>
+              <AdminRunners />
+            </SuperUserRequired>
           }
         />
         <Route element={<NotFound />} path="*" />

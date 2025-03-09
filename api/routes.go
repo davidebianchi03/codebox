@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/davidebianchi03/codebox/api/admin"
 	"github.com/davidebianchi03/codebox/api/auth"
 	"github.com/davidebianchi03/codebox/api/cli"
 	"github.com/davidebianchi03/codebox/api/middleware"
@@ -62,5 +63,12 @@ func V1ApiRoutes(router *gin.Engine) {
 
 		// download cli
 		v1.GET("/download-cli", cli.HandleDownloadCLI)
+
+		// admin routes
+		adminApis := v1.Group("/admin")
+		{
+			adminApis.GET("runners", admin.HandleAdminListRunners)
+			runnersApis.Use(middleware.IsSuperuserMiddleware)
+		}
 	}
 }
