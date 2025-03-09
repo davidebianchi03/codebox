@@ -20,6 +20,20 @@ func HandleRetriveUserDetails(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
+func HandleRetrieveUserPublicKey(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"public_key": user.SshPublicKey,
+	})
+}
+
 func HandleUpdateUserDetails(ctx *gin.Context) {
 
 	type RequestBody struct {

@@ -10,6 +10,7 @@ import 'bootstrap/dist/js/bootstrap.js';
 import AuthRequired from "./pages/AuthRequired";
 import CreateWorkspace from "./pages/CreateWorkspace";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
+import Profile from "./pages/Profile";
 
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
         <Route path='' element={<AuthRequired><HomePage /></AuthRequired>} />
         <Route path='/create-workspace' element={<AuthRequired><CreateWorkspace /></AuthRequired>} />
         <Route path='/workspaces/:id' element={<AuthRequired><WorkspaceDetails /></AuthRequired>} />
+        <Route path='/profile' element={<AuthRequired><Profile /></AuthRequired>} />
       </Routes>
       <Routes>
         <Route path='login' element={<LoginPage />} />

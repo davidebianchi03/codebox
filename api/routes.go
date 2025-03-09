@@ -26,6 +26,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.POST("/logout", auth.HandleLogout)
 			authApis.GET("/user-details", auth.HandleRetriveUserDetails)
 			authApis.PATCH("/user-details", auth.HandleUpdateUserDetails)
+			authApis.GET("/user-ssh-public-key", auth.HandleRetrieveUserPublicKey)
 			authApis.POST("/change-password", auth.HandleChangePassword)
 			authApis.POST("/signup", auth.HandleSignup)
 		}
