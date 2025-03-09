@@ -182,7 +182,7 @@ export default function WorkspaceContainers({
                               className="border rounded align-items-center"
                               style={{ width: 300, cursor: "pointer" }}
                               onClick={() => {
-                                var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}`;
+                                var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
                                 if(settings?.use_subdomains) {
                                   portUrl = `${window.location.protocol}//codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings?.server_hostname}`
                                 }
