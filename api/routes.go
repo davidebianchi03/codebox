@@ -68,6 +68,7 @@ func V1ApiRoutes(router *gin.Engine) {
 		adminApis := v1.Group("/admin")
 		{
 			adminApis.GET("runners", admin.HandleAdminListRunners)
+			adminApis.POST("runners", admin.HandleAdminCreateRunner)
 			runnersApis.Use(middleware.IsSuperuserMiddleware)
 		}
 	}

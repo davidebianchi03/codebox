@@ -13,8 +13,8 @@ type Runner struct {
 	Type          string         `gorm:"size:255;" json:"type"`
 	Restricted    bool           `gorm:"default:false;" json:"-"`
 	AllowedGroups []Group        `gorm:"many2many:runner_allowed_groups;" json:"-"`
-	UsePublicUrl  bool           `gorm:"default:false;" json:"-"`
-	PublicUrl     string         `gorm:"size:1024;" json:"-"`
+	UsePublicUrl  bool           `gorm:"default:false;" json:"use_public_url"`
+	PublicUrl     string         `gorm:"size:1024;" json:"public_url"`
 	LastContact   time.Time      `json:"last_contact"`
 	CreatedAt     time.Time      `json:"-"`
 	UpdatedAt     time.Time      `json:"-"`
