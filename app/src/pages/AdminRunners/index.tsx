@@ -170,7 +170,12 @@ export function AdminRunners() {
                                   : ""}
                               </td>
                               <td>
-                                {new Date(runner.last_contact).toLocaleString()}
+                                {new Date(runner.last_contact).getFullYear() <
+                                2000
+                                  ? "N/A"
+                                  : new Date(
+                                      runner.last_contact
+                                    ).toLocaleString()}
                               </td>
                             </tr>
                           );

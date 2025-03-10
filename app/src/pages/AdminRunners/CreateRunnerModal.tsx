@@ -171,7 +171,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
             >
               <option value={""}>Select runner type</option>
               {runnerTypes.map((t) => (
-                <option value={t.id}>{t.name}</option>
+                <option value={t.id} key={t.id}>{t.name}</option>
               ))}
             </select>
             <FormFeedback>{validation.errors.runnerType}</FormFeedback>
