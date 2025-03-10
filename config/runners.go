@@ -4,7 +4,7 @@ type RunnerChoice struct {
 	ID             string          `json:"id"`
 	Name           string          `json:"name"`
 	Description    string          `json:"description"`
-	SupportedTypes []WorkspaceType `json:"supported_type"`
+	SupportedTypes []WorkspaceType `json:"supported_types"`
 }
 
 func ListAvailableRunnerTypes() []RunnerChoice {
