@@ -2,7 +2,9 @@ package db
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/davidebianchi03/codebox/config"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -12,13 +14,24 @@ var (
 )
 
 func ConnectDB() error {
-	dbURL := "./codebox.db"
-	// Open database connection
-	db, err := gorm.Open(sqlite.Open(dbURL), &gorm.Config{})
-	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+	dbUrl := config.Environment.DBUrl
+	dbEngine := ""
+
+	if strings.Index(dbUrl, "sqlite://") == 0 {
+		dbEngine = "sqlite"
+		dbUrl = strings.ReplaceAll(dbUrl, "sqlite://", "")
 	}
-	DB = db
+
+	if dbEngine == "sqlite" {
+		// Open database connection
+		db, err := gorm.Open(sqlite.Open(dbUrl), &gorm.Config{})
+		if err != nil {
+			return fmt.Errorf("failed to connect to database: %w", err)
+		}
+		DB = db
+	} else {
+		panic("unsupported db engine")
+	}
 	return nil
 }
 
