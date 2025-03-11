@@ -35,6 +35,7 @@ jobs:
           CI: false
         run: |
           cd app
+          sed -i -e 's/{{ replace_me }}/${{ github.ref_name }}/g' .env.production
           npm i
           npm run build
 

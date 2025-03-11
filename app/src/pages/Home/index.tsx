@@ -173,7 +173,7 @@ export default function HomePage() {
                 <>
                   No workspaces found,{" "}
                   <span>
-                    <u>create your first workspace</u>
+                    <u onClick={() => navigate("/create-workspace")}>create your first workspace</u>
                   </span>
                 </>
               )}

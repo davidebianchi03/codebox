@@ -134,7 +134,7 @@ export function AdminRunners() {
                   <tbody>
                     {runners.length === 0 ? (
                       <tr>
-                        <td>There are no registered runners</td>
+                        <td colSpan={5}>There are no registered runners</td>
                       </tr>
                     ) : (
                       runners.map((runner) => {
