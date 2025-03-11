@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	"github.com/davidebianchi03/codebox/config"
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,22 @@ import (
 
 // TODO: ratelimit
 func HandleSignup(c *gin.Context) {
+
+	var usersCount int64
+	if err := db.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if !config.Environment.AllowSignUp && usersCount > 0 {
+		c.JSON(http.StatusNotAcceptable, gin.H{
+			"detail": "registration is disabled",
+		})
+		return
+	}
+
 	type RequestBody struct {
 		Email     string `json:"email"`
 		FirstName string `json:"first_name"`
@@ -47,7 +64,6 @@ func HandleSignup(c *gin.Context) {
 	}
 
 	// check the number of existing users (first user is always an admin)
-	var usersCount int64
 	r = db.DB.Find(&[]models.User{}, map[string]interface{}{}).Count(&usersCount)
 	if r.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

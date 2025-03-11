@@ -15,6 +15,7 @@ type envVars struct {
 	RedisHost              string `env:"CODEBOX_REDIS_HOST" envDefault:"127.0.0.1"`
 	RedisPort              int    `env:"CODEBOX_REDIS_PORT" envDefault:"6379"`
 	UploadsPath            string `env:"CODEBOX_DATA_PATH" envDefault:"./data"`
+	AllowSignUp            bool   `env:"CODEBOX_ALLOW_SIGNUP" envDefault:"false"`
 	UseGravatar            bool   `env:"CODEBOX_USE_GRAVATAR" envDefault:"true"`
 	UseSubDomains          bool   `env:"CODEBOX_USE_SUBDOMAINS" envDefault:"true"`
 	WorkspaceObjectsPrefix string `env:"CODEBOX_WORKSPACE_OBJECTS_PREFIX" envDefault:"codebox"`
