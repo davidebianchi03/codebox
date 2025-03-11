@@ -1,4 +1,4 @@
-codebox.db
+*.db
 *__debug*
 codebox.env
 uploads/

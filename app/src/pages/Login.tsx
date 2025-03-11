@@ -1,135 +1,138 @@
-import "../theme/theme.css"
-import { Component, ReactNode } from "react";
-import Card from "../theme/components/card/Card";
-import TextInput from "../theme/components/textinput/TextInput";
-import Button from "../theme/components/button/Button";
-import CodeboxLogoWhite from "../assets/images/logo-white.png";
-import { Http } from "../api/http";
+import React, { useCallback, useEffect, useState } from "react";
+import { Button, Card, CardBody, Container, Input } from "reactstrap";
+import LogoSquare from "../assets/images/logo-square.png";
+import { useNavigate } from "react-router-dom";
 import { LoginStatus, RequestStatus } from "../api/types";
-import { Navigate } from "react-router-dom";
+import { Http } from "../api/http";
 
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-interface LoginPageProps {
+  const navigate = useNavigate();
 
-}
+  const IsAuthenticated = useCallback(async () => {
+    // redirect to home if user is already authenticated
+    let [status, statusCode] = await Http.Request(
+      `${Http.GetServerURL()}/api/v1/auth/user-details`,
+      "GET",
+      null
+    );
+    if (status === RequestStatus.OK && statusCode === 200) {
+      navigate("/");
+      return;
+    }
+  }, [navigate]);
 
-interface LoginPageState {
-    loginEmail: string
-    loginPassword: string
-    errorMessage: string
-    redirect: boolean
-    redirectUrl: string
-}
+  useEffect(() => {
+    IsAuthenticated();
+  }, [IsAuthenticated]);
 
-export default class LoginPage extends Component<LoginPageProps, LoginPageState> {
+  const SubmitLoginForm = async (event: any) => {
+    event.preventDefault();
 
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            loginEmail: "",
-            loginPassword: "",
-            errorMessage: "",
-            redirect: false,
-            redirectUrl: "",
-        }
+    // validate fields
+    if (email === "" || password === "") {
+      setError("Missing email or password");
+      return;
     }
 
-    componentDidMount(): void {
-        this.IsAuthenticated();
+    // process login
+    let [status, jwtToken, expirationDate] = await Http.Login(email, password);
+    if (status === LoginStatus.OK) {
+      setError("");
+      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${
+        window.location.hostname
+      }`;
+      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${
+        window.location.hostname
+      }`;
+      if (process.env.NODE_ENV === "development") {
+        document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${
+          new URL(Http.GetServerURL()).hostname
+        }`;
+      }
+      navigate("/");
+      return;
+    } else {
+      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
+      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
+      if (process.env.NODE_ENV === "development") {
+        document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${
+          new URL(Http.GetServerURL()).hostname
+        }`;
+      }
+      if (status === LoginStatus.INVALID_CREDENTIALS) {
+        setError("Invalid credentials");
+      } else {
+        setError("Unknown error, check that server is reachable");
+      }
     }
+  };
 
-    private IsAuthenticated = async () => {
-        // redirect to home if user is already authenticated
-        let [status, statusCode] = await Http.Request(`${Http.GetServerURL()}/api/v1/auth/user-details`, "GET", null);
-        if(status === RequestStatus.OK && statusCode === 200) {
-            this.setState({ redirect: true, redirectUrl: "/" });
-        }
-    }
-
-    private SubmitLoginForm = async (event: any) => {
-        event.preventDefault();
-        
-        // validate fields
-        if (this.state.loginEmail === "") {
-            this.setState({ errorMessage: "Missing email" });
-            return;
-        }
-        if (this.state.loginPassword === "") {
-            this.setState({ errorMessage: "Missing password" });
-            return;
-        }
-
-        // process login
-        let [status, jwtToken, expirationDate] = await Http.Login(this.state.loginEmail, this.state.loginPassword);
-        if (status === LoginStatus.OK) {
-            this.setState({ errorMessage: "" });
-            document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${window.location.hostname}`;
-            document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${window.location.hostname}`;
-            this.setState({ redirect: true, redirectUrl: "/" });
-        } else {
-            document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
-            document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
-            if (status === LoginStatus.INVALID_CREDENTIALS) {
-                this.setState({ errorMessage: "Invalid credentials" });
-            } else {
-                this.setState({ errorMessage: "Unknown error, check that server is reachable" });
-            }
-        }
-    }
-
-    render(): ReactNode {
-        if (this.state.redirect) {
-            return <Navigate to={this.state.redirectUrl} />
-        }
-
-        return (
-            <div style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                height: "100%",
-            }}>
-                <Card style={{ width: "350px", display: "flex", flexDirection: "column" }}>
-                    <div style={{ display: "flex", justifyContent: "center", marginTop: "10pt", marginBottom: "20pt" }}>
-                        <img src={CodeboxLogoWhite} style={{ maxWidth: "250px" }} alt="Codebox logo" />
-                    </div>
-                    <div style={{ textAlign: "center", marginBottom: "10pt", color: "var(--red)" }}>
-                        {this.state.errorMessage}
-                    </div>
-                    <form onSubmit={this.SubmitLoginForm}>
-                        <TextInput
-                            label={"Email"}
-                            placeholder={"john@doe.com"}
-                            style={{ width: "calc(100% - 15pt)" }}
-                            onTextChanged={(event) => { this.setState({ loginEmail: event.target.value }) }}
-                            autocomplete="email"
-                            name="email"
-                        />
-                        <TextInput
-                            label={"Password"}
-                            placeholder={"password"}
-                            secure={true}
-                            style={{ width: "calc(100% - 15pt)", marginTop: "10pt" }}
-                            onTextChanged={(event) => { this.setState({ loginPassword: event.target.value }) }}
-                            autocomplete="password"
-                            name="password"
-                        />
-                        <Button
-                            style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                width: "200px",
-                                margin: "auto",
-                                marginTop: "30pt"
-                            }}
-                            type="submit"
-                        >
-                            Login
-                        </Button>
-                    </form>
-                </Card>
+  return (
+    <React.Fragment>
+      <div className="page page-center">
+        <Container className="container-tight py-4">
+          <div className="text-center mb-4">
+            <div className="navbar-brand navbar-brand-autodark">
+              <img src={LogoSquare} alt="logo" width={50} />
+              <h2 style={{ fontSize: "20pt", marginTop: "10px" }}>Codebox</h2>
             </div>
-        )
-    }
+          </div>
+          <Card className="card-md">
+            <CardBody>
+              <h2 className="h2 text-center mb-4">Login to your account</h2>
+              <form onSubmit={SubmitLoginForm}>
+                <div className="mb-3">
+                  <label className="form-label">Email</label>
+                  <Input
+                    autoFocus
+                    type="text"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="form-label">Password</label>
+                  <Input
+                    type="password"
+                    placeholder="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <p className="text-danger text-center">{error}</p>
+                <div className="d-flex justify-content-between">
+                  <Button color="primary w-75 mx-auto" type="submit">
+                    Login
+                  </Button>
+                </div>
+              </form>
+            </CardBody>
+          </Card>
+          <div className="text-center text-secondary mt-3">
+            Don't have account yet?{" "}
+            <a href="./sign-up.html" tabIndex={-1}>
+              Sign up
+            </a>
+          </div>
+          <div className="d-flex flex-column justify-content-between mt-2">
+            <p className="w-100 text-center mb-0">
+              <small className="text-muted">
+                &copy; codebox {new Date().getFullYear()}
+              </small>
+            </p>
+            <p className="w-100 text-center">
+              <small className="text-muted">
+                version: {process.env.REACT_APP_VERSION}
+              </small>
+            </p>
+          </div>
+        </Container>
+      </div>
+    </React.Fragment>
+  );
 }

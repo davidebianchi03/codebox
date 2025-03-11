@@ -1,11 +1,13 @@
 package api
 
 import (
-	"codebox.com/api/auth"
-	"codebox.com/api/cli"
-	"codebox.com/api/middleware"
-	"codebox.com/api/settings"
-	"codebox.com/api/workspaces"
+	"github.com/davidebianchi03/codebox/api/admin"
+	"github.com/davidebianchi03/codebox/api/auth"
+	"github.com/davidebianchi03/codebox/api/cli"
+	"github.com/davidebianchi03/codebox/api/middleware"
+	"github.com/davidebianchi03/codebox/api/runners"
+	"github.com/davidebianchi03/codebox/api/settings"
+	"github.com/davidebianchi03/codebox/api/workspaces"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,7 +27,9 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.POST("/logout", auth.HandleLogout)
 			authApis.GET("/user-details", auth.HandleRetriveUserDetails)
 			authApis.PATCH("/user-details", auth.HandleUpdateUserDetails)
+			authApis.GET("/user-ssh-public-key", auth.HandleRetrieveUserPublicKey)
 			authApis.POST("/change-password", auth.HandleChangePassword)
+			authApis.POST("/signup", auth.HandleSignup)
 		}
 
 		// workspace related apis
@@ -33,13 +37,26 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			workspaceApis.GET("", workspaces.HandleListWorkspaces)
 			workspaceApis.GET("/:workspaceId", workspaces.HandleRetrieveWorkspace)
-			workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.POST("", workspaces.HandleCreateWorkspace)
+			workspaceApis.DELETE("/:workspaceId", workspaces.HandleDeleteWorkspace)
 			workspaceApis.GET("/:workspaceId/logs", workspaces.HandleRetrieveWorkspaceLogs)
-			workspaceApis.Any("/:workspaceId/container/:containerName/forward/:portNumber", workspaces.HandleForwardContainerPort)
 			workspaceApis.POST("/:workspaceId/start", workspaces.HandleStartWorkspace)
 			workspaceApis.POST("/:workspaceId/stop", workspaces.HandleStopWorkspace)
+			workspaceApis.GET("/:workspaceId/container", workspaces.ListWorkspaceContainersByWorkspace)
+			workspaceApis.GET("/:workspaceId/container/:containerName", workspaces.RetrieveWorkspaceContainersByWorkspace)
+			workspaceApis.GET("/:workspaceId/container/:containerName/port", workspaces.ListContainerPortsByWorkspaceContainer)
+			workspaceApis.GET("/:workspaceId/container/:containerName/port/:portNumber", workspaces.RetrieveContainerPortsByWorkspaceContainer)
+			workspaceApis.Any("/:workspaceId/container/:containerName/forward-http/:portNumber", workspaces.HandleForwardHttp)
+			workspaceApis.Any("/:workspaceId/container/:containerName/forward-ssh", workspaces.HandleForwardSsh)
 		}
+		v1.GET("/workspace-types", workspaces.HandleListWorkspaceTypes)
+
+		// runners related apis
+		runnersApis := v1.Group("/runners")
+		{
+			runnersApis.GET("", runners.HandleListRunners)
+		}
+		v1.GET("/runner-types", runners.HandleListRunnerTypes)
 
 		// instance settings related apis
 		v1.GET("/instance-settings", settings.HandleRetrieveServerSettings)
@@ -47,5 +64,12 @@ func V1ApiRoutes(router *gin.Engine) {
 		// download cli
 		v1.GET("/download-cli", cli.HandleDownloadCLI)
 
+		// admin routes
+		adminApis := v1.Group("/admin")
+		{
+			adminApis.GET("runners", admin.HandleAdminListRunners)
+			adminApis.POST("runners", admin.HandleAdminCreateRunner)
+			runnersApis.Use(middleware.IsSuperuserMiddleware)
+		}
 	}
 }

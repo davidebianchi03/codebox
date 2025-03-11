@@ -5,11 +5,12 @@ import (
 	"net/url"
 	"strings"
 
-	"codebox.com/api/workspaces"
+	"github.com/davidebianchi03/codebox/api/workspaces"
 	"github.com/gin-gonic/gin"
 )
 
 func PortForwardingMiddleware(ctx *gin.Context) {
+	// ctx.Request.Host = "codebox--56--grafana--3000.codebox.example.com"
 	if len(strings.Split(ctx.Request.Host, ".")) > 1 {
 		codeboxSubDomain := strings.Split(ctx.Request.Host, ".")[0]
 
@@ -29,9 +30,9 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 			portNumber := splittedSubDomain[3]
 
 			if ctx.Request.URL.RawQuery == "" {
-				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path))
+				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward-http/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path))
 			} else {
-				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path+"?"+ctx.Request.URL.RawQuery))
+				ctx.Request.URL.Path = fmt.Sprintf("/api/v1/workspace/%s/container/%s/forward-http/%s?request_path=%s", workspaceId, containerName, portNumber, url.QueryEscape(ctx.Request.URL.Path+"?"+ctx.Request.URL.RawQuery))
 			}
 
 			newRequestParams := []gin.Param{
@@ -50,7 +51,7 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 			}
 			ctx.Params = newRequestParams
 
-			workspaces.HandleForwardContainerPort(ctx)
+			workspaces.HandleForwardHttp(ctx)
 			ctx.Abort()
 			return
 		}

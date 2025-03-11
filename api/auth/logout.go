@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"codebox.com/db"
+	"github.com/davidebianchi03/codebox/db"
+	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +28,7 @@ func HandleLogout(ctx *gin.Context) {
 
 	jwtToken := headerParts[1]
 
-	var token db.Token
+	var token models.Token
 	result := db.DB.Where("token=?", jwtToken).Preload("User").First(&token)
 	if result.Error != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{

@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"codebox.com/api/utils"
-	"codebox.com/db"
+	"github.com/davidebianchi03/codebox/api/utils"
+	"github.com/davidebianchi03/codebox/db"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,12 +17,20 @@ func HandleRetriveUserDetails(ctx *gin.Context) {
 		return
 	}
 
+	ctx.JSON(http.StatusOK, user)
+}
+
+func HandleRetrieveUserPublicKey(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
-		"email":        user.Email,
-		"first_name":   user.FirstName,
-		"last_name":    user.LastName,
-		"is_superuser": user.IsSuperuser,
-		"public_key":   user.SshPublicKey,
+		"public_key": user.SshPublicKey,
 	})
 }
 
@@ -59,11 +67,5 @@ func HandleUpdateUserDetails(ctx *gin.Context) {
 
 	db.DB.Save(&user)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"email":        user.Email,
-		"first_name":   user.FirstName,
-		"last_name":    user.LastName,
-		"is_superuser": user.IsSuperuser,
-		"public_key":   user.SshPublicKey,
-	})
+	ctx.JSON(http.StatusOK, user)
 }
