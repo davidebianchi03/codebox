@@ -2,7 +2,7 @@ import { withRouter } from "../common/router";
 import { Http } from "../api/http";
 import { useCallback, useEffect, useState } from "react";
 import { RequestStatus } from "../api/types";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "../types/user";
 import { Navbar } from "./Navbar";
 
@@ -12,6 +12,7 @@ type Props = {
 };
 
 function AuthRequired({ children, showNavbar = true }: Props) {
+  const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
 
@@ -24,9 +25,9 @@ function AuthRequired({ children, showNavbar = true }: Props) {
     if (status === RequestStatus.OK && statusCode === 200) {
       setUser(responseBody as User);
     } else {
-      navigate("/login");
+      navigate(`/login?next=${encodeURIComponent(location.pathname)}`);
     }
-  }, [navigate]);
+  }, [navigate, location]);
 
   useEffect(() => {
     WhoAmI();

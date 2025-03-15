@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardBody, Container, Input } from "reactstrap";
 import LogoSquare from "../assets/images/logo-square.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { LoginStatus, RequestStatus } from "../api/types";
 import { Http } from "../api/http";
 
@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
 
   const navigate = useNavigate();
 
@@ -53,8 +54,8 @@ export default function LoginPage() {
           new URL(Http.GetServerURL()).hostname
         }`;
       }
-      navigate("/");
-      return;
+
+      navigate(searchParams.get("next") || "/");
     } else {
       document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
       document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
