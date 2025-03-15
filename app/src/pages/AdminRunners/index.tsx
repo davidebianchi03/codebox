@@ -169,7 +169,9 @@ export function AdminRunners() {
                                     })
                                   : ""}
                               </td>
-                              <td>
+                              <td className={`${
+                                (new Date().getTime() - new Date(runner.last_contact).getTime()) > (5 * 60 * 1000) ? "text-warning" : ""
+                              }`}>
                                 {new Date(runner.last_contact).getFullYear() <
                                 2000
                                   ? "N/A"

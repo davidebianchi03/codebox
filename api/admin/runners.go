@@ -5,10 +5,12 @@ import (
 	"math/rand"
 	"net/http"
 
+	"github.com/davidebianchi03/codebox/bgtasks"
 	"github.com/davidebianchi03/codebox/config"
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
+	"github.com/gocraft/work"
 )
 
 func RandStringBytesRmndr(n int) string {
@@ -134,6 +136,8 @@ func HandleAdminCreateRunner(c *gin.Context) {
 		})
 		return
 	}
+
+	bgtasks.BgTasksEnqueuer.Enqueue("ping_runners", work.Q{})
 
 	c.JSON(http.StatusCreated, gin.H{
 		"token": token,

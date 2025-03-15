@@ -63,17 +63,19 @@ export default function CreateWorkspace() {
         environment_variables: [],
       };
 
-      var  [status, statusCode, responseData] = await Http.Request(
+      var [status, statusCode, responseData] = await Http.Request(
         `${Http.GetServerURL()}/api/v1/workspace`,
         "POST",
         JSON.stringify(data),
         "application/json"
       );
-      if(status === RequestStatus.OK && statusCode === 201) {
+      if (status === RequestStatus.OK && statusCode === 201) {
         var workspace = responseData as Workspace;
-        navigate(`/workspaces/${workspace.id}`)
+        navigate(`/workspaces/${workspace.id}`);
       } else {
-        toast.error(`Failed to create workspace, received status ${statusCode}`);
+        toast.error(
+          `Failed to create workspace, received status ${statusCode}`
+        );
       }
     },
   });
@@ -282,6 +284,27 @@ export default function CreateWorkspace() {
                       <option value="-1">No runner available</option>
                     )}
                 </select>
+                <span className="text-warning mt-1">
+                  {(() => {
+                    var selectedRunner = runners.find(
+                      (r) => r.id === parseInt(validation.values.runner.toString())
+                    );
+
+                    if (!selectedRunner) {
+                      return "";
+                    }
+
+                    if (
+                      new Date().getTime() -
+                        new Date(selectedRunner.last_contact).getTime() >
+                      5 * 60 * 1000
+                    ) {
+                      return "Warning: last contact with this runner was more than 5 minutes ago.";
+                    }
+
+                    return "";
+                  })()}
+                </span>
                 <FormFeedback>{validation.errors.runner}</FormFeedback>
               </div>
               <div className="d-flex justify-content-end mt-4">

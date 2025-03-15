@@ -15,24 +15,24 @@ export default function App() {
     <Router>
       <Routes>
         {PublicRoutes.map((r, i) => (
-          <Route path={r.path} element={r.element} key={`pu-${i}`} />
+          <Route path={r.path} element={r.element} key={i} />
         ))}
         {AuthProtectedRoutes.map((r, i) => (
           <Route
+            key={i}
             path={r.path}
             element={
-              <AuthRequired showNavbar={r.showNavbar} key={`ar-${i}`}>
-                {r.element}
-              </AuthRequired>
+              <AuthRequired showNavbar={r.showNavbar}>{r.element}</AuthRequired>
             }
           />
         ))}
         {SuperUserRoutes.map((r, i) => {
           return (
             <Route
+              key={i}
               path={r.path}
               element={
-                <SuperUserRequired showNavbar={r.showNavbar} key={`su-${i}`}>
+                <SuperUserRequired showNavbar={r.showNavbar}>
                   {r.element}
                 </SuperUserRequired>
               }
