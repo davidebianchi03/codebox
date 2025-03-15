@@ -127,12 +127,37 @@ func HandleCreateWorkspace(c *gin.Context) {
 
 	// validate runner
 	runner := &models.Runner{}
-	db.DB.First(&runner, map[string]interface{}{
-		"ID":   parsedBody.RunnerID,
-		"Type": parsedBody.Type,
+	r := db.DB.First(&runner, map[string]interface{}{
+		"ID": parsedBody.RunnerID,
 	})
 
-	if runner.ID <= 0 {
+	if r.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if r.RowsAffected <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "runner matching runner_id and type not found",
+		})
+		return
+	}
+
+	typeFound := false
+
+	for _, rt := range config.ListAvailableRunnerTypes() {
+		if rt.ID == runner.Type {
+			for _, wt := range rt.SupportedTypes {
+				if wt.ID == parsedBody.Type {
+					typeFound = true
+				}
+			}
+		}
+	}
+
+	if !typeFound {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": "runner matching runner_id and type not found",
 		})
@@ -207,7 +232,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 		EnvironmentVariables: parsedBody.EnvironmentVariables,
 	}
 
-	r := db.DB.Create(&workspace)
+	r = db.DB.Create(&workspace)
 	if r.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",

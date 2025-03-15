@@ -8,9 +8,10 @@ import { Navbar } from "./Navbar";
 
 type Props = {
   children: string | JSX.Element | JSX.Element[] | (() => JSX.Element);
+  showNavbar?: boolean;
 };
 
-function AuthRequired({ children }: Props) {
+function AuthRequired({ children, showNavbar = true }: Props) {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
 
@@ -38,7 +39,7 @@ function AuthRequired({ children }: Props) {
 
   return (
     <>
-      {user && <Navbar user={user} />}
+      {user && showNavbar && <Navbar user={user} />}
       {children}
     </>
   );

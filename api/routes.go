@@ -30,6 +30,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.GET("/user-ssh-public-key", auth.HandleRetrieveUserPublicKey)
 			authApis.POST("/change-password", auth.HandleChangePassword)
 			authApis.POST("/signup", auth.HandleSignup)
+			authApis.POST("/cli-login", auth.HandleCliLogin)
 		}
 
 		// workspace related apis
