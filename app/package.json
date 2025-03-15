@@ -35,6 +35,7 @@
     "reactstrap": "^9.2.3",
     "redux": "^5.0.1",
     "styled-components": "^6.1.15",
+    "sweetalert2": "^11.17.2",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4",
     "yup": "^1.6.1"

@@ -16,7 +16,7 @@ const WorkspaceStatusStarting = "starting"
 const WorkspaceStatusRunning = "running"
 const WorkspaceStatusStopping = "stopping"
 const WorkspaceStatusStopped = "stopped"
-const WorkspaceStatusDeleting = "stopped"
+const WorkspaceStatusDeleting = "deleting"
 const WorkspaceStatusError = "error"
 
 const (

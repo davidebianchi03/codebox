@@ -7,6 +7,7 @@ import { Workspace } from "../../types/workspace";
 import { Col, Container, Row } from "reactstrap";
 import WorkspaceLogs from "./WorkspaceLogs";
 import WorkspaceContainers from "./WorkspaceContainers";
+import Swal from "sweetalert2";
 import {
   GetBeautyNameForStatus,
   GetWorkspaceStatusColor,
@@ -65,16 +66,35 @@ export default function WorkspaceDetails() {
   };
 
   const HandleDeleteWorkspace = async () => {
-    var [status, statusCode] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace/${id}`,
-      "DELETE",
-      null
-    );
+    if (
+      (
+        await Swal.fire({
+          title: "Delete workspace",
+          text: "Are you sure that you want to delete this workspace?",
+          showCancelButton: true,
+          reverseButtons: true,
+          confirmButtonText: "Delete",
+          customClass: {
+            popup: "bg-dark text-light",
+            cancelButton: "btn btn-light",
+            confirmButton: "btn btn-warning",
+          },
+        })
+      ).isConfirmed
+    ) {
+      var [status, statusCode] = await Http.Request(
+        `${Http.GetServerURL()}/api/v1/workspace/${id}`,
+        "DELETE",
+        null
+      );
 
-    if (status === RequestStatus.OK && statusCode === 200) {
-      FetchWorkspace();
-    } else {
-      toast.error(`Failed to delete workspace, received status ${statusCode}`);
+      if (status === RequestStatus.OK && statusCode === 200) {
+        FetchWorkspace();
+      } else {
+        toast.error(
+          `Failed to delete workspace, received status ${statusCode}`
+        );
+      }
     }
   };
 
