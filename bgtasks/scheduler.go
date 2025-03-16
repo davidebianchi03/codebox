@@ -38,6 +38,8 @@ func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInsta
 	pool.Job("start_workspace", (*Context).StartWorkspace)
 	pool.Job("stop_workspace", (*Context).StopWorkspace)
 	pool.Job("delete_workspace", (*Context).DeleteWorkspace)
+	pool.Job("ping_agents", (*Context).PingAgents)
+	pool.PeriodicallyEnqueue("0 */2 * * * *", "ping_agents") // every 5 minutes (0 */5 * * * *)
 
 	// runners jobs
 	pool.Job("ping_runners", (*Context).PingRunners)

@@ -1,4 +1,12 @@
-import { Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Col,
+  Row,
+  Table,
+  Tooltip,
+} from "reactstrap";
 import {
   ContainerPort,
   Workspace,
@@ -11,6 +19,8 @@ import VsCodeIcon from "../../assets/images/vscode.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
 import { InstanceSettings } from "../../types/settings";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   workspace: Workspace;
@@ -28,6 +38,7 @@ export default function WorkspaceContainers({
     useState<ContainerPort[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [settings, setSettings] = useState<InstanceSettings>();
+  const [warningTooltipIsOpen, setWarningTooltipIsOpen] = useState(false);
 
   const FetchSelectedContainer = useCallback(
     async (containerName: string) => {
@@ -146,6 +157,24 @@ export default function WorkspaceContainers({
                       <>
                         <h3>
                           {selectedContainer.container_name}
+                          {new Date().getTime() -
+                            new Date(
+                              selectedContainer.agent_last_contact
+                            ).getTime() >
+                          5 * 60 * 1000 ? (
+                            <span className="ms-2 text-warning">
+                              <Tooltip
+                                isOpen={warningTooltipIsOpen}
+                                target="warningIcon"
+                                toggle={() =>
+                                  setWarningTooltipIsOpen(!warningTooltipIsOpen)
+                                }
+                              >
+                                Last contact with the agent running in this container was more than 5 minutes ago.
+                              </Tooltip>
+                              <FontAwesomeIcon id="warningIcon" icon={faTriangleExclamation} />
+                            </span>
+                          ) : null}
                           <br />
                           <small className="text-muted">
                             {selectedContainer.container_image}
@@ -183,8 +212,8 @@ export default function WorkspaceContainers({
                               style={{ width: 300, cursor: "pointer" }}
                               onClick={() => {
                                 var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
-                                if(settings?.use_subdomains) {
-                                  portUrl = `${window.location.protocol}//codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings?.server_hostname}`
+                                if (settings?.use_subdomains) {
+                                  portUrl = `${window.location.protocol}//codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings?.server_hostname}`;
                                 }
                                 window.open(portUrl, "_blank")?.focus();
                               }}
