@@ -14,6 +14,7 @@ type RunnerContainer struct {
 	ContainerUserID   string              `json:"container_user"`
 	ContainerUserName string              `json:"container_user_name"`
 	ExposedPorts      []RunnerExposedPort `json:"exposed_ports"`
+	WorkspacePath     string              `json:"workspace_path"`
 }
 
 type RunnerWorkspaceStatusResponse struct {

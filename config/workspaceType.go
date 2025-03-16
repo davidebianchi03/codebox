@@ -18,5 +18,13 @@ func ListWorkspaceTypes() []WorkspaceType {
 			},
 			ConfigFilesDefaultPath: "docker-compose.yml",
 		},
+		{
+			ID:   "devcontainer",
+			Name: "Dev Container",
+			SupportedConfigSources: []string{
+				"git",
+			},
+			ConfigFilesDefaultPath: ".devcontainer",
+		},
 	}
 }

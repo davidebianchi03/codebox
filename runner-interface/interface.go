@@ -103,7 +103,11 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 	if err != nil {
 		return err
 	}
-	_ = writer.WriteField("config_file_name", "docker-compose.yml")
+
+	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
+		_ = writer.WriteField("git_repository_url", workspace.GitSource.RepositoryURL)
+	}
+	_ = writer.WriteField("config_file_name", workspace.ConfigSourceFilePath)
 
 	_ = writer.WriteField("type", workspace.Type)
 	_ = writer.WriteField("environment", strings.Join(workspace.EnvironmentVariables, ";"))
@@ -217,7 +221,7 @@ func (ri *RunnerInterface) StopWorkpace(workspace *models.Workspace) error {
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
-	_ = writer.WriteField("type", "docker_compose")
+	_ = writer.WriteField("type", workspace.Type)
 	err := writer.Close()
 	if err != nil {
 		return err
@@ -250,7 +254,7 @@ func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
-	_ = writer.WriteField("type", "docker_compose")
+	_ = writer.WriteField("type", workspace.Type)
 	err := writer.Close()
 	if err != nil {
 		return err

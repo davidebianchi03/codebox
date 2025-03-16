@@ -146,6 +146,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 			ContainerImage:    c.Image,
 			ContainerUserID:   uint(containerUserId),
 			ContainerUserName: c.ContainerUserName,
+			WorkspacePath:     c.WorkspacePath,
 		}
 
 		db.DB.Create(&workspaceContainer)
