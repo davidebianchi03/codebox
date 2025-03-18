@@ -71,10 +71,13 @@ RUN mkdir -p ${NVM_DIR} && \
     nvm use default
 
 # install atlas
-RUN wget https://atlasgo.sh -O atlas-installer.sh && \
+RUN mkdir -p /tmp/atlas && \
+    cd /tmp/atlas && \
+    wget https://atlasgo.sh -O atlas-installer.sh && \
     chmod +x atlas-installer.sh && \
     ./atlas-installer.sh -y && \
-    rm atlas-installer.sh
+    cd ~ && \
+    rm -rf /tmp/atlas
 
 # add node and npm to path so the commands are available
 ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
