@@ -4,6 +4,7 @@ import CreateWorkspace from "../pages/CreateWorkspace";
 import HomePage from "../pages/Home";
 import LoginPage from "../pages/Login";
 import Profile from "../pages/Profile";
+import SignUpPage from "../pages/SignUp";
 import WorkspaceDetails from "../pages/WorkspaceDetails";
 import { Route } from "./types";
 
@@ -11,6 +12,10 @@ export const PublicRoutes: Route[] = [
   {
     path: "login",
     element: <LoginPage />,
+  },
+  {
+    path: "signup",
+    element: <SignUpPage />,
   },
 ];
 

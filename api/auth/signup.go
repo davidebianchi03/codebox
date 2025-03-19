@@ -2,8 +2,8 @@ package auth
 
 import (
 	"net/http"
+	"regexp"
 
-	"github.com/davidebianchi03/codebox/config"
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,6 @@ import (
 
 // TODO: ratelimit
 func HandleSignup(c *gin.Context) {
-
 	var usersCount int64
 	if err := db.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -20,9 +19,9 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
-	if !config.Environment.AllowSignUp && usersCount > 0 {
+	if usersCount > 0 {
 		c.JSON(http.StatusNotAcceptable, gin.H{
-			"detail": "registration is disabled",
+			"detail": "initial user already exists",
 		})
 		return
 	}
@@ -39,6 +38,24 @@ func HandleSignup(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": err.Error(),
+		})
+		return
+	}
+
+	// validate password
+	passwordValid := true
+	if len(parsedBody.Password) < 10 {
+		passwordValid = false
+	}
+
+	hasUppercase := regexp.MustCompile(`[A-Z]`).MatchString(parsedBody.Password)
+	hasSpecialSymbol := regexp.MustCompile(`[!_\-,.?]`).MatchString(parsedBody.Password)
+
+	passwordValid = hasUppercase && hasSpecialSymbol
+
+	if !passwordValid {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "invalid password, it must be at least 10 characters long and include at least one uppercase letter and one special symbol (!_-,.?!).",
 		})
 		return
 	}

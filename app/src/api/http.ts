@@ -48,21 +48,56 @@ export class Http {
         return [LoginStatus.UNKNOWN_ERROR, "", new Date(Date.now())];
     }
 
-    public static async Request(url: string, method: Method, requestBody: any, contentType: string = "application/json"): Promise<[status: RequestStatus, statusCode: number | undefined, responseData: any, description: string]> {
+    /**
+     * Users authentication using /api/v1/auth/login api
+     * @param email user's email address
+     * @param password user's password
+     * @returns result, token
+     */
+    public static async SignUp(email: string, password: string, firstName: string, lastName: string): Promise<[LoginStatus, number]> {
+        // prepare
+        let requestUrl = `${this.GetServerURL()}/api/v1/auth/signup`;
+        let requestBody = JSON.stringify({
+            email: email,
+            password: password,
+            first_name: firstName,
+            last_name: lastName
+        });
+
+        // send request
+        try {
+            let response = await axios.post(
+                requestUrl, requestBody
+            );
+            if (response.status >= 200 && response.status <= 299) {
+                return [LoginStatus.OK, response.status];
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                return [LoginStatus.UNKNOWN_ERROR, error.response?.status || -1];
+            }
+        }
+        return [LoginStatus.UNKNOWN_ERROR, -1];
+    }
+
+    public static async Request(url: string, method: Method, requestBody: any, contentType: string = "application/json", authRequired: boolean = true): Promise<[status: RequestStatus, statusCode: number | undefined, responseData: any, description: string]> {
         let jwtToken = this.GetJWTTokenFromCookies();
         let errorDescription = "";
 
-        if (!jwtToken) {
-            return [RequestStatus.NOT_AUTHENTICATED, 401, null, errorDescription];
-        }
         let requestConfig: AxiosRequestConfig = {
             url: url,
             headers: {
-                Authorization: `Bearer ${jwtToken}`,
                 "Content-Type": contentType
             },
             method: method,
             data: requestBody,
+        }
+
+        if(authRequired) {
+            if (!jwtToken) {
+                return [RequestStatus.NOT_AUTHENTICATED, 401, null, errorDescription];
+            }
+            requestConfig.headers!.Authorization = `Bearer ${jwtToken}`
         }
 
         try {

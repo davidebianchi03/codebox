@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardBody, Container, Input } from "reactstrap";
-import LogoSquare from "../assets/images/logo-square.png";
+import LogoSquare from "../../assets/images/logo-square.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { LoginStatus, RequestStatus } from "../api/types";
-import { Http } from "../api/http";
+import { LoginStatus, RequestStatus } from "../../api/types";
+import { Http } from "../../api/http";
+import { InstanceSettings } from "../../types/settings";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,7 +12,25 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
 
+
   const navigate = useNavigate();
+
+  const FetchSettings = useCallback(async () => {
+    let [status, statusCode, responseBody] = await Http.Request(
+      `${Http.GetServerURL()}/api/v1/instance-settings`,
+      "GET",
+      null,
+      "application/json",
+      false
+    );
+
+    if (status === RequestStatus.OK && statusCode === 200) {
+      if(!(responseBody as InstanceSettings).initial_user_exists) {
+        navigate("/signup");
+        return;
+      }
+    }
+  }, [navigate]);
 
   const IsAuthenticated = useCallback(async () => {
     // redirect to home if user is already authenticated
@@ -28,7 +47,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     IsAuthenticated();
-  }, [IsAuthenticated]);
+    FetchSettings();
+  }, [IsAuthenticated, FetchSettings]);
 
   const SubmitLoginForm = async (event: any) => {
     event.preventDefault();
@@ -114,16 +134,10 @@ export default function LoginPage() {
               </form>
             </CardBody>
           </Card>
-          <div className="text-center text-secondary mt-3">
-            Don't have account yet?{" "}
-            <a href="./sign-up.html" tabIndex={-1}>
-              Sign up
-            </a>
-          </div>
           <div className="d-flex flex-column justify-content-between mt-2">
             <p className="w-100 text-center mb-0">
               <small className="text-muted">
-                &copy; codebox {new Date().getFullYear()}
+                &copy;codebox {new Date().getFullYear()}
               </small>
             </p>
             <p className="w-100 text-center">

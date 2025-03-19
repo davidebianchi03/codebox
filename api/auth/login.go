@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO: ratelimit
 func HandleLogin(c *gin.Context) {
 	type RequestBody struct {
 		Email    string `json:"email"`
