@@ -13,8 +13,8 @@ import (
 
 type GitWorkspaceSource struct {
 	ID            uint           `gorm:"primarykey" json:"id"`
-	RepositoryURL string         `gorm:"size:1024;not null;" json:"repository_url"`
-	Files         string         `gorm:"size:1024;" json:"-"`
+	RepositoryURL string         `gorm:"type:text;not null;" json:"repository_url"`
+	Files         string         `gorm:"type:text;" json:"-"`
 	CreatedAt     time.Time      `json:"-"`
 	UpdatedAt     time.Time      `json:"-"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`

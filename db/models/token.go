@@ -13,8 +13,8 @@ var secretKey = []byte("secret-key") // TODO: replace on build
 type Token struct {
 	gorm.Model
 	ID             uint   `gorm:"primarykey"`
-	Token          string `gorm:"size:1024;unique;"`
-	ExpirationDate time.Time
+	Token          string `gorm:"size:255;unique;"`
+	ExpirationDate *time.Time
 	UserID         uint
 	User           User `gorm:"constraint:OnDelete:CASCADE;"`
 }
@@ -46,7 +46,7 @@ func CreateToken(user User, duration time.Duration) (Token, error) {
 
 	token := Token{
 		Token:          jwtToken,
-		ExpirationDate: tokenExpiration,
+		ExpirationDate: &tokenExpiration,
 		User:           user,
 	}
 	return token, nil

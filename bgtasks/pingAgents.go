@@ -18,7 +18,8 @@ func (jobContext *Context) PingAgents(job *work.Job) error {
 	for _, container := range containers {
 		ri := runnerinterface.RunnerInterface{Runner: container.Workspace.Runner}
 		if ri.PingAgent(&container) {
-			container.AgentLastContact = time.Now()
+			now := time.Now()
+			container.AgentLastContact = &now
 			db.DB.Save(&container)
 		}
 	}

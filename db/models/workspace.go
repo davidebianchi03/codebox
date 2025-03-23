@@ -34,11 +34,11 @@ type Workspace struct {
 	RunnerID             uint                      `json:"-"`
 	Runner               *Runner                   `gorm:"constraint:OnDelete:CASCADE;" json:"runner"`
 	ConfigSource         string                    `gorm:"size:20; not null;" json:"config_source"` // template/git
-	TemplateVersionID    uint                      `json:"-"`
+	TemplateVersionID    *uint                     `json:"-"`
 	TemplateVersion      *WorkspaceTemplateVersion `gorm:"constraint:OnDelete:CASCADE;" json:"template_version"`
-	GitSourceID          uint                      `json:"-"`
+	GitSourceID          *uint                     `json:"-"`
 	GitSource            *GitWorkspaceSource       `gorm:"constraint:OnDelete:CASCADE;" json:"git_source"`
-	ConfigSourceFilePath string                    `gorm:"size:1024;" json:"config_source_file_path"` // name or relative path of the configuration file relative to the template root or repository root folder
+	ConfigSourceFilePath string                    `gorm:"type:text;" json:"config_source_file_path"` // name or relative path of the configuration file relative to the template root or repository root folder
 	EnvironmentVariables []string                  `gorm:"serializer:json" json:"environment_variables"`
 	CreatedAt            time.Time                 `json:"created_at"`
 	UpdatedAt            time.Time                 `json:"updated_at"`

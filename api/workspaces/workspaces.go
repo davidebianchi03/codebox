@@ -194,7 +194,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 			return
 		}
 	} else if parsedBody.ConfigSource == models.WorkspaceConfigSourceTemplate {
-		db.DB.First(templateVersion, map[string]interface{}{
+		db.DB.First(&templateVersion, map[string]interface{}{
 			"ID": parsedBody.TemplateVersionID,
 		})
 
@@ -219,6 +219,16 @@ func HandleCreateWorkspace(c *gin.Context) {
 	}
 
 	// create new database row
+	var templateVersionID *uint
+	if templateVersion != nil {
+		templateVersionID = &templateVersion.ID
+	}
+
+	var gitSourceID *uint
+	if gitSource != nil {
+		gitSourceID = &gitSource.ID
+	}
+
 	workspace := models.Workspace{
 		Name:                 parsedBody.Name,
 		User:                 currentUser,
@@ -226,7 +236,9 @@ func HandleCreateWorkspace(c *gin.Context) {
 		Type:                 parsedBody.Type,
 		Runner:               runner,
 		ConfigSource:         parsedBody.ConfigSource,
+		TemplateVersionID:    templateVersionID,
 		TemplateVersion:      templateVersion,
+		GitSourceID:          gitSourceID,
 		GitSource:            gitSource,
 		ConfigSourceFilePath: parsedBody.ConfigSourceFilePath,
 		EnvironmentVariables: parsedBody.EnvironmentVariables,

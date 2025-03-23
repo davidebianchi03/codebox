@@ -15,16 +15,16 @@ type WorkspaceTemplate struct {
 	Name        string `gorm:"size:255;unique;not null;"`
 	Type        string `gorm:"size:255;"`
 	Description string
-	Icon        string `gorm:"size:1024;"`
+	Icon        string `gorm:"type:text;"`
 }
 
 type WorkspaceTemplateVersion struct {
 	gorm.Model
 	ID         uint `gorm:"primarykey"`
 	TemplateID uint
-	Template   WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;"`
-	Name       string            `gorm:"size:1024;not null;"`
-	Files      string            `gorm:"size:1024;not null;"`
+	Template   *WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;not null;"`
+	Name       string             `gorm:"size:255;not null;"`
+	Files      string             `gorm:"type:text;not null;"`
 }
 
 func (wtv *WorkspaceTemplateVersion) GetConfigFileAbsPath() (p string, err error) {

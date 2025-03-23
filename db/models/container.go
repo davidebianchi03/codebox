@@ -15,7 +15,7 @@ type WorkspaceContainer struct {
 	ContainerImage    string         `gorm:"size:255" json:"container_image"`
 	ContainerUserID   uint           `json:"container_user_id"`
 	ContainerUserName string         `gorm:"size:255" json:"container_user_name"`
-	AgentLastContact  time.Time      `json:"agent_last_contact"`
+	AgentLastContact  *time.Time     `json:"agent_last_contact"`
 	WorkspacePath     string         `gorm:"size:255" json:"workspace_path"`
 	CreatedAt         time.Time      `json:"created_at"`
 	UpdatedAt         time.Time      `json:"updated_at"`

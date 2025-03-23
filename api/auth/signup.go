@@ -63,7 +63,7 @@ func HandleSignup(c *gin.Context) {
 	// check if user with the same email already exists
 	users := []models.User{}
 	r := db.DB.Find(&users, map[string]interface{}{
-		"Email": parsedBody.Email,
+		"email": parsedBody.Email,
 	})
 
 	if r.Error != nil {

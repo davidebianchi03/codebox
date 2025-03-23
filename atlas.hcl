@@ -6,14 +6,14 @@ data "external_schema" "codebox" {
     "ariga.io/atlas-provider-gorm",
     "load",
     "--path", "./db/models",
-    "--dialect", "sqlite", // | postgres | sqlite | sqlserver
+    "--dialect", "mysql", // | postgres | sqlite | sqlserver
   ]
 }
 
 env "codebox" {
   src = data.external_schema.codebox.url
-  dev = "sqlite://dev.db?_pragma=encoding=UTF-8"
-  url = "sqlite://codebox.db?_pragma=encoding=UTF-8"
+  dev = "mysql://${getenv("CODEBOX_DB_USER")}:${getenv("CODEBOX_DB_PASSWORD")}@${getenv("CODEBOX_DB_HOST")}:${getenv("CODEBOX_DB_PORT")}/${getenv("CODEBOX_DB_NAME")}-dev?charset=utf8mb4&parseTime=true"
+  url = "mysql://${getenv("CODEBOX_DB_USER")}:${getenv("CODEBOX_DB_PASSWORD")}@${getenv("CODEBOX_DB_HOST")}:${getenv("CODEBOX_DB_PORT")}/${getenv("CODEBOX_DB_NAME")}?charset=utf8mb4&parseTime=true"
   migration {
     dir = "file://migrations"
   }

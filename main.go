@@ -50,6 +50,8 @@ func main() {
 
 		r := gin.Default()
 		api.V1ApiRoutes(r)
+
+		log.Printf("listening at 0.0.0.0:%d\n", config.Environment.ServerPort)
 		r.Run(fmt.Sprintf(":%s", strconv.Itoa(config.Environment.ServerPort)))
 	default:
 		log.Fatalf("Invalid command '%s'", os.Args[1])
