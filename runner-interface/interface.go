@@ -38,7 +38,7 @@ func (ri *RunnerInterface) GetRunnerVersion() (version string, err error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -108,7 +108,6 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		_ = writer.WriteField("git_repository_url", workspace.GitSource.RepositoryURL)
 	}
 	_ = writer.WriteField("config_file_name", workspace.ConfigSourceFilePath)
-
 	_ = writer.WriteField("type", workspace.Type)
 	_ = writer.WriteField("environment", strings.Join(workspace.EnvironmentVariables, ";"))
 
@@ -134,7 +133,7 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		return err
 	}
 
-	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -159,7 +158,7 @@ func (ri *RunnerInterface) GetDetails(workspace *models.Workspace) (response Run
 		return RunnerWorkspaceStatusResponse{}, err
 	}
 
-	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 	res, err := client.Do(req)
 	if err != nil {
 		return RunnerWorkspaceStatusResponse{}, err
@@ -192,7 +191,7 @@ func (ri *RunnerInterface) GetLogs(workspace *models.Workspace) (logs string, er
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 	res, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -234,7 +233,7 @@ func (ri *RunnerInterface) StopWorkpace(workspace *models.Workspace) error {
 		return err
 	}
 
-	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -267,7 +266,7 @@ func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
 		return err
 	}
 
-	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -302,7 +301,7 @@ func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool 
 	req.Header.Add("X-CodeBox-Forward-Host", "127.0.0.1")
 	req.Header.Add("X-CodeBox-Forward-Port", "2222")
 	req.Header.Add("X-CodeBox-Forward-Protocol", "http")
-	req.Header.Add("Authorization", ri.Runner.Token)
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -338,6 +337,7 @@ func (ri *RunnerInterface) ForwardHttp(
 	proxyHeaders.Set("X-CodeBox-Forward-Port", strconv.Itoa(int(port.PortNumber)))
 	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
 	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "http")
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
 	if err != nil {
@@ -367,6 +367,7 @@ func (ri *RunnerInterface) ForwardSsh(
 	proxyHeaders.Set("X-CodeBox-Forward-Port", "2222")
 	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
 	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "tcp_over_websocket")
+	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
 	if err != nil {
