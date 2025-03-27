@@ -165,7 +165,8 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 
 		// ping agent
 		if ri.PingAgent(&workspaceContainer) {
-			workspaceContainer.AgentLastContact = time.Now()
+			now := time.Now()
+			workspaceContainer.AgentLastContact = &now
 			db.DB.Save(&workspaceContainer)
 		}
 	}

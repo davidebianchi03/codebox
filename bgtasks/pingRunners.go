@@ -20,7 +20,8 @@ func (jobContext *Context) PingRunners(job *work.Job) error {
 
 		_, err := ri.GetRunnerVersion()
 		if err == nil {
-			runner.LastContact = time.Now()
+			now := time.Now()
+			runner.LastContact = &now
 			db.DB.Save(&runner)
 		}
 	}

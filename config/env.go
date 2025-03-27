@@ -10,7 +10,12 @@ import (
 
 type envVars struct {
 	DebugEnabled     bool   `env:"CODEBOX_DEBUG" envDefault:"true"`
-	DBUrl            string `env:"CODEBOX_DB_URL" envDefault:"sqlite://./codebox.db"`
+	DBDriver         string `env:"CODEBOX_DB_DRIVER" envDefault:"postgres"`
+	DBHost           string `env:"CODEBOX_DB_HOST" envDefault:"postgres"`
+	DBPort           int    `env:"CODEBOX_DB_PORT" envDefault:"5432"`
+	DBName           string `env:"CODEBOX_DB_NAME" envDefault:"codebox"`
+	DBUser           string `env:"CODEBOX_DB_USER" envDefault:"postgres"`
+	DBPassword       string `env:"CODEBOX_DB_PASSWORD" envDefault:"password"`
 	ServerPort       int    `env:"CODEBOX_SERVER_PORT" envDefault:"8080"`
 	TasksConcurrency int    `env:"CODEBOX_WORKSPACE_CONCURRENCY" envDefault:"1"`
 	RedisHost        string `env:"CODEBOX_REDIS_HOST" envDefault:"127.0.0.1"`
