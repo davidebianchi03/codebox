@@ -15,6 +15,9 @@
 
 **Codebox** is a service that allows developers to create remote workspaces. The structure of Codebox workspaces can be defined using standard spefications such as docker-compose, devcontainer, etc...
 
+> [!WARNING]  
+> This software is still an alpha version it has many bugs
+
 ## Quickstart
 
 The easiest way to deploy your Codebox instance is using [docker compose](./docker-compose.yml) provided in this repository.
