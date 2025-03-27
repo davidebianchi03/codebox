@@ -69,8 +69,7 @@ COPY ./migrations/ /codebox/bin/migrations
 
 RUN chmod +x /docker-entrypoint.d/startgin.sh && \
     chmod +x /codebox/bin/codebox && \
-    chmod +x /codebox/bin/codebox-cli-linux-amd64 && \
-    chmod +x /codebox/bin/agent
+    chmod +x /codebox/bin/codebox-cli-linux-amd64
 
 ENV CODEBOX_DB_URL=sqlite://../db/codebox.db
 
