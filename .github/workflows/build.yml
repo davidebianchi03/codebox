@@ -74,7 +74,6 @@ jobs:
           mv ./codebox ./codebox-dir
           mv ./codebox-dir/codebox ./codebox
           rm -rf codebox-dir
-          source ../docker/download-agent.sh
           source ../docker/download-cli.sh
           cd ..
      
