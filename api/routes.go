@@ -56,6 +56,7 @@ func V1ApiRoutes(router *gin.Engine) {
 		runnersApis := v1.Group("/runners")
 		{
 			runnersApis.GET("", runners.HandleListRunners)
+			runnersApis.Any(":runnerId/connect", runners.HandleRunnerConnect)
 		}
 		v1.GET("/runner-types", runners.HandleListRunnerTypes)
 

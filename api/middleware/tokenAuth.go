@@ -13,6 +13,7 @@ var AuthNotRequiredEndpoits = [...]string{
 	"/api/v1/download-cli",
 	"/api/v1/auth/signup",
 	"/api/v1/instance-settings",
+	"/api/v1/runners/:runnerId/connect",
 }
 
 func isAuthRequired(endpoint string) bool {

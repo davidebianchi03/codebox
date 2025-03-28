@@ -26,8 +26,7 @@ func (ri *RunnerInterface) getRunnerBaseUrl() string {
 		return ri.Runner.PublicUrl
 	}
 
-	// TODO: support for wsockporter
-	panic("not implemented")
+	return fmt.Sprintf("http://127.0.0.1:%d", ri.Runner.Port)
 }
 
 func (ri *RunnerInterface) GetRunnerVersion() (version string, err error) {
