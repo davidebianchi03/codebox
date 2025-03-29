@@ -18,7 +18,7 @@ var lock = &sync.Mutex{}
 func HandleRunnerConnect(c *gin.Context) {
 	runnerId, _ := c.Params.Get("runnerId")
 
-	// TODO: check token
+	requestToken := c.Request.Header.Get("X-Codebox-Runner-Token")
 
 	var runner models.Runner
 	if err := db.DB.Find(
@@ -29,6 +29,13 @@ func HandleRunnerConnect(c *gin.Context) {
 	).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
+		})
+		return
+	}
+
+	if runner.Token != requestToken {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"detail": "missing or invalid token",
 		})
 		return
 	}
