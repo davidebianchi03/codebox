@@ -145,7 +145,9 @@ export function AdminRunners() {
                         if (runner.name.indexOf(searchText) >= 0) {
                           return (
                             <tr key={runner.id}>
-                              <td>{runner.id}</td>
+                              <td>
+                                <a href={`/admin/runners/${runner.id}`}>{runner.id}</a>
+                              </td>
                               <td>{runner.name}</td>
                               <td
                                 data-bs-toggle="tooltip"

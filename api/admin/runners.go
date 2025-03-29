@@ -49,6 +49,30 @@ func HandleAdminListRunners(c *gin.Context) {
 	c.JSON(http.StatusOK, runners)
 }
 
+func HandleAdminRetrieveRunners(c *gin.Context) {
+	runnerId, _ := c.Params.Get("runnerId")
+
+	var runner models.Runner
+	r := db.DB.Find(&runner, map[string]interface{}{
+		"id": runnerId,
+	})
+	if r.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if runner.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"detail": "runner not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, runner)
+}
+
 func HandleAdminCreateRunner(c *gin.Context) {
 	type RequestBody struct {
 		Name         string `json:"name" binding:"required"`
@@ -142,4 +166,50 @@ func HandleAdminCreateRunner(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"token": token,
 	})
+}
+
+func HandleAdminUpdateRunner(c *gin.Context) {
+	runnerId, _ := c.Params.Get("runnerId")
+
+	var runner models.Runner
+	r := db.DB.Find(&runner, map[string]interface{}{
+		"id": runnerId,
+	})
+	if r.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if runner.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"detail": "runner not found",
+		})
+		return
+	}
+
+	type RequestBody struct {
+		Name         string `json:"name" binding:"required"`
+		Type         string `json:"type" binding:"required"`
+		UsePublicUrl bool   `json:"use_public_url" binding:"required"`
+		PublicUrl    string `json:"public_url" binding:"required"`
+	}
+
+	var reqBody RequestBody
+	err := c.ShouldBindBodyWithJSON(&reqBody)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "missing or invalid field",
+		})
+		return
+	}
+
+	runner.Name = reqBody.Name
+	runner.Type = reqBody.Type
+	runner.UsePublicUrl = reqBody.UsePublicUrl
+	runner.PublicUrl = reqBody.PublicUrl
+	db.DB.Save(&runner)
+
+	c.JSON(http.StatusOK, runner)
 }

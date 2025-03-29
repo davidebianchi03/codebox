@@ -1,3 +1,4 @@
+import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
 import { AdminRunners } from "../pages/AdminRunners";
 import CliLogin from "../pages/CliLogin";
 import CreateWorkspace from "../pages/CreateWorkspace";
@@ -47,5 +48,9 @@ export const SuperUserRoutes: Route[] = [
   {
     path: "/admin/runners",
     element: <AdminRunners />,
+  },
+  {
+    path: "/admin/runners/:id",
+    element: <AdminRunnerDetails />,
   },
 ];
