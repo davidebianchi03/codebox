@@ -137,9 +137,10 @@ export default function WorkspaceContainers({
                                 background: `${
                                   selectedContainer?.container_name ===
                                   c.container_name
-                                    ? "var(--tblr-muted)"
+                                    ? "var(--tblr-primary)"
                                     : "transparent"
                                 }`,
+                                borderRadius: "4px",
                               }}
                               onClick={() =>
                                 FetchSelectedContainer(c.container_name)
@@ -170,9 +171,13 @@ export default function WorkspaceContainers({
                                   setWarningTooltipIsOpen(!warningTooltipIsOpen)
                                 }
                               >
-                                Last contact with the agent running in this container was more than 5 minutes ago.
+                                Last contact with the agent running in this
+                                container was more than 5 minutes ago.
                               </Tooltip>
-                              <FontAwesomeIcon id="warningIcon" icon={faTriangleExclamation} />
+                              <FontAwesomeIcon
+                                id="warningIcon"
+                                icon={faTriangleExclamation}
+                              />
                             </span>
                           ) : null}
                           <br />

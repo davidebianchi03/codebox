@@ -72,7 +72,7 @@ export function Navbar({ user }: Props) {
               alt="avatar"
             />
             <div className="d-none d-xl-block ps-2">
-              <div className="text-white">
+              <div>
                 {user?.first_name} {user?.last_name}
               </div>
               <div className="mt-1 small text-secondary">{user?.email}</div>

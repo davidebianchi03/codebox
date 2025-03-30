@@ -32,7 +32,7 @@ func HandleChangePassword(c *gin.Context) {
 	}
 
 	if !user.CheckPassword(parsedBody.CurrentPassword) {
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.JSON(http.StatusExpectationFailed, gin.H{
 			"detail": "invalid password",
 		})
 		return

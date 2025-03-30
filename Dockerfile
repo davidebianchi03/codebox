@@ -77,5 +77,4 @@ EXPOSE 8000
 
 WORKDIR /codebox
 
-VOLUME [ "/codebox/db" ]
 VOLUME [ "/codebox/data" ]

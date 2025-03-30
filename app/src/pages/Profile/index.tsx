@@ -19,10 +19,13 @@ import { toast, ToastContainer } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { User } from "../../types/user";
+import { ChangePasswordModal } from "./ChangePasswordModal";
 
 export default function Profile() {
   const [sshPublicKey, setSshPublicKey] = useState<string>("");
   const [currentUser, setCurrentUser] = useState<User>();
+  const [showChangePasswordModal, setShowChangePasswordModal] =
+    useState<boolean>(false);
 
   const validation = useFormik({
     initialValues: {
@@ -67,7 +70,7 @@ export default function Profile() {
       validation.setValues({
         firstName: responseBody.first_name,
         lastName: responseBody.last_name,
-      })
+      });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,6 +197,27 @@ export default function Profile() {
           </Card>
         </Col>
       </Row>
+      <Row className="mt-4">
+        <Col md={12}>
+          <Card>
+            <CardHeader>
+              <h4 className="mb-0">Change your password</h4>
+            </CardHeader>
+            <CardBody>
+              <Button
+                color="primary"
+                onClick={() => setShowChangePasswordModal(true)}
+              >
+                Change password
+              </Button>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
       <ToastContainer />
     </Container>
   );
