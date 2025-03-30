@@ -1,10 +1,12 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -84,4 +86,23 @@ func (u *User) CheckPassword(password string) bool {
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
 	return string(bytes), err
+}
+
+func ValidatePassword(password string) error {
+	passwordValid := true
+	if len(password) < 10 {
+		passwordValid = false
+	}
+
+	hasUppercase := regexp.MustCompile(`[A-Z]`).MatchString(password)
+	hasSpecialSymbol := regexp.MustCompile(`[!_\-,.?]`).MatchString(password)
+
+	passwordValid = hasUppercase && hasSpecialSymbol
+
+	if !passwordValid {
+		return errors.New(
+			"invalid password, it must be at least 10 characters long and include at least one uppercase letter and one special symbol (!_-,.?!).",
+		)
+	}
+	return nil
 }

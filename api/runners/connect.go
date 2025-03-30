@@ -97,7 +97,7 @@ func HandleRunnerConnect(c *gin.Context) {
 			})
 			return
 		}
-		s.Debug = true
+		s.Debug = false
 		s.HandleClientHandler(c.Writer, c.Request)
 
 		// release the port

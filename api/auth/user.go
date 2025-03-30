@@ -35,14 +35,12 @@ func HandleRetrieveUserPublicKey(ctx *gin.Context) {
 }
 
 func HandleUpdateUserDetails(ctx *gin.Context) {
-
-	type RequestBody struct {
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
+	var requestBody struct {
+		FirstName *string `json:"first_name"`
+		LastName  *string `json:"last_name"`
 	}
 
-	var parsedBody RequestBody
-	err := ctx.ShouldBindBodyWithJSON(&parsedBody)
+	err := ctx.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"detail": err.Error(),
@@ -58,11 +56,11 @@ func HandleUpdateUserDetails(ctx *gin.Context) {
 		return
 	}
 
-	if parsedBody.FirstName != "" {
-		user.FirstName = parsedBody.FirstName
+	if requestBody.FirstName != nil {
+		user.FirstName = *requestBody.FirstName
 	}
-	if parsedBody.LastName != "" {
-		user.LastName = parsedBody.LastName
+	if requestBody.LastName != nil {
+		user.LastName = *requestBody.LastName
 	}
 
 	db.DB.Save(&user)

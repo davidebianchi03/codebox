@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"regexp"
 
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
@@ -26,14 +25,13 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
-	type RequestBody struct {
-		Email     string `json:"email"`
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-		Password  string `json:"password"`
+	var parsedBody struct {
+		Email     string `json:"email" binding:"required,email"`
+		FirstName string `json:"first_name"  binding:"required"`
+		LastName  string `json:"last_name"  binding:"required"`
+		Password  string `json:"password"  binding:"required"`
 	}
 
-	var parsedBody RequestBody
 	err := c.ShouldBindBodyWithJSON(&parsedBody)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -43,19 +41,9 @@ func HandleSignup(c *gin.Context) {
 	}
 
 	// validate password
-	passwordValid := true
-	if len(parsedBody.Password) < 10 {
-		passwordValid = false
-	}
-
-	hasUppercase := regexp.MustCompile(`[A-Z]`).MatchString(parsedBody.Password)
-	hasSpecialSymbol := regexp.MustCompile(`[!_\-,.?]`).MatchString(parsedBody.Password)
-
-	passwordValid = hasUppercase && hasSpecialSymbol
-
-	if !passwordValid {
+	if err := models.ValidatePassword(parsedBody.Password); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "invalid password, it must be at least 10 characters long and include at least one uppercase letter and one special symbol (!_-,.?!).",
+			"detail": err.Error(),
 		})
 		return
 	}

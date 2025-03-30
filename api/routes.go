@@ -26,6 +26,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.POST("/login", auth.HandleLogin)
 			authApis.POST("/logout", auth.HandleLogout)
 			authApis.GET("/user-details", auth.HandleRetriveUserDetails)
+			authApis.PUT("/user-details", auth.HandleUpdateUserDetails)
 			authApis.PATCH("/user-details", auth.HandleUpdateUserDetails)
 			authApis.GET("/user-ssh-public-key", auth.HandleRetrieveUserPublicKey)
 			authApis.POST("/change-password", auth.HandleChangePassword)
@@ -74,6 +75,11 @@ func V1ApiRoutes(router *gin.Engine) {
 			adminApis.PUT("runners/:runnerId", admin.HandleAdminUpdateRunner)
 			adminApis.POST("runners", admin.HandleAdminCreateRunner)
 			adminApis.GET("users", admin.HandleAdminListUsers)
+			adminApis.POST("users", admin.HandleAdminCreateUser)
+			adminApis.GET("users/:email", admin.HandleAdminRetrieveUser)
+			adminApis.PUT("users/:email", admin.HandleAdminUpdateUser)
+			adminApis.PATCH("users/:email", admin.HandleAdminUpdateUser)
+			adminApis.PATCH("users/:email/set-password", admin.HandleAdminSetUserPassword)
 			runnersApis.Use(middleware.IsSuperuserMiddleware)
 		}
 	}

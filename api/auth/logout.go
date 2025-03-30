@@ -10,7 +10,6 @@ import (
 )
 
 func HandleLogout(ctx *gin.Context) {
-
 	authHeader := ctx.Request.Header.Get("Authorization")
 	if authHeader == "" {
 		ctx.JSON(http.StatusUnauthorized, gin.H{

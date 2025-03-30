@@ -9,17 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO: ratelimit?
 func HandleChangePassword(c *gin.Context) {
-	type RequestBody struct {
-		CurrentPassword string `json:"current_password"`
-		NewPassword     string `json:"new_password"`
+	var parsedBody struct {
+		CurrentPassword string `json:"current_password" binding:"required"`
+		NewPassword     string `json:"new_password" binding:"required"`
 	}
 
-	var parsedBody RequestBody
-	err := c.ShouldBindBodyWithJSON(&parsedBody)
-	if err != nil {
+	if err := c.ShouldBindBodyWithJSON(&parsedBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
+			"detail": "missing or invalid argument",
 		})
 		return
 	}
@@ -34,7 +33,15 @@ func HandleChangePassword(c *gin.Context) {
 
 	if !user.CheckPassword(parsedBody.CurrentPassword) {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"detail": "invalid credentials",
+			"detail": "invalid password",
+		})
+		return
+	}
+
+	// validate the new password
+	if err := models.ValidatePassword(parsedBody.NewPassword); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": err.Error(),
 		})
 		return
 	}
