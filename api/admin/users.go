@@ -88,12 +88,20 @@ func HandleAdminCreateUser(c *gin.Context) {
 		return
 	}
 
+	password, err := models.HashPassword(reqBody.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
 	// create new user
 	newUser := models.User{
 		Email:       reqBody.Email,
 		FirstName:   reqBody.FirstName,
 		LastName:    reqBody.LastName,
-		Password:    reqBody.Password,
+		Password:    password,
 		IsSuperuser: reqBody.IsSuperuser,
 	}
 

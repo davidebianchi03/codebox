@@ -73,36 +73,38 @@ export function Navbar({ user }: Props) {
             />
             <div className="d-none d-xl-block ps-2">
               <div>
-                {user?.first_name} {user?.last_name}
+                <b>
+                  {user?.first_name} {user?.last_name}
+                </b>
               </div>
               <div className="mt-1 small text-secondary">{user?.email}</div>
             </div>
           </span>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+            <span className="dropdown-header" style={{ fontSize: "11px" }}>
+              User
+            </span>
             <a href="/profile" className="dropdown-item">
               Profile
+            </a>
+            {/* <div className="dropdown-divider"></div> */}
+            <a href="/" className="dropdown-item" onClick={HandleLogout}>
+              Logout
             </a>
             {user?.is_superuser && (
               <>
                 <div className="dropdown-divider"></div>
+                <span className="dropdown-header" style={{ fontSize: "11px" }}>
+                  Admin
+                </span>
+                <a href="/admin/users" className="dropdown-item">
+                  Users
+                </a>
                 <a href="/admin/runners" className="dropdown-item">
                   Runners
                 </a>
-                {/* <a href="/profile" className="dropdown-item">
-                  Templates
-                </a>
-                <a href="/profile" className="dropdown-item">
-                  Users
-                </a>
-                <a href="/settings" className="dropdown-item">
-                  Settings
-                </a> */}
               </>
             )}
-            <div className="dropdown-divider"></div>
-            <a href="/" className="dropdown-item" onClick={HandleLogout}>
-              Logout
-            </a>
           </div>
         </div>
       </div>

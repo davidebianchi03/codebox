@@ -137,10 +137,11 @@ export default function WorkspaceContainers({
                                 background: `${
                                   selectedContainer?.container_name ===
                                   c.container_name
-                                    ? "var(--tblr-primary)"
+                                    ? "rgba(var(--tblr-primary-rgb), 0.2)"
                                     : "transparent"
                                 }`,
                                 borderRadius: "4px",
+                                
                               }}
                               onClick={() =>
                                 FetchSelectedContainer(c.container_name)

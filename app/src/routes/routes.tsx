@@ -1,5 +1,6 @@
 import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
 import { AdminRunners } from "../pages/AdminRunners";
+import { AdminUsersList } from "../pages/AdminUsersList";
 import CliLogin from "../pages/CliLogin";
 import CreateWorkspace from "../pages/CreateWorkspace";
 import HomePage from "../pages/Home";
@@ -45,6 +46,10 @@ export const AuthProtectedRoutes: Route[] = [
 ];
 
 export const SuperUserRoutes: Route[] = [
+  {
+    path: "/admin/users",
+    element: <AdminUsersList />,
+  },
   {
     path: "/admin/runners",
     element: <AdminRunners />,
