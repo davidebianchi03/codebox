@@ -79,7 +79,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			adminApis.GET("users/:email", admin.HandleAdminRetrieveUser)
 			adminApis.PUT("users/:email", admin.HandleAdminUpdateUser)
 			adminApis.PATCH("users/:email", admin.HandleAdminUpdateUser)
-			adminApis.PATCH("users/:email/set-password", admin.HandleAdminSetUserPassword)
+			adminApis.POST("users/:email/set-password", admin.HandleAdminSetUserPassword)
 			runnersApis.Use(middleware.IsSuperuserMiddleware)
 		}
 	}

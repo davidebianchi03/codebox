@@ -137,8 +137,9 @@ func HandleAdminUpdateUser(c *gin.Context) {
 	}
 
 	var requestBody struct {
-		FirstName *string `json:"first_name"`
-		LastName  *string `json:"last_name"`
+		FirstName   *string `json:"first_name"`
+		LastName    *string `json:"last_name"`
+		IsSuperuser *bool   `json:"is_superuser"`
 	}
 
 	if c.ShouldBindBodyWithJSON(&requestBody) != nil {
@@ -154,6 +155,10 @@ func HandleAdminUpdateUser(c *gin.Context) {
 
 	if requestBody.LastName != nil {
 		user.LastName = *requestBody.LastName
+	}
+
+	if requestBody.IsSuperuser != nil {
+		user.IsSuperuser = *requestBody.IsSuperuser
 	}
 
 	db.DB.Save(&user)
