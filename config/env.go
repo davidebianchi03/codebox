@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type envVars struct {
+type EnvVars struct {
 	DebugEnabled     bool   `env:"CODEBOX_DEBUG" envDefault:"true"`
 	DBDriver         string `env:"CODEBOX_DB_DRIVER" envDefault:"postgres"`
 	DBHost           string `env:"CODEBOX_DB_HOST" envDefault:"postgres"`
@@ -25,7 +25,7 @@ type envVars struct {
 	UseSubDomains    bool   `env:"CODEBOX_USE_SUBDOMAINS" envDefault:"true"`
 }
 
-var Environment *envVars
+var Environment *EnvVars
 
 func InitCodeBoxEnv() error {
 	codeboxEnvFilename := "codebox.env"
@@ -34,7 +34,7 @@ func InitCodeBoxEnv() error {
 		return fmt.Errorf("failed to load environement variables from %s", codeboxEnvFilename)
 	}
 
-	e := envVars{}
+	e := EnvVars{}
 	err = env.Parse(&e)
 	if err != nil {
 		return err

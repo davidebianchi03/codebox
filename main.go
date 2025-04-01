@@ -11,7 +11,6 @@ import (
 
 	"github.com/davidebianchi03/codebox/api"
 	"github.com/davidebianchi03/codebox/db"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -42,15 +41,7 @@ func main() {
 			return
 		}
 
-		if config.Environment.DebugEnabled {
-			gin.SetMode(gin.DebugMode)
-		} else {
-			gin.SetMode(gin.ReleaseMode)
-		}
-
-		r := gin.Default()
-		api.V1ApiRoutes(r)
-
+		r := api.SetupRouter()
 		log.Printf("listening at 0.0.0.0:%d\n", config.Environment.ServerPort)
 		r.Run(fmt.Sprintf(":%s", strconv.Itoa(config.Environment.ServerPort)))
 	default:
