@@ -86,7 +86,7 @@ Codebox cannot run workspaces by itself, you need to connect runners.
 
 Codebox runners are services connected to the Codebox instance, they create and manage your workspaces. Each workspace type has its own runner.
 
-Only a runner for docker-based workspaces is currently availabl;, this runner can create workspaces using `docker compose` or `devcontainer` specifications. The source code and a guide for this runner are available [here](https://github.com/davidebianchi03/codebox-docker-runner).
+Only a runner for docker-based workspaces is currently available, this runner can create workspaces using based on`docker compose` or `devcontainer`. The source code and a guide for this runner are available [here](https://github.com/davidebianchi03/codebox-docker-runner).
 
 ## Connect to workspace container
 
