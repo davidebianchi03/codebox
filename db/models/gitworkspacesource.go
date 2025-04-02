@@ -14,6 +14,7 @@ import (
 type GitWorkspaceSource struct {
 	ID             uint           `gorm:"primarykey" json:"id"`
 	RepositoryURL  string         `gorm:"type:text;not null;" json:"repository_url"`
+	RefName        string         `gorm:"size:255; not null;" json:"type"`
 	ConfigFilePath string         `gorm:"type:text;" json:"config_file_relative_path"`
 	Files          string         `gorm:"type:text;" json:"-"`
 	CreatedAt      time.Time      `json:"-"`

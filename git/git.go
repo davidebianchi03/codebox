@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	cryptossh "golang.org/x/crypto/ssh"
 )
 
-func CloneRepo(repositoryURL string, outputFolder string, privateKey []byte, depth int) (err error) {
+func CloneRepo(repositoryURL string, referenceName string, outputFolder string, privateKey []byte, depth int) (err error) {
 	// manage authentication
 	var gitAuth transport.AuthMethod
 	if strings.HasPrefix(repositoryURL, "http") {
@@ -23,13 +24,18 @@ func CloneRepo(repositoryURL string, outputFolder string, privateKey []byte, dep
 		gitAuth.(*ssh.PublicKeys).HostKeyCallback = cryptossh.InsecureIgnoreHostKey()
 	}
 
-	_, err = git.PlainClone(outputFolder, false, &git.CloneOptions{
-		URL:             repositoryURL,
-		InsecureSkipTLS: true,
-		Depth:           depth, // retrieve only latest commit
-		SingleBranch:    true,
-		Auth:            gitAuth,
-	})
+	_, err = git.PlainClone(
+		outputFolder,
+		false,
+		&git.CloneOptions{
+			URL:             repositoryURL,
+			InsecureSkipTLS: true,
+			Depth:           depth, // retrieve only latest commit
+			SingleBranch:    true,
+			ReferenceName:   plumbing.ReferenceName(referenceName),
+			Auth:            gitAuth,
+		},
+	)
 
 	if err != nil {
 		if strings.HasPrefix(repositoryURL, "http") {

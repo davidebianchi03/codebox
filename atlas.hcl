@@ -29,3 +29,4 @@ env "codebox" {
 # atlas migrate diff  --env codebox
 # atlas migrate apply --env codebox --url "sqlite://test.db"
 # atlas migrate apply --env codebox
+# atlas migrate down --env codebox

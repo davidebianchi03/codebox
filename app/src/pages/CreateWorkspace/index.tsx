@@ -29,6 +29,7 @@ export default function CreateWorkspace() {
       configSource: "",
       runner: -1,
       gitRepositoryURL: "",
+      gitRefName: "",
       configFilesPath: "",
     },
     validationSchema: Yup.object({
@@ -59,6 +60,7 @@ export default function CreateWorkspace() {
         runner_id: parseInt(values.runner.toString()),
         config_source: values.configSource,
         git_repo_url: values.gitRepositoryURL,
+        git_ref_name: values.gitRefName,
         config_source_path: values.configFilesPath,
         environment_variables: [],
       };
@@ -162,6 +164,7 @@ export default function CreateWorkspace() {
                       validation.setFieldValue("configSource", "");
                       validation.setFieldValue("runner", "");
                       validation.setFieldValue("gitRepositoryURL", "");
+                      validation.setFieldValue("gitRefName", "");
                       validation.setFieldValue("configFilesPath", "");
                     }
                     validation.handleChange(e);
@@ -186,6 +189,7 @@ export default function CreateWorkspace() {
                   onChange={(e) => {
                     if (e.target.value !== "git") {
                       validation.setFieldValue("gitRepositoryURL", "");
+                      validation.setFieldValue("gitRefName", "");
                       validation.setFieldValue("configFilesPath", "");
                     }
                     validation.handleChange(e);
@@ -229,6 +233,21 @@ export default function CreateWorkspace() {
                       />
                       <FormFeedback>
                         {validation.errors.gitRepositoryURL}
+                      </FormFeedback>
+                    </div>
+                    <div className="mb-3">
+                      <Label>Ref Name</Label>
+                      <Input
+                        name="gitRefName"
+                        placeholder="refs/heads/main"
+                        value={validation.values.gitRefName}
+                        onChange={validation.handleChange}
+                        invalid={
+                          validation.errors.gitRefName !== undefined
+                        }
+                      />
+                      <FormFeedback>
+                        {validation.errors.gitRefName}
                       </FormFeedback>
                     </div>
                     <div className="mb-3">

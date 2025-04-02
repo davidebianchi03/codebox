@@ -82,18 +82,18 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 POST api/v1/workspace
 */
 func HandleCreateWorkspace(c *gin.Context) {
-	type RequestBody struct {
+	var parsedBody struct {
 		Name                 string   `json:"name" binding:"required"`
 		Type                 string   `json:"type" binding:"required"`
 		RunnerID             uint     `json:"runner_id" binding:"required"`
 		ConfigSource         string   `json:"config_source" binding:"required"`
 		TemplateVersionID    uint     `json:"template_version_id"`
 		GitRepoUrl           string   `json:"git_repo_url"`
+		GitRefName           string   `json:"git_ref_name"`
 		ConfigSourceFilePath string   `json:"config_source_path"`
 		EnvironmentVariables []string `json:"environment_variables" binding:"required"`
 	}
 
-	var parsedBody RequestBody
 	err := c.ShouldBindBodyWithJSON(&parsedBody)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -184,6 +184,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 
 		gitSource = &models.GitWorkspaceSource{
 			RepositoryURL:  parsedBody.GitRepoUrl,
+			RefName:        parsedBody.GitRefName,
 			ConfigFilePath: parsedBody.ConfigSourceFilePath,
 		}
 
