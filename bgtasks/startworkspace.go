@@ -10,7 +10,7 @@ import (
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/git"
-	runnerinterface "github.com/davidebianchi03/codebox/runner-interface"
+	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/davidebianchi03/codebox/utils/targz"
 	"github.com/gocraft/work"
 )

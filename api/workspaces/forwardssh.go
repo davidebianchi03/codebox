@@ -5,7 +5,7 @@ import (
 
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
-	runnerinterface "github.com/davidebianchi03/codebox/runner-interface"
+	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gin-gonic/gin"
 )
 

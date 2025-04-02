@@ -106,7 +106,11 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		_ = writer.WriteField("git_repository_url", workspace.GitSource.RepositoryURL)
 	}
-	_ = writer.WriteField("config_file_name", workspace.ConfigSourceFilePath)
+	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
+		_ = writer.WriteField("config_file_name", workspace.GitSource.ConfigFilePath)
+	} else {
+		_ = writer.WriteField("config_file_name", workspace.TemplateVersion.ConfigFilePath)
+	}
 	_ = writer.WriteField("type", workspace.Type)
 	_ = writer.WriteField("environment", strings.Join(workspace.EnvironmentVariables, ";"))
 

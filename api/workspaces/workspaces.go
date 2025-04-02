@@ -183,7 +183,8 @@ func HandleCreateWorkspace(c *gin.Context) {
 		}
 
 		gitSource = &models.GitWorkspaceSource{
-			RepositoryURL: parsedBody.GitRepoUrl,
+			RepositoryURL:  parsedBody.GitRepoUrl,
+			ConfigFilePath: parsedBody.ConfigSourceFilePath,
 		}
 
 		r := db.DB.Create(gitSource)
@@ -240,7 +241,6 @@ func HandleCreateWorkspace(c *gin.Context) {
 		TemplateVersion:      templateVersion,
 		GitSourceID:          gitSourceID,
 		GitSource:            gitSource,
-		ConfigSourceFilePath: parsedBody.ConfigSourceFilePath,
 		EnvironmentVariables: parsedBody.EnvironmentVariables,
 	}
 

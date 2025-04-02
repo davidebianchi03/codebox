@@ -12,12 +12,13 @@ import (
 )
 
 type GitWorkspaceSource struct {
-	ID            uint           `gorm:"primarykey" json:"id"`
-	RepositoryURL string         `gorm:"type:text;not null;" json:"repository_url"`
-	Files         string         `gorm:"type:text;" json:"-"`
-	CreatedAt     time.Time      `json:"-"`
-	UpdatedAt     time.Time      `json:"-"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+	ID             uint           `gorm:"primarykey" json:"id"`
+	RepositoryURL  string         `gorm:"type:text;not null;" json:"repository_url"`
+	ConfigFilePath string         `gorm:"type:text;" json:"config_file_relative_path"`
+	Files          string         `gorm:"type:text;" json:"-"`
+	CreatedAt      time.Time      `json:"-"`
+	UpdatedAt      time.Time      `json:"-"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func (gws *GitWorkspaceSource) GetConfigFileAbsPath() (p string, err error) {

@@ -7,11 +7,11 @@ import (
 
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
-	runnerinterface "github.com/davidebianchi03/codebox/runner-interface"
+	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gocraft/work"
 )
 
-func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
+func (jobContext *Context) StopWorkspace(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace models.Workspace
@@ -30,10 +30,10 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 		Runner: workspace.Runner,
 	}
 
-	if err := ri.RemoveWorkspace(&workspace); err != nil {
-		workspace.AppendLogs(fmt.Sprintf("failed to remove workspace, %s", err.Error()))
+	if err := ri.StopWorkpace(&workspace); err != nil {
+		workspace.AppendLogs(fmt.Sprintf("failed to stop workspace, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError
-		return errors.New("failed to remove workspace")
+		return errors.New("failed to stop workspace")
 	}
 
 	// fetch workspace details and logs
@@ -83,6 +83,6 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 		})
 		db.DB.Unscoped().Delete(&container)
 	}
-	db.DB.Delete(&workspace)
+
 	return nil
 }

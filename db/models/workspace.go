@@ -38,7 +38,6 @@ type Workspace struct {
 	TemplateVersion      *WorkspaceTemplateVersion `gorm:"constraint:OnDelete:CASCADE;" json:"template_version"`
 	GitSourceID          *uint                     `json:"-"`
 	GitSource            *GitWorkspaceSource       `gorm:"constraint:OnDelete:CASCADE;" json:"git_source"`
-	ConfigSourceFilePath string                    `gorm:"type:text;" json:"config_source_file_path"` // name or relative path of the configuration file relative to the template root or repository root folder
 	EnvironmentVariables []string                  `gorm:"serializer:json" json:"environment_variables"`
 	CreatedAt            time.Time                 `json:"created_at"`
 	UpdatedAt            time.Time                 `json:"updated_at"`
