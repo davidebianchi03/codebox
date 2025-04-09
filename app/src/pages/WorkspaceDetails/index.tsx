@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { toast } from "react-toastify";
 import { Workspace } from "../../types/workspace";
-import { Col, Container, Row } from "reactstrap";
+import { Button, Col, Container, Row } from "reactstrap";
 import WorkspaceLogs from "./WorkspaceLogs";
 import WorkspaceContainers from "./WorkspaceContainers";
 import Swal from "sweetalert2";
@@ -12,12 +12,16 @@ import {
   GetBeautyNameForStatus,
   GetWorkspaceStatusColor,
 } from "../../common/workspace";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCloudArrowUp, faGear } from "@fortawesome/free-solid-svg-icons";
+import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [workspace, setWorkspace] = useState<Workspace>();
   const [fetchInterval, setFetchInterval] = useState(10000);
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
 
   const FetchWorkspace = useCallback(async () => {
     var [status, statusCode, responseData] = await Http.Request(
@@ -128,6 +132,22 @@ export default function WorkspaceDetails() {
         </div>
         <div className="col-auto ms-auto d-print-none">
           <div className="dropdown">
+            {workspace?.status === "stopped" && (
+              <React.Fragment>
+                <Button color="outline-white" className="me-1">
+                  <FontAwesomeIcon icon={faCloudArrowUp} />
+                  <span className="ms-2">Update config files</span>
+                </Button>
+                <Button
+                  color="outline-white"
+                  className="me-3"
+                  onClick={() => setShowSettingsModal(true)}
+                >
+                  <FontAwesomeIcon icon={faGear} />
+                  <span className="ms-2">Settings</span>
+                </Button>
+              </React.Fragment>
+            )}
             <button
               className={`btn btn-${GetWorkspaceStatusColor(
                 workspace?.status
@@ -162,6 +182,11 @@ export default function WorkspaceDetails() {
               <span className="dropdown-item" onClick={HandleDeleteWorkspace}>
                 Delete workspace
               </span>
+              {workspace?.status === "error" && (
+                <span className="dropdown-item" onClick={HandleDeleteWorkspace}>
+                  Force delete workspace
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -184,6 +209,14 @@ export default function WorkspaceDetails() {
               />
             </Col>
           </Row>
+          <WorkspaceSettingsModal
+            isOpen={showSettingsModal}
+            onClose={() => {
+              setShowSettingsModal(false);
+              FetchWorkspace();
+            }}
+            workspace={workspace}
+          />
         </>
       )}
     </Container>

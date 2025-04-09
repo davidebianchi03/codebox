@@ -14,13 +14,13 @@ import (
 func (jobContext *Context) StopWorkspace(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
-	var workspace models.Workspace
+	var workspace *models.Workspace
 	result := db.DB.Preload("Runner").First(&workspace, map[string]interface{}{"ID": workspaceId})
 	if result.Error != nil {
 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
 	}
 
-	if workspace.ID <= 0 {
+	if workspace == nil {
 		return errors.New("workspace not found")
 	}
 	defer db.DB.Save(&workspace)
@@ -30,7 +30,7 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 		Runner: workspace.Runner,
 	}
 
-	if err := ri.StopWorkpace(&workspace); err != nil {
+	if err := ri.StopWorkpace(workspace); err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to stop workspace, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError
 		return errors.New("failed to stop workspace")
@@ -40,7 +40,7 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 	starting := true
 	logsIndex := 0
 	for starting {
-		details, err := ri.GetDetails(&workspace)
+		details, err := ri.GetDetails(workspace)
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
@@ -53,7 +53,7 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 			starting = false
 		}
 
-		logs, err := ri.GetLogs(&workspace)
+		logs, err := ri.GetLogs(workspace)
 		if err == nil {
 			if len(logs) > logsIndex {
 				logs = logs[logsIndex:]
@@ -64,7 +64,7 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	details, err := ri.GetDetails(&workspace)
+	details, err := ri.GetDetails(workspace)
 	if err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError

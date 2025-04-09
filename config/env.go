@@ -17,7 +17,7 @@ type EnvVars struct {
 	DBUser           string `env:"CODEBOX_DB_USER" envDefault:"postgres"`
 	DBPassword       string `env:"CODEBOX_DB_PASSWORD" envDefault:"password"`
 	ServerPort       int    `env:"CODEBOX_SERVER_PORT" envDefault:"8080"`
-	TasksConcurrency int    `env:"CODEBOX_WORKSPACE_CONCURRENCY" envDefault:"1"`
+	TasksConcurrency int    `env:"CODEBOX_WORKSPACE_CONCURRENCY" envDefault:"5"`
 	RedisHost        string `env:"CODEBOX_REDIS_HOST" envDefault:"127.0.0.1"`
 	RedisPort        int    `env:"CODEBOX_REDIS_PORT" envDefault:"6379"`
 	UploadsPath      string `env:"CODEBOX_DATA_PATH" envDefault:"./data"`

@@ -31,6 +31,7 @@ export default function CreateWorkspace() {
       gitRepositoryURL: "",
       gitRefName: "",
       configFilesPath: "",
+      environment: "",
     },
     validationSchema: Yup.object({
       workspaceName: Yup.string()
@@ -62,7 +63,7 @@ export default function CreateWorkspace() {
         git_repo_url: values.gitRepositoryURL,
         git_ref_name: values.gitRefName,
         config_source_path: values.configFilesPath,
-        environment_variables: [],
+        environment_variables: values.environment.split("\n"),
       };
 
       var [status, statusCode, responseData] = await Http.Request(
@@ -242,9 +243,7 @@ export default function CreateWorkspace() {
                         placeholder="refs/heads/main"
                         value={validation.values.gitRefName}
                         onChange={validation.handleChange}
-                        invalid={
-                          validation.errors.gitRefName !== undefined
-                        }
+                        invalid={validation.errors.gitRefName !== undefined}
                       />
                       <FormFeedback>
                         {validation.errors.gitRefName}
@@ -273,6 +272,25 @@ export default function CreateWorkspace() {
                 ) : (
                   <div className="mb-3">TODO</div>
                 ))}
+              <div className="mb-3">
+                <p>
+                  <Label className="mb-0">Environment</Label>
+                  <small className="text-muted">
+                    Define environment variables, one per line, using the format
+                    'KEY=VALUE'
+                  </small>
+                </p>
+                <textarea
+                  className={`form-control ${
+                    !!validation.errors.environment ? "is-invalid" : ""
+                  }`}
+                  rows={10}
+                  placeholder="VAR1=VALUE1"
+                  name="environement"
+                  onChange={validation.handleChange}
+                ></textarea>
+                <FormFeedback>{validation.errors.environment}</FormFeedback>
+              </div>
               <div className="mb-3">
                 <Label>Runner</Label>
                 <select
@@ -306,7 +324,8 @@ export default function CreateWorkspace() {
                 <span className="text-warning mt-1">
                   {(() => {
                     var selectedRunner = runners.find(
-                      (r) => r.id === parseInt(validation.values.runner.toString())
+                      (r) =>
+                        r.id === parseInt(validation.values.runner.toString())
                     );
 
                     if (!selectedRunner) {
@@ -326,6 +345,7 @@ export default function CreateWorkspace() {
                 </span>
                 <FormFeedback>{validation.errors.runner}</FormFeedback>
               </div>
+              <hr />
               <div className="d-flex justify-content-end mt-4">
                 <Link to={"/"} className="btn btn-outline-light me-1">
                   Cancel

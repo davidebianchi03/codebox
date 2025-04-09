@@ -3,6 +3,8 @@ import { User } from "./user"
 export interface GitSource {
     id: number
     repository_url: string
+    ref_name: string
+    config_file_relative_path: string
 }
 
 export interface Workspace {
@@ -14,7 +16,7 @@ export interface Workspace {
     runner: any
     config_source: string
     template_version: any
-    git_source: GitSource
+    git_source: GitSource|null
     config_source_file_path: string
     environment_variables: string[]
     created_at: string

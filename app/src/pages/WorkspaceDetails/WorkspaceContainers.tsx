@@ -13,14 +13,14 @@ import {
   WorkspaceContainer,
 } from "../../types/workspace";
 import { useCallback, useEffect, useState } from "react";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import VsCodeIcon from "../../assets/images/vscode.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
 import { InstanceSettings } from "../../types/settings";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { Http } from "../../api/http";
+import { RequestStatus } from "../../api/types";
 
 interface Props {
   workspace: Workspace;
@@ -56,9 +56,14 @@ export default function WorkspaceContainers({
       } else {
         return;
       }
+    },
+    [workspace]
+  );
 
+  const FetchSelectedContainerPorts = useCallback(
+    async (containerName: string) => {
       // fetch exposed ports
-      [status, statusCode, responseData] = await Http.Request(
+      var [status, statusCode, responseData] = await Http.Request(
         `${Http.GetServerURL()}/api/v1/workspace/${
           workspace.id
         }/container/${containerName}/port`,
@@ -141,7 +146,6 @@ export default function WorkspaceContainers({
                                     : "transparent"
                                 }`,
                                 borderRadius: "4px",
-                                
                               }}
                               onClick={() =>
                                 FetchSelectedContainer(c.container_name)

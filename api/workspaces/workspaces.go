@@ -372,6 +372,97 @@ func HandleStartWorkspace(ctx *gin.Context) {
 }
 
 /*
+PUT/PATCH api/v1/workspace/:id
+*/
+func HandleUpdateWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	id, found := ctx.Params.Get("workspaceId")
+	if !found {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	var workspace *models.Workspace
+	result := db.DB.
+		Preload("Runner").
+		Preload("GitWorkspaceSource").
+		Preload("TemplateVersion").
+		Find(
+			workspace,
+			map[string]interface{}{"ID": id, "user_id": user.ID},
+		)
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if workspace == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	if workspace.Status != models.WorkspaceStatusStopped {
+		ctx.JSON(http.StatusNotAcceptable, gin.H{
+			"detail": "cannot update, workspace is running",
+		})
+		return
+	}
+
+	var reqBody struct {
+		GitRepoUrl           *string `json:"git_repo_url"`
+		GitRefName           *string `json:"git_ref_name"`
+		ConfigSourcePath     *string `json:"config_source_path"`
+		EnvironmentVariables *string `json:"environment_variables"`
+		// UpdateConfig         *bool   `json:"update_config"`
+	}
+
+	if err := ctx.ShouldBindBodyWithJSON(&reqBody); err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"detail": "missing or invalid request argument",
+		})
+		return
+	}
+
+	gitSource := workspace.GitSource
+	if reqBody.GitRepoUrl != nil {
+		gitSource.RepositoryURL = *reqBody.GitRepoUrl
+	}
+
+	if reqBody.GitRefName != nil {
+		gitSource.RefName = *reqBody.GitRefName
+	}
+
+	if reqBody.ConfigSourcePath != nil {
+		gitSource.ConfigFilePath = *reqBody.ConfigSourcePath
+	}
+
+	// if reqBody.UpdateConfig != nil {
+	// 	if *reqBody.UpdateConfig {
+	// 		workspace.Status = models.WorkspaceStatusStarting
+	// 		workspace.ClearLogs()
+	// 		workspace.AppendLogs("Updating workspace configuration sources...")
+	// 		bgtasks.BgTasksEnqueuer.Enqueue("update_workspace_config", work.Q{"workspace_id": workspace.ID})
+	// 	}
+	// }
+
+	db.DB.Save(&workspace)
+	ctx.JSON(http.StatusOK, workspace)
+}
+
+/*
 DELETE api/v1/workspace/:id
 */
 func HandleDeleteWorkspace(ctx *gin.Context) {
