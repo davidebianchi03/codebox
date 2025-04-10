@@ -286,7 +286,7 @@ export default function CreateWorkspace() {
                   }`}
                   rows={10}
                   placeholder="VAR1=VALUE1"
-                  name="environement"
+                  name="environment"
                   onChange={validation.handleChange}
                 ></textarea>
                 <FormFeedback>{validation.errors.environment}</FormFeedback>

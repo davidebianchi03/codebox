@@ -394,10 +394,10 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 	var workspace *models.Workspace
 	result := db.DB.
 		Preload("Runner").
-		Preload("GitWorkspaceSource").
+		Preload("GitSource").
 		Preload("TemplateVersion").
 		Find(
-			workspace,
+			&workspace,
 			map[string]interface{}{"ID": id, "user_id": user.ID},
 		)
 	if result.Error != nil {
@@ -422,11 +422,10 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 	}
 
 	var reqBody struct {
-		GitRepoUrl           *string `json:"git_repo_url"`
-		GitRefName           *string `json:"git_ref_name"`
-		ConfigSourcePath     *string `json:"config_source_path"`
-		EnvironmentVariables *string `json:"environment_variables"`
-		// UpdateConfig         *bool   `json:"update_config"`
+		GitRepoUrl           *string   `json:"git_repo_url"`
+		GitRefName           *string   `json:"git_ref_name"`
+		ConfigSourcePath     *string   `json:"config_source_path"`
+		EnvironmentVariables *[]string `json:"environment_variables"`
 	}
 
 	if err := ctx.ShouldBindBodyWithJSON(&reqBody); err != nil {
@@ -436,17 +435,26 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	gitSource := workspace.GitSource
-	if reqBody.GitRepoUrl != nil {
-		gitSource.RepositoryURL = *reqBody.GitRepoUrl
+	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
+		gitSource := workspace.GitSource
+		if reqBody.GitRepoUrl != nil {
+			gitSource.RepositoryURL = *reqBody.GitRepoUrl
+		}
+
+		if reqBody.GitRefName != nil {
+			gitSource.RefName = *reqBody.GitRefName
+		}
+
+		if reqBody.ConfigSourcePath != nil {
+			gitSource.ConfigFilePath = *reqBody.ConfigSourcePath
+		}
+		db.DB.Save(&gitSource)
+	} else {
+		panic("not implemented")
 	}
 
-	if reqBody.GitRefName != nil {
-		gitSource.RefName = *reqBody.GitRefName
-	}
-
-	if reqBody.ConfigSourcePath != nil {
-		gitSource.ConfigFilePath = *reqBody.ConfigSourcePath
+	if reqBody.EnvironmentVariables != nil {
+		workspace.EnvironmentVariables = *reqBody.EnvironmentVariables
 	}
 
 	// if reqBody.UpdateConfig != nil {

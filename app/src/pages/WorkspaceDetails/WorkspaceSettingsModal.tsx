@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Button,
   FormFeedback,
@@ -11,6 +11,9 @@ import {
 import { Workspace } from "../../types/workspace";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { Http } from "../../api/http";
+import { RequestStatus } from "../../api/types";
+import { toast, ToastContainer } from "react-toastify";
 
 interface Props {
   isOpen: boolean;
@@ -20,15 +23,16 @@ interface Props {
 
 export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
   const handleCloseModal = () => {
+    validation.resetForm();
     onClose();
   };
 
   const validation = useFormik({
     initialValues: {
-      gitRepoUrl: workspace.git_source?.repository_url,
-      gitRefName: workspace.git_source?.ref_name,
-      configSourcePath: workspace.git_source?.config_file_relative_path,
-      environemntVariables: workspace.environment_variables,
+      gitRepoUrl: "",
+      gitRefName: "",
+      configSourcePath: "",
+      environmentVariables: "",
     },
     validationSchema: Yup.object({
       gitRepoUrl: Yup.string().required("This field is required"),
@@ -37,15 +41,38 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      console.log(values);
+      console.log(values.environmentVariables);
+      var requestBody = JSON.stringify({
+        git_repo_url: values.gitRepoUrl,
+        git_ref_name: values.gitRefName,
+        config_source_path: values.configSourcePath,
+        environment_variables: values.environmentVariables !== "" ? values.environmentVariables.split("\n") : [],
+      });
+
+      var [status, statusCode] = await Http.Request(
+        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}`,
+        "PATCH",
+        requestBody
+      );
+
+      if (status === RequestStatus.OK && statusCode === 200) {
+        toast.success("Workspace has been updated");
+        handleCloseModal();
+      } else {
+        toast.error("Failed to update workspace");
+      }
     },
   });
 
-  /* GitRepoUrl           *string `json:"git_repo_url"`
-      GitRefName           *string `json:"git_ref_name"`
-      ConfigSourcePath     *string `json:"config_source_path"`
-      EnvironmentVariables *string `json:"environment_variables"`
-      UpdateConfig   */
+  useEffect(() => {
+      validation.setValues({
+        gitRepoUrl: workspace.git_source?.repository_url || "",
+        gitRefName: workspace.git_source?.ref_name || "",
+        configSourcePath: workspace.git_source?.config_file_relative_path || "",
+        environmentVariables: workspace.environment_variables.join("\n") || "",
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   return (
     <React.Fragment>
@@ -106,15 +133,15 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
             <div className="mb-3">
               <Label>Environment variables</Label>
               <Input
-                name="environemntVariables"
+                name="environmentVariables"
                 type="textarea"
                 placeholder="Define environment variables, one per line, using the format 'KEY=VALUE'"
                 onChange={validation.handleChange}
-                value={validation.values.environemntVariables}
-                invalid={!!validation.errors.environemntVariables}
+                value={validation.values.environmentVariables}
+                invalid={!!validation.errors.environmentVariables}
               />
               <FormFeedback>
-                {validation.errors.environemntVariables}
+                {validation.errors.environmentVariables}
               </FormFeedback>
             </div>
             <small className="text-muted">
@@ -137,6 +164,7 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
             </div>
           </form>
         </ModalBody>
+        <ToastContainer/>
       </Modal>
     </React.Fragment>
   );

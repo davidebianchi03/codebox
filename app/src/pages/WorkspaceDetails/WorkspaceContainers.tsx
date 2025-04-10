@@ -89,6 +89,7 @@ export default function WorkspaceContainers({
       setContainers(responseData);
       if (selectedContainer === null && responseData.length > 0) {
         FetchSelectedContainer(responseData[0].container_name);
+        FetchSelectedContainerPorts(responseData[0].container_name);
       }
 
       if (selectedContainer !== null && responseData.length === 0) {
@@ -98,7 +99,12 @@ export default function WorkspaceContainers({
       setContainers([]);
     }
     setLoading(false);
-  }, [workspace, selectedContainer, FetchSelectedContainer]);
+  }, [
+    workspace,
+    selectedContainer,
+    FetchSelectedContainer,
+    FetchSelectedContainerPorts,
+  ]);
 
   const FetchSettings = useCallback(async () => {
     let [status, statusCode, responseBody] = await Http.Request(
@@ -147,9 +153,10 @@ export default function WorkspaceContainers({
                                 }`,
                                 borderRadius: "4px",
                               }}
-                              onClick={() =>
-                                FetchSelectedContainer(c.container_name)
-                              }
+                              onClick={() => {
+                                FetchSelectedContainer(c.container_name);
+                                FetchSelectedContainerPorts(c.container_name);
+                              }}
                             >
                               <span>{c.container_name}</span>
                             </th>
