@@ -3,6 +3,7 @@ package bgtasks
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/davidebianchi03/codebox/db"
@@ -16,7 +17,7 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	skipErrors := job.ArgBool("skip_errors")
 
 	var workspace models.Workspace
-	result := db.DB.Preload("Runner").First(&workspace, map[string]interface{}{"ID": workspaceId})
+	result := db.DB.Preload("Runner").Preload("GitSource").First(&workspace, map[string]interface{}{"ID": workspaceId})
 	if result.Error != nil {
 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
 	}
@@ -93,6 +94,18 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 		})
 		db.DB.Unscoped().Delete(&container)
 	}
+
+	// remove configuration files if the source is git
+	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
+		if workspace.GitSource != nil {
+			configFiles, err := workspace.GitSource.GetConfigFileAbsPath()
+			if err == nil {
+				os.RemoveAll(configFiles)
+			}
+		}
+	}
+	workspace.ClearLogs()
+
 	db.DB.Delete(&workspace)
 	return nil
 }
