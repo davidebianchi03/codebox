@@ -69,13 +69,19 @@ export default function WorkspaceDetails() {
     }
   };
 
-  const HandleDeleteWorkspace = async () => {
+  const HandleDeleteWorkspace = async (force: boolean) => {
     if (
       (
         await Swal.fire({
           title: "Delete workspace",
           icon: "warning",
-          text: "Are you sure that you want to delete this workspace?",
+          text: `
+            Are you sure that you want to delete this workspace?
+            ${force && (`
+              Force-deleting a workspace may result in orphaned containers if runner errors, 
+              including connection issues or container removal failures, are encountered
+            `)}
+          `,
           showCancelButton: true,
           reverseButtons: true,
           confirmButtonText: "Delete",
@@ -90,7 +96,9 @@ export default function WorkspaceDetails() {
       var [status, statusCode] = await Http.Request(
         `${Http.GetServerURL()}/api/v1/workspace/${id}`,
         "DELETE",
-        null
+        JSON.stringify({
+          skip_errors: force,
+        })
       );
 
       if (status === RequestStatus.OK && statusCode === 200) {
@@ -108,7 +116,10 @@ export default function WorkspaceDetails() {
       (
         await Swal.fire({
           title: "Update configuration files",
-          text: "Updating configuration files to the latest version may cause data loss. Are you sure you want to proceed?",
+          text: `
+            Updating configuration files to the latest version may cause data loss. 
+            Are you sure you want to proceed?
+          `,
           icon: "warning",
           showCancelButton: true,
           reverseButtons: true,
@@ -219,11 +230,21 @@ export default function WorkspaceDetails() {
                   ? "Stop workspace"
                   : "Start workspace"}
               </span>
-              <span className="dropdown-item" onClick={HandleDeleteWorkspace}>
+              <span
+                className="dropdown-item"
+                onClick={() => {
+                  HandleDeleteWorkspace(false);
+                }}
+              >
                 Delete workspace
               </span>
               {workspace?.status === "error" && (
-                <span className="dropdown-item" onClick={HandleDeleteWorkspace}>
+                <span
+                  className="dropdown-item"
+                  onClick={() => {
+                    HandleDeleteWorkspace(true);
+                  }}
+                >
                   Force delete workspace
                 </span>
               )}
