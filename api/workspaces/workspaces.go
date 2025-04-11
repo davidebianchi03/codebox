@@ -307,6 +307,7 @@ func HandleStopWorkspace(ctx *gin.Context) {
 	}
 
 	workspace.Status = models.WorkspaceStatusStopping
+	workspace.ClearLogs()
 	db.DB.Save(&workspace)
 
 	// start bg task
@@ -361,6 +362,7 @@ func HandleStartWorkspace(ctx *gin.Context) {
 	}
 
 	workspace.Status = models.WorkspaceStatusStarting
+	workspace.ClearLogs()
 	db.DB.Save(&workspace)
 
 	// start bg task
@@ -457,15 +459,6 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		workspace.EnvironmentVariables = *reqBody.EnvironmentVariables
 	}
 
-	// if reqBody.UpdateConfig != nil {
-	// 	if *reqBody.UpdateConfig {
-	// 		workspace.Status = models.WorkspaceStatusStarting
-	// 		workspace.ClearLogs()
-	// 		workspace.AppendLogs("Updating workspace configuration sources...")
-	// 		bgtasks.BgTasksEnqueuer.Enqueue("update_workspace_config", work.Q{"workspace_id": workspace.ID})
-	// 	}
-	// }
-
 	db.DB.Save(&workspace)
 	ctx.JSON(http.StatusOK, workspace)
 }
@@ -507,6 +500,7 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 	}
 
 	workspace.Status = models.WorkspaceStatusDeleting
+	workspace.ClearLogs()
 	db.DB.Save(&workspace)
 
 	// start bg task
@@ -514,5 +508,66 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"detail": "deleting workspace...",
+	})
+}
+
+/*
+POST api/v1/workspace/:workspaceId/update-config
+*/
+func HandleUpdateWorkspaceConfiguration(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	id, found := ctx.Params.Get("workspaceId")
+	if !found {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	var workspace *models.Workspace
+	result := db.DB.
+		Preload("Runner").
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		Find(
+			&workspace,
+			map[string]interface{}{"ID": id, "user_id": user.ID},
+		)
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if workspace == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	if workspace.Status != models.WorkspaceStatusStopped {
+		ctx.JSON(http.StatusNotAcceptable, gin.H{
+			"detail": "cannot update, workspace is running",
+		})
+		return
+	}
+
+	workspace.Status = models.WorkspaceStatusStarting
+	workspace.ClearLogs()
+	workspace.AppendLogs("Updating workspace configuration sources...")
+	bgtasks.BgTasksEnqueuer.Enqueue("update_workspace_config", work.Q{"workspace_id": workspace.ID})
+	db.DB.Save(&workspace)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"details": "starting workspace",
 	})
 }

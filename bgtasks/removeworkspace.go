@@ -24,7 +24,6 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 		return errors.New("workspace not found")
 	}
 	defer db.DB.Save(&workspace)
-	workspace.ClearLogs()
 
 	ri := runnerinterface.RunnerInterface{
 		Runner: workspace.Runner,

@@ -16,7 +16,13 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace *models.Workspace
-	result := db.DB.Preload("Runner").First(&workspace, map[string]interface{}{"ID": workspaceId})
+	result := db.DB.Preload("Runner").
+		Preload("User").
+		Preload("Runner").
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		First(&workspace, map[string]interface{}{"ID": workspaceId})
+
 	if result.Error != nil {
 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
 	}
@@ -30,6 +36,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to create tmp folder, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
+			db.DB.Save(&workspace)
 			return nil
 		}
 		defer os.RemoveAll(tempDirPath)
@@ -38,6 +45,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to retrieve configuration file path, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
+			db.DB.Save(&workspace)
 			return nil
 		}
 		os.RemoveAll(gitSourcesFile)
@@ -51,6 +59,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		); err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to clone git repository, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
+			db.DB.Save(&workspace)
 			return nil
 		}
 
@@ -58,6 +67,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		if err = targz.CreateArchive(tempDirPath, gitSourcesFile); err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to create targz archive, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
+			db.DB.Save(&workspace)
 			return nil
 		}
 
@@ -67,6 +77,8 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 	} else {
 		panic("not implemented")
 	}
+	db.DB.Save(&workspace)
+	workspace.AppendLogs("Config files have been updated")
 
 	return jobContext.StartWorkspace(job)
 }

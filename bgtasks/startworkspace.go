@@ -33,8 +33,6 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 	}
 	defer db.DB.Save(&workspace)
 
-	workspace.ClearLogs()
-
 	// if workspace config source is a git repository retrieve latest version
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		// TODO: check if config file exists

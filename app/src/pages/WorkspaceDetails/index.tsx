@@ -74,6 +74,7 @@ export default function WorkspaceDetails() {
       (
         await Swal.fire({
           title: "Delete workspace",
+          icon: "warning",
           text: "Are you sure that you want to delete this workspace?",
           showCancelButton: true,
           reverseButtons: true,
@@ -101,6 +102,41 @@ export default function WorkspaceDetails() {
       }
     }
   };
+
+  const HandleUpdateConfigFiles = useCallback(async () => {
+    if (
+      (
+        await Swal.fire({
+          title: "Update configuration files",
+          text: "Updating configuration files to the latest version may cause data loss. Are you sure you want to proceed?",
+          icon: "warning",
+          showCancelButton: true,
+          reverseButtons: true,
+          cancelButtonText: "Cancel",
+          confirmButtonText: "Update",
+          customClass: {
+            popup: "bg-dark text-light",
+            cancelButton: "btn btn-light",
+            confirmButton: "btn btn-primary",
+          },
+        })
+      ).isConfirmed
+    ) {
+      var [status, statusCode] = await Http.Request(
+        `${Http.GetServerURL()}/api/v1/workspace/${id}/update-config`,
+        "POST",
+        null
+      );
+
+      if (status === RequestStatus.OK && statusCode === 200) {
+        FetchWorkspace();
+      } else {
+        toast.error(
+          `Failed to update workspace configuration, received status ${statusCode}`
+        );
+      }
+    }
+  }, [FetchWorkspace, id]);
 
   useEffect(() => {
     if (
@@ -134,7 +170,11 @@ export default function WorkspaceDetails() {
           <div className="dropdown">
             {workspace?.status === "stopped" && (
               <React.Fragment>
-                <Button color="outline-white" className="me-1">
+                <Button
+                  color="outline-white"
+                  className="me-1"
+                  onClick={HandleUpdateConfigFiles}
+                >
                   <FontAwesomeIcon icon={faCloudArrowUp} />
                   <span className="ms-2">Update config files</span>
                 </Button>

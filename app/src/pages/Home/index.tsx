@@ -116,7 +116,9 @@ export default function HomePage() {
                             </div>
                             <div className="ms-4">
                               <h3 className="mb-0">
-                                <Link to={`/workspaces/${workspace.id}`}>{workspace.name}</Link>
+                                <Link to={`/workspaces/${workspace.id}`}>
+                                  {workspace.name}
+                                </Link>
                               </h3>
                               <small className="text-muted">
                                 {(() => {
@@ -173,7 +175,12 @@ export default function HomePage() {
                 <>
                   No workspaces found,{" "}
                   <span>
-                    <u onClick={() => navigate("/create-workspace")}>create your first workspace</u>
+                    <u
+                      onClick={() => navigate("/create-workspace")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      create your first workspace
+                    </u>
                   </span>
                 </>
               )}
