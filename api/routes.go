@@ -125,13 +125,21 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId/container/:containerName/port",
 				permissions.AuthenticationRequiredRoute(workspaces.ListContainerPortsByWorkspaceContainer),
 			)
+			workspaceApis.POST(
+				"/:workspaceId/container/:containerName/port",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleCretateContainerPortByWorkspaceContainer),
+			)
 			workspaceApis.GET(
 				"/:workspaceId/container/:containerName/port/:portNumber",
 				permissions.AuthenticationRequiredRoute(workspaces.RetrieveContainerPortsByWorkspaceContainer),
 			)
+			workspaceApis.DELETE(
+				"/:workspaceId/container/:containerName/port/:portNumber",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleDeleteContainerPortByWorkspaceContainer),
+			)
 			workspaceApis.Any(
 				"/:workspaceId/container/:containerName/forward-http/:portNumber",
-				permissions.AuthenticationRequiredRoute(workspaces.HandleForwardHttp),
+				workspaces.HandleForwardHttp,
 			)
 			workspaceApis.Any(
 				"/:workspaceId/container/:containerName/forward-ssh",

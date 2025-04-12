@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   CardBody,
   CardHeader,
@@ -18,9 +19,13 @@ import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
 import { InstanceSettings } from "../../types/settings";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTriangleExclamation,
+  faPencil,
+} from "@fortawesome/free-solid-svg-icons";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
+import { EditExposedPortsModal } from "./EditExposedPortsModal";
 
 interface Props {
   workspace: Workspace;
@@ -39,6 +44,8 @@ export default function WorkspaceContainers({
   const [loading, setLoading] = useState<boolean>(true);
   const [settings, setSettings] = useState<InstanceSettings>();
   const [warningTooltipIsOpen, setWarningTooltipIsOpen] = useState(false);
+  const [showEditExposedPortsModal, setShowEditExposedPortaModal] =
+    useState(false);
 
   const FetchSelectedContainer = useCallback(
     async (containerName: string) => {
@@ -218,43 +225,55 @@ export default function WorkspaceContainers({
                         </div>
                       </>
                     )}
-                    <h4 className="mt-3">Exposed ports</h4>
+                    <h4 className="mt-3 d-flex justify-content-between">
+                      <span>Exposed ports</span>
+                      <Button
+                        color="outline-light"
+                        size="sm"
+                        onClick={() => setShowEditExposedPortaModal(true)}
+                      >
+                        <span className="me-2">Edit exposed ports</span>
+                        <FontAwesomeIcon icon={faPencil} />
+                      </Button>
+                    </h4>
                     <div>
                       {selectedContainerExposedPorts.length > 0 ? (
-                        <>
+                        <Row>
                           {selectedContainerExposedPorts.map((port) => (
-                            <Row
-                              key={port.port_number}
-                              className="border rounded align-items-center"
-                              style={{ width: 300, cursor: "pointer" }}
-                              onClick={() => {
-                                var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
-                                if (settings?.use_subdomains) {
-                                  portUrl = `${window.location.protocol}//codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings?.server_hostname}`;
-                                }
-                                window.open(portUrl, "_blank")?.focus();
-                              }}
-                            >
-                              <Col sm={2}>
-                                <img
-                                  src={
-                                    port.public
-                                      ? PublicPortIcon
-                                      : PrivatePortIcon
+                            <Col md={4} className="m-1">
+                              <Row
+                                key={port.port_number}
+                                className="border rounded align-items-center"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => {
+                                  var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
+                                  if (settings?.use_subdomains) {
+                                    portUrl = `${window.location.protocol}//codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings?.server_hostname}`;
                                   }
-                                  alt=""
-                                  width={25}
-                                />
-                              </Col>
-                              <Col sm={10}>
-                                <h4 className="mb-0">{port.service_name}</h4>
-                                <small className="text-muted">
-                                  {port.port_number}
-                                </small>
-                              </Col>
-                            </Row>
+                                  window.open(portUrl, "_blank")?.focus();
+                                }}
+                              >
+                                <Col sm={2}>
+                                  <img
+                                    src={
+                                      port.public
+                                        ? PublicPortIcon
+                                        : PrivatePortIcon
+                                    }
+                                    alt=""
+                                    width={25}
+                                  />
+                                </Col>
+                                <Col sm={10}>
+                                  <h4 className="mb-0">{port.service_name}</h4>
+                                  <small className="text-muted">
+                                    {port.port_number}
+                                  </small>
+                                </Col>
+                              </Row>
+                            </Col>
                           ))}
-                        </>
+                        </Row>
                       ) : (
                         <>
                           <h5>This container has no exposed ports</h5>
@@ -270,6 +289,17 @@ export default function WorkspaceContainers({
               </>
             )}
           </CardBody>
+          {workspace && selectedContainer && (
+            <EditExposedPortsModal
+              isOpen={showEditExposedPortsModal}
+              onClose={() => {
+                setShowEditExposedPortaModal(false);
+                FetchSelectedContainerPorts(selectedContainer.container_name);
+              }}
+              workspace={workspace}
+              container={selectedContainer}
+            />
+          )}
         </Card>
       )}
     </>
