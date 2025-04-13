@@ -340,7 +340,7 @@ func (ri *RunnerInterface) ForwardHttp(
 	proxyHeaders.Set("X-CodeBox-Forward-Port", strconv.Itoa(int(port.PortNumber)))
 	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
 	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "http")
-	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
+	proxyHeaders.Set("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
 	if err != nil {
@@ -370,7 +370,7 @@ func (ri *RunnerInterface) ForwardSsh(
 	proxyHeaders.Set("X-CodeBox-Forward-Port", "2222")
 	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
 	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "tcp_over_websocket")
-	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
+	proxyHeaders.Set("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
 	if err != nil {
