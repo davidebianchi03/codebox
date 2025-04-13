@@ -1,6 +1,5 @@
 <div align="center">
-    <img src="./app/src/assets/images/logo-black.png#gh-light-mode-only" style="width: 200px">
-    <img src="./app/src/assets/images/logo-white.png#gh-dark-mode-only" style="width: 200px">
+  <img src="./app/src/assets/images/logo-black.png" width="200">\
 
   <h3>
     Remote Development Environments
