@@ -19,7 +19,7 @@ download_cli:
           - windows
   before_script:
     - apt update
-    - apt install -y jq
+    - apt install -y jq curl
   script:
     - CLI_PACKAGE_NAME=codebox-cli-${GOOS}
     - CLI_FILENAME=codebox-cli-${GOOS}-${GOARCH}
@@ -62,7 +62,7 @@ build_server:
     paths:
       - bin/codebox
     expire_in: 1 hour
-  when: always
+  when: on_success
   rules:
     - if: $CI_COMMIT_TAG
 
@@ -81,7 +81,7 @@ build_frontend:
     paths:
       - app/build/
     expire_in: 1 hour
-  when: always
+  when: on_success
   rules:
     - if: $CI_COMMIT_TAG
 
