@@ -27,16 +27,18 @@ download_cli:
 
     - mkdir -p bin
     - cd bin
+
     - |
       LATEST_CLI_VERSION=$(curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
         --silent \
         --location \
         "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages?package_name=${CLI_PACKAGE_NAME}&package_type=generic&order_by=created_at&sort=desc" | jq -r '.[0].version' \
       )
+
     - |
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
            --location \
-           --codebox-cli-linux-amd64 \
+           --output codebox-cli-linux-amd64 \
            "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages/generic/${CLI_PACKAGE_NAME}/${LATEST_CLI_VERSION}/${CLI_FILENAME}"
   artifacts:
     paths:
