@@ -22,7 +22,7 @@ download_cli:
     - apt install -y jq curl
   script:
     - CLI_PACKAGE_NAME=codebox-cli-${GOOS}
-    - CLI_FILENAME=codebox-cli-${GOOS}-${GOARCH}
+    - CLI_FILENAME=codebox-cli-${GOARCH}-${GOOS}
     - if [ "$GOOS" = "windows" ]; then CLI_FILENAME="${CLI_FILENAME}.exe"; fi
 
     - mkdir -p bin
