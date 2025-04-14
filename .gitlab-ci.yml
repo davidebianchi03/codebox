@@ -1,11 +1,10 @@
 stages:
-  - download_cli
   - build_sources
   - build_and_publish_docker_image
 
 # Start of download_cli stage
 download_cli:
-  stage: download_cli
+  stage: build_sources
   image: ubuntu:22.04
   tags:
     - docker-linux
@@ -34,8 +33,6 @@ download_cli:
         --location \
         "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages?package_name=${CLI_PACKAGE_NAME}&package_type=generic&order_by=created_at&sort=desc" | jq -r '.[0].version' \
       )
-
-    - echo ${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages/generic/${CLI_PACKAGE_NAME}/${LATEST_CLI_VERSION}/${CLI_FILENAME}
 
     - |
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \

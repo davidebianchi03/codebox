@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./app/src/assets/images/logo-black.png" width="200">\
+  <img src="./app/src/assets/images/logo-black.png" width="200">
 
   <h3>
     Remote Development Environments
