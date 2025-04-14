@@ -37,7 +37,7 @@ download_cli:
     - |
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
            --location \
-           --output ${CLI_FILENAME} \
+           --output codebox-cli-${GOOS}-${GOARCH} \
            "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages/generic/${CLI_PACKAGE_NAME}/${LATEST_CLI_VERSION}/${CLI_FILENAME}"
            
   artifacts:

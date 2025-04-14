@@ -71,8 +71,6 @@ RUN chmod +x /docker-entrypoint.d/startgin.sh && \
     chmod +x /codebox/bin/codebox && \
     chmod +x /codebox/bin/codebox-cli-linux-amd64
 
-ENV CODEBOX_DB_URL=sqlite://../db/codebox.db
-
 EXPOSE 8000
 
 WORKDIR /codebox
