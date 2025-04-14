@@ -21,17 +21,17 @@ download_cli:
     - apt update
     - apt install -y jq
   script:
-    - CLI_PACKAGE_NAME=codebox-cli-${GOOS}-${GOARCH}
+    - CLI_PACKAGE_NAME=codebox-cli-${GOOS}
     - CLI_FILENAME=codebox-cli-${GOOS}-${GOARCH}
     - if [ "$GOOS" = "windows" ]; then CLI_FILENAME="${CLI_FILENAME}.exe"; fi
 
     - mkdir -p bin
     - cd bin
     - |
-      LATEST_CLI_VERSION=$(curl --header "JOB-TOKEN: $CI_JOB_TOKEN"
-        --silent
-        --location
-        "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages?package_name=${CLI_PACKAGE_NAME}&package_type=generic&order_by=created_at&sort=desc" | jq -r '.[0].version'
+      LATEST_CLI_VERSION=$(curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --silent \
+        --location \
+        "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages?package_name=${CLI_PACKAGE_NAME}&package_type=generic&order_by=created_at&sort=desc" | jq -r '.[0].version' \
       )
     - |
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
