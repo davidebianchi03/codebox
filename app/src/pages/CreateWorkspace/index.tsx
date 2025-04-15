@@ -167,7 +167,10 @@ export default function CreateWorkspace() {
                       validation.setFieldValue("gitRepositoryURL", "");
                       validation.setFieldValue("gitRefName", "");
                       validation.setFieldValue("configFilesPath", "");
+                    } else {
+                      validation.setFieldValue("configSource", workspaceType?.supported_config_sources[0] || "");
                     }
+
                     validation.handleChange(e);
                   }}
                   value={validation.values.workspaceType}
@@ -187,6 +190,7 @@ export default function CreateWorkspace() {
                   className={`form-control`}
                   name="configSource"
                   disabled={validation.values.workspaceType === ""}
+                  value={validation.values.configSource}
                   onChange={(e) => {
                     if (e.target.value !== "git") {
                       validation.setFieldValue("gitRepositoryURL", "");
