@@ -70,7 +70,7 @@ export function AdminRunners() {
           <Row>
             <Col md={12}>
               <Card style={{ borderRadius: 5 }}>
-                <CardBody className="bg-success" style={{ borderRadius: 5 }}>
+                <CardBody className="bg-primary" style={{ borderRadius: 5 }}>
                   <div className="d-flex justify-content-between">
                     <h3>Runner has been created</h3>
                     <Button
@@ -90,11 +90,8 @@ export function AdminRunners() {
                   <div className="d-flex align-items-center">
                     <Input
                       value={runnerToken}
-                      style={{
-                        borderColor: "#248c35",
-                        background: "#39d952",
-                        color: "#fff",
-                      }}
+                      style={{background: "var(--tblr-primary-darken)"}}
+                      className="text-white"
                       disabled
                     />
                     <Button

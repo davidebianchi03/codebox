@@ -42,7 +42,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
     initialValues: {
       runnerName: "",
       runnerType: "",
-      usePublicUrl: true,
+      usePublicUrl: false,
       publicUrl: "",
     },
     validationSchema: Yup.object({
@@ -182,7 +182,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
                 className="form-check-input"
                 type="checkbox"
                 name="usePublicUrl"
-                onClick={(e) => {
+                onChange={(e) => {
                   validation.setFieldValue("publicUrl", "");
                   validation.handleChange(e);
                 }}
