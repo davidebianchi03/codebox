@@ -112,6 +112,8 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		_ = writer.WriteField("config_file_name", workspace.TemplateVersion.ConfigFilePath)
 	}
 	_ = writer.WriteField("type", workspace.Type)
+	_ = writer.WriteField("git_user_name", fmt.Sprintf("%s %s", workspace.User.FirstName, workspace.User.LastName))
+	_ = writer.WriteField("git_user_email", workspace.User.Email)
 
 	// add default variables to environment
 	_ = writer.WriteField(
