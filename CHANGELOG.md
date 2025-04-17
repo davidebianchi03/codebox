@@ -1,5 +1,9 @@
 # Changelog
 
+# v0.0.18 - 2025-04-17
+- set git user.name and user.email inside containers
+- expose some workspace related environment variables
+
 # v0.0.17 - 2025-04-14
 - Moved repository from github to gitlab
 
