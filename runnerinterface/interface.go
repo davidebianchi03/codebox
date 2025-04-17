@@ -112,7 +112,18 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		_ = writer.WriteField("config_file_name", workspace.TemplateVersion.ConfigFilePath)
 	}
 	_ = writer.WriteField("type", workspace.Type)
-	_ = writer.WriteField("environment", strings.Join(workspace.EnvironmentVariables, ";"))
+
+	// add default variables to environment
+	_ = writer.WriteField(
+		"environment",
+		strings.Join(
+			append(
+				workspace.EnvironmentVariables,
+				workspace.GetDefaultEnvironmentVariables()...,
+			),
+			";",
+		),
+	)
 
 	sshPrivateKeyFormPart, err := writer.CreateFormFile("ssh_private_key", "ssh_key")
 	if err != nil {

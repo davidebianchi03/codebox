@@ -233,7 +233,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 
 	workspace := models.Workspace{
 		Name:                 parsedBody.Name,
-		User:                 currentUser,
+		User:                 &currentUser,
 		Status:               models.WorkspaceStatusStarting,
 		Type:                 parsedBody.Type,
 		Runner:               runner,

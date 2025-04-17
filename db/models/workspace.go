@@ -28,7 +28,7 @@ type Workspace struct {
 	ID                   uint                      `gorm:"primarykey" json:"id"`
 	Name                 string                    `gorm:"size:255; not null;" json:"name"`
 	UserID               uint                      `json:"-"`
-	User                 User                      `gorm:"constraint:OnDelete:CASCADE;" json:"user"`
+	User                 *User                     `gorm:"constraint:OnDelete:CASCADE;" json:"user"`
 	Status               string                    `gorm:"size:30; not null;" json:"status"`
 	Type                 string                    `gorm:"size:255; not null;" json:"type"`
 	RunnerID             uint                      `json:"-"`
@@ -100,4 +100,21 @@ func (w *Workspace) RetrieveLogs() (string, error) {
 		return "", fmt.Errorf("cannot read logs from file, %s", err)
 	}
 	return string(fileContent), nil
+}
+
+/*
+Retrieve list of environement variables to exported by default to workspace
+This variables are informations related to workspace such as workspace name,
+owner email, first name and last name
+*/
+func (w *Workspace) GetDefaultEnvironmentVariables() []string {
+	return []string{
+		fmt.Sprintf("CODEBOX_WORKSPACE_ID=%d", w.ID),
+		fmt.Sprintf("CODEBOX_WORKSPACE_NAME=%s", w.Name),
+		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_EMAIL=%s", w.User.Email),
+		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_FIRST_NAME=%s", w.User.FirstName),
+		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_LAST_NAME=%s", w.User.LastName),
+		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_ID=%d", w.Runner.ID),
+		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_NAME=%s", w.Runner.Name),
+	}
 }
