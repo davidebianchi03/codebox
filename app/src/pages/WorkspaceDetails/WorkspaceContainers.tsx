@@ -101,14 +101,22 @@ export default function WorkspaceContainers({
 
       if (selectedContainer !== null && responseData.length === 0) {
         setSelectedContainer(null);
+      } else {
+        var sc = (responseData as WorkspaceContainer[]).find(
+          (container) =>
+            container.container_id === selectedContainer?.container_id
+        );
+        if (sc) {
+          setSelectedContainer(sc);
+        }
       }
     } else {
       setContainers([]);
     }
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     workspace,
-    selectedContainer,
     FetchSelectedContainer,
     FetchSelectedContainerPorts,
   ]);
