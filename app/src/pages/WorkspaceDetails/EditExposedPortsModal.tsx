@@ -143,7 +143,7 @@ export function EditExposedPortsModal({
           <Button color="primary" onClick={() => setShowAddPortModal(true)}>
             Add port
           </Button>
-          <Button color="outline-light" onClick={() => handleClose()}>
+          <Button color="accent" onClick={() => handleClose()}>
             Close
           </Button>
         </ModalFooter>

@@ -126,7 +126,7 @@ export function AdminChangePasswordModal({ isOpen, onClose, user }: Props) {
             <hr className="my-3" />
             <div className="d-flex justify-content-end">
               <Button
-                color="outline-light"
+                color="accent"
                 onClick={(e) => {
                   e.preventDefault();
                   handleCloseModal();

@@ -1,8 +1,8 @@
-import LogoSquare from "../assets/images/logo-square.png";
+import CodeboxLogo from "../assets/images/codebox-logo-white.png";
 import DefaultAvatar from "../assets/images/default-avatar.png";
 import sha256 from "crypto-js/sha256";
 import { Http } from "../api/http";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { InstanceSettings } from "../types/settings";
 import { useCallback, useEffect, useState } from "react";
 import { RequestStatus } from "../api/types";
@@ -22,9 +22,8 @@ export function Navbar({ user }: Props) {
     document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
     document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
     if (process.env.NODE_ENV === "development") {
-      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${
-        new URL(Http.GetServerURL()).hostname
-      }`;
+      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${new URL(Http.GetServerURL()).hostname
+        }`;
     }
     navigate("/login");
   };
@@ -47,15 +46,12 @@ export function Navbar({ user }: Props) {
   return (
     <header className="navbar navbar-expand-md d-print-none">
       <div className="container-xl">
-        <a
+        <Link
           className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3"
-          href="/"
+          to="/"
         >
-          <span className="d-flex align-items-center">
-            <img src={LogoSquare} alt="logo" width={35} />
-            <h2 className="mb-0 ms-2">Codebox</h2>
-          </span>
-        </a>
+          <img src={CodeboxLogo} alt="logo" width={120} />
+        </Link>
         <div className="nav-item dropdown">
           <span
             className="nav-link d-flex lh-1 p-0 px-2"
@@ -84,25 +80,25 @@ export function Navbar({ user }: Props) {
             <span className="dropdown-header" style={{ fontSize: "11px" }}>
               User
             </span>
-            <a href="/profile" className="dropdown-item">
+            <Link to="/profile" className="dropdown-item">
               Profile
-            </a>
+            </Link>
             {/* <div className="dropdown-divider"></div> */}
-            <a href="/" className="dropdown-item" onClick={HandleLogout}>
+            <Link to="/" className="dropdown-item" onClick={HandleLogout}>
               Logout
-            </a>
+            </Link>
             {user?.is_superuser && (
               <>
                 <div className="dropdown-divider"></div>
                 <span className="dropdown-header" style={{ fontSize: "11px" }}>
                   Admin
                 </span>
-                <a href="/admin/users" className="dropdown-item">
+                <Link to="/admin/users" className="dropdown-item">
                   Users
-                </a>
-                <a href="/admin/runners" className="dropdown-item">
+                </Link>
+                <Link to="/admin/runners" className="dropdown-item">
                   Runners
-                </a>
+                </Link>
               </>
             )}
           </div>

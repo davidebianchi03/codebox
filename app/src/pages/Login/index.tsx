@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardBody, Container, Input } from "reactstrap";
-import LogoSquare from "../../assets/images/logo-square.png";
+import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LoginStatus, RequestStatus } from "../../api/types";
 import { Http } from "../../api/http";
@@ -25,7 +25,7 @@ export default function LoginPage() {
     );
 
     if (status === RequestStatus.OK && statusCode === 200) {
-      if(!(responseBody as InstanceSettings).initial_user_exists) {
+      if (!(responseBody as InstanceSettings).initial_user_exists) {
         navigate("/signup");
         return;
       }
@@ -63,16 +63,13 @@ export default function LoginPage() {
     let [status, jwtToken, expirationDate] = await Http.Login(email, password);
     if (status === LoginStatus.OK) {
       setError("");
-      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${
-        window.location.hostname
-      }`;
-      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${
-        window.location.hostname
-      }`;
-      if (process.env.NODE_ENV === "development") {
-        document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${
-          new URL(Http.GetServerURL()).hostname
+      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${window.location.hostname
         }`;
+      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${window.location.hostname
+        }`;
+      if (process.env.NODE_ENV === "development") {
+        document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${new URL(Http.GetServerURL()).hostname
+          }`;
       }
 
       navigate(searchParams.get("next") || "/");
@@ -80,9 +77,8 @@ export default function LoginPage() {
       document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
       document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
       if (process.env.NODE_ENV === "development") {
-        document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${
-          new URL(Http.GetServerURL()).hostname
-        }`;
+        document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${new URL(Http.GetServerURL()).hostname
+          }`;
       }
       if (status === LoginStatus.INVALID_CREDENTIALS) {
         setError("Invalid credentials");
@@ -98,8 +94,7 @@ export default function LoginPage() {
         <Container className="container-tight py-4">
           <div className="text-center mb-4">
             <div className="navbar-brand navbar-brand-autodark">
-              <img src={LogoSquare} alt="logo" width={50} />
-              <h2 style={{ fontSize: "20pt", marginTop: "10px" }}>Codebox</h2>
+              <img src={CodeboxLogo} alt="logo" width={185} />
             </div>
           </div>
           <Card className="card-md">
@@ -125,7 +120,14 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                <p className="text-danger text-center">{error}</p>
+                {error && (
+                  <p
+                    className="alert border-0 d-flex justify-content-center"
+                    style={{ background: "rgba(var(--tblr-danger-rgb), 0.8)" }}
+                  >
+                    {error}
+                  </p>
+                )}
                 <div className="d-flex justify-content-between">
                   <Button color="primary w-75 mx-auto" type="submit">
                     Login

@@ -7,7 +7,7 @@ import {
   FormFeedback,
   Input,
 } from "reactstrap";
-import LogoSquare from "../../assets/images/logo-square.png";
+import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate } from "react-router-dom";
 import { LoginStatus, RequestStatus } from "../../api/types";
 import { Http } from "../../api/http";
@@ -112,8 +112,7 @@ export default function SignUpPage() {
         <Container className="container-tight py-4">
           <div className="text-center mb-4">
             <div className="navbar-brand navbar-brand-autodark">
-              <img src={LogoSquare} alt="logo" width={50} />
-              <h2 style={{ fontSize: "20pt", marginTop: "10px" }}>Codebox</h2>
+              <img src={CodeboxLogo} alt="logo" width={185} />
             </div>
           </div>
           <Card className="card-md">

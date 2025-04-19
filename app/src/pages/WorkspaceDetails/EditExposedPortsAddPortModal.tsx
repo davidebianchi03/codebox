@@ -177,7 +177,7 @@ export function EditExposedPortsAddPortModal({
             </div>
             <div className="d-flex align-items-center justify-content-end">
               <Button
-                color="outline-light"
+                color="accent"
                 onClick={(e) => {
                   e.preventDefault();
                   handleClose();

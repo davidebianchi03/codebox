@@ -206,7 +206,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
           <hr className="my-3" />
           <div className="d-flex justify-content-end">
             <Button
-              color="outline-light"
+              color="accent"
               className="me-2"
               onClick={(e) => {
                 e.preventDefault();

@@ -154,8 +154,7 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
             </div>
             <div className="d-flex justify-content-end mt-3">
               <Button
-                color="outline-muted"
-                className="text-white"
+                color="accent"
                 onClick={(e) => {
                   e.preventDefault();
                   handleCloseModal();

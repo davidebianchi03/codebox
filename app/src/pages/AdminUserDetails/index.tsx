@@ -96,7 +96,7 @@ export function AdminUserDetails() {
           </div>
         </div>
         <Button
-          color="outline-light"
+          color="accent"
           className="me-2"
           onClick={(e) => {
             e.preventDefault();
@@ -176,7 +176,7 @@ export function AdminUserDetails() {
                       Change password
                     </Button>
                     <Button
-                      color="outline-light"
+                      color="accent"
                       className="me-2"
                       onClick={(e) => {
                         e.preventDefault();

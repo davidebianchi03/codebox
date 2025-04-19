@@ -182,7 +182,7 @@ export default function WorkspaceDetails() {
             {workspace?.status === "stopped" && (
               <React.Fragment>
                 <Button
-                  color="outline-white"
+                  color="accent"
                   className="me-1"
                   onClick={HandleUpdateConfigFiles}
                 >
@@ -190,7 +190,7 @@ export default function WorkspaceDetails() {
                   <span className="ms-2">Update config files</span>
                 </Button>
                 <Button
-                  color="outline-white"
+                  color="accent"
                   className="me-3"
                   onClick={() => setShowSettingsModal(true)}
                 >

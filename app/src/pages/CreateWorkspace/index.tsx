@@ -369,7 +369,7 @@ export default function CreateWorkspace() {
           </Row>
           <div className="d-flex justify-content-end mt-4">
             <Link to={"/"} 
-              className="btn btn-outline-muted text-white me-1">
+              className="btn btn-accent me-1">
               Cancel
             </Link>
             <Button color="primary" type="submit">

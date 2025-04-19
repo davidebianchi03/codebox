@@ -150,7 +150,7 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
             </small>
             <div className="d-flex align-items-center justify-content-end">
               <Button
-                color="outline-secondary"
+                color="accent"
                 onClick={(e) => {
                   e.preventDefault();
                   handleCloseModal();

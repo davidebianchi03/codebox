@@ -186,8 +186,7 @@ export default function Profile() {
                 </Row>
                 <div className="d-flex justify-content-end">
                   <Button
-                    color="outline-muted"
-                    className="text-white"
+                    color="accent"
                     onClick={(e) => {
                       e.preventDefault();
                       ResetForm();

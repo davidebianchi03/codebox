@@ -192,8 +192,7 @@ export default function WorkspaceContainers({
                   <Col sm={7} className="ms-3">
                     <h4 className="d-flex justify-content-end mt-1">
                       <Button
-                        color="outline-muted"
-                        className="text-white"
+                        color="accent"
                         onClick={() => setShowEditExposedPortaModal(true)}
                       >
                         <span className="me-2">Edit exposed ports</span>
@@ -203,7 +202,7 @@ export default function WorkspaceContainers({
                       <>
                         <div style={{ marginTop: 5 }} className="my-1">
                           <div
-                            className="d-flex border rounded align-items-center px-2"
+                            className="d-flex alert rounded align-items-center px-2"
                             style={{ cursor: "pointer", height: 50 }}
                             onClick={() => {
                               window.location.href = `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}&container_name=${selectedContainer.container_name}&server_hostname=${settings?.server_hostname}`;
@@ -232,7 +231,7 @@ export default function WorkspaceContainers({
                             <Col md={12} className="my-1">
                               <div
                                 key={port.port_number}
-                                className="d-flex border rounded align-items-center px-2"
+                                className="d-flex alert rounded align-items-center px-2"
                                 style={{ cursor: "pointer", height: 50 }}
                                 onClick={() => {
                                   var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;

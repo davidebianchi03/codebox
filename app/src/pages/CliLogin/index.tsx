@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Container, Input, InputGroup, InputGroupText } from "reactstrap";
-import LogoSquare from "../../assets/images/logo-square.png";
+import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
@@ -35,8 +35,7 @@ export default function CliLogin() {
             <div className="mb-5">
               <div className="section-header">
                 <span className="d-flex align-items-center w-100 justify-content-center">
-                  <img src={LogoSquare} alt="logo" width={40} />
-                  <h1 className="mb-0 ms-2">Codebox</h1>
+                  <img src={CodeboxLogo} alt="logo" width={185} />
                 </span>
                 <p className="section-description text-secondary text-center mt-4">
                   Copy this token, then return to the <br />

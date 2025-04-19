@@ -16,6 +16,7 @@ import { CreateRunnerModal } from "./CreateRunnerModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
+import { Link } from "react-router-dom";
 
 export function AdminRunners() {
   const [runners, setRunners] = useState<Runner[]>([]);
@@ -143,7 +144,7 @@ export function AdminRunners() {
                           return (
                             <tr key={runner.id}>
                               <td>
-                                <a href={`/admin/runners/${runner.id}`}>{runner.id}</a>
+                                <Link to={`/admin/runners/${runner.id}`}>{runner.id}</Link>
                               </td>
                               <td>{runner.name}</td>
                               <td
