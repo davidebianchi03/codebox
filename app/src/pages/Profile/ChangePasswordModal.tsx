@@ -105,8 +105,10 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
         modalClassName="modal-blur"
         fade
       >
-        <ModalHeader toggle={handleCloseModal}>Change password</ModalHeader>
-        <ModalBody>
+        <ModalHeader toggle={handleCloseModal} className="border-0">
+          Change Password
+        </ModalHeader>
+        <ModalBody className="pt-1">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -150,10 +152,10 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
               />
               <FormFeedback>{validation.errors.confirmPassword}</FormFeedback>
             </div>
-            <hr className="my-3" />
-            <div className="d-flex justify-content-end">
+            <div className="d-flex justify-content-end mt-3">
               <Button
-                color="outline-light"
+                color="outline-muted"
+                className="text-white"
                 onClick={(e) => {
                   e.preventDefault();
                   handleCloseModal();

@@ -7,6 +7,7 @@ import {
   Col,
   Container,
   FormFeedback,
+  FormGroup,
   Input,
   Label,
   Row,
@@ -102,9 +103,9 @@ export default function Profile() {
       <Row>
         <Col md={12}>
           <Card>
-            <CardHeader>
+            <CardHeader className="border-0 pb-0">
               <div>
-                <h4 className="mb-0 w-100">SSH public key</h4>
+                <h3 className="mb-0 w-100">SSH Public Key</h3>
                 <small className="text-muted">
                   Add this key to your Git server to enable authentication.
                 </small>
@@ -143,8 +144,8 @@ export default function Profile() {
       <Row className="mt-4">
         <Col md={12}>
           <Card>
-            <CardHeader>
-              <h4 className="mb-0">Profile</h4>
+            <CardHeader className="border-0 pb-0">
+              <h3 className="mb-0">Personal Information</h3>
             </CardHeader>
             <CardBody>
               <form
@@ -154,33 +155,39 @@ export default function Profile() {
                   return false;
                 }}
               >
-                <div className="mb-3">
-                  <Label>First name</Label>
-                  <Input
-                    type="text"
-                    placeholder="John"
-                    name="firstName"
-                    onChange={validation.handleChange}
-                    value={validation.values.firstName}
-                    invalid={validation.errors.firstName ? true : false}
-                  />
-                  <FormFeedback>{validation.errors.firstName}</FormFeedback>
-                </div>
-                <div className="mb-3">
-                  <Label>First name</Label>
-                  <Input
-                    type="text"
-                    placeholder="Doe"
-                    name="lastName"
-                    onChange={validation.handleChange}
-                    value={validation.values.lastName}
-                    invalid={validation.errors.lastName ? true : false}
-                  />
-                  <FormFeedback>{validation.errors.lastName}</FormFeedback>
-                </div>
+                <Row>
+                  <Col md={6}>
+                    <FormGroup>
+                      <Label>First name</Label>
+                      <Input
+                        type="text"
+                        placeholder="John"
+                        name="firstName"
+                        onChange={validation.handleChange}
+                        value={validation.values.firstName}
+                        invalid={validation.errors.firstName ? true : false}
+                      />
+                      <FormFeedback>{validation.errors.firstName}</FormFeedback>
+                    </FormGroup></Col>
+                  <Col md={6}>
+                    <FormGroup>
+                      <Label>First name</Label>
+                      <Input
+                        type="text"
+                        placeholder="Doe"
+                        name="lastName"
+                        onChange={validation.handleChange}
+                        value={validation.values.lastName}
+                        invalid={validation.errors.lastName ? true : false}
+                      />
+                      <FormFeedback>{validation.errors.lastName}</FormFeedback>
+                    </FormGroup>
+                  </Col>
+                </Row>
                 <div className="d-flex justify-content-end">
                   <Button
-                    color="outline-light"
+                    color="outline-muted"
+                    className="text-white"
                     onClick={(e) => {
                       e.preventDefault();
                       ResetForm();
@@ -189,7 +196,7 @@ export default function Profile() {
                     Cancel
                   </Button>
                   <Button color="primary" className="ms-1" type="submit">
-                    Save changes
+                    Save Changes
                   </Button>
                 </div>
               </form>
@@ -200,16 +207,16 @@ export default function Profile() {
       <Row className="mt-4">
         <Col md={12}>
           <Card>
-            <CardHeader>
-              <h4 className="mb-0">Change your password</h4>
-            </CardHeader>
             <CardBody>
-              <Button
-                color="primary"
-                onClick={() => setShowChangePasswordModal(true)}
-              >
-                Change password
-              </Button>
+              <div className="w-100 d-flex justify-content-between align-items-center">
+                <h3 className="mb-0">Change Password</h3>
+                <Button
+                  color="primary"
+                  onClick={() => setShowChangePasswordModal(true)}
+                >
+                  Change Password
+                </Button>
+              </div>
             </CardBody>
           </Card>
         </Col>
