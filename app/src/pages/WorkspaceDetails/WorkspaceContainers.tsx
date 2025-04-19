@@ -1,12 +1,11 @@
 import {
+  Badge,
   Button,
   Card,
   CardBody,
   CardHeader,
   Col,
   Row,
-  Table,
-  Tooltip,
 } from "reactstrap";
 import {
   ContainerPort,
@@ -18,14 +17,11 @@ import VsCodeIcon from "../../assets/images/vscode.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
 import { InstanceSettings } from "../../types/settings";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTriangleExclamation,
-  faPencil,
-} from "@fortawesome/free-solid-svg-icons";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { EditExposedPortsModal } from "./EditExposedPortsModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   workspace: Workspace;
@@ -43,7 +39,6 @@ export default function WorkspaceContainers({
     useState<ContainerPort[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [settings, setSettings] = useState<InstanceSettings>();
-  const [warningTooltipIsOpen, setWarningTooltipIsOpen] = useState(false);
   const [showEditExposedPortsModal, setShowEditExposedPortaModal] =
     useState(false);
 
@@ -51,8 +46,7 @@ export default function WorkspaceContainers({
     async (containerName: string) => {
       // fetch container details
       var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${
-          workspace.id
+        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
         }/container/${containerName}`,
         "GET",
         null
@@ -71,8 +65,7 @@ export default function WorkspaceContainers({
     async (containerName: string) => {
       // fetch exposed ports
       var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${
-          workspace.id
+        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
         }/container/${containerName}/port`,
         "GET",
         null
@@ -114,7 +107,7 @@ export default function WorkspaceContainers({
       setContainers([]);
     }
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     workspace,
     FetchSelectedContainer,
@@ -145,114 +138,102 @@ export default function WorkspaceContainers({
     <>
       {!loading && (
         <Card>
-          <CardHeader>
+          <CardHeader className="border-0">
             <h3 className="mb-0">Containers</h3>
           </CardHeader>
-          <CardBody>
+          <CardBody className="pt-0">
             {containers.length > 0 ? (
               <>
-                <Row>
+                <Row className="justify-content-between">
                   <Col sm={4}>
-                    <Table>
-                      <tbody>
-                        {containers.map((c) => (
-                          <tr key={c.container_id}>
-                            <th
-                              style={{
-                                cursor: "pointer",
-                                background: `${
-                                  selectedContainer?.container_name ===
-                                  c.container_name
-                                    ? "rgba(var(--tblr-primary-rgb), 0.2)"
-                                    : "transparent"
-                                }`,
-                                borderRadius: "4px",
-                              }}
-                              onClick={() => {
-                                FetchSelectedContainer(c.container_name);
-                                FetchSelectedContainerPorts(c.container_name);
-                              }}
-                            >
-                              <span>{c.container_name}</span>
-                            </th>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                    <div className="d-flex flex-column">
+                      {containers.map((c) => (
+                        <div
+                          key={c.container_id}
+                          className={`my-1 py-2 px-2 w-100 ${c.container_id === selectedContainer?.container_id ? "border rounded" : ""}`}
+                          style={{
+                            cursor: "pointer",
+                            borderRadius: "7px",
+                          }}
+                          onClick={() => {
+                            FetchSelectedContainer(c.container_name);
+                            FetchSelectedContainerPorts(c.container_name);
+                          }}
+                        >
+                          <div className="d-flex justify-content-between">
+                            <h4 className="mb-0">{c.container_name}</h4>
+                            {new Date().getTime() -
+                              new Date(
+                                selectedContainer?.agent_last_contact || ""
+                              ).getTime() >
+                              5 * 60 * 1000 ? (
+                              <Badge
+                                color="warning"
+                                className="text-white"
+                                style={{ opacity: c.container_id === selectedContainer?.container_id ? "1" : "0.7" }}
+                              >
+                                Not connected
+                              </Badge>
+                            ) : (
+                              <Badge
+                                color="success"
+                                className="text-white"
+                                style={{ opacity: c.container_id === selectedContainer?.container_id ? "1" : "0.7" }}
+                              >
+                                Connected
+                              </Badge>
+                            )}
+                          </div>
+                          <small className="text-muted">{c.container_image}</small>
+                        </div>
+                      ))}
+                    </div>
                   </Col>
-                  <Col sm={8}>
+                  <Col sm={7} className="ms-3">
+                    <h4 className="d-flex justify-content-end mt-1">
+                      <Button
+                        color="outline-muted"
+                        className="text-white"
+                        onClick={() => setShowEditExposedPortaModal(true)}
+                      >
+                        <span className="me-2">Edit exposed ports</span>
+                      </Button>
+                    </h4>
                     {selectedContainer && (
                       <>
-                        <h3>
-                          {selectedContainer.container_name}
-                          {new Date().getTime() -
-                            new Date(
-                              selectedContainer.agent_last_contact
-                            ).getTime() >
-                          5 * 60 * 1000 ? (
-                            <span className="ms-2 text-warning">
-                              <Tooltip
-                                isOpen={warningTooltipIsOpen}
-                                target="warningIcon"
-                                toggle={() =>
-                                  setWarningTooltipIsOpen(!warningTooltipIsOpen)
-                                }
-                              >
-                                Last contact with the agent running in this
-                                container was more than 5 minutes ago.
-                              </Tooltip>
-                              <FontAwesomeIcon
-                                id="warningIcon"
-                                icon={faTriangleExclamation}
-                              />
-                            </span>
-                          ) : null}
-                          <br />
-                          <small className="text-muted">
-                            {selectedContainer.container_image}
-                          </small>
-                        </h3>
-                        <div>
-                          <Row
-                            className="border rounded align-items-center"
-                            style={{ width: 300, cursor: "pointer" }}
+                        <div style={{ marginTop: 5 }} className="my-1">
+                          <div
+                            className="d-flex border rounded align-items-center px-2"
+                            style={{ cursor: "pointer", height: 50 }}
                             onClick={() => {
                               window.location.href = `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}&container_name=${selectedContainer.container_name}&server_hostname=${settings?.server_hostname}`;
                             }}
                           >
-                            <Col sm={2}>
-                              <img src={VsCodeIcon} alt="" width={25} />
-                            </Col>
-                            <Col sm={10}>
-                              <h4 className="mb-0">Visual studio code</h4>
-                              <small className="text-muted">
-                                Open workspace in visual studio code
-                              </small>
-                            </Col>
-                          </Row>
+                            <img src={VsCodeIcon} alt="vscode" width={25} className="me-3" />
+                            <div className="d-flex justify-content-between align-items-center w-100 me-2">
+                              <div className="d-flex align-items-center">
+                                <h4 className="mb-0">Visual Studio Code</h4>
+                                <span className="text-muted ms-5">
+                                  Open container in visual studio code
+                                </span>
+                              </div>
+                              <span className="text-muted">
+                                <FontAwesomeIcon icon={faChevronRight} />
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </>
                     )}
-                    <h4 className="mt-3 d-flex justify-content-between">
-                      <span>Exposed ports</span>
-                      <Button
-                        color="outline-light"
-                        size="sm"
-                        onClick={() => setShowEditExposedPortaModal(true)}
-                      >
-                        <span className="me-2">Edit exposed ports</span>
-                        <FontAwesomeIcon icon={faPencil} />
-                      </Button>
-                    </h4>
                     <div>
-                      {selectedContainerExposedPorts.length > 0 ? (
+                      {selectedContainerExposedPorts.length > 0 && (
                         <Row>
                           {selectedContainerExposedPorts.map((port) => (
-                            <Col md={4} className="m-1">
-                              <Row
+                            <Col md={12} className="my-1">
+                              <div
                                 key={port.port_number}
-                                className="border rounded align-items-center"
-                                style={{ cursor: "pointer" }}
+                                className="d-flex border rounded align-items-center px-2"
+                                style={{ cursor: "pointer", height: 50 }}
                                 onClick={() => {
                                   var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
                                   if (settings?.use_subdomains) {
@@ -261,31 +242,31 @@ export default function WorkspaceContainers({
                                   window.open(portUrl, "_blank")?.focus();
                                 }}
                               >
-                                <Col sm={2}>
-                                  <img
-                                    src={
-                                      port.public
-                                        ? PublicPortIcon
-                                        : PrivatePortIcon
-                                    }
-                                    alt=""
-                                    width={25}
-                                  />
-                                </Col>
-                                <Col sm={10}>
-                                  <h4 className="mb-0">{port.service_name}</h4>
-                                  <small className="text-muted">
-                                    {port.port_number}
-                                  </small>
-                                </Col>
-                              </Row>
+                                <img
+                                  src={
+                                    port.public
+                                      ? PublicPortIcon
+                                      : PrivatePortIcon
+                                  }
+                                  className="me-3"
+                                  alt=""
+                                  width={25}
+                                />
+                                <div className="d-flex justify-content-between align-items-center w-100 me-2">
+                                  <div className="d-flex align-items-center">
+                                    <h4 className="mb-0">{port.service_name}</h4>
+                                    <span className="text-muted ms-5">
+                                      Port: {port.port_number}
+                                    </span>
+                                  </div>
+                                  <span className="text-muted">
+                                    <FontAwesomeIcon icon={faChevronRight} />
+                                  </span>
+                                </div>
+                              </div>
                             </Col>
                           ))}
                         </Row>
-                      ) : (
-                        <>
-                          <h5>This container has no exposed ports</h5>
-                        </>
                       )}
                     </div>
                   </Col>
@@ -308,8 +289,9 @@ export default function WorkspaceContainers({
               container={selectedContainer}
             />
           )}
-        </Card>
-      )}
+        </Card >
+      )
+      }
     </>
   );
 }

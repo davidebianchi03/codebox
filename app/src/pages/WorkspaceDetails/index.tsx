@@ -174,7 +174,7 @@ export default function WorkspaceDetails() {
     <Container className="mt-4 mb-4">
       <div className="row g-2 align-items-center mb-4">
         <div className="col">
-          <div className="page-pretitle">Workspaces</div>
+          <div className="page-pretitle">Workspace</div>
           <h2 className="page-title">{workspace?.name}</h2>
         </div>
         <div className="col-auto ms-auto d-print-none">
