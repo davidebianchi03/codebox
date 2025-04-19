@@ -3,10 +3,13 @@ import {
   Button,
   Card,
   CardBody,
+  Col,
   Container,
   FormFeedback,
+  FormGroup,
   Input,
   Label,
+  Row,
 } from "reactstrap";
 import { Workspace, WorkspaceType } from "../../types/workspace";
 import { Http } from "../../api/http";
@@ -122,245 +125,258 @@ export default function CreateWorkspace() {
             <div className="btn-list"></div>
           </div>
         </div>
-        <Card className="mt-4">
-          <CardBody>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                validation.handleSubmit();
-                return false;
-              }}
-            >
-              <div className="mb-3">
-                <Label>Workspace name</Label>
-                <Input
-                  type="text"
-                  placeholder="my awesome workspace"
-                  name="workspaceName"
-                  onChange={validation.handleChange}
-                  value={validation.values.workspaceName}
-                  invalid={validation.errors.workspaceName !== undefined}
-                />
-                <FormFeedback>{validation.errors.workspaceName}</FormFeedback>
-              </div>
-              <div className="mb-3">
-                <Label>Workspace type</Label>
-                <select
-                  className={`form-control ${
-                    validation.errors.workspaceType ? "is-invalid" : ""
-                  }`}
-                  name="workspaceType"
-                  onChange={(e) => {
-                    var workspaceType = workspaceTypes.find(
-                      (t) => t.id === e.target.value
-                    );
-                    if (workspaceType) {
-                      validation.setFieldValue(
-                        "configFilesPath",
-                        workspaceType.config_files_default_path
-                      );
-                    }
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            validation.handleSubmit();
+            return false;
+          }}
+        >
+          <Row className="mt-3">
+            <Col md={6}>
+              <Card>
+                <CardBody>
+                  <FormGroup>
+                    <Label>Workspace name</Label>
+                    <Input
+                      type="text"
+                      placeholder="my awesome workspace"
+                      name="workspaceName"
+                      onChange={validation.handleChange}
+                      value={validation.values.workspaceName}
+                      invalid={validation.errors.workspaceName !== undefined}
+                    />
+                    <FormFeedback>{validation.errors.workspaceName}</FormFeedback>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Workspace type</Label>
+                    <select
+                      className={`form-control ${validation.errors.workspaceType ? "is-invalid" : ""
+                        }`}
+                      name="workspaceType"
+                      onChange={(e) => {
+                        var workspaceType = workspaceTypes.find(
+                          (t) => t.id === e.target.value
+                        );
+                        if (workspaceType) {
+                          validation.setFieldValue(
+                            "configFilesPath",
+                            workspaceType.config_files_default_path
+                          );
+                        }
 
-                    if (e.target.value === "") {
-                      validation.setFieldValue("configSource", "");
-                      validation.setFieldValue("runner", "");
-                      validation.setFieldValue("gitRepositoryURL", "");
-                      validation.setFieldValue("gitRefName", "");
-                      validation.setFieldValue("configFilesPath", "");
-                    } else {
-                      validation.setFieldValue("configSource", workspaceType?.supported_config_sources[0] || "");
-                    }
+                        if (e.target.value === "") {
+                          validation.setFieldValue("configSource", "");
+                          validation.setFieldValue("runner", "");
+                          validation.setFieldValue("gitRepositoryURL", "");
+                          validation.setFieldValue("gitRefName", "");
+                          validation.setFieldValue("configFilesPath", "");
+                        } else {
+                          validation.setFieldValue("configSource", workspaceType?.supported_config_sources[0] || "");
+                        }
 
-                    validation.handleChange(e);
-                  }}
-                  value={validation.values.workspaceType}
-                >
-                  <option value="">Select workspace type</option>
-                  {workspaceTypes.map((wt) => (
-                    <option value={wt.id} key={wt.id}>
-                      {wt.name}
-                    </option>
-                  ))}
-                </select>
-                <FormFeedback>{validation.errors.workspaceType}</FormFeedback>
-              </div>
-              <div className="mb-3">
-                <Label>Config source</Label>
-                <select
-                  className={`form-control`}
-                  name="configSource"
-                  disabled={validation.values.workspaceType === ""}
-                  value={validation.values.configSource}
-                  onChange={(e) => {
-                    if (e.target.value !== "git") {
-                      validation.setFieldValue("gitRepositoryURL", "");
-                      validation.setFieldValue("gitRefName", "");
-                      validation.setFieldValue("configFilesPath", "");
-                    }
-                    validation.handleChange(e);
-                  }}
-                  defaultValue={""}
-                >
-                  {validation.values.workspaceType === "" ? (
-                    <option value={""}>Select a workspace type before</option>
-                  ) : (
-                    <option value={""}>Select config source</option>
-                  )}
-                  {workspaceTypes.find(
-                    (t) => t.id === validation.values.workspaceType
-                  ) !== undefined ? (
-                    <>
+                        validation.handleChange(e);
+                      }}
+                      value={validation.values.workspaceType}
+                    >
+                      <option value="">Select workspace type</option>
+                      {workspaceTypes.map((wt) => (
+                        <option value={wt.id} key={wt.id}>
+                          {wt.name}
+                        </option>
+                      ))}
+                    </select>
+                    <FormFeedback>{validation.errors.workspaceType}</FormFeedback>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Runner</Label>
+                    <select
+                      className={`form-control ${validation.errors.runner ? "is-invalid" : ""
+                        }`}
+                      name="runner"
+                      disabled={validation.values.workspaceType === ""}
+                      onChange={validation.handleChange}
+                      value={validation.values.runner}
+                    >
+                      {validation.values.workspaceType === "" && (
+                        <option value="-1">Select a workspace type before</option>
+                      )}
                       {validation.values.workspaceType !== "" &&
-                        workspaceTypes
-                          .find((t) => t.id === validation.values.workspaceType)
-                          ?.supported_config_sources.map((s, index) => (
-                            <option value={s} key={index}>
-                              {s[0].toUpperCase() + s.substring(1)}
-                            </option>
-                          ))}
-                    </>
-                  ) : null}
-                </select>
-              </div>
-              {validation.values.configSource !== "" &&
-                (validation.values.configSource === "git" ? (
-                  <>
-                    <div className="mb-3">
-                      <Label>Repository URL</Label>
-                      <Input
-                        name="gitRepositoryURL"
-                        placeholder="git@example.com/my-awesome-project"
-                        value={validation.values.gitRepositoryURL}
-                        onChange={validation.handleChange}
-                        invalid={
-                          validation.errors.gitRepositoryURL !== undefined
+                        runners.length > 0 && (
+                          <>
+                            <option value="-1">Select a runner</option>
+                            {runners.map((r) => (
+                              <option value={r.id} key={r.id}>
+                                {r.name}
+                              </option>
+                            ))}
+                          </>
+                        )}
+                      {validation.values.workspaceType !== "" &&
+                        runners.length === 0 && (
+                          <option value="-1">No runner available</option>
+                        )}
+                    </select>
+                    <span className="text-warning mt-1">
+                      {(() => {
+                        var selectedRunner = runners.find(
+                          (r) =>
+                            r.id === parseInt(validation.values.runner.toString())
+                        );
+
+                        if (!selectedRunner) {
+                          return "";
                         }
-                      />
-                      <FormFeedback>
-                        {validation.errors.gitRepositoryURL}
-                      </FormFeedback>
-                    </div>
-                    <div className="mb-3">
-                      <Label>Ref Name</Label>
-                      <Input
-                        name="gitRefName"
-                        placeholder="refs/heads/main"
-                        value={validation.values.gitRefName}
-                        onChange={validation.handleChange}
-                        invalid={validation.errors.gitRefName !== undefined}
-                      />
-                      <FormFeedback>
-                        {validation.errors.gitRefName}
-                      </FormFeedback>
-                    </div>
-                    <div className="mb-3">
-                      <Label>Config files path</Label>
-                      <Input
-                        name="configFilesPath"
-                        placeholder={
-                          workspaceTypes.find(
-                            (t) => t.id === validation.values.workspaceType
-                          )?.config_files_default_path
+
+                        if (
+                          new Date().getTime() -
+                          new Date(selectedRunner.last_contact).getTime() >
+                          5 * 60 * 1000
+                        ) {
+                          return "Warning: last contact with this runner was more than 5 minutes ago.";
                         }
-                        value={validation.values.configFilesPath}
-                        onChange={validation.handleChange}
-                        invalid={
-                          validation.errors.configFilesPath !== undefined
+
+                        return "";
+                      })()}
+                    </span>
+                    <FormFeedback>{validation.errors.runner}</FormFeedback>
+                  </FormGroup>
+                </CardBody>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card>
+                <CardBody>
+                  <FormGroup>
+                    <Label>Config source</Label>
+                    <select
+                      className={`form-control`}
+                      name="configSource"
+                      disabled={validation.values.workspaceType === ""}
+                      value={validation.values.configSource}
+                      onChange={(e) => {
+                        if (e.target.value !== "git") {
+                          validation.setFieldValue("gitRepositoryURL", "");
+                          validation.setFieldValue("gitRefName", "");
+                          validation.setFieldValue("configFilesPath", "");
                         }
-                      />
-                      <FormFeedback>
-                        {validation.errors.configFilesPath}
-                      </FormFeedback>
-                    </div>
-                  </>
-                ) : (
-                  <div className="mb-3">TODO</div>
-                ))}
-              <div className="mb-3">
-                <p>
-                  <Label className="mb-0">Environment</Label>
-                  <small className="text-muted">
-                    Define environment variables, one per line, using the format
-                    'KEY=VALUE'
-                  </small>
-                </p>
-                <textarea
-                  className={`form-control ${
-                    !!validation.errors.environment ? "is-invalid" : ""
-                  }`}
-                  rows={10}
-                  placeholder="VAR1=VALUE1"
-                  name="environment"
-                  onChange={validation.handleChange}
-                ></textarea>
-                <FormFeedback>{validation.errors.environment}</FormFeedback>
-              </div>
-              <div className="mb-3">
-                <Label>Runner</Label>
-                <select
-                  className={`form-control ${
-                    validation.errors.runner ? "is-invalid" : ""
-                  }`}
-                  name="runner"
-                  disabled={validation.values.workspaceType === ""}
-                  onChange={validation.handleChange}
-                  value={validation.values.runner}
-                >
-                  {validation.values.workspaceType === "" && (
-                    <option value="-1">Select a workspace type before</option>
-                  )}
-                  {validation.values.workspaceType !== "" &&
-                    runners.length > 0 && (
+                        validation.handleChange(e);
+                      }}
+                      defaultValue={""}
+                    >
+                      {validation.values.workspaceType === "" ? (
+                        <option value={""}>Select a workspace type before</option>
+                      ) : (
+                        <option value={""}>Select config source</option>
+                      )}
+                      {workspaceTypes.find(
+                        (t) => t.id === validation.values.workspaceType
+                      ) !== undefined ? (
+                        <>
+                          {validation.values.workspaceType !== "" &&
+                            workspaceTypes
+                              .find((t) => t.id === validation.values.workspaceType)
+                              ?.supported_config_sources.map((s, index) => (
+                                <option value={s} key={index}>
+                                  {s[0].toUpperCase() + s.substring(1)}
+                                </option>
+                              ))}
+                        </>
+                      ) : null}
+                    </select>
+                  </FormGroup>
+                  {validation.values.configSource !== "" &&
+                    (validation.values.configSource === "git" ? (
                       <>
-                        <option value="-1">Select a runner</option>
-                        {runners.map((r) => (
-                          <option value={r.id} key={r.id}>
-                            {r.name}
-                          </option>
-                        ))}
+                        <FormGroup>
+                          <Label>Repository URL</Label>
+                          <Input
+                            name="gitRepositoryURL"
+                            placeholder="git@example.com/my-awesome-project"
+                            value={validation.values.gitRepositoryURL}
+                            onChange={validation.handleChange}
+                            invalid={
+                              validation.errors.gitRepositoryURL !== undefined
+                            }
+                          />
+                          <FormFeedback>
+                            {validation.errors.gitRepositoryURL}
+                          </FormFeedback>
+                        </FormGroup>
+                        <FormGroup>
+                          <Label>Ref Name</Label>
+                          <Input
+                            name="gitRefName"
+                            placeholder="refs/heads/main"
+                            value={validation.values.gitRefName}
+                            onChange={validation.handleChange}
+                            invalid={validation.errors.gitRefName !== undefined}
+                          />
+                          <FormFeedback>
+                            {validation.errors.gitRefName}
+                          </FormFeedback>
+                        </FormGroup>
+                        <FormGroup>
+                          <Label>Config files path</Label>
+                          <Input
+                            name="configFilesPath"
+                            placeholder={
+                              workspaceTypes.find(
+                                (t) => t.id === validation.values.workspaceType
+                              )?.config_files_default_path
+                            }
+                            value={validation.values.configFilesPath}
+                            onChange={validation.handleChange}
+                            invalid={
+                              validation.errors.configFilesPath !== undefined
+                            }
+                          />
+                          <FormFeedback>
+                            {validation.errors.configFilesPath}
+                          </FormFeedback>
+                        </FormGroup>
                       </>
-                    )}
-                  {validation.values.workspaceType !== "" &&
-                    runners.length === 0 && (
-                      <option value="-1">No runner available</option>
-                    )}
-                </select>
-                <span className="text-warning mt-1">
-                  {(() => {
-                    var selectedRunner = runners.find(
-                      (r) =>
-                        r.id === parseInt(validation.values.runner.toString())
-                    );
-
-                    if (!selectedRunner) {
-                      return "";
-                    }
-
-                    if (
-                      new Date().getTime() -
-                        new Date(selectedRunner.last_contact).getTime() >
-                      5 * 60 * 1000
-                    ) {
-                      return "Warning: last contact with this runner was more than 5 minutes ago.";
-                    }
-
-                    return "";
-                  })()}
-                </span>
-                <FormFeedback>{validation.errors.runner}</FormFeedback>
-              </div>
-              <hr />
-              <div className="d-flex justify-content-end mt-4">
-                <Link to={"/"} className="btn btn-outline-light me-1">
-                  Cancel
-                </Link>
-                <Button color="primary" type="submit">
-                  Create workspace
-                </Button>
-              </div>
-            </form>
-          </CardBody>
-        </Card>
+                    ) : (
+                      <div className="mb-3">TODO</div>
+                    ))}
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <Card>
+              <CardBody>
+                <FormGroup>
+                  <p>
+                    <Label className="mb-0">Environment</Label>
+                    <small className="text-muted">
+                      Define environment variables, one per line, using the format
+                      'KEY=VALUE'
+                    </small>
+                  </p>
+                  <textarea
+                    className={`form-control ${!!validation.errors.environment ? "is-invalid" : ""
+                      }`}
+                    rows={10}
+                    placeholder="VAR1=VALUE1"
+                    name="environment"
+                    onChange={validation.handleChange}
+                  ></textarea>
+                  <FormFeedback>{validation.errors.environment}</FormFeedback>
+                </FormGroup>
+              </CardBody>
+            </Card>
+          </Row>
+          <div className="d-flex justify-content-end mt-4">
+            <Link to={"/"} 
+              className="btn btn-outline-muted text-white me-1">
+              Cancel
+            </Link>
+            <Button color="primary" type="submit">
+              Create workspace
+            </Button>
+          </div>
+        </form>
         <ToastContainer />
       </Container>
     </>
