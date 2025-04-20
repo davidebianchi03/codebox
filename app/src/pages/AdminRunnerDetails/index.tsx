@@ -17,6 +17,8 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
 
 export function AdminRunnerDetails() {
   const [runner, setRunner] = useState<Runner>();
@@ -144,109 +146,106 @@ export function AdminRunnerDetails() {
 
   return (
     <>
-      <Container className="mt-4">
-        <div className="row g-2 align-items-center mb-4">
-          <div className="col">
-            <div className="page-pretitle">Runners</div>
-            <h2 className="page-title">{runner?.name}</h2>
-          </div>
-        </div>
-        <Row className="mt-4">
-          <Col md={12}>
-            <Card>
-              <CardBody>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    validation.handleSubmit();
-                    return false;
+      <Button
+        color="accent"
+        className="me-2 mb-4"
+        onClick={(e) => {
+          e.preventDefault();
+          navigate("/admin/runners");
+        }}
+      >
+        <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
+        Back
+      </Button>
+      <Row>
+        <Col md={12}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              validation.handleSubmit();
+              return false;
+            }}
+          >
+            <div className="mb-3">
+              <Label>Runner name</Label>
+              <Input
+                name="runnerName"
+                value={validation.values.runnerName}
+                onChange={validation.handleChange}
+                invalid={!!validation.errors.runnerName}
+              />
+              <FormFeedback>{validation.errors.runnerName}</FormFeedback>
+            </div>
+            <div className="mb-3">
+              <Label>Runner type</Label>
+              <select
+                name="runnerType"
+                className={`form-control ${validation.errors.runnerType ? "is-invalid" : ""
+                  }`}
+                onChange={validation.handleChange}
+                value={validation.values.runnerType}
+              >
+                <option value={""}>Select runner type</option>
+                {runnerTypes.map((t) => (
+                  <option value={t.id} key={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+              <small className="text-muted">
+                Supported workspaces:{" "}
+                {runnerTypes
+                  .find((r) => r.id === validation.values.runnerType)
+                  ?.supported_types.map((st) => st.name)
+                  .join(", ")}
+              </small>
+              <FormFeedback>{validation.errors.runnerType}</FormFeedback>
+            </div>
+            <div className="mb-3">
+              <label className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="usePublicUrl"
+                  onClick={(e) => {
+                    validation.handleChange(e);
                   }}
-                >
-                  <div className="mb-3">
-                    <Label>Runner name</Label>
-                    <Input
-                      name="runnerName"
-                      value={validation.values.runnerName}
-                      onChange={validation.handleChange}
-                      invalid={!!validation.errors.runnerName}
-                    />
-                    <FormFeedback>{validation.errors.runnerName}</FormFeedback>
-                  </div>
-                  <div className="mb-3">
-                    <Label>Runner type</Label>
-                    <select
-                      name="runnerType"
-                      className={`form-control ${
-                        validation.errors.runnerType ? "is-invalid" : ""
-                      }`}
-                      onChange={validation.handleChange}
-                      value={validation.values.runnerType}
-                    >
-                      <option value={""}>Select runner type</option>
-                      {runnerTypes.map((t) => (
-                        <option value={t.id} key={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
-                    <small className="text-muted">
-                      Supported workspaces:{" "}
-                      {runnerTypes
-                        .find((r) => r.id === validation.values.runnerType)
-                        ?.supported_types.map((st) => st.name)
-                        .join(", ")}
-                    </small>
-                    <FormFeedback>{validation.errors.runnerType}</FormFeedback>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        name="usePublicUrl"
-                        onClick={(e) => {
-                          validation.handleChange(e);
-                        }}
-                        checked={validation.values.usePublicUrl}
-                      />
-                      <span className="form-check-label">Use public url</span>
-                    </label>
-                  </div>
-                  <div className="mb-3">
-                    <Label>Public url</Label>
-                    <Input
-                      placeholder="http://my-host.example.com:12345"
-                      name="publicUrl"
-                      onChange={validation.handleChange}
-                      value={validation.values.publicUrl}
-                      invalid={validation.errors.publicUrl ? true : false}
-                      disabled={!validation.values.usePublicUrl}
-                    />
-                    <FormFeedback>{validation.errors.publicUrl}</FormFeedback>
-                  </div>
-                  <hr className="my-3" />
-                  <div className="d-flex justify-content-end">
-                    <Button
-                      color="accent"
-                      className="me-2"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate("/admin/runners");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" color="primary">
-                      Save
-                    </Button>
-                  </div>
-                </form>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-        <ToastContainer />
-      </Container>
+                  checked={validation.values.usePublicUrl}
+                />
+                <span className="form-check-label">Use public url</span>
+              </label>
+            </div>
+            <div className="mb-3">
+              <Label>Public url</Label>
+              <Input
+                placeholder="http://my-host.example.com:12345"
+                name="publicUrl"
+                onChange={validation.handleChange}
+                value={validation.values.publicUrl}
+                invalid={validation.errors.publicUrl ? true : false}
+                disabled={!validation.values.usePublicUrl}
+              />
+              <FormFeedback>{validation.errors.publicUrl}</FormFeedback>
+            </div>
+            <div className="d-flex justify-content-end mt-4">
+              <Button
+                color="accent"
+                className="me-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  FetchRunner();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" color="primary">
+                Save
+              </Button>
+            </div>
+          </form>
+        </Col>
+      </Row>
+      <ToastContainer />
     </>
   );
 }

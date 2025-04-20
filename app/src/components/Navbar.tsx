@@ -77,30 +77,21 @@ export function Navbar({ user }: Props) {
             </div>
           </span>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-            <span className="dropdown-header" style={{ fontSize: "11px" }}>
+            {/* <span className="dropdown-header" style={{ fontSize: "11px" }}>
               User
-            </span>
+            </span> */}
             <Link to="/profile" className="dropdown-item">
               Profile
             </Link>
+            {user?.is_superuser && (
+              <Link to="/admin" className="dropdown-item">
+                Admin Area
+              </Link>
+            )}
             {/* <div className="dropdown-divider"></div> */}
             <Link to="/" className="dropdown-item" onClick={HandleLogout}>
               Logout
             </Link>
-            {user?.is_superuser && (
-              <>
-                <div className="dropdown-divider"></div>
-                <span className="dropdown-header" style={{ fontSize: "11px" }}>
-                  Admin
-                </span>
-                <Link to="/admin/users" className="dropdown-item">
-                  Users
-                </Link>
-                <Link to="/admin/runners" className="dropdown-item">
-                  Runners
-                </Link>
-              </>
-            )}
           </div>
         </div>
       </div>

@@ -90,8 +90,10 @@ export function AdminChangePasswordModal({ isOpen, onClose, user }: Props) {
         modalClassName="modal-blur"
         fade
       >
-        <ModalHeader toggle={handleCloseModal}>Change password</ModalHeader>
-        <ModalBody>
+        <ModalHeader toggle={handleCloseModal} className="border-0">
+          Change password
+        </ModalHeader>
+        <ModalBody className="pt-1">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -123,8 +125,7 @@ export function AdminChangePasswordModal({ isOpen, onClose, user }: Props) {
               />
               <FormFeedback>{validation.errors.confirmPassword}</FormFeedback>
             </div>
-            <hr className="my-3" />
-            <div className="d-flex justify-content-end">
+            <div className="d-flex justify-content-end mt-4">
               <Button
                 color="accent"
                 onClick={(e) => {

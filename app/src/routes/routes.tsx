@@ -1,3 +1,4 @@
+import { AdminDashboard } from "../pages/AdminDashboard";
 import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
 import { AdminRunners } from "../pages/AdminRunners";
 import { AdminUserDetails } from "../pages/AdminUserDetails";
@@ -47,6 +48,10 @@ export const AuthProtectedRoutes: Route[] = [
 ];
 
 export const SuperUserRoutes: Route[] = [
+  {
+    path: "/admin",
+    element: <AdminDashboard />,
+  },
   {
     path: "/admin/users",
     element: <AdminUsersList />,

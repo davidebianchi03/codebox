@@ -218,6 +218,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"users/:email/set-password",
 				permissions.AdminRequiredRoute(admin.HandleAdminSetUserPassword),
 			)
+			adminApis.GET(
+				"workspaces",
+				permissions.AdminRequiredRoute(admin.AdminListWorkspaces),
+			)
 		}
 	}
 }
