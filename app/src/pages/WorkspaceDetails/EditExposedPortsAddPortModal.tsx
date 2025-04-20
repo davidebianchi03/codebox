@@ -146,7 +146,7 @@ export function EditExposedPortsAddPortModal({
                 type="number"
                 min={1}
                 max={65535}
-                value={validation.values.portNumber}
+                value={validation.values.portNumber > 0 ? validation.values.portNumber : ""}
                 onChange={validation.handleChange}
                 invalid={!!validation.errors.portNumber}
                 placeholder="Port number"
@@ -165,7 +165,7 @@ export function EditExposedPortsAddPortModal({
               />
               <FormFeedback>{validation.errors.serviceName}</FormFeedback>
             </FormGroup>
-            <div>
+            <FormGroup className="d-flex">
               <Input
                 name="public"
                 type="checkbox"
@@ -173,8 +173,8 @@ export function EditExposedPortsAddPortModal({
                 checked={validation.values.public}
                 onChange={validation.handleChange}
               />
-              <span className="ms-1">Is Public</span>
-            </div>
+              <Label className="ms-1" for="public">Is Public</Label>
+            </FormGroup>
             <div className="d-flex align-items-center justify-content-end">
               <Button
                 color="accent"

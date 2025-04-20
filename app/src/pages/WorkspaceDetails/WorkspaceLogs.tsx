@@ -50,7 +50,7 @@ export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
         </CardHeader>
         <CardBody className="pt-0">
           <Row>
-            <Col md={2}>
+            <Col md={2} className="mb-2">
               <small className="text-muted">
                 Last activity: {workspace.updated_at ? new Date(workspace.updated_at).toLocaleString() : "N/A"}
               </small>

@@ -284,6 +284,9 @@ export default function WorkspaceContainers({
                 setShowEditExposedPortaModal(false);
                 FetchSelectedContainerPorts(selectedContainer.container_name);
               }}
+              onChange={() => {
+                FetchSelectedContainerPorts(selectedContainer.container_name);
+              }}
               workspace={workspace}
               container={selectedContainer}
             />

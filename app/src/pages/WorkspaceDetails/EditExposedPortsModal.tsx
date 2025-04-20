@@ -20,6 +20,7 @@ import { EditExposedPortsAddPortModal } from "./EditExposedPortsAddPortModal";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onChange: () => void;
   workspace: Workspace;
   container: WorkspaceContainer;
 }
@@ -27,6 +28,7 @@ interface Props {
 export function EditExposedPortsModal({
   isOpen,
   onClose,
+  onChange,
   workspace,
   container,
 }: Props) {
@@ -43,8 +45,7 @@ export function EditExposedPortsModal({
     async (containerName: string) => {
       // fetch exposed ports
       var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${
-          workspace.id
+        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
         }/container/${containerName}/port`,
         "GET",
         null
@@ -64,8 +65,7 @@ export function EditExposedPortsModal({
     async (port: ContainerPort) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/container/${
-          container.container_name
+        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/container/${container.container_name
         }/port/${port.port_number}`,
         "DELETE",
         null
@@ -75,6 +75,7 @@ export function EditExposedPortsModal({
         toast.error("Failed to remove port");
       } else {
         FetchSelectedContainerPorts(container.container_name);
+        onChange();
       }
     },
     [workspace.id, container.container_name, FetchSelectedContainerPorts]
@@ -95,8 +96,10 @@ export function EditExposedPortsModal({
         size="lg"
         modalClassName="modal-blur"
       >
-        <ModalHeader toggle={handleClose}>Edit exposed ports</ModalHeader>
-        <ModalBody>
+        <ModalHeader toggle={handleClose} className="border-0">
+          Edit exposed ports
+        </ModalHeader>
+        <ModalBody className="pt-0">
           <Table striped bordered className="mb-0">
             <thead>
               <tr>
@@ -119,9 +122,9 @@ export function EditExposedPortsModal({
                 containerExposedPorts.map((port) => (
                   <React.Fragment>
                     <tr>
-                      <td className="py-2">{port.port_number}</td>
-                      <td className="py-2">{port.service_name}</td>
-                      <td className="py-2">{port.public ? "Yes" : "No"}</td>
+                      <td style={{ width: 125, paddingTop: 12 }}>{port.port_number}</td>
+                      <td style={{ paddingTop: 12 }}>{port.service_name}</td>
+                      <td style={{ width: 100, paddingTop: 12 }}>{port.public ? "Yes" : "No"}</td>
                       <td style={{ width: 75 }}>
                         <Button
                           color="outline-danger"
@@ -138,19 +141,20 @@ export function EditExposedPortsModal({
               )}
             </tbody>
           </Table>
+          <div className="d-flex align-items-end justify-content-end mt-4">
+            <Button color="primary" onClick={() => setShowAddPortModal(true)}>
+              Add port
+            </Button>
+            <Button color="accent" onClick={() => handleClose()} className="ms-2">
+              Close
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button color="primary" onClick={() => setShowAddPortModal(true)}>
-            Add port
-          </Button>
-          <Button color="accent" onClick={() => handleClose()}>
-            Close
-          </Button>
-        </ModalFooter>
       </Modal>
       <EditExposedPortsAddPortModal
         isOpen={showAddPortModal}
         onClose={() => {
+          onChange();
           setShowAddPortModal(false);
           FetchSelectedContainerPorts(container.container_name);
         }}
