@@ -41,7 +41,7 @@ func generateSshKeys() (string, string, error) {
 	publicKeyPath := privateKeyPath + ".pub"
 
 	// Run ssh-keygen command to generate keys
-	cmd := exec.Command("ssh-keygen", "-t", "rsa", "-b", "2048", "-f", privateKeyPath, "-N", "")
+	cmd := exec.Command("ssh-keygen", "-t", "rsa", "-b", "2048", "-f", privateKeyPath, "-N", "", "-C", "")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
