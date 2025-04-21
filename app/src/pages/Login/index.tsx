@@ -59,10 +59,9 @@ export default function LoginPage() {
     }
 
     // process login
-    let [status, jwtToken, expirationDate] = await Http.Login(email, password);
+    let [status] = await Http.Login(email, password);
     if (status === LoginStatus.OK) {
       setError("");
-
       navigate(searchParams.get("next") || "/");
     } else {
       document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
