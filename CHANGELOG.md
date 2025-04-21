@@ -1,5 +1,9 @@
 # Changelog
 
+# v0.0.19 - 2025-04-21
+- improved web interfaces
+- improved authentication flow
+
 # v0.0.18 - 2025-04-17
 - set git user.name and user.email inside containers
 - expose some workspace related environment variables
