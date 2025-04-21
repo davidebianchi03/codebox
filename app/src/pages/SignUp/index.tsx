@@ -26,7 +26,6 @@ export default function SignUpPage() {
       "GET",
       null,
       "application/json",
-      false
     );
 
     if (status === RequestStatus.OK && statusCode === 200) {
@@ -97,8 +96,8 @@ export default function SignUpPage() {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      let [status, code] = await Http.SignUp(values.email,values.password,values.firstName,values.lastName)
-      if(status !== LoginStatus.OK || code < 200 || code > 299) {
+      let [status, code] = await Http.SignUp(values.email, values.password, values.firstName, values.lastName)
+      if (status !== LoginStatus.OK || code < 200 || code > 299) {
         toast.error(`Error, recived status ${code}`);
       } else {
         navigate("/login")
@@ -212,7 +211,9 @@ export default function SignUpPage() {
           </div>
         </Container>
       </div>
-      <ToastContainer/>
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </React.Fragment>
   );
 }

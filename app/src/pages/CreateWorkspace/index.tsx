@@ -16,18 +16,19 @@ import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Runner } from "../../types/runner";
 import { ToastContainer, toast } from "react-toastify";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
   const [runners, setRunners] = useState<Runner[]>([]);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const validation = useFormik({
     initialValues: {
-      workspaceName: "",
+      workspaceName: searchParams.get("name") || "",
       workspaceType: "",
       configSource: "",
       runner: -1,
@@ -368,7 +369,7 @@ export default function CreateWorkspace() {
             </Card>
           </Row>
           <div className="d-flex justify-content-end mt-4">
-            <Link to={"/"} 
+            <Link to={"/"}
               className="btn btn-accent me-1">
               Cancel
             </Link>
@@ -377,7 +378,9 @@ export default function CreateWorkspace() {
             </Button>
           </div>
         </form>
-        <ToastContainer />
+        <ToastContainer
+          toastClassName={"bg-dark"}
+        />
       </Container>
     </>
   );

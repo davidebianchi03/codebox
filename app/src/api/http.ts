@@ -33,7 +33,10 @@ export class Http {
         // send request
         try {
             let response = await axios.post(
-                requestUrl, requestBody
+                requestUrl, requestBody,
+                {
+                    withCredentials: true,
+                }
             );
             if (response.status >= 200 && response.status <= 299) {
                 return [LoginStatus.OK, response.data.token, new Date(response.data.expiration)];
@@ -80,8 +83,7 @@ export class Http {
         return [LoginStatus.UNKNOWN_ERROR, -1];
     }
 
-    public static async Request(url: string, method: Method, requestBody: any, contentType: string = "application/json", authRequired: boolean = true): Promise<[status: RequestStatus, statusCode: number | undefined, responseData: any, description: string]> {
-        let jwtToken = this.GetJWTTokenFromCookies();
+    public static async Request(url: string, method: Method, requestBody: any, contentType: string = "application/json"): Promise<[status: RequestStatus, statusCode: number | undefined, responseData: any, description: string]> {
         let errorDescription = "";
 
         let requestConfig: AxiosRequestConfig = {
@@ -91,13 +93,6 @@ export class Http {
             },
             method: method,
             data: requestBody,
-        }
-
-        if(authRequired) {
-            if (!jwtToken) {
-                return [RequestStatus.NOT_AUTHENTICATED, 401, null, errorDescription];
-            }
-            requestConfig.headers!.Authorization = `Bearer ${jwtToken}`
         }
 
         try {

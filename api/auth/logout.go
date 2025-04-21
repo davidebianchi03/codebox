@@ -1,41 +1,44 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/davidebianchi03/codebox/api/utils"
 	"github.com/davidebianchi03/codebox/db"
-	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
 
 func HandleLogout(ctx *gin.Context) {
-	authHeader := ctx.Request.Header.Get("Authorization")
-	if authHeader == "" {
+	token, err := utils.GetTokenFromContext(ctx)
+	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"success": "missing or invalid authorization token",
-		})
-	}
-
-	headerParts := strings.Split(authHeader, "Bearer ")
-
-	if len(headerParts) != 2 {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"success": "missing or invalid authorization token",
-		})
-	}
-
-	jwtToken := headerParts[1]
-
-	var token models.Token
-	result := db.DB.Where("token=?", jwtToken).Preload("User").First(&token)
-	if result.Error != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"success": "missing or invalid authorization token",
+			"detail": err.Error(),
 		})
 	}
 
 	db.DB.Delete(&token)
+
+	// clear cookies
+	ctx.SetSameSite(http.SameSiteNoneMode)
+	ctx.SetCookie(
+		"jwtToken",
+		"",
+		3600*24*20,
+		"",
+		ctx.Request.Host,
+		true,
+		false,
+	)
+	ctx.SetCookie(
+		"jwtToken",
+		"",
+		3600*24*20,
+		"",
+		fmt.Sprintf(".%s", ctx.Request.Host),
+		true,
+		false,
+	)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,

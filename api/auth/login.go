@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -63,6 +64,26 @@ func HandleLogin(c *gin.Context) {
 		})
 		return
 	}
+
+	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetCookie(
+		"jwtToken",
+		token.Token,
+		3600*24*20,
+		"",
+		c.Request.Host,
+		true,
+		false,
+	)
+	c.SetCookie(
+		"jwtToken",
+		token.Token,
+		3600*24*20,
+		"",
+		fmt.Sprintf(".%s", c.Request.Host),
+		true,
+		false,
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"token":      token.Token,

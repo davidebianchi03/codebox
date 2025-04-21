@@ -168,7 +168,7 @@ export default function HomePage() {
                 <>
                   No workspaces found matching '{searchText}''{" "}
                   <span>
-                    <u>create it</u>
+                    <Link to={`/create-workspace?name=${searchText}`}>create it</Link>
                   </span>
                 </>
               ) : (

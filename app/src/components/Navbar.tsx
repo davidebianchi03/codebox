@@ -7,6 +7,9 @@ import { InstanceSettings } from "../types/settings";
 import { useCallback, useEffect, useState } from "react";
 import { RequestStatus } from "../api/types";
 import { User } from "../types/user";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGears, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
+import { Col, Row } from "reactstrap";
 
 interface Props {
   user: User;
@@ -19,12 +22,6 @@ export function Navbar({ user }: Props) {
   const HandleLogout = (e: any) => {
     e.preventDefault();
     Http.Request(`${Http.GetServerURL()}/api/v1/auth/logout`, "POST", null);
-    document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
-    document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
-    if (process.env.NODE_ENV === "development") {
-      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${new URL(Http.GetServerURL()).hostname
-        }`;
-    }
     navigate("/login");
   };
 
@@ -77,20 +74,37 @@ export function Navbar({ user }: Props) {
             </div>
           </span>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-            {/* <span className="dropdown-header" style={{ fontSize: "11px" }}>
-              User
-            </span> */}
             <Link to="/profile" className="dropdown-item">
-              Profile
+              <Row>
+                <Col md={4}>
+                  <FontAwesomeIcon icon={faUser} />
+                </Col>
+                <Col md={8}>
+                  Profile
+                </Col>
+              </Row>
             </Link>
             {user?.is_superuser && (
               <Link to="/admin" className="dropdown-item">
-                Admin Area
+                <Row>
+                  <Col md={4} className="pe-0">
+                    <FontAwesomeIcon icon={faGears} />
+                  </Col>
+                  <Col md={8} className="ps-0">
+                    Admin Area
+                  </Col>
+                </Row>
               </Link>
             )}
-            {/* <div className="dropdown-divider"></div> */}
             <Link to="/" className="dropdown-item" onClick={HandleLogout}>
-              Logout
+              <Row>
+                <Col md={4}>
+                  <FontAwesomeIcon icon={faRightFromBracket} />
+                </Col>
+                <Col md={8}>
+                  Logout
+                </Col>
+              </Row>
             </Link>
           </div>
         </div>

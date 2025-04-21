@@ -108,7 +108,9 @@ export function AdminUsersList() {
           }
         }}
       />
-      <ToastContainer />
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </>
   );
 }

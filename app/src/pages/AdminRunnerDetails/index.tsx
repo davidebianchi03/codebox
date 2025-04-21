@@ -242,7 +242,9 @@ export function AdminRunnerDetails() {
           </form>
         </Col>
       </Row>
-      <ToastContainer />
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </>
   );
 }

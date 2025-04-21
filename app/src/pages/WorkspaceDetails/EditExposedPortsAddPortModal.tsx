@@ -41,8 +41,7 @@ export function EditExposedPortsAddPortModal({
     async (containerName: string) => {
       // fetch exposed ports
       var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${
-          workspace.id
+        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
         }/container/${containerName}/port`,
         "GET",
         null
@@ -92,8 +91,7 @@ export function EditExposedPortsAddPortModal({
     onSubmit: async (values) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/container/${
-          container.container_name
+        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/container/${container.container_name
         }/port`,
         "POST",
         JSON.stringify({
@@ -192,7 +190,9 @@ export function EditExposedPortsAddPortModal({
           </form>
         </ModalBody>
       </Modal>
-      <ToastContainer />
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </React.Fragment>
   );
 }

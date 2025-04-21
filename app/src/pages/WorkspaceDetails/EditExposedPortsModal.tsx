@@ -8,7 +8,6 @@ import {
   Button,
   Modal,
   ModalBody,
-  ModalFooter,
   ModalHeader,
   Table,
 } from "reactstrap";
@@ -78,7 +77,7 @@ export function EditExposedPortsModal({
         onChange();
       }
     },
-    [workspace.id, container.container_name, FetchSelectedContainerPorts]
+    [workspace.id, container.container_name, FetchSelectedContainerPorts, onChange]
   );
 
   useEffect(() => {
@@ -161,7 +160,9 @@ export function EditExposedPortsModal({
         container={container}
         workspace={workspace}
       />
-      <ToastContainer />
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </React.Fragment>
   );
 }

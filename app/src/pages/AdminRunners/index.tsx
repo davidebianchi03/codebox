@@ -193,7 +193,9 @@ export function AdminRunners() {
           }
         }}
       />
-      <ToastContainer />
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </>
   );
 }

@@ -21,7 +21,6 @@ export default function LoginPage() {
       "GET",
       null,
       "application/json",
-      false
     );
 
     if (status === RequestStatus.OK && statusCode === 200) {
@@ -63,14 +62,6 @@ export default function LoginPage() {
     let [status, jwtToken, expirationDate] = await Http.Login(email, password);
     if (status === LoginStatus.OK) {
       setError("");
-      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${window.location.hostname
-        }`;
-      document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=.${window.location.hostname
-        }`;
-      if (process.env.NODE_ENV === "development") {
-        document.cookie = `jwtToken=${jwtToken};expires=${expirationDate.toUTCString()};domain=${new URL(Http.GetServerURL()).hostname
-          }`;
-      }
 
       navigate(searchParams.get("next") || "/");
     } else {

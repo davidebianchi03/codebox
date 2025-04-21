@@ -46,7 +46,7 @@ export default function CliLogin() {
                     <Input type={"password"} value={token} disabled />
                     <InputGroupText
                       style={{ cursor: "pointer" }}
-                      onClick={async() => {
+                      onClick={async () => {
                         await navigator.clipboard.writeText(token);
                         toast.info("Token has been copied to clipboard");
                       }}
@@ -60,7 +60,9 @@ export default function CliLogin() {
           </Container>
         </div>
       )}
-      <ToastContainer/>
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </React.Fragment>
   );
 }

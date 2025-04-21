@@ -10,6 +10,9 @@ import {
   PublicRoutes,
   SuperUserRoutes,
 } from "./routes/routes";
+import axios from "axios";
+
+axios.defaults.withCredentials = true
 
 export default function App() {
   return (

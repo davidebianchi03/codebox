@@ -224,7 +224,9 @@ export default function Profile() {
         isOpen={showChangePasswordModal}
         onClose={() => setShowChangePasswordModal(false)}
       />
-      <ToastContainer />
+      <ToastContainer 
+        toastClassName={"bg-dark"}
+      />
     </Container>
   );
 }

@@ -65,13 +65,13 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
   });
 
   useEffect(() => {
-      validation.setValues({
-        gitRepoUrl: workspace.git_source?.repository_url || "",
-        gitRefName: workspace.git_source?.ref_name || "",
-        configSourcePath: workspace.git_source?.config_file_relative_path || "",
-        environmentVariables: workspace.environment_variables.join("\n") || "",
-      });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    validation.setValues({
+      gitRepoUrl: workspace.git_source?.repository_url || "",
+      gitRefName: workspace.git_source?.ref_name || "",
+      configSourcePath: workspace.git_source?.config_file_relative_path || "",
+      environmentVariables: workspace.environment_variables.join("\n") || "",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   return (
@@ -164,7 +164,9 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
             </div>
           </form>
         </ModalBody>
-        <ToastContainer/>
+        <ToastContainer
+          toastClassName={"bg-dark"}
+        />
       </Modal>
     </React.Fragment>
   );

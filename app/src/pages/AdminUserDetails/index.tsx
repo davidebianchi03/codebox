@@ -93,7 +93,7 @@ export function AdminUserDetails() {
           navigate("/admin/users");
         }}
       >
-        <FontAwesomeIcon icon={faArrowLeftLong} className="me-2"/>
+        <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
         Back
       </Button>
       <form
@@ -176,7 +176,9 @@ export function AdminUserDetails() {
           </Button>
         </div>
       </form>
-      <ToastContainer />
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
       {user && (
         <AdminChangePasswordModal
           isOpen={showChangePasswordModal}
