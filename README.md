@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./app/src/assets/images/logo-black.png" width="200">
+  <img src="./docs/codebox-logo.png" width="200">
 
   <h3>
     Remote Development Environments
@@ -7,9 +7,9 @@
     <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size">
     <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls">
 
-  <br>
-  <br>
+  <img src="./docs/preview.png" style="max-width: 550px">
 
+  <br>
 </div>
 
 > [!WARNING]  
