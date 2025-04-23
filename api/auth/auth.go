@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/davidebianchi03/codebox/api/utils"
@@ -14,10 +13,10 @@ import (
 
 // set authentication cookie
 func SetAuthCookie(ctx *gin.Context, token string) error {
-	u, err := url.Parse(config.Environment.ExternalUrl)
-	if err != nil {
-		return err
-	}
+	// u, err := url.Parse(config.Environment.ExternalUrl)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// Set auth cookie, duration is set to zero because
 	// token expiration has been already set in DB
@@ -27,7 +26,7 @@ func SetAuthCookie(ctx *gin.Context, token string) error {
 		token,
 		0,
 		"",
-		u.Host,
+		"",
 		true,
 		false,
 	)
