@@ -8,7 +8,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var ServerVersion = "dbg-9.9.9"
+
 type EnvVars struct {
+	ExternalUrl      string `env:"CODEBOX_EXTERNAL_URL,required"`
 	DebugEnabled     bool   `env:"CODEBOX_DEBUG" envDefault:"true"`
 	DBDriver         string `env:"CODEBOX_DB_DRIVER" envDefault:"postgres"`
 	DBHost           string `env:"CODEBOX_DB_HOST" envDefault:"postgres"`
@@ -23,6 +26,7 @@ type EnvVars struct {
 	UploadsPath      string `env:"CODEBOX_DATA_PATH" envDefault:"./data"`
 	UseGravatar      bool   `env:"CODEBOX_USE_GRAVATAR" envDefault:"true"`
 	UseSubDomains    bool   `env:"CODEBOX_USE_SUBDOMAINS" envDefault:"true"`
+	AuthCookieName   string `env:"CODEBOX_AUTH_COOKIE_NAME" envDefault:"jwtToken"`
 }
 
 var Environment *EnvVars

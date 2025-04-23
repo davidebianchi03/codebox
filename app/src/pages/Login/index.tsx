@@ -4,7 +4,6 @@ import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LoginStatus, RequestStatus } from "../../api/types";
 import { Http } from "../../api/http";
-import { InstanceSettings } from "../../types/settings";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,19 +11,18 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
 
-
   const navigate = useNavigate();
 
-  const FetchSettings = useCallback(async () => {
+  const CheckIfInitialUserExists = useCallback(async () => {
     let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/instance-settings`,
+      `${Http.GetServerURL()}/api/v1/auth/initial-user-exists`,
       "GET",
       null,
       "application/json",
     );
 
     if (status === RequestStatus.OK && statusCode === 200) {
-      if (!(responseBody as InstanceSettings).initial_user_exists) {
+      if (!(responseBody as any).exists) {
         navigate("/signup");
         return;
       }
@@ -46,8 +44,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     IsAuthenticated();
-    FetchSettings();
-  }, [IsAuthenticated, FetchSettings]);
+    CheckIfInitialUserExists();
+  }, [IsAuthenticated, CheckIfInitialUserExists]);
 
   const SubmitLoginForm = async (event: any) => {
     event.preventDefault();
@@ -64,12 +62,6 @@ export default function LoginPage() {
       setError("");
       navigate(searchParams.get("next") || "/");
     } else {
-      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${window.location.hostname}`;
-      document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=.${window.location.hostname}`;
-      if (process.env.NODE_ENV === "development") {
-        document.cookie = `jwtToken=invalidtoken;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=${new URL(Http.GetServerURL()).hostname
-          }`;
-      }
       if (status === LoginStatus.INVALID_CREDENTIALS) {
         setError("Invalid credentials");
       } else {

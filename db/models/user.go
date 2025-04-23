@@ -89,19 +89,15 @@ func HashPassword(password string) (string, error) {
 }
 
 func ValidatePassword(password string) error {
-	passwordValid := true
-	if len(password) < 10 {
-		passwordValid = false
-	}
-
 	hasUppercase := regexp.MustCompile(`[A-Z]`).MatchString(password)
 	hasSpecialSymbol := regexp.MustCompile(`[!_\-,.?]`).MatchString(password)
 
-	passwordValid = hasUppercase && hasSpecialSymbol
+	passwordValid := len(password) >= 10 && hasUppercase && hasSpecialSymbol
 
 	if !passwordValid {
 		return errors.New(
-			"invalid password, it must be at least 10 characters long and include at least one uppercase letter and one special symbol (!_-,.?!).",
+			"invalid password, it must be at least 10 characters long and " +
+				"include at least one uppercase letter and one special symbol (!_-,.?!)",
 		)
 	}
 	return nil

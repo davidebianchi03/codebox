@@ -44,7 +44,7 @@ func HandleForwardHttp(ctx *gin.Context) {
 		return
 	}
 
-	var workspace models.Workspace
+	var workspace *models.Workspace
 	result := db.DB.Where(map[string]interface{}{"ID": workspaceId}).Preload("Runner").Find(&workspace)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -53,7 +53,7 @@ func HandleForwardHttp(ctx *gin.Context) {
 		return
 	}
 
-	if result.RowsAffected == 0 {
+	if workspace == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
@@ -61,8 +61,8 @@ func HandleForwardHttp(ctx *gin.Context) {
 	}
 
 	// retrieve development container
-	container := models.WorkspaceContainer{}
-	r := db.DB.First(&container, map[string]interface{}{
+	var container *models.WorkspaceContainer
+	r := db.DB.Find(&container, map[string]interface{}{
 		"workspace_id":   workspace.ID,
 		"container_name": containerName,
 	})
@@ -74,20 +74,20 @@ func HandleForwardHttp(ctx *gin.Context) {
 		return
 	}
 
-	if container.ID <= 0 {
+	if container == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "container not found, check that workspace is running and that you can connect to this container",
 		})
 		return
 	}
 
-	var port models.WorkspaceContainerPort
+	var port *models.WorkspaceContainerPort
 	db.DB.First(&port, map[string]interface{}{
 		"container_id": container.ID,
 		"port_number":  portNumber,
 	})
 
-	if port.ID <= 0 {
+	if port == nil {
 		// TODO: redirect to error page
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "requested port is not forwarded",
@@ -132,7 +132,7 @@ func HandleForwardHttp(ctx *gin.Context) {
 	ri := runnerinterface.RunnerInterface{
 		Runner: workspace.Runner,
 	}
-	if err = ri.ForwardHttp(&workspace, &container, &port, parsedUrl.Query().Get("request_path"), ctx.Writer, ctx.Request); err != nil {
+	if err = ri.ForwardHttp(workspace, container, port, parsedUrl.Query().Get("request_path"), ctx.Writer, ctx.Request); err != nil {
 		ctx.JSON(http.StatusTeapot, gin.H{
 			"detail": "internal server error",
 		})

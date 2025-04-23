@@ -205,7 +205,7 @@ export default function WorkspaceContainers({
                             className="d-flex alert rounded align-items-center px-2"
                             style={{ cursor: "pointer", height: 50 }}
                             onClick={() => {
-                              window.location.href = `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}&container_name=${selectedContainer.container_name}&server_hostname=${settings?.server_hostname}`;
+                              window.location.href = `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}&container_name=${selectedContainer.container_name}&server_hostname=${settings?.external_url}`;
                             }}
                           >
                             <img src={VsCodeIcon} alt="vscode" width={25} className="me-3" />
@@ -234,9 +234,9 @@ export default function WorkspaceContainers({
                                 className="d-flex alert rounded align-items-center px-2"
                                 style={{ cursor: "pointer", height: 50 }}
                                 onClick={() => {
-                                  var portUrl = `${window.location.protocol}//${settings?.server_hostname}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
+                                  var portUrl = `http://${settings?.external_url}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
                                   if (settings?.use_subdomains) {
-                                    portUrl = `${window.location.protocol}//codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings?.server_hostname}`;
+                                    portUrl = `http://codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings.external_url}`;
                                   }
                                   window.open(portUrl, "_blank")?.focus();
                                 }}

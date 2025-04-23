@@ -36,6 +36,10 @@ func V1ApiRoutes(router *gin.Engine) {
 		// auth related apis
 		authApis := v1.Group("/auth")
 		{
+			authApis.GET(
+				"/initial-user-exists",
+				auth.HandleRetrieveInitialUserExists,
+			)
 			authApis.POST(
 				"/login",
 				auth.HandleLogin,
@@ -166,7 +170,7 @@ func V1ApiRoutes(router *gin.Engine) {
 		// instance settings related apis
 		v1.GET(
 			"/instance-settings",
-			settings.HandleRetrieveServerSettings,
+			permissions.AuthenticationRequiredRoute(settings.HandleRetrieveServerSettings),
 		)
 
 		// download cli

@@ -11,7 +11,6 @@ import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate } from "react-router-dom";
 import { LoginStatus, RequestStatus } from "../../api/types";
 import { Http } from "../../api/http";
-import { InstanceSettings } from "../../types/settings";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
@@ -20,17 +19,18 @@ export default function SignUpPage() {
 
   const navigate = useNavigate();
 
-  const FetchSettings = useCallback(async () => {
+  const CheckIfInitialUserExists = useCallback(async () => {
     let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/instance-settings`,
+      `${Http.GetServerURL()}/api/v1/auth/initial-user-exists`,
       "GET",
       null,
       "application/json",
     );
 
     if (status === RequestStatus.OK && statusCode === 200) {
-      if ((responseBody as InstanceSettings).initial_user_exists) {
+      if ((responseBody as any).exists) {
         navigate("/");
+        return;
       }
     }
   }, [navigate]);
@@ -50,8 +50,8 @@ export default function SignUpPage() {
 
   useEffect(() => {
     IsAuthenticated();
-    FetchSettings();
-  }, [IsAuthenticated, FetchSettings]);
+    CheckIfInitialUserExists();
+  }, [IsAuthenticated, CheckIfInitialUserExists]);
 
   var validation = useFormik({
     initialValues: {

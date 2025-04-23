@@ -57,12 +57,24 @@ services:
       - codeboxdata:/codebox/data
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      - CODEBOX_EXTERNAL_URL=${CODEBOX_EXTERNAL_URL:-codebox.example.com}
       - CODEBOX_USE_GRAVATAR=true
       - CODEBOX_USE_SUBDOMAINS=true
       - CODEBOX_DB_NAME=${CODEBOX_DB_NAME:-codebox}
       - CODEBOX_DB_USER=${CODEBOX_DB_USER:-codebox}
       - CODEBOX_DB_PASSWORD=${CODEBOX_DB_PASSWORD:-password}
     restart: always
+
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "8890:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${CODEBOX_DB_ROOT_PASSWORD:-password}
 
 volumes:
   codeboxdb:

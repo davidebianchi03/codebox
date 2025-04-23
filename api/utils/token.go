@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davidebianchi03/codebox/config"
 	"github.com/davidebianchi03/codebox/db"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 func GetTokenFromContext(ctx *gin.Context) (models.Token, error) {
 	authHeader := ctx.Request.Header.Get("Authorization")
 
-	jwtCookie, err := ctx.Cookie("jwtToken")
+	jwtCookie, err := ctx.Cookie(config.Environment.AuthCookieName)
 	if err != nil {
 		jwtCookie = ""
 	}

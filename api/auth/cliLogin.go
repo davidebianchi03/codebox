@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO: replace with api keys
 func HandleCliLogin(c *gin.Context) {
 	user, err := utils.GetUserFromContext(c)
 	if err != nil {

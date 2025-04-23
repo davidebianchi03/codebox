@@ -1,6 +1,5 @@
 import axios, { AxiosRequestConfig, Method } from "axios";
 import { LoginStatus, RequestStatus } from "./types";
-import { GetCookie } from "./cookies";
 
 export class Http {
 
@@ -10,10 +9,6 @@ export class Http {
         } else {
             return "";
         }
-    }
-
-    private static GetJWTTokenFromCookies(): string | null {
-        return GetCookie("jwtToken");
     }
 
     /**

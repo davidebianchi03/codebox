@@ -1,6 +1,6 @@
 export interface InstanceSettings {
-    server_hostname: string;
+    version: string;
     use_gravatar: boolean;
     use_subdomains: boolean;
-    initial_user_exists: boolean;
+    external_url: string;
 }
