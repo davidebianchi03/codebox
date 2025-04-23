@@ -47,7 +47,7 @@ services:
     restart: always
 
   codebox:
-    image: dadebia/codebox:latest
+    image: dadebia/codebox:${CODEBOX_VERSION:-latest}
     depends_on:
       db:
         condition: service_healthy
