@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -35,7 +35,7 @@ func ListContainerPortsByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -51,7 +51,7 @@ func ListContainerPortsByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var container models.WorkspaceContainer
-	result = db.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
+	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -67,7 +67,7 @@ func ListContainerPortsByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var containerPorts []models.WorkspaceContainerPort
-	result = db.DB.Find(&containerPorts, map[string]interface{}{"container_id": container.ID})
+	result = dbconn.DB.Find(&containerPorts, map[string]interface{}{"container_id": container.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -112,7 +112,7 @@ func RetrieveContainerPortsByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -128,7 +128,7 @@ func RetrieveContainerPortsByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var container models.WorkspaceContainer
-	result = db.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
+	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -144,7 +144,7 @@ func RetrieveContainerPortsByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var containerPort models.WorkspaceContainerPort
-	result = db.DB.Find(&containerPort, map[string]interface{}{"container_id": container.ID, "port_number": portNumber})
+	result = dbconn.DB.Find(&containerPort, map[string]interface{}{"container_id": container.ID, "port_number": portNumber})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -188,7 +188,7 @@ func HandleCretateContainerPortByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -204,7 +204,7 @@ func HandleCretateContainerPortByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var container models.WorkspaceContainer
-	result = db.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
+	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -241,7 +241,7 @@ func HandleCretateContainerPortByWorkspaceContainer(c *gin.Context) {
 
 	var count int64
 
-	if err := db.DB.
+	if err := dbconn.DB.
 		Model(&models.WorkspaceContainerPort{}).
 		Where(map[string]interface{}{
 			"container_id": container.ID,
@@ -260,7 +260,7 @@ func HandleCretateContainerPortByWorkspaceContainer(c *gin.Context) {
 		return
 	}
 
-	if err := db.DB.
+	if err := dbconn.DB.
 		Model(&models.WorkspaceContainerPort{}).
 		Where(map[string]interface{}{
 			"container_id": container.ID,
@@ -286,7 +286,7 @@ func HandleCretateContainerPortByWorkspaceContainer(c *gin.Context) {
 		Public:      reqBody.Public,
 	}
 
-	db.DB.Save(&containerPort)
+	dbconn.DB.Save(&containerPort)
 	c.JSON(http.StatusCreated, containerPort)
 }
 
@@ -324,7 +324,7 @@ func HandleDeleteContainerPortByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -340,7 +340,7 @@ func HandleDeleteContainerPortByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var container models.WorkspaceContainer
-	result = db.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
+	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -356,7 +356,7 @@ func HandleDeleteContainerPortByWorkspaceContainer(c *gin.Context) {
 	}
 
 	var containerPort models.WorkspaceContainerPort
-	result = db.DB.Find(&containerPort, map[string]interface{}{"container_id": container.ID, "port_number": portNumber})
+	result = dbconn.DB.Find(&containerPort, map[string]interface{}{"container_id": container.ID, "port_number": portNumber})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -371,7 +371,7 @@ func HandleDeleteContainerPortByWorkspaceContainer(c *gin.Context) {
 		return
 	}
 
-	db.DB.Unscoped().Delete(&containerPort)
+	dbconn.DB.Unscoped().Delete(&containerPort)
 
 	c.JSON(http.StatusNoContent, gin.H{
 		"detail": "port has been removed",

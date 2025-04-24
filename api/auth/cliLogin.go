@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -35,7 +35,7 @@ func HandleCliLogin(c *gin.Context) {
 		return
 	}
 
-	if err = db.DB.Create(&token).Error; err != nil {
+	if err = dbconn.DB.Create(&token).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})

@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gin-gonic/gin"
@@ -45,7 +45,7 @@ func HandleForwardHttp(ctx *gin.Context) {
 	}
 
 	var workspace *models.Workspace
-	result := db.DB.Where(map[string]interface{}{"ID": workspaceId}).Preload("Runner").Find(&workspace)
+	result := dbconn.DB.Where(map[string]interface{}{"ID": workspaceId}).Preload("Runner").Find(&workspace)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -62,7 +62,7 @@ func HandleForwardHttp(ctx *gin.Context) {
 
 	// retrieve development container
 	var container *models.WorkspaceContainer
-	r := db.DB.Find(&container, map[string]interface{}{
+	r := dbconn.DB.Find(&container, map[string]interface{}{
 		"workspace_id":   workspace.ID,
 		"container_name": containerName,
 	})
@@ -82,7 +82,7 @@ func HandleForwardHttp(ctx *gin.Context) {
 	}
 
 	var port *models.WorkspaceContainerPort
-	db.DB.First(&port, map[string]interface{}{
+	dbconn.DB.First(&port, map[string]interface{}{
 		"container_id": container.ID,
 		"port_number":  portNumber,
 	})

@@ -3,7 +3,7 @@ package bgtasks
 import (
 	"time"
 
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gocraft/work"
@@ -11,7 +11,7 @@ import (
 
 func (jobContext *Context) PingAgents(job *work.Job) error {
 	var containers []models.WorkspaceContainer
-	if err := db.DB.Preload("Workspace.Runner").Find(&containers).Error; err != nil {
+	if err := dbconn.DB.Preload("Workspace.Runner").Find(&containers).Error; err != nil {
 		return err
 	}
 
@@ -20,7 +20,7 @@ func (jobContext *Context) PingAgents(job *work.Job) error {
 		if ri.PingAgent(&container) {
 			now := time.Now()
 			container.AgentLastContact = &now
-			db.DB.Save(&container)
+			dbconn.DB.Save(&container)
 		}
 	}
 

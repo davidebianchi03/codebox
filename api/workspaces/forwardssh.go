@@ -3,7 +3,7 @@ package workspaces
 import (
 	"net/http"
 
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gin-gonic/gin"
@@ -27,7 +27,7 @@ func HandleForwardSsh(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Where(map[string]interface{}{"ID": workspaceId}).Preload("Runner").Find(&workspace)
+	result := dbconn.DB.Where(map[string]interface{}{"ID": workspaceId}).Preload("Runner").Find(&workspace)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -44,7 +44,7 @@ func HandleForwardSsh(ctx *gin.Context) {
 
 	// retrieve development container
 	container := models.WorkspaceContainer{}
-	r := db.DB.First(&container, map[string]interface{}{
+	r := dbconn.DB.First(&container, map[string]interface{}{
 		"workspace_id":   workspace.ID,
 		"container_name": containerName,
 	})

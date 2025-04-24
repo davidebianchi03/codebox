@@ -8,7 +8,7 @@ import (
 
 	chserver "github.com/davidebianchi03/chisel/server"
 	chsettings "github.com/davidebianchi03/chisel/share/settings"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +21,7 @@ func HandleRunnerConnect(c *gin.Context) {
 	requestToken := c.Request.Header.Get("X-Codebox-Runner-Token")
 
 	var runner models.Runner
-	if err := db.DB.Find(
+	if err := dbconn.DB.Find(
 		&runner,
 		map[string]interface{}{
 			"id": runnerId,
@@ -50,7 +50,7 @@ func HandleRunnerConnect(c *gin.Context) {
 
 		for i := minPort; i < maxPort; i++ {
 			var count int64
-			r := db.DB.Model(&models.Runner{}).Where(map[string]interface{}{
+			r := dbconn.DB.Model(&models.Runner{}).Where(map[string]interface{}{
 				"port": i,
 			}).Count(&count)
 
@@ -70,7 +70,7 @@ func HandleRunnerConnect(c *gin.Context) {
 		if assignedPort != 0 {
 			// append agent to the list of connected agents
 			runner.Port = uint(assignedPort)
-			db.DB.Save(&runner)
+			dbconn.DB.Save(&runner)
 
 			c.JSON(http.StatusOK, gin.H{
 				"port": assignedPort,
@@ -102,6 +102,6 @@ func HandleRunnerConnect(c *gin.Context) {
 
 		// release the port
 		runner.Port = 0
-		db.DB.Save(&runner)
+		dbconn.DB.Save(&runner)
 	}
 }

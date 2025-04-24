@@ -7,7 +7,7 @@ import (
 
 	"github.com/davidebianchi03/codebox/bgtasks"
 	"github.com/davidebianchi03/codebox/config"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/work"
@@ -39,7 +39,7 @@ func RandStringBytesRmndr(n int) string {
 
 func HandleAdminListRunners(c *gin.Context) {
 	var runners []models.Runner
-	r := db.DB.Find(&runners)
+	r := dbconn.DB.Find(&runners)
 	if r.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -53,7 +53,7 @@ func HandleAdminRetrieveRunners(c *gin.Context) {
 	runnerId, _ := c.Params.Get("runnerId")
 
 	var runner models.Runner
-	r := db.DB.Find(&runner, map[string]interface{}{
+	r := dbconn.DB.Find(&runner, map[string]interface{}{
 		"id": runnerId,
 	})
 	if r.Error != nil {
@@ -91,7 +91,7 @@ func HandleAdminCreateRunner(c *gin.Context) {
 	}
 
 	var exists bool
-	err = db.DB.Model(models.Runner{}).Select("count(*) > 0").Where("name = ?", parsedBody.Name).Find(&exists).Error
+	err = dbconn.DB.Model(models.Runner{}).Select("count(*) > 0").Where("name = ?", parsedBody.Name).Find(&exists).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -128,7 +128,7 @@ func HandleAdminCreateRunner(c *gin.Context) {
 			return
 		}
 
-		err = db.DB.Model(models.Runner{}).Select("count(*) > 0").Where("public_url = ?", parsedBody.PublicUrl).Find(&exists).Error
+		err = dbconn.DB.Model(models.Runner{}).Select("count(*) > 0").Where("public_url = ?", parsedBody.PublicUrl).Find(&exists).Error
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"detail": "internal server error",
@@ -154,7 +154,7 @@ func HandleAdminCreateRunner(c *gin.Context) {
 		PublicUrl:    parsedBody.PublicUrl,
 	}
 
-	if err = db.DB.Create(&runner).Error; err != nil {
+	if err = dbconn.DB.Create(&runner).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -172,7 +172,7 @@ func HandleAdminUpdateRunner(c *gin.Context) {
 	runnerId, _ := c.Params.Get("runnerId")
 
 	var runner models.Runner
-	r := db.DB.Find(&runner, map[string]interface{}{
+	r := dbconn.DB.Find(&runner, map[string]interface{}{
 		"id": runnerId,
 	})
 	if r.Error != nil {
@@ -209,7 +209,7 @@ func HandleAdminUpdateRunner(c *gin.Context) {
 	runner.Type = reqBody.Type
 	runner.UsePublicUrl = reqBody.UsePublicUrl
 	runner.PublicUrl = reqBody.PublicUrl
-	db.DB.Save(&runner)
+	dbconn.DB.Save(&runner)
 
 	c.JSON(http.StatusOK, runner)
 }

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +15,7 @@ import (
 // this api is used to redirect users to signup page to create the first user
 func HandleRetrieveInitialUserExists(ctx *gin.Context) {
 	var usersCount int64
-	if err := db.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
+	if err := dbconn.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -72,7 +72,7 @@ func HandleUpdateUserDetails(ctx *gin.Context) {
 		user.LastName = *requestBody.LastName
 	}
 
-	db.DB.Save(&user)
+	dbconn.DB.Save(&user)
 
 	ctx.JSON(http.StatusOK, user)
 }
@@ -146,7 +146,7 @@ func HandleChangePassword(c *gin.Context) {
 		return
 	}
 
-	db.DB.Save(&user)
+	dbconn.DB.Save(&user)
 	c.JSON(http.StatusOK, gin.H{
 		"detail": "password changed",
 	})

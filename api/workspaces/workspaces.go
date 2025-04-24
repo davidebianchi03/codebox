@@ -6,7 +6,7 @@ import (
 	"github.com/davidebianchi03/codebox/api/utils"
 	"github.com/davidebianchi03/codebox/bgtasks"
 	"github.com/davidebianchi03/codebox/config"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/work"
@@ -25,7 +25,7 @@ func HandleListWorkspaces(ctx *gin.Context) {
 	}
 
 	var workspaces []models.Workspace
-	result := db.DB.Preload("GitSource").Preload("TemplateVersion").Find(&workspaces, map[string]interface{}{"user_id": user.ID})
+	result := dbconn.DB.Preload("GitSource").Preload("TemplateVersion").Find(&workspaces, map[string]interface{}{"user_id": user.ID})
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -56,7 +56,7 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Preload("GitSource").Preload("TemplateVersion").Find(
+	result := dbconn.DB.Preload("GitSource").Preload("TemplateVersion").Find(
 		&workspace,
 		map[string]interface{}{"ID": id, "user_id": user.ID},
 	)
@@ -127,7 +127,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 
 	// validate runner
 	runner := &models.Runner{}
-	r := db.DB.First(&runner, map[string]interface{}{
+	r := dbconn.DB.First(&runner, map[string]interface{}{
 		"ID": parsedBody.RunnerID,
 	})
 
@@ -188,7 +188,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 			ConfigFilePath: parsedBody.ConfigSourceFilePath,
 		}
 
-		r := db.DB.Create(gitSource)
+		r := dbconn.DB.Create(gitSource)
 		if r.Error != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"detail": "internal server error",
@@ -196,7 +196,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 			return
 		}
 	} else if parsedBody.ConfigSource == models.WorkspaceConfigSourceTemplate {
-		db.DB.First(&templateVersion, map[string]interface{}{
+		dbconn.DB.First(&templateVersion, map[string]interface{}{
 			"ID": parsedBody.TemplateVersionID,
 		})
 
@@ -245,7 +245,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 		EnvironmentVariables: parsedBody.EnvironmentVariables,
 	}
 
-	r = db.DB.Create(&workspace)
+	r = dbconn.DB.Create(&workspace)
 	if r.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -280,7 +280,7 @@ func HandleStopWorkspace(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Preload("GitSource").Preload("TemplateVersion").Find(
+	result := dbconn.DB.Preload("GitSource").Preload("TemplateVersion").Find(
 		&workspace,
 		map[string]interface{}{"ID": id, "user_id": user.ID},
 	)
@@ -308,7 +308,7 @@ func HandleStopWorkspace(ctx *gin.Context) {
 
 	workspace.Status = models.WorkspaceStatusStopping
 	workspace.ClearLogs()
-	db.DB.Save(&workspace)
+	dbconn.DB.Save(&workspace)
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("stop_workspace", work.Q{"workspace_id": workspace.ID})
@@ -339,7 +339,7 @@ func HandleStartWorkspace(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -363,7 +363,7 @@ func HandleStartWorkspace(ctx *gin.Context) {
 
 	workspace.Status = models.WorkspaceStatusStarting
 	workspace.ClearLogs()
-	db.DB.Save(&workspace)
+	dbconn.DB.Save(&workspace)
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
@@ -394,7 +394,7 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 	}
 
 	var workspace *models.Workspace
-	result := db.DB.
+	result := dbconn.DB.
 		Preload("Runner").
 		Preload("GitSource").
 		Preload("TemplateVersion").
@@ -450,7 +450,7 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		if reqBody.ConfigSourcePath != nil {
 			gitSource.ConfigFilePath = *reqBody.ConfigSourcePath
 		}
-		db.DB.Save(&gitSource)
+		dbconn.DB.Save(&gitSource)
 	} else {
 		panic("not implemented")
 	}
@@ -459,7 +459,7 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		workspace.EnvironmentVariables = *reqBody.EnvironmentVariables
 	}
 
-	db.DB.Save(&workspace)
+	dbconn.DB.Save(&workspace)
 	ctx.JSON(http.StatusOK, workspace)
 }
 
@@ -484,7 +484,7 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -516,7 +516,7 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 
 	workspace.Status = models.WorkspaceStatusDeleting
 	workspace.ClearLogs()
-	db.DB.Save(&workspace)
+	dbconn.DB.Save(&workspace)
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("delete_workspace", work.Q{"workspace_id": workspace.ID, "skip_errors": skipErrors})
@@ -547,7 +547,7 @@ func HandleUpdateWorkspaceConfiguration(ctx *gin.Context) {
 	}
 
 	var workspace *models.Workspace
-	result := db.DB.
+	result := dbconn.DB.
 		Preload("Runner").
 		Preload("GitSource").
 		Preload("TemplateVersion").
@@ -580,7 +580,7 @@ func HandleUpdateWorkspaceConfiguration(ctx *gin.Context) {
 	workspace.ClearLogs()
 	workspace.AppendLogs("Updating workspace configuration sources...")
 	bgtasks.BgTasksEnqueuer.Enqueue("update_workspace_config", work.Q{"workspace_id": workspace.ID})
-	db.DB.Save(&workspace)
+	dbconn.DB.Save(&workspace)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"details": "starting workspace",

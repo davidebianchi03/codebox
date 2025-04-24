@@ -10,7 +10,7 @@ import (
 	"github.com/davidebianchi03/codebox/config"
 
 	"github.com/davidebianchi03/codebox/api"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// test della connessione con il database
-	err = db.ConnectDB()
+	err = dbconn.ConnectDB()
 	if err != nil {
 		log.Fatalf("Cannot init connection with DB: '%s'\n", err)
 		return

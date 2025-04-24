@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +27,7 @@ func ListWorkspaceContainersByWorkspace(c *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -43,7 +43,7 @@ func ListWorkspaceContainersByWorkspace(c *gin.Context) {
 	}
 
 	var containers []models.WorkspaceContainer
-	result = db.DB.Find(&containers, map[string]interface{}{"workspace_id": workspace.ID})
+	result = dbconn.DB.Find(&containers, map[string]interface{}{"workspace_id": workspace.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -80,7 +80,7 @@ func RetrieveWorkspaceContainersByWorkspace(c *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -96,7 +96,7 @@ func RetrieveWorkspaceContainersByWorkspace(c *gin.Context) {
 	}
 
 	var container models.WorkspaceContainer
-	result = db.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
+	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",

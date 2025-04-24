@@ -3,7 +3,7 @@ package bgtasks
 import (
 	"time"
 
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gocraft/work"
@@ -11,7 +11,7 @@ import (
 
 func (jobContext *Context) PingRunners(job *work.Job) error {
 	var runners []models.Runner
-	if err := db.DB.Find(&runners).Error; err != nil {
+	if err := dbconn.DB.Find(&runners).Error; err != nil {
 		return err
 	}
 
@@ -22,7 +22,7 @@ func (jobContext *Context) PingRunners(job *work.Job) error {
 		if err == nil {
 			now := time.Now()
 			runner.LastContact = &now
-			db.DB.Save(&runner)
+			dbconn.DB.Save(&runner)
 		}
 	}
 

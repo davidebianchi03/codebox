@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/davidebianchi03/codebox/config"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -37,7 +37,7 @@ func GetTokenFromContext(ctx *gin.Context) (models.Token, error) {
 	}
 
 	var token models.Token
-	result := db.DB.Where("token=?", jwtToken).Preload("User").First(&token)
+	result := dbconn.DB.Where("token=?", jwtToken).Preload("User").First(&token)
 	if result.Error != nil {
 		return models.Token{}, fmt.Errorf("missing or invalid authorization token")
 	}

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/git"
 	"github.com/davidebianchi03/codebox/runnerinterface"
@@ -19,7 +19,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace models.Workspace
-	db.DB.Model(&models.Workspace{}).
+	dbconn.DB.Model(&models.Workspace{}).
 		Preload("User").
 		Preload("Runner").
 		Preload("GitSource").
@@ -31,7 +31,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 	if workspace.ID <= 0 {
 		return errors.New("workspace not found")
 	}
-	defer db.DB.Save(&workspace)
+	defer dbconn.DB.Save(&workspace)
 
 	// if workspace config source is a git repository retrieve latest version
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
@@ -74,7 +74,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 
 				gitSource := workspace.GitSource
 				gitSource.Files, _ = gitSource.GetConfigFileAbsPath()
-				db.DB.Save(&gitSource)
+				dbconn.DB.Save(&gitSource)
 
 				workspace.AppendLogs("the git repository has been cloned")
 			}
@@ -153,7 +153,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 			WorkspacePath:     c.WorkspacePath,
 		}
 
-		db.DB.Create(&workspaceContainer)
+		dbconn.DB.Create(&workspaceContainer)
 
 		// map ports
 		for _, p := range c.ExposedPorts {
@@ -164,14 +164,14 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 				Public:      p.Public,
 			}
 
-			db.DB.Create(&port)
+			dbconn.DB.Create(&port)
 		}
 
 		// ping agent
 		if ri.PingAgent(&workspaceContainer) {
 			now := time.Now()
 			workspaceContainer.AgentLastContact = &now
-			db.DB.Save(&workspaceContainer)
+			dbconn.DB.Save(&workspaceContainer)
 		}
 	}
 

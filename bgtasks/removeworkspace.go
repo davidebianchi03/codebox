@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gocraft/work"
@@ -17,7 +17,7 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	skipErrors := job.ArgBool("skip_errors")
 
 	var workspace models.Workspace
-	result := db.DB.Preload("Runner").Preload("GitSource").First(&workspace, map[string]interface{}{"ID": workspaceId})
+	result := dbconn.DB.Preload("Runner").Preload("GitSource").First(&workspace, map[string]interface{}{"ID": workspaceId})
 	if result.Error != nil {
 		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
 	}
@@ -25,7 +25,7 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	if workspace.ID <= 0 {
 		return errors.New("workspace not found")
 	}
-	defer db.DB.Save(&workspace)
+	defer dbconn.DB.Save(&workspace)
 
 	ri := runnerinterface.RunnerInterface{
 		Runner: workspace.Runner,
@@ -85,14 +85,14 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	}
 
 	var containers []models.WorkspaceContainer
-	db.DB.Find(&containers, map[string]interface{}{
+	dbconn.DB.Find(&containers, map[string]interface{}{
 		"workspace_id": workspace.ID,
 	})
 	for _, container := range containers {
-		db.DB.Unscoped().Delete(&[]models.WorkspaceContainerPort{}, map[string]interface{}{
+		dbconn.DB.Unscoped().Delete(&[]models.WorkspaceContainerPort{}, map[string]interface{}{
 			"container_id": container.ID,
 		})
-		db.DB.Unscoped().Delete(&container)
+		dbconn.DB.Unscoped().Delete(&container)
 	}
 
 	// remove configuration files if the source is git
@@ -106,6 +106,6 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	}
 	workspace.ClearLogs()
 
-	db.DB.Delete(&workspace)
+	dbconn.DB.Delete(&workspace)
 	return nil
 }

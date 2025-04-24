@@ -6,27 +6,22 @@ import (
 
 	"github.com/davidebianchi03/codebox/api/utils"
 	"github.com/davidebianchi03/codebox/config"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
 
 // set authentication cookie
 func SetAuthCookie(ctx *gin.Context, token string) error {
-	// u, err := url.Parse(config.Environment.ExternalUrl)
-	// if err != nil {
-	// 	return err
-	// }
-
 	// Set auth cookie, duration is set to zero because
 	// token expiration has been already set in DB
-	ctx.SetSameSite(http.SameSiteLaxMode)
+	ctx.SetSameSite(http.SameSiteNoneMode) // TODO: use same site lax in prod
 	ctx.SetCookie(
 		config.Environment.AuthCookieName,
 		token,
 		0,
 		"",
-		"",
+		"http://127.0.0.1:8080",
 		true,
 		false,
 	)
@@ -52,7 +47,7 @@ func HandleLogin(ctx *gin.Context) {
 	}
 
 	var user models.User
-	result := db.DB.Where("email=?", parsedBody.Email).Find(&user)
+	result := dbconn.DB.Where("email=?", parsedBody.Email).Find(&user)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -82,7 +77,7 @@ func HandleLogin(ctx *gin.Context) {
 		return
 	}
 
-	result = db.DB.Create(&token)
+	result = dbconn.DB.Create(&token)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -106,7 +101,7 @@ func HandleLogin(ctx *gin.Context) {
 // validate password
 func HandleSignup(ctx *gin.Context) {
 	var usersCount int64
-	if err := db.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
+	if err := dbconn.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -145,7 +140,7 @@ func HandleSignup(ctx *gin.Context) {
 
 	// check if user with the same email already exists
 	users := []models.User{}
-	r := db.DB.Find(&users, map[string]interface{}{
+	r := dbconn.DB.Find(&users, map[string]interface{}{
 		"email": parsedBody.Email,
 	})
 
@@ -164,7 +159,7 @@ func HandleSignup(ctx *gin.Context) {
 	}
 
 	// check the number of existing users (first user is always an admin)
-	r = db.DB.Find(&[]models.User{}, map[string]interface{}{}).Count(&usersCount)
+	r = dbconn.DB.Find(&[]models.User{}, map[string]interface{}{}).Count(&usersCount)
 	if r.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -189,7 +184,7 @@ func HandleSignup(ctx *gin.Context) {
 		IsSuperuser: usersCount == 0,
 	}
 
-	r = db.DB.Create(&newUser)
+	r = dbconn.DB.Create(&newUser)
 	if r.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -210,7 +205,7 @@ func HandleLogout(ctx *gin.Context) {
 		})
 	}
 
-	db.DB.Delete(&token)
+	dbconn.DB.Delete(&token)
 
 	// clear cookies
 	SetAuthCookie(ctx, "")

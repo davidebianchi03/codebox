@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +27,7 @@ func HandleRetrieveWorkspaceLogs(ctx *gin.Context) {
 	}
 
 	var workspace models.Workspace
-	result := db.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
+	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",

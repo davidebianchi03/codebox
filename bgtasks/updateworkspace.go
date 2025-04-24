@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/davidebianchi03/codebox/git"
 	"github.com/davidebianchi03/codebox/utils/targz"
@@ -16,7 +16,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace *models.Workspace
-	result := db.DB.Preload("Runner").
+	result := dbconn.DB.Preload("Runner").
 		Preload("User").
 		Preload("Runner").
 		Preload("GitSource").
@@ -36,7 +36,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to create tmp folder, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
-			db.DB.Save(&workspace)
+			dbconn.DB.Save(&workspace)
 			return nil
 		}
 		defer os.RemoveAll(tempDirPath)
@@ -45,7 +45,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to retrieve configuration file path, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
-			db.DB.Save(&workspace)
+			dbconn.DB.Save(&workspace)
 			return nil
 		}
 		os.RemoveAll(gitSourcesFile)
@@ -59,7 +59,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		); err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to clone git repository, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
-			db.DB.Save(&workspace)
+			dbconn.DB.Save(&workspace)
 			return nil
 		}
 
@@ -67,17 +67,17 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		if err = targz.CreateArchive(tempDirPath, gitSourcesFile); err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to create targz archive, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
-			db.DB.Save(&workspace)
+			dbconn.DB.Save(&workspace)
 			return nil
 		}
 
 		gitSource := workspace.GitSource
 		gitSource.Files, _ = gitSource.GetConfigFileAbsPath()
-		db.DB.Save(&gitSource)
+		dbconn.DB.Save(&gitSource)
 	} else {
 		panic("not implemented")
 	}
-	db.DB.Save(&workspace)
+	dbconn.DB.Save(&workspace)
 	workspace.AppendLogs("Config files have been updated")
 
 	return jobContext.StartWorkspace(job)

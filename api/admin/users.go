@@ -3,7 +3,7 @@ package admin
 import (
 	"net/http"
 
-	"github.com/davidebianchi03/codebox/db"
+	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +11,7 @@ import (
 func HandleAdminListUsers(c *gin.Context) {
 	var users *[]models.User
 
-	if db.DB.Find(&users).Error != nil {
+	if dbconn.DB.Find(&users).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -25,7 +25,7 @@ func HandleAdminRetrieveUser(c *gin.Context) {
 	var user *models.User
 	email, _ := c.Params.Get("email")
 
-	if db.DB.Find(&user, map[string]interface{}{
+	if dbconn.DB.Find(&user, map[string]interface{}{
 		"email": email,
 	}).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -62,7 +62,7 @@ func HandleAdminCreateUser(c *gin.Context) {
 
 	// check if exists another user with the same email address
 	users := []models.User{}
-	r := db.DB.Find(&users, map[string]interface{}{
+	r := dbconn.DB.Find(&users, map[string]interface{}{
 		"email": reqBody.Email,
 	})
 
@@ -105,7 +105,7 @@ func HandleAdminCreateUser(c *gin.Context) {
 		IsSuperuser: reqBody.IsSuperuser,
 	}
 
-	r = db.DB.Create(&newUser)
+	r = dbconn.DB.Create(&newUser)
 	if r.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -120,7 +120,7 @@ func HandleAdminUpdateUser(c *gin.Context) {
 	var user *models.User
 	email, _ := c.Params.Get("email")
 
-	if db.DB.Find(&user, map[string]interface{}{
+	if dbconn.DB.Find(&user, map[string]interface{}{
 		"email": email,
 	}).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -161,7 +161,7 @@ func HandleAdminUpdateUser(c *gin.Context) {
 		user.IsSuperuser = *requestBody.IsSuperuser
 	}
 
-	db.DB.Save(&user)
+	dbconn.DB.Save(&user)
 
 	c.JSON(http.StatusOK, user)
 }
@@ -171,7 +171,7 @@ func HandleAdminSetUserPassword(c *gin.Context) {
 	var err error
 	email, _ := c.Params.Get("email")
 
-	if db.DB.Find(&user, map[string]interface{}{
+	if dbconn.DB.Find(&user, map[string]interface{}{
 		"email": email,
 	}).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -214,7 +214,7 @@ func HandleAdminSetUserPassword(c *gin.Context) {
 		return
 	}
 
-	db.DB.Save(&user)
+	dbconn.DB.Save(&user)
 	c.JSON(http.StatusOK, gin.H{
 		"detail": "password changed",
 	})
