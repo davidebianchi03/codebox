@@ -106,6 +106,6 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	}
 	workspace.ClearLogs()
 
-	dbconn.DB.Delete(&workspace)
+	dbconn.DB.Unscoped().Delete(&workspace)
 	return nil
 }

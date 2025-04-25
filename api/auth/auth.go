@@ -5,29 +5,10 @@ import (
 	"time"
 
 	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/config"
 	dbconn "github.com/davidebianchi03/codebox/db/connection"
 	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 )
-
-// set authentication cookie
-func SetAuthCookie(ctx *gin.Context, token string) error {
-	// Set auth cookie, duration is set to zero because
-	// token expiration has been already set in DB
-	ctx.SetSameSite(http.SameSiteNoneMode) // TODO: use same site lax in prod
-	ctx.SetCookie(
-		config.Environment.AuthCookieName,
-		token,
-		0,
-		"",
-		"http://127.0.0.1:8080",
-		true,
-		false,
-	)
-
-	return nil
-}
 
 // POST /api/v1/login
 // validate email and password and return token in response
@@ -205,7 +186,7 @@ func HandleLogout(ctx *gin.Context) {
 		})
 	}
 
-	dbconn.DB.Delete(&token)
+	dbconn.DB.Unscoped().Delete(&token)
 
 	// clear cookies
 	SetAuthCookie(ctx, "")

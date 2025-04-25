@@ -5,7 +5,7 @@ export class Http {
 
     public static GetServerURL() {
         if (process.env.NODE_ENV === "development") {
-            return "http://127.0.0.1:8080"
+            return "http://localhost:8080"
         } else {
             return "";
         }

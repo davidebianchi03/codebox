@@ -14,9 +14,24 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 	// check if request hostname is a subdomain
 	// to be valid a subdomain must start with codebox-- and must match the following
 	// format codebox--<workspace_id>--<container_name>--<port_number>
-	if strings.Index(ctx.Request.Host, fmt.Sprintf(".%s", config.Environment.ExternalUrl)) > 0 && strings.Index(ctx.Request.Host, "codebox--") == 0 {
-		domainParts := strings.Split(ctx.Request.Host, ".")
-		splittedSubDomain := strings.Split(domainParts[0], "--")
+
+	requestDomain := ctx.Request.Host
+	// if strings.Contains(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardExternalUrl)) {
+	if strings.Contains(requestDomain, fmt.Sprintf(config.Environment.WildcardExternalUrl)) { // TODO: use previous line
+		requestDomain = "codebox--2--phpmyadmin--80.codebox--2--codebox--8080.codebox.davidebianchi.eu" // TODO: remove
+		subdomains := strings.Split(strings.ReplaceAll(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardExternalUrl), ""), ".")
+		if len(subdomains) == 0 {
+			// TODO: show error page: 404
+			return
+		}
+
+		portSubdomain := subdomains[len(subdomains)-1]
+		if !strings.HasPrefix(portSubdomain, "codebox--") {
+			// TODO: show error page: 404
+			return
+		}
+
+		splittedSubDomain := strings.Split(portSubdomain, "--")
 
 		if len(splittedSubDomain) != 4 {
 			ctx.JSON(400, gin.H{
@@ -26,45 +41,20 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 			return
 		}
 
-		workspaceId := splittedSubDomain[1]
-		containerName := splittedSubDomain[2]
-		portNumber := splittedSubDomain[3]
-
-		if ctx.Request.URL.RawQuery == "" {
-			ctx.Request.URL.Path = fmt.Sprintf(
-				"/api/v1/workspace/%s/container/%s/forward-http/%s?request_path=%s",
-				workspaceId,
-				containerName,
-				portNumber,
-				url.QueryEscape(ctx.Request.URL.Path),
-			)
-		} else {
-			ctx.Request.URL.Path = fmt.Sprintf(
-				"/api/v1/workspace/%s/container/%s/forward-http/%s?request_path=%s",
-				workspaceId,
-				containerName,
-				portNumber,
-				url.QueryEscape(ctx.Request.URL.Path+"?"+ctx.Request.URL.RawQuery),
-			)
+		if ctx.Request.URL.Path == fmt.Sprintf("/api/v1/auth/subdomains/callback-%s", url.PathEscape(config.Environment.AuthCookieName)) {
+			// TODO: check if workspace exists
+			ctx.Next()
+			return
 		}
 
-		newRequestParams := []gin.Param{
-			{
-				Key:   "workspaceId",
-				Value: workspaceId,
-			},
-			{
-				Key:   "containerName",
-				Value: containerName,
-			},
-			{
-				Key:   "portNumber",
-				Value: portNumber,
-			},
-		}
-		ctx.Params = newRequestParams
+		workspaces.ForwardHttpPort(
+			ctx,
+			splittedSubDomain[1],
+			splittedSubDomain[2],
+			splittedSubDomain[3],
+			ctx.Request.URL.String(),
+		)
 
-		workspaces.HandleForwardHttp(ctx)
 		ctx.Abort()
 		return
 	}

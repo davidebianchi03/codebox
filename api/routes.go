@@ -1,6 +1,9 @@
 package api
 
 import (
+	"fmt"
+	"net/url"
+
 	"github.com/davidebianchi03/codebox/api/admin"
 	"github.com/davidebianchi03/codebox/api/auth"
 	"github.com/davidebianchi03/codebox/api/cli"
@@ -71,6 +74,14 @@ func V1ApiRoutes(router *gin.Engine) {
 			authApis.POST(
 				"/change-password",
 				permissions.AuthenticationRequiredRoute(auth.HandleChangePassword),
+			)
+			authApis.GET(
+				"/subdomains/authorize",
+				permissions.AuthenticationRequiredRoute(auth.HandleSubdomainLoginAuthorize),
+			)
+			authApis.GET(
+				fmt.Sprintf("/subdomains/callback-%s", url.PathEscape(config.Environment.AuthCookieName)),
+				auth.HandleSubdomainLoginCallback,
 			)
 			authApis.POST(
 				"/cli-login",
