@@ -16,9 +16,7 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 	// format codebox--<workspace_id>--<container_name>--<port_number>
 
 	requestDomain := ctx.Request.Host
-	// if strings.Contains(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardExternalUrl)) {
-	if strings.Contains(requestDomain, fmt.Sprintf(config.Environment.WildcardExternalUrl)) { // TODO: use previous line
-		requestDomain = "codebox--2--phpmyadmin--80.codebox--2--codebox--8080.codebox.davidebianchi.eu" // TODO: remove
+	if strings.Contains(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardExternalUrl)) {
 		subdomains := strings.Split(strings.ReplaceAll(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardExternalUrl), ""), ".")
 		if len(subdomains) == 0 {
 			// TODO: show error page: 404
