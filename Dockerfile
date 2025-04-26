@@ -24,27 +24,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
-# # Install NVM
-# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-
-# ENV NVM_DIR="/root/.nvm"
-# ENV NODE_VERSION=20.12.2
-
-# Load NVM into the current shell session
-# RUN mkdir -p ${NVM_DIR} && \
-#     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash && \
-#     \. $NVM_DIR/nvm.sh && \
-#     \. $NVM_DIR/bash_completion && \
-#     nvm install $NODE_VERSION && \
-#     nvm alias default $NODE_VERSION && \
-#     nvm use default
-
-# ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
-# ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-# ENV PATH=$PATH:/home/node/.npm-global/bin
-
-# # Install devcontainers CLI
-# RUN npm install -g @devcontainers/cli
 ENV HOME=/root
 
 # Install golang
@@ -66,6 +45,7 @@ COPY ./docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./docker/startgin.sh /docker-entrypoint.d/
 COPY ./atlas.hcl /codebox/bin
 COPY ./migrations/ /codebox/bin/migrations
+COPY ./templates/ /codebox/bin/templates
 
 RUN chmod +x /docker-entrypoint.d/startgin.sh && \
     chmod +x /codebox/bin/codebox && \
