@@ -35,9 +35,9 @@ function AuthRequired({ children, showNavbar = true }: Props) {
   
   return (
     <React.Fragment>
-      {user && showNavbar && (
+      {user && (
         <>
-          <Navbar user={user} />
+          {showNavbar && <Navbar user={user} />}
           {children}
         </>
       )}

@@ -211,7 +211,6 @@ export default function WorkspaceDetails() {
               {GetBeautyNameForStatus(workspace?.status)}
             </button>
             <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              {/* <span className="dropdown-item">TODO: Update workspace</span> */}
               <span
                 className="dropdown-item"
                 onClick={() => {

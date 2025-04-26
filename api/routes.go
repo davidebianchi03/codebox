@@ -25,6 +25,7 @@ func SetupRouter() *gin.Engine {
 
 	r := gin.Default()
 	V1ApiRoutes(r)
+	r.LoadHTMLGlob("templates/*")
 	return r
 }
 

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
+	apierrors "github.com/davidebianchi03/codebox/api/errors"
 	"github.com/davidebianchi03/codebox/api/utils"
 	"github.com/davidebianchi03/codebox/config"
 	dbconn "github.com/davidebianchi03/codebox/db/connection"
@@ -60,9 +61,9 @@ func ForwardHttpPort(ctx *gin.Context, workspaceId string, containerName string,
 	}
 
 	if workspace == nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+		apierrors.RenderError(
+			ctx, http.StatusNotFound, "Workspace does not exists or you don't have the permission to view it",
+		)
 		return
 	}
 
@@ -81,9 +82,9 @@ func ForwardHttpPort(ctx *gin.Context, workspaceId string, containerName string,
 	}
 
 	if container == nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"detail": "container not found, check that workspace is running and that you can connect to this container",
-		})
+		apierrors.RenderError(
+			ctx, http.StatusNotFound, "Workspace does not exists or you don't have the permission to view it",
+		)
 		return
 	}
 
@@ -94,10 +95,9 @@ func ForwardHttpPort(ctx *gin.Context, workspaceId string, containerName string,
 	})
 
 	if port == nil {
-		// TODO: redirect to error page
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"detail": "requested port is not forwarded",
-		})
+		apierrors.RenderError(
+			ctx, http.StatusNotFound, "Port is not exposed or you don't have the permission to view it",
+		)
 		return
 	}
 
@@ -118,18 +118,17 @@ func ForwardHttpPort(ctx *gin.Context, workspaceId string, containerName string,
 		}
 
 		if user.ID != workspace.UserID {
-			// TODO: error 404
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"detail": "not found",
-			})
+			apierrors.RenderError(
+				ctx, http.StatusNotFound, "Port is not exposed or you don't have the permission to view it",
+			)
 			return
 		}
 	}
 
 	if workspace.Runner == nil {
-		ctx.JSON(http.StatusTeapot, gin.H{
-			"detail": "runner not found",
-		})
+		apierrors.RenderError(
+			ctx, http.StatusNotFound, "Runner not found",
+		)
 		return
 	}
 

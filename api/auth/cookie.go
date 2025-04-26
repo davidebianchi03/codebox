@@ -11,7 +11,7 @@ import (
 func SetAuthCookie(ctx *gin.Context, token string) error {
 	// Set auth cookie, duration is set to zero because
 	// token expiration has been already set in DB
-	ctx.SetSameSite(http.SameSiteLaxMode) // TODO: use same site lax in prod
+	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie(
 		config.Environment.AuthCookieName,
 		token,

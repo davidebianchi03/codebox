@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"time"
 
+	apierrors "github.com/davidebianchi03/codebox/api/errors"
 	"github.com/davidebianchi03/codebox/api/utils"
 	"github.com/davidebianchi03/codebox/config"
 	dbconn "github.com/davidebianchi03/codebox/db/connection"
@@ -34,17 +35,13 @@ func HandleSubdomainLoginAuthorize(ctx *gin.Context) {
 
 	token, err := utils.GetTokenFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		apierrors.RenderError(ctx, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	authorizationCode, err := models.GenerateAuthorizationCode(token, time.Now().Add(2*time.Minute))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		apierrors.RenderError(ctx, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
@@ -66,9 +63,9 @@ func HandleSubdomainLoginAuthorize(ctx *gin.Context) {
 func HandleSubdomainLoginCallback(ctx *gin.Context) {
 	code, ok := ctx.GetQuery("code")
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"detail": "missing or invalid authorization code",
-		})
+		apierrors.RenderError(
+			ctx, http.StatusBadRequest, "missing or invalid authorization code",
+		)
 		return
 	}
 

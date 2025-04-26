@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
+	apierrors "github.com/davidebianchi03/codebox/api/errors"
 	"github.com/davidebianchi03/codebox/api/workspaces"
 	"github.com/davidebianchi03/codebox/config"
 	"github.com/gin-gonic/gin"
@@ -19,13 +21,17 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 	if strings.Contains(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardDomain)) {
 		subdomains := strings.Split(strings.ReplaceAll(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardDomain), ""), ".")
 		if len(subdomains) == 0 {
-			// TODO: show error page: 404
+			apierrors.RenderError(
+				ctx, http.StatusNotFound, "Not found",
+			)
 			return
 		}
 
 		portSubdomain := subdomains[len(subdomains)-1]
 		if !strings.HasPrefix(portSubdomain, "codebox--") {
-			// TODO: show error page: 404
+			apierrors.RenderError(
+				ctx, http.StatusNotFound, "Not found",
+			)
 			return
 		}
 
