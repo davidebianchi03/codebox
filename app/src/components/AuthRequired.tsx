@@ -1,6 +1,6 @@
 import { withRouter } from "../common/router";
 import { Http } from "../api/http";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { RequestStatus } from "../api/types";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "../types/user";
@@ -32,12 +32,16 @@ function AuthRequired({ children, showNavbar = true }: Props) {
   useEffect(() => {
     WhoAmI();
   }, [WhoAmI]);
-
+  
   return (
-    <>
-      {user && showNavbar && <Navbar user={user} />}
-      {children}
-    </>
+    <React.Fragment>
+      {user && showNavbar && (
+        <>
+          <Navbar user={user} />
+          {children}
+        </>
+      )}
+    </React.Fragment>
   );
 }
 
