@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.20 - 2025-04-26
+- fixed authentication of subdomains
+
 # v0.0.19 - 2025-04-21
 - improved web interfaces
 - improved authentication flow
