@@ -1,6 +1,7 @@
 # Changelog
 
-# unreleased
+# v0.0.21 - 2025-04-26
+- pretty error messages
 - use cookie with another name for subdomains'authentication
 
 # v0.0.20 - 2025-04-26
