@@ -16,8 +16,8 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 	// format codebox--<workspace_id>--<container_name>--<port_number>
 
 	requestDomain := ctx.Request.Host
-	if strings.Contains(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardExternalUrl)) {
-		subdomains := strings.Split(strings.ReplaceAll(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardExternalUrl), ""), ".")
+	if strings.Contains(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardDomain)) {
+		subdomains := strings.Split(strings.ReplaceAll(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardDomain), ""), ".")
 		if len(subdomains) == 0 {
 			// TODO: show error page: 404
 			return

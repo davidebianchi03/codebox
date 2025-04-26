@@ -9,10 +9,10 @@ import (
 
 func HandleRetrieveServerSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"version":               config.ServerVersion,
-		"use_gravatar":          config.Environment.UseGravatar,
-		"use_subdomains":        config.Environment.UseSubDomains,
-		"external_url":          config.Environment.ExternalUrl,
-		"wildcard_external_url": config.Environment.WildcardExternalUrl,
+		"version":         config.ServerVersion,
+		"use_gravatar":    config.Environment.UseGravatar,
+		"use_subdomains":  config.Environment.UseSubDomains,
+		"external_url":    config.Environment.ExternalUrl,
+		"wildcard_domain": config.Environment.WildcardDomain,
 	})
 }

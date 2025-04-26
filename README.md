@@ -57,7 +57,8 @@ services:
       - codeboxdata:/codebox/data
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - CODEBOX_EXTERNAL_URL=${CODEBOX_EXTERNAL_URL:-codebox.example.com}
+      - CODEBOX_EXTERNAL_URL=${CODEBOX_EXTERNAL_URL:-https://codebox.example.com}
+      - CODEBOX_WILDCARD_DOMAIN=${CODEBOX_WILDCARD_DOMAIN:-codebox.example.com}
       - CODEBOX_USE_GRAVATAR=true
       - CODEBOX_USE_SUBDOMAINS=true
       - CODEBOX_DB_NAME=${CODEBOX_DB_NAME:-codebox}

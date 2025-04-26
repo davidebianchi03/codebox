@@ -102,7 +102,7 @@ func HandleSubdomainLoginCallback(ctx *gin.Context) {
 	}
 
 	// set cookie
-	if err := SetAuthCookie(ctx, authorizationCode.Token.Token); err != nil {
+	if err := SetSubdomainsAuthCookie(ctx, authorizationCode.Token.Token); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})

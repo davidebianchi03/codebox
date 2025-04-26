@@ -11,33 +11,63 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetTokenFromContext(ctx *gin.Context) (models.Token, error) {
+// retrieves token from 'Authorization' header
+func getTokenFromAuthorizationHeader(ctx *gin.Context) (token string, err error) {
 	authHeader := ctx.Request.Header.Get("Authorization")
-
-	jwtCookie, err := ctx.Cookie(config.Environment.AuthCookieName)
-	if err != nil {
-		jwtCookie = ""
-	}
-
-	if authHeader == "" && jwtCookie == "" {
-		return models.Token{}, fmt.Errorf("missing or invalid authorization token")
-	}
-
-	jwtToken := ""
 	if authHeader != "" {
 		headerParts := strings.Split(authHeader, "Bearer ")
 
 		if len(headerParts) != 2 {
-			return models.Token{}, fmt.Errorf("missing or invalid authorization token")
+			return "", fmt.Errorf("missing or invalid authorization token")
 		}
 
-		jwtToken = headerParts[1]
-	} else {
-		jwtToken = jwtCookie
+		return headerParts[1], nil
+	}
+	return "", nil
+}
+
+// retrieves token from authorization cookie
+func getTokenFromAuthCookie(ctx *gin.Context) (token string, err error) {
+	cookie, err := ctx.Cookie(config.Environment.AuthCookieName)
+	if err != nil {
+		return "", err
+	}
+	return cookie, nil
+}
+
+// Retrieves the authorization token from the cookie used in subdomains.
+// Note: This cookie uses a different name compared to the main website's authorization cookie.
+// This addresses a scenario where a subdomain (within the codebox server's wildcard domain)
+// might attempt to set a cookie with the same name as the secure codebox server's
+// authorization cookie, which browsers prevent.
+func getTokenFromSubdomainAuthCookie(ctx *gin.Context) (token string, err error) {
+	cookie, err := ctx.Cookie(config.Environment.SubdomainAuthCookieName)
+	if err != nil {
+		return "", err
+	}
+	return cookie, nil
+}
+
+// retrieve authorization token from the gin context
+// sources hierarchy is:
+// 1. authorization header
+// 2. main website's authorization cookie
+// 3. subdomains' authorization cookie
+func GetTokenFromContext(ctx *gin.Context) (models.Token, error) {
+	t, _ := getTokenFromAuthorizationHeader(ctx)
+	if t == "" {
+		t, _ = getTokenFromAuthCookie(ctx)
+		if t == "" {
+			t, _ = getTokenFromSubdomainAuthCookie(ctx)
+		}
+	}
+
+	if t == "" {
+		return models.Token{}, fmt.Errorf("missing or invalid authorization token")
 	}
 
 	var token models.Token
-	result := dbconn.DB.Where("token=?", jwtToken).Preload("User").First(&token)
+	result := dbconn.DB.Where("token=?", t).Preload("User").First(&token)
 	if result.Error != nil {
 		return models.Token{}, fmt.Errorf("missing or invalid authorization token")
 	}

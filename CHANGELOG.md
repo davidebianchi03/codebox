@@ -1,5 +1,8 @@
 # Changelog
 
+# unreleased
+- use cookie with another name for subdomains'authentication
+
 # v0.0.20 - 2025-04-26
 - fixed authentication of subdomains
 
