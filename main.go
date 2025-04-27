@@ -6,11 +6,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/davidebianchi03/codebox/bgtasks"
-	"github.com/davidebianchi03/codebox/config"
+	"gitlab.com/codebox4073715/codebox/bgtasks"
+	"gitlab.com/codebox4073715/codebox/config"
 
-	"github.com/davidebianchi03/codebox/api"
-	dbconn "github.com/davidebianchi03/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/api"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 )
 
 func main() {

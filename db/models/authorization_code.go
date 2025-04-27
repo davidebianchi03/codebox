@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	dbconn "github.com/davidebianchi03/codebox/db/connection"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gorm.io/gorm"
 )
 

@@ -3,8 +3,8 @@ package permissions
 import (
 	"net/http"
 
-	"github.com/davidebianchi03/codebox/api/utils"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/utils"
 )
 
 func AuthenticationRequiredRoute(handler gin.HandlerFunc) gin.HandlerFunc {

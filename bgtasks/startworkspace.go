@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	dbconn "github.com/davidebianchi03/codebox/db/connection"
-	"github.com/davidebianchi03/codebox/db/models"
-	"github.com/davidebianchi03/codebox/git"
-	"github.com/davidebianchi03/codebox/runnerinterface"
-	"github.com/davidebianchi03/codebox/utils/targz"
 	"github.com/gocraft/work"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/git"
+	"gitlab.com/codebox4073715/codebox/runnerinterface"
+	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
 
 func (jobContext *Context) StartWorkspace(job *work.Job) error {

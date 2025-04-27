@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
 // get the current user from the request context

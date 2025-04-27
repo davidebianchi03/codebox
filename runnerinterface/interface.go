@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/davidebianchi03/codebox/db/models"
-	"github.com/davidebianchi03/codebox/proxy"
+	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/proxy"
 )
 
 type RunnerInterface struct {

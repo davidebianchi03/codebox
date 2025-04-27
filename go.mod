@@ -1,4 +1,4 @@
-module github.com/davidebianchi03/codebox
+module gitlab.com/codebox4073715/codebox
 
 go 1.24.1
 

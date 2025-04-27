@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davidebianchi03/codebox/config"
+	"gitlab.com/codebox4073715/codebox/config"
 	"gorm.io/gorm"
 )
 

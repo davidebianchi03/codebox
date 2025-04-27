@@ -3,10 +3,10 @@ package workspaces
 import (
 	"net/http"
 
-	dbconn "github.com/davidebianchi03/codebox/db/connection"
-	"github.com/davidebianchi03/codebox/db/models"
-	"github.com/davidebianchi03/codebox/runnerinterface"
 	"github.com/gin-gonic/gin"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
 func HandleForwardSsh(ctx *gin.Context) {

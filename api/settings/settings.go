@@ -3,8 +3,8 @@ package settings
 import (
 	"net/http"
 
-	"github.com/davidebianchi03/codebox/config"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/config"
 )
 
 func HandleRetrieveServerSettings(c *gin.Context) {

@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davidebianchi03/codebox/config"
-	dbconn "github.com/davidebianchi03/codebox/db/connection"
-	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/config"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
 // retrieves token from 'Authorization' header

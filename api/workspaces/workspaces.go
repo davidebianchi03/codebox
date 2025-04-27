@@ -3,13 +3,13 @@ package workspaces
 import (
 	"net/http"
 
-	"github.com/davidebianchi03/codebox/api/utils"
-	"github.com/davidebianchi03/codebox/bgtasks"
-	"github.com/davidebianchi03/codebox/config"
-	dbconn "github.com/davidebianchi03/codebox/db/connection"
-	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/work"
+	"gitlab.com/codebox4073715/codebox/api/utils"
+	"gitlab.com/codebox4073715/codebox/bgtasks"
+	"gitlab.com/codebox4073715/codebox/config"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
 /*

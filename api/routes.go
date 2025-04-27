@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/davidebianchi03/codebox/api/admin"
-	"github.com/davidebianchi03/codebox/api/auth"
-	"github.com/davidebianchi03/codebox/api/cli"
-	"github.com/davidebianchi03/codebox/api/middleware"
-	"github.com/davidebianchi03/codebox/api/permissions"
-	"github.com/davidebianchi03/codebox/api/runners"
-	"github.com/davidebianchi03/codebox/api/settings"
-	"github.com/davidebianchi03/codebox/api/workspaces"
-	"github.com/davidebianchi03/codebox/config"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/admin"
+	"gitlab.com/codebox4073715/codebox/api/auth"
+	"gitlab.com/codebox4073715/codebox/api/cli"
+	"gitlab.com/codebox4073715/codebox/api/middleware"
+	"gitlab.com/codebox4073715/codebox/api/permissions"
+	"gitlab.com/codebox4073715/codebox/api/runners"
+	"gitlab.com/codebox4073715/codebox/api/settings"
+	"gitlab.com/codebox4073715/codebox/api/workspaces"
+	"gitlab.com/codebox4073715/codebox/config"
 )
 
 func SetupRouter() *gin.Engine {

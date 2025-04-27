@@ -3,10 +3,10 @@ package auth
 import (
 	"net/http"
 
-	"github.com/davidebianchi03/codebox/api/utils"
-	dbconn "github.com/davidebianchi03/codebox/db/connection"
-	"github.com/davidebianchi03/codebox/db/models"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/utils"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
 // TODO: ratelimit

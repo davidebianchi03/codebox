@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"strings"
 
-	apierrors "github.com/davidebianchi03/codebox/api/errors"
-	"github.com/davidebianchi03/codebox/api/workspaces"
-	"github.com/davidebianchi03/codebox/config"
 	"github.com/gin-gonic/gin"
+	apierrors "gitlab.com/codebox4073715/codebox/api/errors"
+	"gitlab.com/codebox4073715/codebox/api/workspaces"
+	"gitlab.com/codebox4073715/codebox/config"
 )
 
 func PortForwardingMiddleware(ctx *gin.Context) {

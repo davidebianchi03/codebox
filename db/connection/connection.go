@@ -3,8 +3,8 @@ package connection
 import (
 	"fmt"
 
-	"github.com/davidebianchi03/codebox/config"
 	"github.com/pkg/errors"
+	"gitlab.com/codebox4073715/codebox/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
