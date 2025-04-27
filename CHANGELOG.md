@@ -1,5 +1,8 @@
 # Changelog
 
+# Unreleased
+- added workspace templates
+
 # v0.0.21 - 2025-04-26
 - pretty error messages
 - use cookie with another name for subdomains'authentication

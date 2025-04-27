@@ -5,6 +5,8 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gitlab.com/codebox4073715/codebox/api/admin"
 	"gitlab.com/codebox4073715/codebox/api/auth"
 	"gitlab.com/codebox4073715/codebox/api/cli"
@@ -12,8 +14,10 @@ import (
 	"gitlab.com/codebox4073715/codebox/api/permissions"
 	"gitlab.com/codebox4073715/codebox/api/runners"
 	"gitlab.com/codebox4073715/codebox/api/settings"
+	"gitlab.com/codebox4073715/codebox/api/templates"
 	"gitlab.com/codebox4073715/codebox/api/workspaces"
 	"gitlab.com/codebox4073715/codebox/config"
+	docs "gitlab.com/codebox4073715/codebox/docs"
 )
 
 func SetupRouter() *gin.Engine {
@@ -33,6 +37,8 @@ func V1ApiRoutes(router *gin.Engine) {
 	// middlewares
 	router.Use(middleware.PortForwardingMiddleware)
 	router.Use(middleware.CORSMiddleware)
+
+	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	// endpoints
 	v1 := router.Group("/api/v1")
@@ -168,6 +174,13 @@ func V1ApiRoutes(router *gin.Engine) {
 		}
 		v1.GET("/workspace-types", permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes))
 
+		templatesApis := v1.Group("/templates")
+		{
+			templatesApis.GET("", permissions.AuthenticationRequiredRoute(templates.HandleListTemplates))
+			templatesApis.GET(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplate))
+			templatesApis.POST("", permissions.AuthenticationRequiredRoute(templates.HandleCreateTemplate))
+		}
+
 		// runners related apis
 		runnersApis := v1.Group("/runners")
 		{
@@ -240,4 +253,6 @@ func V1ApiRoutes(router *gin.Engine) {
 			)
 		}
 	}
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }

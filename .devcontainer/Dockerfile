@@ -88,6 +88,7 @@ RUN npm install -g @devcontainers/cli
 
 # Install dlv and set permissions
 RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
+    go install github.com/swaggo/swag/cmd/swag@latest && \
     sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
 
 USER root
