@@ -45,7 +45,7 @@ COPY ./docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./docker/startgin.sh /docker-entrypoint.d/
 COPY ./atlas.hcl /codebox/bin
 COPY ./migrations/ /codebox/bin/migrations
-COPY ./templates/ /codebox/bin/templates
+COPY ./html/ /codebox/bin/html
 
 RUN chmod +x /docker-entrypoint.d/startgin.sh && \
     chmod +x /codebox/bin/codebox && \

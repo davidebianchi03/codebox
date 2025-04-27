@@ -25,8 +25,6 @@ services:
       - db
     image: phpmyadmin
     restart: always
-    ports:
-      - "13880:80"
     environment:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: ${CODEBOX_DB_ROOT_PASSWORD:-password}
