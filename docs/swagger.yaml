@@ -12,6 +12,31 @@ definitions:
       type:
         type: string
     type: object
+  templates.CreateTemplateRequestBody:
+    properties:
+      description:
+        type: string
+      icon:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  templates.UpdateTemplateRequestBody:
+    properties:
+      description:
+        type: string
+      icon:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
 info:
   contact: {}
 paths:
@@ -29,9 +54,30 @@ paths:
             items:
               $ref: '#/definitions/models.WorkspaceTemplate'
             type: array
-      security:
-      - Codebox authentication token: []
       summary: List templates
+      tags:
+      - Templates
+    post:
+      consumes:
+      - application/json
+      description: Create a template
+      parameters:
+      - description: Template data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/templates.CreateTemplateRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/models.WorkspaceTemplate'
+            type: array
+      summary: Create template
       tags:
       - Templates
   /api/v1/templates/:id:
@@ -42,7 +88,7 @@ paths:
       parameters:
       - description: Template ID
         in: path
-        name: app
+        name: id
         required: true
         type: string
       produces:
@@ -52,9 +98,31 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.WorkspaceTemplate'
-      security:
-      - Codebox authentication token: []
       summary: Retrieve template by id
+      tags:
+      - Templates
+  /api/v1/templates/:templateId:
+    put:
+      consumes:
+      - application/json
+      description: Update a template
+      parameters:
+      - description: Template data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/templates.UpdateTemplateRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.WorkspaceTemplate'
+            type: array
+      summary: Update template
       tags:
       - Templates
 swagger: "2.0"

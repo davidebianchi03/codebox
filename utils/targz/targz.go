@@ -2,17 +2,107 @@ package targz
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
-func CreateArchive(srcDir string, outputFilePath string) error {
+type TarGZManager struct {
+	Filepath string
+}
+
+// create an empty tar.gz archive
+func (tgm *TarGZManager) CreateArchive() error {
+	file, err := os.Create(tgm.Filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	gw := gzip.NewWriter(file)
+	defer gw.Close()
+
+	tw := tar.NewWriter(gw)
+	defer tw.Close()
+
+	return nil
+}
+
+// write file inside a tar.gz archive,
+// if file already exists it will be overwritten
+func (tgm *TarGZManager) WriteFile(filename string, data []byte) error {
+	entries, err := tgm.readAll()
+	if err != nil {
+		return err
+	}
+
+	entries[filename] = data
+
+	return tgm.writeAll(entries)
+}
+
+// ReadFile, read file from archive
+func (tgm *TarGZManager) ReadFile(filename string) ([]byte, error) {
+	file, err := os.Open(tgm.Filepath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	gr, err := gzip.NewReader(file)
+	if err != nil {
+		return nil, err
+	}
+	defer gr.Close()
+
+	tr := tar.NewReader(gr)
+
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break // End of archive
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		if hdr.Name == filename {
+			var buf bytes.Buffer
+			if _, err := io.Copy(&buf, tr); err != nil {
+				return nil, err
+			}
+			return buf.Bytes(), nil
+		}
+	}
+
+	return nil, fmt.Errorf("file %s not found in archive", filename)
+}
+
+// DeleteFile removes a file from the archive
+func (tgm *TarGZManager) RemoveFileFromArchive(filename string) error {
+	entries, err := tgm.readAll()
+	if err != nil {
+		return err
+	}
+
+	if _, exists := entries[filename]; !exists {
+		return fmt.Errorf("file %s not found in archive", filename)
+	}
+
+	delete(entries, filename)
+
+	return tgm.writeAll(entries)
+}
+
+// compress folder into a tar.gz archive
+func (tgm *TarGZManager) CompressFolder(srcDir string) error {
 	// Create the output file
-	outFile, err := os.Create(outputFilePath)
+	outFile, err := os.Create(tgm.Filepath)
 	if err != nil {
 		return fmt.Errorf("failed to create archive file: %w", err)
 	}
@@ -77,70 +167,133 @@ func CreateArchive(srcDir string, outputFilePath string) error {
 	return nil
 }
 
-func ExtractTarGz(tarGzPath, destination string) error {
-	// Aprire il file tar.gz
-	tarGzFile, err := os.Open(tarGzPath)
+// extra tar.gz archive into a folder
+func (tgm *TarGZManager) ExtractTarGz(destination string) error {
+	tarGzFile, err := os.Open(tgm.Filepath)
 	if err != nil {
-		return fmt.Errorf("errore nell'apertura del file tar.gz: %v", err)
+		return fmt.Errorf("failed to open tar.gz file: %v", err)
 	}
 	defer tarGzFile.Close()
 
-	// Decomprimere il gzip
 	uncompressedStream, err := gzip.NewReader(tarGzFile)
 	if err != nil {
-		return fmt.Errorf("errore nella lettura del gzip: %v", err)
+		return fmt.Errorf("failed to read gzip: %v", err)
 	}
 	defer uncompressedStream.Close()
 
-	// Leggere l'archivio tar
 	tarReader := tar.NewReader(uncompressedStream)
 
 	for {
-		// Leggere la prossima intestazione di file
 		header, err := tarReader.Next()
 
-		// Se raggiungiamo la fine dell'archivio, esci
 		if err == io.EOF {
 			break
 		}
 
-		// Gestire altri errori
 		if err != nil {
-			return fmt.Errorf("errore nella lettura del tar: %v", err)
+			return fmt.Errorf("failed to open tar file: %v", err)
 		}
 
-		// Creare il percorso completo
 		target := filepath.Join(destination, header.Name)
 
-		// Controllare il tipo di file
 		switch header.Typeflag {
 		case tar.TypeDir:
-			// Creare la directory se non esiste già
 			if err := os.MkdirAll(target, os.FileMode(header.Mode)); err != nil {
-				return fmt.Errorf("errore nella creazione della directory: %v", err)
+				return fmt.Errorf("failed to create output directory: %v", err)
 			}
 
 		case tar.TypeReg:
-			// Creare la directory padre, se necessario
 			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
-				return fmt.Errorf("errore nella creazione della directory padre: %v", err)
+				return fmt.Errorf("failed to create parent directory: %v", err)
 			}
 
-			// Creare il file
 			outFile, err := os.Create(target)
 			if err != nil {
-				return fmt.Errorf("errore nella creazione del file: %v", err)
+				return fmt.Errorf("failed to create file: %v", err)
 			}
 			defer outFile.Close()
 
-			// Scrivere il contenuto del file
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return fmt.Errorf("errore nella scrittura del file: %v", err)
+				return fmt.Errorf("failed to write file: %v", err)
 			}
 
 		default:
-			// Se ci sono altri tipi di file, ignorarli (puoi gestirli se necessario)
 			fmt.Printf("Tipo di file non gestito: %c nel file %s\n", header.Typeflag, header.Name)
+		}
+	}
+
+	return nil
+}
+
+// readAll reads all files inside the tar.gz archive into a map
+func (tgm *TarGZManager) readAll() (map[string][]byte, error) {
+	entries := make(map[string][]byte)
+
+	file, err := os.Open(tgm.Filepath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return entries, nil // Return empty if file doesn't exist yet
+		}
+		return nil, err
+	}
+	defer file.Close()
+
+	gr, err := gzip.NewReader(file)
+	if err != nil {
+		return nil, err
+	}
+	defer gr.Close()
+
+	tr := tar.NewReader(gr)
+
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		var buf bytes.Buffer
+		if _, err := io.Copy(&buf, tr); err != nil {
+			return nil, err
+		}
+
+		entries[hdr.Name] = buf.Bytes()
+	}
+
+	return entries, nil
+}
+
+// writeAll writes all files from the map into the tar.gz archive
+func (tgm *TarGZManager) writeAll(entries map[string][]byte) error {
+	file, err := os.Create(tgm.Filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	gw := gzip.NewWriter(file)
+	defer gw.Close()
+
+	tw := tar.NewWriter(gw)
+	defer tw.Close()
+
+	for name, data := range entries {
+		hdr := &tar.Header{
+			Name:    name,
+			Mode:    0600,
+			Size:    int64(len(data)),
+			ModTime: time.Now(),
+		}
+
+		if err := tw.WriteHeader(hdr); err != nil {
+			return err
+		}
+
+		if _, err := tw.Write(data); err != nil {
+			return err
 		}
 	}
 

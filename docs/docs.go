@@ -17,11 +17,6 @@ const docTemplate = `{
     "paths": {
         "/api/v1/templates": {
             "get": {
-                "security": [
-                    {
-                        "Codebox authentication token": []
-                    }
-                ],
                 "description": "List all templates",
                 "consumes": [
                     "application/json"
@@ -44,15 +39,45 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Create a template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Create template",
+                "parameters": [
+                    {
+                        "description": "Template data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/templates.CreateTemplateRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.WorkspaceTemplate"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/v1/templates/:id": {
             "get": {
-                "security": [
-                    {
-                        "Codebox authentication token": []
-                    }
-                ],
                 "description": "Retrieve a template by id",
                 "consumes": [
                     "application/json"
@@ -68,7 +93,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Template ID",
-                        "name": "app",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -78,6 +103,43 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.WorkspaceTemplate"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/templates/:templateId": {
+            "put": {
+                "description": "Update a template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Update template",
+                "parameters": [
+                    {
+                        "description": "Template data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/templates.UpdateTemplateRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.WorkspaceTemplate"
+                            }
                         }
                     }
                 }
@@ -101,6 +163,44 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "templates.CreateTemplateRequestBody": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "templates.UpdateTemplateRequestBody": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }

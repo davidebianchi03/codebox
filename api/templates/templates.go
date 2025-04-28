@@ -42,8 +42,33 @@ func HandleListTemplates(c *gin.Context) {
 // @Success 200 {object} models.WorkspaceTemplate
 // @Router /api/v1/templates/:id [get]
 func HandleRetrieveTemplate(c *gin.Context) {
-	var template *models.WorkspaceTemplate
-	_ = template
+	templateId, _ := c.Params.Get("templateId")
+
+	// get object
+	ti, err := strconv.Atoi(templateId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	template, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if template == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, template)
 }
 
 type CreateTemplateRequestBody struct {
@@ -60,10 +85,11 @@ type CreateTemplateRequestBody struct {
 // @Tags Templates
 // @Accept json
 // @Produce json
-// @Param request body templates.CreateTemplateRequestBody
+// @Param request body CreateTemplateRequestBody true "Template data"
 // @Success 201 {object} []models.WorkspaceTemplate
 // @Router /api/v1/templates [post]
 func HandleCreateTemplate(c *gin.Context) {
+
 	var requestBody *CreateTemplateRequestBody
 
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
@@ -144,7 +170,7 @@ type UpdateTemplateRequestBody struct {
 // @Tags Templates
 // @Accept json
 // @Produce json
-// @Param request body templates.UpdateTemplateRequestBody
+// @Param request body UpdateTemplateRequestBody true "Template data"
 // @Success 200 {object} []models.WorkspaceTemplate
 // @Router /api/v1/templates/:templateId [put]
 func HandleUpdateTemplate(c *gin.Context) {

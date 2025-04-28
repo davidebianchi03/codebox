@@ -64,7 +64,8 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		}
 
 		// create targz archive
-		if err = targz.CreateArchive(tempDirPath, gitSourcesFile); err != nil {
+		tgm := targz.TarGZManager{Filepath: gitSourcesFile}
+		if err = tgm.CompressFolder(tempDirPath); err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to create targz archive, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
 			dbconn.DB.Save(&workspace)
