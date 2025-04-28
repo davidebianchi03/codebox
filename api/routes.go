@@ -179,6 +179,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			templatesApis.GET("", permissions.AuthenticationRequiredRoute(templates.HandleListTemplates))
 			templatesApis.GET(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplate))
 			templatesApis.POST("", permissions.AuthenticationRequiredRoute(templates.HandleCreateTemplate))
+			templatesApis.PUT(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleUpdateTemplate))
 		}
 
 		// runners related apis

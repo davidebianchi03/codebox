@@ -22,20 +22,36 @@ type WorkspaceTemplate struct {
 // return nil if object is not found
 func RetrieveWorkspaceTemplateByID(id uint) (*WorkspaceTemplate, error) {
 	var wt *WorkspaceTemplate
-	err := dbconn.DB.Model(WorkspaceTemplate{}).Find(&wt, map[string]interface{}{
+	r := dbconn.DB.Model(WorkspaceTemplate{}).Find(&wt, map[string]interface{}{
 		"id": id,
-	}).Error
-	return wt, err
+	})
+
+	if r.Error != nil {
+		return nil, r.Error
+	}
+
+	if r.RowsAffected == 0 {
+		return nil, nil
+	}
+	return wt, nil
 }
 
 // Retrieve workspace template by name
 // return nil if object is not found
 func RetrieveWorkspaceTemplateByName(name string) (*WorkspaceTemplate, error) {
 	var wt *WorkspaceTemplate
-	err := dbconn.DB.Model(WorkspaceTemplate{}).Find(&wt, map[string]interface{}{
+	r := dbconn.DB.Model(WorkspaceTemplate{}).Find(&wt, map[string]interface{}{
 		"name": name,
-	}).Error
-	return wt, err
+	})
+
+	if r.Error != nil {
+		return nil, r.Error
+	}
+
+	if r.RowsAffected == 0 {
+		return nil, nil
+	}
+	return wt, nil
 }
 
 // create new template
@@ -53,4 +69,14 @@ func CreateWorkspaceTemplate(name string, templateType string, description strin
 	}
 
 	return &wt, nil
+}
+
+// update workspace template
+func UpdateWorkspaceTemplate(wt WorkspaceTemplate) error {
+	err := dbconn.DB.Save(&wt).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

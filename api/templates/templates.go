@@ -2,8 +2,10 @@ package templates
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
@@ -87,6 +89,30 @@ func HandleCreateTemplate(c *gin.Context) {
 		return
 	}
 
+	// check if type is valid
+	valid := false
+	for _, workspaceType := range config.ListWorkspaceTypes() {
+		// check if the current workspace type supports
+		// templates as config source
+		templatesSupported := false
+		for _, configSource := range workspaceType.SupportedConfigSources {
+			if configSource == "template" {
+				templatesSupported = true
+			}
+		}
+
+		if templatesSupported && workspaceType.ID == requestBody.Type {
+			valid = true
+		}
+	}
+
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "'type' is not valid",
+		})
+		return
+	}
+
 	// add template
 	wt, err = models.CreateWorkspaceTemplate(
 		requestBody.Name,
@@ -107,7 +133,6 @@ func HandleCreateTemplate(c *gin.Context) {
 
 type UpdateTemplateRequestBody struct {
 	Name        string `json:"name" binding:"required"`
-	Type        string `json:"type" binding:"required"`
 	Description string `json:"description"`
 	Icon        string `json:"icon"`
 }
@@ -123,34 +148,69 @@ type UpdateTemplateRequestBody struct {
 // @Success 200 {object} []models.WorkspaceTemplate
 // @Router /api/v1/templates/:templateId [put]
 func HandleUpdateTemplate(c *gin.Context) {
-	// templateId, err := c.Params.Get("templateId")
+	templateId, _ := c.Params.Get("templateId")
 
-	// // get object
-	// err, wt :=
+	// get object
+	ti, err := strconv.Atoi(templateId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
 
-	// var requestBody *UpdateTemplateRequestBody
+	wt, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
 
-	// if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"details": "missing or invalid argument",
-	// 	})
-	// 	return
-	// }
+	if wt == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
 
-	// // check if a row with the same name already exists
-	// wt, err := models.RetrieveWorkspaceTemplateByName(requestBody.Name)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{
-	// 		"details": "internal server error",
-	// 	})
-	// 	return
-	// }
+	var requestBody *UpdateTemplateRequestBody
 
-	// if wt != nil {
-	// 	c.JSON(http.StatusConflict, gin.H{
-	// 		"details": "another template with the same name already exists",
-	// 	})
-	// 	return
-	// }
+	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "missing or invalid argument",
+		})
+		return
+	}
 
+	// check if a row with the same name already exists
+	wte, err := models.RetrieveWorkspaceTemplateByName(requestBody.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if wte != nil {
+		if wt.ID != uint(ti) {
+			c.JSON(http.StatusConflict, gin.H{
+				"details": "another template with the same name already exists",
+			})
+			return
+		}
+	}
+
+	wt.Name = requestBody.Name
+	wt.Description = requestBody.Description
+	wt.Icon = requestBody.Icon
+
+	if err := models.UpdateWorkspaceTemplate(*wt); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, wt)
 }
