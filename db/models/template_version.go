@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -30,12 +31,14 @@ type WorkspaceTemplateVersion struct {
 
 func ListWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (*[]WorkspaceTemplateVersion, error) {
 	var tv *[]WorkspaceTemplateVersion
-	if err := dbconn.DB.Find(
-		&tv,
-		map[string]interface{}{
-			"template_id": template.ID,
-		},
-	).Error; err != nil {
+	if err := dbconn.DB.
+		Preload("Template").
+		Find(
+			&tv,
+			map[string]interface{}{
+				"template_id": template.ID,
+			},
+		).Error; err != nil {
 		return nil, err
 	}
 
@@ -59,13 +62,15 @@ func CountWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (int64
 
 func RetrieveWorkspaceTemplateVersionsByIdByTemplate(template WorkspaceTemplate, versionId uint) (*WorkspaceTemplateVersion, error) {
 	var tv *WorkspaceTemplateVersion
-	r := dbconn.DB.Find(
-		&tv,
-		map[string]interface{}{
-			"id":          versionId,
-			"template_id": template.ID,
-		},
-	)
+	r := dbconn.DB.
+		Preload("Template").
+		Find(
+			&tv,
+			map[string]interface{}{
+				"id":          versionId,
+				"template_id": template.ID,
+			},
+		)
 
 	if r.Error != nil {
 		return nil, r.Error
@@ -180,4 +185,38 @@ func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (
 	}
 
 	return &templateVersion, nil
+}
+
+func UpdateTemplateVersion(
+	template WorkspaceTemplate,
+	tv WorkspaceTemplateVersion,
+	name string,
+	published bool,
+	user User,
+) (*WorkspaceTemplateVersion, error) {
+	// check if template version exists
+	templateVersion, err := RetrieveWorkspaceTemplateVersionsByIdByTemplate(template, tv.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if templateVersion == nil {
+		return nil, errors.New("template version does not exists")
+	}
+
+	if templateVersion.Published && !published {
+		return nil, errors.New("is not possible to unpublish a version")
+	}
+
+	templateVersion.Name = name
+	templateVersion.Published = published
+	templateVersion.EditedByID = user.ID
+	templateVersion.EditedBy = &user
+	templateVersion.EditedOn = time.Now()
+
+	if err := dbconn.DB.Save(&templateVersion).Error; err != nil {
+		return nil, err
+	}
+
+	return templateVersion, nil
 }
