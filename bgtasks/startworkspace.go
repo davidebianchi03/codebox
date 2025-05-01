@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"time"
 
 	"github.com/gocraft/work"
+	"github.com/google/uuid"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/git"
@@ -19,25 +21,42 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace models.Workspace
-	dbconn.DB.Model(&models.Workspace{}).
+	r := dbconn.DB.Model(&models.Workspace{}).
 		Preload("User").
 		Preload("Runner").
 		Preload("GitSource").
+		Preload("GitSource.Sources").
 		Preload("TemplateVersion").
 		First(&workspace, map[string]interface{}{
 			"ID": workspaceId,
 		})
 
-	if workspace.ID <= 0 {
+	if r.Error != nil {
+		return r.Error
+	}
+
+	if r.RowsAffected == 0 {
 		return errors.New("workspace not found")
 	}
 	defer dbconn.DB.Save(&workspace)
 
 	// if workspace config source is a git repository retrieve latest version
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
-		// TODO: check if config file exists
 		if workspace.GitSource != nil {
-			if workspace.GitSource.Files == "" {
+			if workspace.GitSource.Sources == nil {
+				gitSources := models.File{
+					Filepath: path.Join("git-sources", fmt.Sprintf("%s.tar.gz", uuid.New().String())),
+				}
+				dbconn.DB.Save(&gitSources)
+
+				workspace.GitSource.SourcesID = gitSources.ID
+				workspace.GitSource.Sources = &gitSources
+				dbconn.DB.Save(&workspace.GitSource)
+				dbconn.DB.Save(&workspace)
+			}
+
+			// check if config files exists, clone them if not exist
+			if !workspace.GitSource.Sources.Exists() {
 				tempDirPath, err := os.MkdirTemp("", fmt.Sprintf("codebox-%d", workspace.ID))
 				if err != nil {
 					workspace.AppendLogs(fmt.Sprintf("failed to create tmp folder, %s", err.Error()))
@@ -46,7 +65,6 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 				}
 				defer os.RemoveAll(tempDirPath)
 
-				gitSourcesFile, err := workspace.GitSource.GetConfigFileAbsPath()
 				if err != nil {
 					workspace.AppendLogs(fmt.Sprintf("failed to retrieve configuration file path, %s", err.Error()))
 					workspace.Status = models.WorkspaceStatusError
@@ -66,16 +84,12 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 				}
 
 				// create targz archive
-				tgm := targz.TarGZManager{Filepath: gitSourcesFile}
+				tgm := targz.TarGZManager{Filepath: workspace.GitSource.Sources.GetAbsolutePath()}
 				if err = tgm.CompressFolder(tempDirPath); err != nil {
 					workspace.AppendLogs(fmt.Sprintf("failed to create targz archive, %s", err.Error()))
 					workspace.Status = models.WorkspaceStatusError
 					return nil
 				}
-
-				gitSource := workspace.GitSource
-				gitSource.Files, _ = gitSource.GetConfigFileAbsPath()
-				dbconn.DB.Save(&gitSource)
 
 				workspace.AppendLogs("the git repository has been cloned")
 			}

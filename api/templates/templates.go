@@ -89,7 +89,6 @@ type CreateTemplateRequestBody struct {
 // @Success 201 {object} []models.WorkspaceTemplate
 // @Router /api/v1/templates [post]
 func HandleCreateTemplate(c *gin.Context) {
-
 	var requestBody *CreateTemplateRequestBody
 
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {

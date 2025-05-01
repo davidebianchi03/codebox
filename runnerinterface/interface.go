@@ -75,16 +75,14 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 	_ = writer.WriteField("guid", strconv.Itoa(int(workspace.ID)))
 
 	configFilePath := ""
-	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
-		configFilePath, err = workspace.GitSource.GetConfigFileAbsPath()
-		if err != nil {
-			return err
+	if workspace.ConfigSource == models.WorkspaceConfigSourceGit && workspace.GitSource != nil {
+		if workspace.GitSource.Sources == nil {
+			return errors.New("source files do not exists")
 		}
+
+		configFilePath = workspace.GitSource.Sources.GetAbsolutePath()
 	} else {
-		configFilePath, err = workspace.TemplateVersion.GetConfigFileAbsPath()
-		if err != nil {
-			return err
-		}
+		panic("not implemented")
 	}
 
 	configFile, err := os.Open(configFilePath)

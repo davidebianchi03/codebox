@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/gocraft/work"
+	"github.com/google/uuid"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/git"
@@ -20,6 +22,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		Preload("User").
 		Preload("Runner").
 		Preload("GitSource").
+		Preload("GitSource.Sources").
 		Preload("TemplateVersion").
 		First(&workspace, map[string]interface{}{"ID": workspaceId})
 
@@ -32,6 +35,20 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 	}
 
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
+		if workspace.GitSource.Sources == nil {
+			gitSources := models.File{
+				Filepath: path.Join("git-sources", fmt.Sprintf("%s.tar.gz", uuid.New().String())),
+			}
+			dbconn.DB.Save(&gitSources)
+
+			workspace.GitSource.SourcesID = gitSources.ID
+			workspace.GitSource.Sources = &gitSources
+			dbconn.DB.Save(&workspace)
+		}
+
+		// remove existsing files and clone repository again
+		os.RemoveAll(workspace.GitSource.Sources.GetAbsolutePath())
+
 		tempDirPath, err := os.MkdirTemp("", fmt.Sprintf("codebox-%d", workspace.ID))
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to create tmp folder, %s", err.Error()))
@@ -40,15 +57,6 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 			return nil
 		}
 		defer os.RemoveAll(tempDirPath)
-
-		gitSourcesFile, err := workspace.GitSource.GetConfigFileAbsPath()
-		if err != nil {
-			workspace.AppendLogs(fmt.Sprintf("failed to retrieve configuration file path, %s", err.Error()))
-			workspace.Status = models.WorkspaceStatusError
-			dbconn.DB.Save(&workspace)
-			return nil
-		}
-		os.RemoveAll(gitSourcesFile)
 
 		if err = git.CloneRepo(
 			workspace.GitSource.RepositoryURL,
@@ -64,20 +72,17 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		}
 
 		// create targz archive
-		tgm := targz.TarGZManager{Filepath: gitSourcesFile}
+		tgm := targz.TarGZManager{Filepath: workspace.GitSource.Sources.GetAbsolutePath()}
 		if err = tgm.CompressFolder(tempDirPath); err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to create targz archive, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
 			dbconn.DB.Save(&workspace)
 			return nil
 		}
-
-		gitSource := workspace.GitSource
-		gitSource.Files, _ = gitSource.GetConfigFileAbsPath()
-		dbconn.DB.Save(&gitSource)
 	} else {
 		panic("not implemented")
 	}
+
 	dbconn.DB.Save(&workspace)
 	workspace.AppendLogs("Config files have been updated")
 
