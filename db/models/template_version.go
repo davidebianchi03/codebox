@@ -2,12 +2,14 @@ package models
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"time"
 
 	"github.com/google/uuid"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/utils/targz"
 	"gorm.io/gorm"
 )
 
@@ -40,6 +42,21 @@ func ListWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (*[]Wor
 	return tv, nil
 }
 
+func CountWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (int64, error) {
+	var count int64
+	if err := dbconn.DB.
+		Model(&WorkspaceTemplateVersion{}).
+		Where(
+			map[string]interface{}{
+				"template_id": template.ID,
+			},
+		).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func RetrieveWorkspaceTemplateVersionsByIdByTemplate(template WorkspaceTemplate, versionId uint) (*WorkspaceTemplateVersion, error) {
 	var tv *WorkspaceTemplateVersion
 	r := dbconn.DB.Find(
@@ -61,22 +78,39 @@ func RetrieveWorkspaceTemplateVersionsByIdByTemplate(template WorkspaceTemplate,
 	return tv, nil
 }
 
-func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (*WorkspaceTemplateVersion, error) {
-	// retrieve the latest version for the template
-	var lastTemplateVersion *WorkspaceTemplateVersion
-	r := dbconn.DB.Last(
-		&lastTemplateVersion,
-		map[string]interface{}{
-			"template_id": template.ID,
-		},
-	)
-
-	if r.Error != nil {
-		return nil, r.Error
+func RetrieveLatestTemplateVersionByTemplate(template WorkspaceTemplate) (*WorkspaceTemplateVersion, error) {
+	count, err := CountWorkspaceTemplateVersionsByTemplate(template)
+	if err != nil {
+		return nil, err
 	}
 
-	if r.RowsAffected == 0 {
-		lastTemplateVersion = nil
+	var lastTemplateVersion *WorkspaceTemplateVersion
+
+	if count > 0 {
+		r := dbconn.DB.
+			Preload("Sources").
+			Last(
+				&lastTemplateVersion,
+				map[string]interface{}{
+					"template_id": template.ID,
+				},
+			)
+
+		if r.Error != nil {
+			return nil, r.Error
+		}
+
+		return lastTemplateVersion, nil
+	}
+
+	return nil, nil
+}
+
+func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (*WorkspaceTemplateVersion, error) {
+	// retrieve the latest version for the template
+	lastTemplateVersion, err := RetrieveLatestTemplateVersionByTemplate(template)
+	if err != nil {
+		return nil, err
 	}
 
 	// create source file item
@@ -86,6 +120,42 @@ func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (
 
 	if sourceFile.Exists() {
 		os.RemoveAll(sourceFile.GetAbsolutePath())
+	}
+
+	copySourcesFromLastVersion := false
+	if lastTemplateVersion != nil {
+		if lastTemplateVersion.Sources != nil {
+			copySourcesFromLastVersion = !lastTemplateVersion.Sources.Exists()
+		}
+	}
+
+	if copySourcesFromLastVersion {
+		// copy previous version
+		src, err := os.Open(lastTemplateVersion.Sources.GetAbsolutePath())
+		if err != nil {
+			return nil, err
+		}
+		defer src.Close()
+
+		destinationFile, err := os.Create(sourceFile.GetAbsolutePath())
+		if err != nil {
+			return nil, err
+		}
+		defer destinationFile.Close()
+
+		_, err = io.Copy(destinationFile, src)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// create an empty tar.gz archive
+		tgm := targz.TarGZManager{
+			Filepath: sourceFile.GetAbsolutePath(),
+		}
+
+		if err := tgm.CreateArchive(); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := dbconn.DB.Save(&sourceFile).Error; err != nil {
@@ -109,7 +179,5 @@ func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (
 		return nil, err
 	}
 
-	// create or copy sources
-
-	return nil, nil
+	return &templateVersion, nil
 }

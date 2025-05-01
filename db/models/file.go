@@ -3,6 +3,7 @@ package models
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	"gitlab.com/codebox4073715/codebox/config"
@@ -17,8 +18,16 @@ type File struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+// get the absolute location of the file
+// create parent directory if it does not exists
 func (f *File) GetAbsolutePath() string {
-	return path.Join(config.Environment.UploadsPath, f.Filepath)
+	fp := path.Join(config.Environment.UploadsPath, f.Filepath)
+
+	// create parent folder if it does not exists
+	parentFolder := filepath.Dir(fp)
+	os.MkdirAll(parentFolder, 0700)
+
+	return fp
 }
 
 func (f *File) Exists() bool {

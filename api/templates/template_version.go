@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -102,6 +103,10 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, tv)
 }
 
+type CreateTemplateVersionRequestBody struct {
+	Name string `json:"name" binding:"required"`
+}
+
 // CreateTemplateVersionByTemplate godoc
 // @Summary Create new template version
 // @Schemes
@@ -109,10 +114,19 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 // @Tags Templates
 // @Accept json
 // @Produce json
+// @Param request body CreateTemplateVersionRequestBody true "Template version data"
 // @Success 200 {object} models.WorkspaceTemplateVersion
 // @Router /api/v1/templates/:templateId/versions [post]
 func HandleCreateTemplateVersionByTemplate(c *gin.Context) {
 	templateId, _ := c.Params.Get("templateId")
+
+	var requestBody *CreateTemplateVersionRequestBody
+	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "missing or invalid request param",
+		})
+		return
+	}
 
 	ti, err := strconv.Atoi(templateId)
 	if err != nil {
@@ -130,5 +144,28 @@ func HandleCreateTemplateVersionByTemplate(c *gin.Context) {
 		return
 	}
 
-	_ = wt
+	if wt == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	user, err := utils.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	wtb, err := models.CreateTemplateVersion(*wt, "Dfdf", user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, wtb)
 }
