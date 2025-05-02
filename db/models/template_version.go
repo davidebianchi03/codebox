@@ -33,6 +33,7 @@ func ListWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (*[]Wor
 	var tv *[]WorkspaceTemplateVersion
 	if err := dbconn.DB.
 		Preload("Template").
+		Preload("Sources").
 		Find(
 			&tv,
 			map[string]interface{}{
@@ -64,6 +65,7 @@ func RetrieveWorkspaceTemplateVersionsByIdByTemplate(template WorkspaceTemplate,
 	var tv *WorkspaceTemplateVersion
 	r := dbconn.DB.
 		Preload("Template").
+		Preload("Sources").
 		Find(
 			&tv,
 			map[string]interface{}{

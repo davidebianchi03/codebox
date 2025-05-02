@@ -225,6 +225,114 @@ func (tgm *TarGZManager) ExtractTarGz(destination string) error {
 	return nil
 }
 
+type TarEntry struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+func (tgm *TarGZManager) ListEntries() ([]TarEntry, error) {
+	entries := make([]TarEntry, 0)
+	file, err := os.Open(tgm.Filepath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []TarEntry{}, nil // Return empty if file doesn't exist yet
+		}
+		return nil, err
+	}
+	defer file.Close()
+
+	gr, err := gzip.NewReader(file)
+	if err != nil {
+		return nil, err
+	}
+	defer gr.Close()
+
+	tr := tar.NewReader(gr)
+
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		if hdr.Typeflag == tar.TypeDir {
+			entries = append(entries, TarEntry{
+				Name: hdr.Name,
+				Type: "dir",
+			})
+		} else {
+			entries = append(entries, TarEntry{
+				Name: hdr.Name,
+				Type: "file",
+			})
+		}
+	}
+
+	return entries, nil
+}
+
+type TarTreeItem struct {
+	Name     string         `json:"name"`
+	Type     string         `json:"type"`
+	Children []*TarTreeItem `json:"children"`
+}
+
+func (tgm *TarGZManager) EntriesTree() ([]*TarTreeItem, error) {
+	entries, err := tgm.ListEntries()
+	if err != nil {
+		return nil, err
+	}
+
+	var tree *[]*TarTreeItem
+	t := make([]*TarTreeItem, 0)
+	tree = &t
+
+	for _, entry := range entries {
+		// remove trailing slash
+		entryName := strings.TrimSuffix(entry.Name, "/")
+
+		parts := strings.Split(entryName, "/")
+
+		if len(parts) > 0 {
+			// check if exists
+			var parentTreeItem *TarTreeItem
+
+			for _, part := range parts {
+				var source *[]*TarTreeItem
+				if parentTreeItem == nil {
+					source = tree
+				} else {
+					source = &parentTreeItem.Children
+				}
+
+				found := false
+				for _, ti := range *source {
+					if ti.Name == part {
+						found = true
+						parentTreeItem = ti
+					}
+				}
+
+				if !found {
+					item := TarTreeItem{
+						Name:     part,
+						Children: make([]*TarTreeItem, 0),
+						Type:     entry.Type,
+					}
+
+					*source = append(*source, &item)
+					parentTreeItem = &item
+				}
+			}
+		}
+	}
+
+	return *tree, nil
+}
+
 // readAll reads all files inside the tar.gz archive into a map
 func (tgm *TarGZManager) readAll() (map[string][]byte, error) {
 	entries := make(map[string][]byte)

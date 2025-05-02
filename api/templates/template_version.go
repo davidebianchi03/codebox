@@ -23,7 +23,7 @@ func HandleListTemplateVersionsByTemplate(c *gin.Context) {
 
 	ti, err := strconv.Atoi(templateId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template not found",
 		})
 		return
@@ -63,7 +63,7 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 
 	ti, err := strconv.Atoi(templateId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template not found",
 		})
 		return
@@ -71,7 +71,7 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 
 	tvi, err := strconv.Atoi(templateVersionId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template version not found",
 		})
 		return
@@ -94,7 +94,7 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 	}
 
 	if tv == nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template version not found",
 		})
 		return
@@ -130,7 +130,7 @@ func HandleCreateTemplateVersionByTemplate(c *gin.Context) {
 
 	ti, err := strconv.Atoi(templateId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template not found",
 		})
 		return
@@ -145,7 +145,7 @@ func HandleCreateTemplateVersionByTemplate(c *gin.Context) {
 	}
 
 	if wt == nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template not found",
 		})
 		return
@@ -199,7 +199,7 @@ func HandleUpdateTemplateversionByTemplate(c *gin.Context) {
 
 	ti, err := strconv.Atoi(templateId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template not found",
 		})
 		return
@@ -207,7 +207,7 @@ func HandleUpdateTemplateversionByTemplate(c *gin.Context) {
 
 	tvi, err := strconv.Atoi(templateVersionId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template version not found",
 		})
 		return
@@ -230,7 +230,7 @@ func HandleUpdateTemplateversionByTemplate(c *gin.Context) {
 	}
 
 	if tv == nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template version not found",
 		})
 		return
