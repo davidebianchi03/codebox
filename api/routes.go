@@ -184,7 +184,8 @@ func V1ApiRoutes(router *gin.Engine) {
 			templatesApis.GET(":templateId/versions/:versionId", permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplateVersionByTemplate))
 			templatesApis.POST(":templateId/versions", permissions.AuthenticationRequiredRoute(templates.HandleCreateTemplateVersionByTemplate))
 			templatesApis.PUT(":templateId/versions/:versionId", permissions.AuthenticationRequiredRoute(templates.HandleUpdateTemplateversionByTemplate))
-			templatesApis.GET(":templateId/versions/:versionId/files", permissions.AuthenticationRequiredRoute(templates.HandleListTemplateVersionFiles))
+			templatesApis.GET(":templateId/versions/:versionId/entries", permissions.AuthenticationRequiredRoute(templates.HandleListTemplateVersionEntries))
+			templatesApis.POST(":templateId/versions/:versionId/entries", permissions.AuthenticationRequiredRoute(templates.HandleCreateTemplateVersionEntry))
 		}
 
 		// runners related apis
