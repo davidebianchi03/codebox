@@ -19,7 +19,7 @@ type TarGZManager struct {
 type TarEntry struct {
 	Path    string `json:"name"`
 	Type    string `json:"type"`
-	Content []byte `json:"content"`
+	Content []byte `json:"content,string"`
 }
 
 type TarTreeItem struct {

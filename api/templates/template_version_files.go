@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"encoding/base64"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -215,7 +216,7 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 	}
 
 	// check if parent element exists and is a folder
-	parentEntryPath := filepath.Dir(strings.TrimSuffix(path, "/"))
+	parentEntryPath := "./" + filepath.Dir(strings.TrimSuffix(path, "/"))
 	if parentEntryPath != "." {
 		parentEntry, err := tgm.RetrieveEntry(parentEntryPath)
 		if err != nil {
@@ -275,7 +276,15 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 			return
 		}
 
-		if err := tgm.WriteFile(path, []byte(requestBody.Content)); err != nil {
+		content, err := base64.StdEncoding.DecodeString(requestBody.Content)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"details": "invalid content, it must be a base64 string",
+			})
+			return
+		}
+
+		if err := tgm.WriteFile(path, content); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"details": "internal server error",
 			})
@@ -380,7 +389,7 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 
 		// check if the parent element of the destination exists and
 		// is a directory
-		parentEntryPath := filepath.Dir(strings.TrimSuffix(newPath, "/"))
+		parentEntryPath := "./" + filepath.Dir(strings.TrimSuffix(newPath, "/"))
 		if parentEntryPath != "." {
 			parentEntry, err := tgm.RetrieveEntry(parentEntryPath)
 			if err != nil {
@@ -415,7 +424,15 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 
 	// update the content
 	if requestBody.Content != string(entry.Content) {
-		if err := tgm.WriteFile(newPath, []byte(requestBody.Content)); err != nil {
+		content, err := base64.StdEncoding.DecodeString(requestBody.Content)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"details": "invalid content, it must be a base64 string",
+			})
+			return
+		}
+
+		if err := tgm.WriteFile(newPath, content); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"details": "internal server error",
 			})
