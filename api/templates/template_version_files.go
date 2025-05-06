@@ -2,6 +2,7 @@ package templates
 
 import (
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -10,7 +11,9 @@ import (
 	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
 
-func HandleListTemplateVersionEntries(c *gin.Context) {
+// retrieve workspace template version from context, return nil if not found
+// this function writes http responses
+func getTemplateVersionFromContext(c *gin.Context) *models.WorkspaceTemplateVersion {
 	templateId, _ := c.Params.Get("templateId")
 	templateVersionId, _ := c.Params.Get("versionId")
 
@@ -19,7 +22,7 @@ func HandleListTemplateVersionEntries(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template not found",
 		})
-		return
+		return nil
 	}
 
 	tvi, err := strconv.Atoi(templateVersionId)
@@ -27,7 +30,7 @@ func HandleListTemplateVersionEntries(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template version not found",
 		})
-		return
+		return nil
 	}
 
 	wt, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
@@ -35,7 +38,7 @@ func HandleListTemplateVersionEntries(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"details": "internal server error",
 		})
-		return
+		return nil
 	}
 
 	tv, err := models.RetrieveWorkspaceTemplateVersionsByIdByTemplate(*wt, uint(tvi))
@@ -43,23 +46,45 @@ func HandleListTemplateVersionEntries(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"details": "internal server error",
 		})
-		return
+		return nil
 	}
 
 	if tv == nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"details": "template version not found",
 		})
-		return
+		return nil
 	}
 
-	if !tv.Sources.Exists() {
-		c.JSON(http.StatusOK, []string{})
+	return tv
+}
+
+// ListTemplateVersionEntries godoc
+// @Summary List template version entries
+// @Schemes
+// @Description List template version entries
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 201 {object} []targz.TarTreeItem
+// @Router /api/v1/templates/:templateId/versions/:versionId/entries [get]
+func HandleListTemplateVersionEntries(c *gin.Context) {
+	tv := getTemplateVersionFromContext(c)
+	if tv == nil {
 		return
 	}
 
 	tgm := targz.TarGZManager{
 		Filepath: tv.Sources.GetAbsolutePath(),
+	}
+
+	if !tv.Sources.Exists() {
+		if err := tgm.CreateArchive(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
 	}
 
 	files, err := tgm.EntriesTree()
@@ -70,11 +95,64 @@ func HandleListTemplateVersionEntries(c *gin.Context) {
 		return
 	}
 
+	if len(files) > 0 {
+		if files[0].Name == "." {
+			files = files[0].Children
+		}
+	}
+
 	c.JSON(http.StatusOK, files)
 }
 
+// RetrieveTemplateVersionFile godoc
+// @Summary Retrieve template version entry
+// @Schemes
+// @Description Retrieve template version entry
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 201 {object} targz.TarEntry
+// @Router /api/v1/templates/:templateId/versions/:versionId/entries/:path [get]
 func HandleRetrieveTemplateVersionFile(c *gin.Context) {
+	path, _ := c.Params.Get("path")
+	path = "./" + strings.TrimPrefix(strings.TrimPrefix(path, "/"), "./")
 
+	tv := getTemplateVersionFromContext(c)
+	if tv == nil {
+		return
+	}
+
+	tgm := targz.TarGZManager{
+		Filepath: tv.Sources.GetAbsolutePath(),
+	}
+
+	if !tv.Sources.Exists() {
+		if err := tgm.CreateArchive(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+	}
+
+	entry, err := tgm.RetrieveEntry(path)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if entry == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "entry not found",
+		})
+		return
+	}
+
+	entry.Path = strings.TrimPrefix(entry.Path, "./")
+
+	c.JSON(http.StatusOK, entry)
 }
 
 type CreateTemplateVersionEntryRequestBody struct {
@@ -83,21 +161,21 @@ type CreateTemplateVersionEntryRequestBody struct {
 	Content string `json:"content"`
 }
 
+// CreateTemplateVersionEntry godoc
+// @Summary Create new template version entry
+// @Schemes
+// @Description Create new template version entry
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Param request body CreateTemplateVersionEntryRequestBody true "Template version entry data"
+// @Success 201 {object} targz.TarEntry
+// @Router /api/v1/templates/:templateId/versions/:templateId/entries [post]
 func HandleCreateTemplateVersionEntry(c *gin.Context) {
-	templateId, _ := c.Params.Get("templateId")
-	templateVersionId, _ := c.Params.Get("versionId")
-
 	requestBody := CreateTemplateVersionEntryRequestBody{}
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"details": "missing or invalid request parameter",
-		})
-		return
-	}
-
-	if !strings.HasPrefix(requestBody.Path, ".") {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"details": "path must start with a .",
 		})
 		return
 	}
@@ -109,47 +187,17 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 		return
 	}
 
-	ti, err := strconv.Atoi(templateId)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"details": "template not found",
+	if strings.HasPrefix(requestBody.Path, "./") || strings.HasPrefix(requestBody.Path, ".") {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "path cannot start with ./",
 		})
 		return
 	}
 
-	tvi, err := strconv.Atoi(templateVersionId)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"details": "template version not found",
-		})
-		return
-	}
+	path := "./" + requestBody.Path
 
-	wt, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"details": "internal server error",
-		})
-		return
-	}
-
-	tv, err := models.RetrieveWorkspaceTemplateVersionsByIdByTemplate(*wt, uint(tvi))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"details": "internal server error",
-		})
-		return
-	}
-
+	tv := getTemplateVersionFromContext(c)
 	if tv == nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"details": "template version not found",
-		})
-		return
-	}
-
-	if !tv.Sources.Exists() {
-		c.JSON(http.StatusOK, []string{})
 		return
 	}
 
@@ -157,8 +205,43 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 		Filepath: tv.Sources.GetAbsolutePath(),
 	}
 
+	if !tv.Sources.Exists() {
+		if err := tgm.CreateArchive(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+	}
+
+	// check if parent element exists and is a folder
+	parentEntryPath := filepath.Dir(strings.TrimSuffix(path, "/"))
+	if parentEntryPath != "." {
+		parentEntry, err := tgm.RetrieveEntry(parentEntryPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+
+		if parentEntry == nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"details": "parent entry does not exist",
+			})
+			return
+		}
+
+		if parentEntry.Type != "dir" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"details": "parent entry is not a directory",
+			})
+			return
+		}
+	}
+
 	// check if file already exists
-	entry, err := tgm.RetrieveEntry(requestBody.Path)
+	entry, err := tgm.RetrieveEntry(path)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"details": "internal server error",
@@ -174,14 +257,25 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 	}
 
 	if requestBody.Type == "dir" {
-		if err := tgm.Mkdir(requestBody.Path); err != nil {
+		if err := tgm.Mkdir(path); err != nil {
+			if !strings.HasSuffix(path, "/") {
+				path += "/"
+			}
+
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"details": "internal server error",
 			})
 			return
 		}
 	} else {
-		if err := tgm.WriteFile(requestBody.Path, []byte(requestBody.Content)); err != nil {
+		if strings.HasSuffix(path, "/") {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"details": "filename may not have trailing slash",
+			})
+			return
+		}
+
+		if err := tgm.WriteFile(path, []byte(requestBody.Content)); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"details": "internal server error",
 			})
@@ -189,7 +283,7 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 		}
 	}
 
-	entry, err = tgm.RetrieveEntry(requestBody.Path)
+	entry, err = tgm.RetrieveEntry(path)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"details": "internal server error",
@@ -197,4 +291,203 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, entry)
+}
+
+type UpdateTemplateVersionEntryRequestBody struct {
+	Path    string `json:"path" binding:"required"`
+	Content string `json:"content" binding:"required"`
+}
+
+// CreateTemplateVersionEntry godoc
+// @Summary Updates a template version entry
+// @Schemes
+// @Description Updates a template version entry
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Param request body UpdateTemplateVersionEntryRequestBody true "Template version entry data"
+// @Success 200 {object} targz.TarEntry
+// @Router /api/v1/templates/:templateId/versions/:templateId/entries/:path [put]
+func HandleUpdateTemplateVersionEntry(c *gin.Context) {
+	path, _ := c.Params.Get("path")
+	path = strings.TrimPrefix(strings.TrimPrefix(path, "/"), "./")
+
+	requestBody := UpdateTemplateVersionEntryRequestBody{}
+	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "missing or invalid request parameter",
+		})
+		return
+	}
+
+	newPath := "./" + requestBody.Path
+	if newPath == "." || newPath == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "invalid path",
+		})
+		return
+	}
+
+	tv := getTemplateVersionFromContext(c)
+	if tv == nil {
+		return
+	}
+
+	tgm := targz.TarGZManager{
+		Filepath: tv.Sources.GetAbsolutePath(),
+	}
+
+	if !tv.Sources.Exists() {
+		if err := tgm.CreateArchive(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+	}
+
+	entry, err := tgm.RetrieveEntry(path)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if entry == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "entry not found",
+		})
+		return
+	}
+
+	// if path has been changed
+	if path != newPath {
+		destinationEntry, err := tgm.RetrieveEntry(newPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+
+		if destinationEntry != nil {
+			c.JSON(http.StatusConflict, gin.H{
+				"details": "destination already exists",
+			})
+			return
+		}
+
+		// check if the parent element of the destination exists and
+		// is a directory
+		parentEntryPath := filepath.Dir(strings.TrimSuffix(newPath, "/"))
+		if parentEntryPath != "." {
+			parentEntry, err := tgm.RetrieveEntry(parentEntryPath)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"details": "internal server error",
+				})
+				return
+			}
+
+			if parentEntry == nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"details": "parent entry does not exist",
+				})
+				return
+			}
+
+			if parentEntry.Type != "dir" {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"details": "parent entry is not a directory",
+				})
+				return
+			}
+		}
+
+		if err := tgm.Move(path, newPath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+	}
+
+	// update the content
+	if requestBody.Content != string(entry.Content) {
+		if err := tgm.WriteFile(newPath, []byte(requestBody.Content)); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+	}
+
+	entry, err = tgm.RetrieveEntry(newPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, entry)
+}
+
+// DeleteTemplateVersionEntry godoc
+// @Summary Delete template version entry
+// @Schemes
+// @Description Delete template version entry
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /api/v1/templates/:templateId/versions/:templateId/entries/:path [delete]
+func HandleDeleteTemplateVersionEntry(c *gin.Context) {
+	path, _ := c.Params.Get("path")
+	path = strings.TrimPrefix(strings.TrimPrefix(path, "/"), "./")
+
+	tv := getTemplateVersionFromContext(c)
+	if tv == nil {
+		return
+	}
+
+	tgm := targz.TarGZManager{
+		Filepath: tv.Sources.GetAbsolutePath(),
+	}
+
+	if !tv.Sources.Exists() {
+		if err := tgm.CreateArchive(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+	}
+
+	entry, err := tgm.RetrieveEntry(path)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if entry == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "entry not found",
+		})
+		return
+	}
+
+	if err := tgm.Delete(path); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{
+		"details": "entry has been deleted",
+	})
 }

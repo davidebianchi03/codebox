@@ -57,6 +57,7 @@ func (tgm *TarGZManager) WriteFile(path string, data []byte) error {
 	for i, e := range entries {
 		if e.Path == path {
 			entries[i].Content = data
+			found = true
 		}
 	}
 
@@ -97,7 +98,7 @@ func (tgm *TarGZManager) Delete(path string) error {
 	newEntries := make([]TarEntry, 0)
 
 	for _, entry := range entries {
-		if !strings.HasPrefix(entry.Path, path) {
+		if !strings.HasPrefix(entry.Path, path) && strings.TrimSuffix(entry.Path, "/") != strings.TrimSuffix(path, "/") {
 			newEntries = append(newEntries, entry)
 		}
 	}
@@ -114,11 +115,10 @@ func (tgm *TarGZManager) Move(oldPath string, newPath string) error {
 	newEntries := make([]TarEntry, 0)
 
 	for _, entry := range entries {
-		if !strings.HasPrefix(entry.Path, oldPath) {
-			newEntries = append(newEntries, entry)
-		} else {
+		if strings.HasPrefix(entry.Path, oldPath) || strings.TrimSuffix(entry.Path, "/") == strings.TrimSuffix(oldPath, "/") {
 			entry.Path = strings.Replace(entry.Path, oldPath, newPath, 1)
 		}
+		newEntries = append(newEntries, entry)
 	}
 
 	return tgm.writeAll(newEntries)
@@ -363,7 +363,7 @@ func (tgm *TarGZManager) RetrieveEntry(path string) (*TarEntry, error) {
 	}
 
 	for _, entry := range entries {
-		if entry.Path == path {
+		if strings.TrimSuffix(entry.Path, "/") == strings.TrimSuffix(path, "/") {
 			return &entry, nil
 		}
 	}

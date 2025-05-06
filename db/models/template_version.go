@@ -15,7 +15,6 @@ import (
 )
 
 type WorkspaceTemplateVersion struct {
-	gorm.Model
 	ID             uint `gorm:"primarykey"`
 	TemplateID     uint
 	Template       *WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;not null;"`
@@ -27,6 +26,9 @@ type WorkspaceTemplateVersion struct {
 	EditedByID     uint
 	EditedBy       *User `gorm:"constraint:OnDelete:SET NULL;"`
 	EditedOn       time.Time
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func ListWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (*[]WorkspaceTemplateVersion, error) {

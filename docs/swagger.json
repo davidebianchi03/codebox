@@ -133,9 +133,297 @@
                     }
                 }
             }
+        },
+        "/api/v1/templates/:templateId/versions": {
+            "get": {
+                "description": "List all template versions by template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "List template versions by template",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.WorkspaceTemplateVersion"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create new template version",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Create new template version",
+                "parameters": [
+                    {
+                        "description": "Template version data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/templates.CreateTemplateVersionRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.WorkspaceTemplateVersion"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/templates/:templateId/versions/:templateId/entries": {
+            "post": {
+                "description": "Create new template version entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Create new template version entry",
+                "parameters": [
+                    {
+                        "description": "Template version entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/templates.CreateTemplateVersionEntryRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/targz.TarEntry"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/templates/:templateId/versions/:templateId/entries/:path": {
+            "put": {
+                "description": "Updates a template version entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Updates a template version entry",
+                "parameters": [
+                    {
+                        "description": "Template version entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/templates.UpdateTemplateVersionEntryRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/targz.TarEntry"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete template version entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Delete template version entry",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/templates/:templateId/versions/:versionId": {
+            "get": {
+                "description": "Retrieve template version by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Retrieve template version by id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.WorkspaceTemplateVersion"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a template version",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Update a template version",
+                "parameters": [
+                    {
+                        "description": "Template version data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/templates.UpdateTemplateVersionRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.WorkspaceTemplateVersion"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/templates/:templateId/versions/:versionId/entries": {
+            "get": {
+                "description": "List template version entries",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "List template version entries",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/targz.TarTreeItem"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/templates/:templateId/versions/:versionId/entries/:path": {
+            "get": {
+                "description": "Retrieve template version entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Retrieve template version entry",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/targz.TarEntry"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "models.Group": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Group"
+                    }
+                },
+                "is_superuser": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.WorkspaceTemplate": {
             "type": "object",
             "properties": {
@@ -147,6 +435,81 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.WorkspaceTemplateVersion": {
+            "type": "object",
+            "properties": {
+                "config_file_relative_path": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "editedBy": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "editedByID": {
+                    "type": "integer"
+                },
+                "editedOn": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "published": {
+                    "type": "boolean"
+                },
+                "sourcesID": {
+                    "type": "integer"
+                },
+                "template": {
+                    "$ref": "#/definitions/models.WorkspaceTemplate"
+                },
+                "templateID": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "targz.TarEntry": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "targz.TarTreeItem": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/targz.TarTreeItem"
+                    }
                 },
                 "name": {
                     "type": "string"
@@ -177,6 +540,37 @@
                 }
             }
         },
+        "templates.CreateTemplateVersionEntryRequestBody": {
+            "type": "object",
+            "required": [
+                "path",
+                "type"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "path": {
+                    "description": "must start with a .",
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "templates.CreateTemplateVersionRequestBody": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
         "templates.UpdateTemplateRequestBody": {
             "type": "object",
             "required": [
@@ -191,6 +585,36 @@
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "templates.UpdateTemplateVersionEntryRequestBody": {
+            "type": "object",
+            "required": [
+                "content",
+                "path"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "templates.UpdateTemplateVersionRequestBody": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "published": {
+                    "type": "boolean"
                 }
             }
         }
