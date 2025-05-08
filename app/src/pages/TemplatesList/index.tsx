@@ -16,8 +16,10 @@ import { WorkspaceTemplate } from "../../types/templates";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { WorkspaceType } from "../../types/workspace";
+import { Link } from "react-router-dom";
 
 export default function TemplatesList() {
+  // TODO: check if current user can manage templates
   const [currentUser, setCurrentUser] = useState<User>();
   const [templates, setTemplates] = useState<WorkspaceTemplate[]>();
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
@@ -25,7 +27,6 @@ export default function TemplatesList() {
   const [searchText, setSearchText] = useState<string>("");
 
   const fetchTemplates = useCallback(async () => {
-    // fetch exposed ports
     var [status, statusCode, responseData] = await Http.Request(
       `${Http.GetServerURL()}/api/v1/templates`,
       "GET",
@@ -35,7 +36,7 @@ export default function TemplatesList() {
     if (status === RequestStatus.OK && statusCode === 200) {
       setTemplates(responseData);
     } else {
-      toast.error("Failed to fetch workspace container ports");
+      toast.error("Failed to fetch templates");
       setTemplates([]);
     }
   }, []);
@@ -108,7 +109,9 @@ export default function TemplatesList() {
                       }
                       <div className="w-100 d-flex justify-content-between">
                         <div className="ms-3">
-                          <h4 className="mb-0">{template.name}</h4>
+                          <h4 className="mb-0">
+                            <Link to={`/templates/${template.id}`}>{template.name}</Link>
+                          </h4>
                           <small className="text-muted">{template.description}</small>
                         </div>
                         <div>

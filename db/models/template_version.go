@@ -15,20 +15,20 @@ import (
 )
 
 type WorkspaceTemplateVersion struct {
-	ID             uint `gorm:"primarykey"`
-	TemplateID     uint
-	Template       *WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;not null;"`
-	Name           string             `gorm:"size:255;not null;"`
+	ID             uint               `gorm:"primarykey" json:"id"`
+	TemplateID     uint               `json:"-"`
+	Template       *WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;not null;" json:"-"`
+	Name           string             `gorm:"size:255;not null;" json:"name"`
 	ConfigFilePath string             `gorm:"type:text;" json:"config_file_relative_path"`
-	SourcesID      uint
-	Sources        *File `json:"-"`
-	Published      bool  `gorm:"default:false"`
-	EditedByID     uint
-	EditedBy       *User `gorm:"constraint:OnDelete:SET NULL;"`
-	EditedOn       time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
+	SourcesID      uint               `json:"-"`
+	Sources        *File              `json:"-"`
+	Published      bool               `gorm:"default:false" json:"published"`
+	EditedByID     uint               `json:"-"`
+	EditedBy       *User              `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
+	EditedOn       time.Time          `json:"edited_on"`
+	CreatedAt      time.Time          `json:"-"`
+	UpdatedAt      time.Time          `json:"-"`
+	DeletedAt      gorm.DeletedAt     `gorm:"index" json:"-"`
 }
 
 func ListWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (*[]WorkspaceTemplateVersion, error) {

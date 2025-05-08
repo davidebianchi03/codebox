@@ -5,3 +5,11 @@ export interface WorkspaceTemplate {
     description: string
     icon: string
 }
+
+export interface WorkspaceTemplateVersion {
+    id: number
+    name: string
+    config_file_relative_path: string
+    published: boolean
+    edited_on: string
+}
