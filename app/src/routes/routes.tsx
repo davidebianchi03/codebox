@@ -11,6 +11,7 @@ import Profile from "../pages/Profile";
 import SignUpPage from "../pages/SignUp";
 import { TemplateDetailsPage } from "../pages/TemplateDetails";
 import TemplatesList from "../pages/TemplatesList";
+import { TemplateVersionEditor } from "../pages/TemplateVersionEditor";
 import WorkspaceDetails from "../pages/WorkspaceDetails";
 import { Route } from "./types";
 
@@ -54,6 +55,10 @@ export const AuthProtectedRoutes: Route[] = [
   {
     path: "/templates/:id",
     element: <TemplateDetailsPage />,
+  },
+  {
+    path: "/templates/:templateId/versions/:versionId/editor",
+    element: <TemplateVersionEditor />, // TODO: protect view
   },
 ];
 

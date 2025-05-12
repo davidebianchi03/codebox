@@ -6,12 +6,14 @@ import { RequestStatus } from "../../api/types";
 import { Http } from "../../api/http";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 interface TemplateDetailsVersionsProps {
     template: WorkspaceTemplate
 }
 
 export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsProps) {
+    const navigate = useNavigate();
     const [versions, setVersions] = useState<WorkspaceTemplateVersion[]>();
 
     const fetchVersions = useCallback(async () => {
@@ -72,7 +74,11 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
                                                             Released
                                                         </Badge>
                                                     ) : (
-                                                        <Button color="primary" size="sm">
+                                                        <Button 
+                                                        color="primary"
+                                                         size="sm"
+                                                         onClick={() => navigate(`/templates/${template.id}/versions/${version.id}/editor`)}
+                                                         >
                                                             Edit
                                                             <FontAwesomeIcon icon={faPencil} className="ms-2" />
                                                         </Button>

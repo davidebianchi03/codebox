@@ -13,3 +13,9 @@ export interface WorkspaceTemplateVersion {
     published: boolean
     edited_on: string
 }
+
+export interface WorkspaceTemplateVersionTreeItem {
+    name: string
+    type: "file" | "dir"
+    children: WorkspaceTemplateVersionTreeItem[]
+}
