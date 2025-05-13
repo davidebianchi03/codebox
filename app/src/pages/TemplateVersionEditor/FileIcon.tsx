@@ -48,7 +48,6 @@ export function GetIconForFile(filename: string): string {
     var icon = FileIcon;
     IconsMap.forEach(ft => {
         ft.extensions.forEach(ex => {
-            console.log(ex.endsWith(ex))
             if (filename.endsWith(ex)) {
                 icon = ft.icon;
             }

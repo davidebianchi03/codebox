@@ -58,8 +58,6 @@ export const SidebarTreeItem = React.forwardRef(function CustomTreeItem(
         status,
     } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
 
-    console.log(children)
-
     return (
         <TreeItemProvider {...getContextProviderProps()}>
             <TreeItemRoot

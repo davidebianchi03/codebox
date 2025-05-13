@@ -216,8 +216,9 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 	}
 
 	// check if parent element exists and is a folder
-	parentEntryPath := "./" + filepath.Dir(strings.TrimSuffix(path, "/"))
+	parentEntryPath := filepath.Dir(strings.TrimSuffix(path, "/"))
 	if parentEntryPath != "." {
+		parentEntryPath = "./" + parentEntryPath
 		parentEntry, err := tgm.RetrieveEntry(parentEntryPath)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -320,6 +321,7 @@ type UpdateTemplateVersionEntryRequestBody struct {
 func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 	path, _ := c.Params.Get("path")
 	path = strings.TrimPrefix(strings.TrimPrefix(path, "/"), "./")
+	path = "./" + strings.TrimPrefix(strings.TrimPrefix(path, "/"), "./")
 
 	requestBody := UpdateTemplateVersionEntryRequestBody{}
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
@@ -329,7 +331,7 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 		return
 	}
 
-	newPath := "./" + requestBody.Path
+	newPath := "./" + strings.TrimPrefix(strings.TrimPrefix(requestBody.Path, "/"), "./")
 	if newPath == "." || newPath == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"details": "invalid path",
@@ -389,8 +391,9 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 
 		// check if the parent element of the destination exists and
 		// is a directory
-		parentEntryPath := "./" + filepath.Dir(strings.TrimSuffix(newPath, "/"))
+		parentEntryPath := filepath.Dir(strings.TrimSuffix(path, "/"))
 		if parentEntryPath != "." {
+			parentEntryPath = "./" + parentEntryPath
 			parentEntry, err := tgm.RetrieveEntry(parentEntryPath)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -463,6 +466,7 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 func HandleDeleteTemplateVersionEntry(c *gin.Context) {
 	path, _ := c.Params.Get("path")
 	path = strings.TrimPrefix(strings.TrimPrefix(path, "/"), "./")
+	path = "./" + strings.TrimPrefix(strings.TrimPrefix(path, "/"), "./")
 
 	tv := getTemplateVersionFromContext(c)
 	if tv == nil {

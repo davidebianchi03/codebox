@@ -19,11 +19,12 @@ type TarGZManager struct {
 type TarEntry struct {
 	Path    string `json:"name"`
 	Type    string `json:"type"`
-	Content []byte `json:"content,string"`
+	Content []byte `json:"content"`
 }
 
 type TarTreeItem struct {
 	Name     string         `json:"name"`
+	FullPath string         `json:"full_path"`
 	Type     string         `json:"type"`
 	Children []*TarTreeItem `json:"children"`
 }
@@ -341,6 +342,7 @@ func (tgm *TarGZManager) EntriesTree() ([]*TarTreeItem, error) {
 				if !found {
 					item := TarTreeItem{
 						Name:     part,
+						FullPath: strings.TrimPrefix(entry.Path, "./"),
 						Children: make([]*TarTreeItem, 0),
 						Type:     entry.Type,
 					}

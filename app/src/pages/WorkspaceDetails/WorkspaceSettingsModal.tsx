@@ -41,7 +41,6 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      console.log(values.environmentVariables);
       var requestBody = JSON.stringify({
         git_repo_url: values.gitRepoUrl,
         git_ref_name: values.gitRefName,

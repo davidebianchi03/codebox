@@ -16,6 +16,13 @@ export interface WorkspaceTemplateVersion {
 
 export interface WorkspaceTemplateVersionTreeItem {
     name: string
+    full_path: string
     type: "file" | "dir"
     children: WorkspaceTemplateVersionTreeItem[]
+}
+
+export interface WorkspaceTemplateVersionEntry {
+    name: string
+    type: "file" | "dir"
+    content: string // base64 encoded
 }

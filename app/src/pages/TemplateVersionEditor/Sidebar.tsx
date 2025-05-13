@@ -17,12 +17,12 @@ interface SidebarEntryProps {
 function TreeEntry({ entry }: SidebarEntryProps) {
     return (
         <SidebarTreeItem
-            itemId={entry.name}
+            itemId={entry.full_path}
             label={entry.name}
             labelIcon={GetIconForFile(entry.name)}
             labelInfo="90"
         >
-            {entry.children.map(e => <TreeEntry entry={e} />)}
+            {entry.children.map((e, index) => <TreeEntry entry={e} key={index} />)}
         </SidebarTreeItem>
     )
 }
@@ -30,10 +30,18 @@ function TreeEntry({ entry }: SidebarEntryProps) {
 interface TemplateVersionEditorSidebarProps {
     template: WorkspaceTemplate
     templateVersion: WorkspaceTemplateVersion
+    onSelectionChange: (selectedItem: string) => void;
 }
 
-export function TemplateVersionEditorSidebar({ template, templateVersion }: TemplateVersionEditorSidebarProps) {
+export function TemplateVersionEditorSidebar({ template, templateVersion, onSelectionChange }: TemplateVersionEditorSidebarProps) {
     const [treeItems, setTreeItems] = React.useState<WorkspaceTemplateVersionTreeItem[]>([]);
+    const [selectedItem, setSelectedItem] = React.useState<string>();
+
+    React.useEffect(() => {
+        if (selectedItem) {
+            onSelectionChange(selectedItem);
+        }
+    }, [selectedItem]);
 
     const [contextMenu, setContextMenu] = React.useState<{
         mouseX: number;
@@ -84,40 +92,16 @@ export function TemplateVersionEditorSidebar({ template, templateVersion }: Temp
         <React.Fragment>
             <div onContextMenu={handleContextMenu} style={{ cursor: "context-menu" }}>
                 <Box sx={{ minHeight: 352, minWidth: 250 }}>
-                    <SimpleTreeView>
-                        {treeItems.map((item) =>
-                            <TreeEntry entry={item} />
+                    <SimpleTreeView
+                        onSelectedItemsChange={(e, item) => {
+                            if (item) {
+                                setSelectedItem(item);
+                            }
+                        }}
+                    >
+                        {treeItems.map((item, index) =>
+                            <TreeEntry entry={item} key={index} />
                         )}
-
-                        {/* <SidebarTreeItem itemId="1" label="All Mail" labelIcon={MailIcon} />
-                        <SidebarTreeItem itemId="2" label="Trash" labelIcon={DeleteIcon} />
-                        <SidebarTreeItem itemId="3" label="Categories" labelIcon={Label}>
-                            <SidebarTreeItem
-                                itemId="5"
-                                label="Social"
-                                labelIcon={SupervisorAccountIcon}
-                                labelInfo="90"
-                            />
-                            <SidebarTreeItem
-                                itemId="6"
-                                label="Updates"
-                                labelIcon={InfoIcon}
-                                labelInfo="2,294"
-                            />
-                            <SidebarTreeItem
-                                itemId="7"
-                                label="Forums"
-                                labelIcon={ForumIcon}
-                                labelInfo="3,566"
-                            />
-                            <SidebarTreeItem
-                                itemId="8"
-                                label="Promotions"
-                                labelIcon={LocalOfferIcon}
-                                labelInfo="733"
-                            /> */}
-                        {/* </SidebarTreeItem> */}
-                        {/* <SidebarTreeItem itemId="4" label="History" labelIcon={Label} /> */}
                     </SimpleTreeView>
                     <Menu
                         open={contextMenu !== null}
