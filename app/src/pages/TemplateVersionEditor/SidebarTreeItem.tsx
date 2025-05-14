@@ -17,6 +17,7 @@ interface StyledTreeItemProps
     React.HTMLAttributes<HTMLLIElement> {
     labelIcon: string;
     labelInfo?: string;
+    type: string;
 }
 
 const SidebarTreeItemContent = styled(TreeItemContent)(({ theme }) => ({
@@ -45,6 +46,7 @@ export const SidebarTreeItem = React.forwardRef(function CustomTreeItem(
         color,
         labelIcon,
         labelInfo,
+        type,
         ...other
     } = props;
 
@@ -55,15 +57,17 @@ export const SidebarTreeItem = React.forwardRef(function CustomTreeItem(
         getIconContainerProps,
         getLabelProps,
         getGroupTransitionProps,
-        status,
     } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
+
+    var { status, ...contentProps } = getContentProps();
+    status.expandable = !(type === "file" && (children as any[]).length === 0);
 
     return (
         <TreeItemProvider {...getContextProviderProps()}>
             <TreeItemRoot
                 {...getRootProps(other)}
             >
-                <SidebarTreeItemContent {...getContentProps()}>
+                <SidebarTreeItemContent {...contentProps} status={status}>
                     <SidebarTreeItemIconContainer {...getIconContainerProps()}>
                         <TreeItemIcon status={status} />
                     </SidebarTreeItemIconContainer>
@@ -75,8 +79,8 @@ export const SidebarTreeItem = React.forwardRef(function CustomTreeItem(
                             pr: 0,
                         }}
                     >
-                        {(children as any[]).length == 0 && (
-                            <img src={labelIcon} alt='file icon' width={16} height={16} className='me-2'/>
+                        {type === "file" && (children as any[]).length === 0 && (
+                            <img src={labelIcon} alt='file icon' width={16} height={16} className='me-2' />
                         )}
                         <span>
                             {label}

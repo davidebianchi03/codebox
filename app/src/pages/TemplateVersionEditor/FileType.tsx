@@ -8,50 +8,62 @@ import YamlIcon from "../../assets/icons/yaml.svg";
 import FileIcon from "../../assets/icons/file.svg";
 
 
-interface IconMap {
+export interface FileMap {
     extensions: string[]
     icon: string
+    language: string
 }
 
-const IconsMap: IconMap[] = [
+const FilesMap: FileMap[] = [
     {
         extensions: ["sh"],
-        icon: ConsoleIcon
+        icon: ConsoleIcon,
+        language: "shell",
     },
     {
         extensions: ["Dockerfile", "dockerfile"],
-        icon: DockerIcon
+        icon: DockerIcon,
+        language: "dockerfile",
     },
     {
         extensions: ["json"],
-        icon: JSONIcon
+        icon: JSONIcon,
+        language: "json",
     },
     {
         extensions: ["md"],
-        icon: MarkdownIcon
+        icon: MarkdownIcon,
+        language: "markdown",
     },
     {
         extensions: ["ps1"],
-        icon: PowerShellIcon
+        icon: PowerShellIcon,
+        language: "powershell",
     },
     {
         extensions: ["tf"],
-        icon: TerraformIcon
+        icon: TerraformIcon,
+        language: "terraform",
     },
     {
         extensions: ["yaml", "yml"],
-        icon: YamlIcon
+        icon: YamlIcon,
+        language: "yaml",
     },
 ]
 
-export function GetIconForFile(filename: string): string {
-    var icon = FileIcon;
-    IconsMap.forEach(ft => {
+export function GetTypeForFile(filename: string): FileMap {
+    var file: FileMap = {
+        extensions: ["yaml", "yml"],
+        icon: FileIcon,
+        language: "",
+    };
+    FilesMap.forEach(ft => {
         ft.extensions.forEach(ex => {
             if (filename.endsWith(ex)) {
-                icon = ft.icon;
+                file = ft;
             }
         })
     });
-    return icon;
+    return file;
 }

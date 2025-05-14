@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Col, Input, Row } from "reactstrap";
+import { Button, Col, Row } from "reactstrap";
 import Editor from '@monaco-editor/react';
 import { TemplateVersionEditorSidebar } from "./Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
@@ -7,6 +7,7 @@ import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { WorkspaceTemplate, WorkspaceTemplateVersion, WorkspaceTemplateVersionEntry } from "../../types/templates";
 import { toast } from "react-toastify";
+import { FileMap, GetTypeForFile } from "./FileType";
 
 export function TemplateVersionEditor() {
     const { templateId, versionId } = useParams();
@@ -16,6 +17,7 @@ export function TemplateVersionEditor() {
     const [fileContent, setFileContent] = useState<string>("");
     const [template, setTemplate] = useState<WorkspaceTemplate>();
     const [templateVersion, setTemplateVersion] = useState<WorkspaceTemplateVersion>();
+    const [openFileType, setOpenFileType] = useState<FileMap>();
     const timer = useRef<NodeJS.Timeout | null>(null);
 
     const fetchTemplate = useCallback(async () => {
@@ -44,35 +46,6 @@ export function TemplateVersionEditor() {
         }
     }, [navigate, templateId, versionId]);
 
-    const fetchFileContent = useCallback(async () => {
-        if (selectedItemPath) {
-            let [status, statusCode, responseBody] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}/entries/${encodeURIComponent(selectedItemPath)}`,
-                "GET",
-                null
-            );
-            if (status === RequestStatus.OK && statusCode === 200) {
-                var entry = responseBody as WorkspaceTemplateVersionEntry;
-                if (entry) {
-                    if (entry.type === "file") {
-                        // save previous content
-                        if(timer.current) {
-                            clearInterval(timer.current);
-                        }
-                        UpdateFileContent();
-                        setFileContent(atob(entry.content));
-                        setOpenFilePath(entry.name);
-                    }
-                } else {
-                    toast.error("Failed to fetch file content");
-                    setFileContent("");
-                }
-            } else {
-                setFileContent("");
-            }
-        }
-    }, [selectedItemPath, templateId, versionId]);
-
 
     const UpdateFileContent = useCallback(async () => {
         if (openFilePath) {
@@ -89,12 +62,44 @@ export function TemplateVersionEditor() {
                 toast.error("Failed to update file content");
             }
         }
-    }, [fileContent, openFilePath, templateId, versionId])
+    }, [fileContent, openFilePath, templateId, versionId]);
+
+    const fetchFileContent = useCallback(async () => {
+        if (selectedItemPath) {
+            let [status, statusCode, responseBody] = await Http.Request(
+                `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}/entries/${encodeURIComponent(selectedItemPath)}`,
+                "GET",
+                null
+            );
+            if (status === RequestStatus.OK && statusCode === 200) {
+                var entry = responseBody as WorkspaceTemplateVersionEntry;
+                if (entry) {
+                    if (entry.type === "file") {
+                        // save previous content
+                        if (timer.current) {
+                            clearInterval(timer.current);
+                        }
+                        UpdateFileContent();
+                        setFileContent(atob(entry.content));
+                        setOpenFilePath(entry.name);
+                        setOpenFileType(GetTypeForFile(entry.name));
+                    }
+                } else {
+                    toast.error("Failed to fetch file content");
+                    setFileContent("");
+                }
+            } else {
+                setFileContent("");
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedItemPath, templateId, versionId]);
 
     const EditorHandleChange = useCallback(async (value: string) => {
         setFileContent(value);
         if (timer.current) {
             clearTimeout(timer.current);
+            timer.current = null;
         }
         timer.current = setTimeout(UpdateFileContent, 800);
     }, [UpdateFileContent]);
@@ -108,39 +113,41 @@ export function TemplateVersionEditor() {
         fetchFileContent();
     }, [fetchFileContent]);
 
-
     return (
         <React.Fragment>
             {template && templateVersion && (
                 <React.Fragment>
-                    <Row style={{
+                    <div style={{
                         background: "#1f1f1f",
-                        height: "90vh"
-                    }}>
-                        <Col md="2" style={{ background: "#181818" }}>
+                    }}
+                        className="d-flex align-items-start w-100 h-100"
+                    >
+                        <div style={{ background: "#181818", width: 250, height: "100%" }}>
                             <TemplateVersionEditorSidebar
                                 template={template}
                                 templateVersion={templateVersion}
                                 onSelectionChange={(si) => setSelectedItemPath(si)}
                             />
-                        </Col>
-                        <Col md={10} className="ps-0">
+                        </div>
+                        <div className="ps-0 w-100">
                             {
                                 openFilePath && (
                                     <React.Fragment>
                                         <div
                                             style={{ fontFamily: "Consolas", background: "#181818", height: "45px" }}
-                                            className="d-flex"
+                                            className="d-flex align-items-center justify-content-between"
                                         >
-                                            <Input
-                                                value={openFilePath}
-                                                disabled
-                                                style={{ maxWidth: 250 }}
-                                            />
+                                            <div className="d-flex align-items-center ms-2">
+                                                <img src={openFileType?.icon} alt="" width={15} height={15} />
+                                                <span className="ms-1">{openFilePath}</span>
+                                            </div>
+                                            <Button color="success" size="sm" className="py-1 px-2 me-2">
+                                                Publish
+                                            </Button>
                                         </div>
                                         <Editor
-                                            height="90vh"
-                                            language="dockerfile"
+                                            height="100%"
+                                            language={openFileType?.language}
                                             value={fileContent}
                                             onChange={(value) => EditorHandleChange(value || "")}
                                             theme="vs-dark"
@@ -148,8 +155,8 @@ export function TemplateVersionEditor() {
                                     </React.Fragment>
                                 )
                             }
-                        </Col>
-                    </Row>
+                        </div>
+                    </div>
                 </React.Fragment >
             )}
         </React.Fragment >

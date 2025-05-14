@@ -195,6 +195,13 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 		return
 	}
 
+	if strings.HasPrefix(requestBody.Path, "/") {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "path cannot start with /",
+		})
+		return
+	}
+
 	path := "./" + requestBody.Path
 
 	tv := getTemplateVersionFromContext(c)
@@ -327,6 +334,13 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"details": "missing or invalid request parameter",
+		})
+		return
+	}
+
+	if strings.HasPrefix(requestBody.Path, "/") {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"details": "path cannot start with /",
 		})
 		return
 	}
