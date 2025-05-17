@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Col, Row } from "reactstrap";
+import { Button } from "reactstrap";
 import Editor from '@monaco-editor/react';
 import { TemplateVersionEditorSidebar } from "./Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
@@ -119,8 +119,9 @@ export function TemplateVersionEditor() {
                 <React.Fragment>
                     <div style={{
                         background: "#1f1f1f",
+                        height: "calc(100vh -  62.3125px)"
                     }}
-                        className="d-flex align-items-start w-100 h-100"
+                        className="d-flex align-items-start w-100"
                     >
                         <div style={{ background: "#181818", width: 250, height: "100%" }}>
                             <TemplateVersionEditorSidebar
@@ -129,7 +130,7 @@ export function TemplateVersionEditor() {
                                 onSelectionChange={(si) => setSelectedItemPath(si)}
                             />
                         </div>
-                        <div className="ps-0 w-100">
+                        <div className="ps-0 w-100 h-100">
                             {
                                 openFilePath && (
                                     <React.Fragment>
@@ -146,7 +147,7 @@ export function TemplateVersionEditor() {
                                             </Button>
                                         </div>
                                         <Editor
-                                            height="100%"
+                                            height={"calc(100% - 45px)"}
                                             language={openFileType?.language}
                                             value={fileContent}
                                             onChange={(value) => EditorHandleChange(value || "")}

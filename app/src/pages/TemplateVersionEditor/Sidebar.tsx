@@ -12,12 +12,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'reactstrap';
 import { faFileCirclePlus, faFolderPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom';
 
 interface SidebarEntryProps {
-    entry: WorkspaceTemplateVersionTreeItem
+    entry: WorkspaceTemplateVersionTreeItem;
+    onContextMenu: (event: React.MouseEvent, fullpath: WorkspaceTemplateVersionTreeItem) => void;
 }
 
-function TreeEntry({ entry }: SidebarEntryProps) {
+function TreeEntry({ entry, onContextMenu }: SidebarEntryProps) {
     return (
         <SidebarTreeItem
             itemId={entry.full_path}
@@ -25,8 +27,12 @@ function TreeEntry({ entry }: SidebarEntryProps) {
             labelIcon={GetTypeForFile(entry.name).icon}
             labelInfo="90"
             type={entry.type}
+            onContextMenu={(e) => {
+                e.stopPropagation();
+                onContextMenu(e, entry);
+            }}
         >
-            {entry.children.map((e, index) => <TreeEntry entry={e} key={index} />)}
+            {entry.children.map((e, index) => <TreeEntry entry={e} key={index} onContextMenu={onContextMenu} />)}
         </SidebarTreeItem>
     )
 }
@@ -53,7 +59,15 @@ interface TemplateVersionEditorSidebarProps {
 
 export function TemplateVersionEditorSidebar({ template, templateVersion, onSelectionChange }: TemplateVersionEditorSidebarProps) {
     const [treeItems, setTreeItems] = React.useState<WorkspaceTemplateVersionTreeItem[]>([]);
-    const [selectedItem, setSelectedItem] = React.useState<string>();
+    const [selectedItem, setSelectedItem] = React.useState<string | null>(null);
+    const [contextMenuEntry, setContextMenuEntry] = React.useState<WorkspaceTemplateVersionTreeItem | null>(null);
+
+    const GetDirName = React.useCallback((path: string) => {
+        if (!path || path === "/") return "";
+        const segments = path.split("/").filter(Boolean);
+        if (segments.length <= 1) return "/";
+        return "/" + segments.slice(0, -1).join("/");
+    }, [])
 
     React.useEffect(() => {
         if (selectedItem) {
@@ -66,7 +80,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
         mouseY: number;
     } | null>(null);
 
-    const handleContextMenu = (event: React.MouseEvent) => {
+    const handleContextMenu = React.useCallback((event: React.MouseEvent, entry: WorkspaceTemplateVersionTreeItem) => {
         event.preventDefault();
         setContextMenu(
             contextMenu === null
@@ -74,16 +88,17 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                     mouseX: event.clientX + 2,
                     mouseY: event.clientY - 6
                 }
-                : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
-                // Other native context menus might behave different.
-                // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+                :
                 null
         );
-    };
 
-    const handleClose = () => {
+        setContextMenuEntry(entry);
+    }, [contextMenu]);
+
+    const handleCloseContextMenu = React.useCallback(() => {
         setContextMenu(null);
-    };
+        setContextMenuEntry(null);
+    }, []);
 
     const fetchTreeItems = React.useCallback(async () => {
         let [status, statusCode, responseBody] = await Http.Request(
@@ -98,38 +113,49 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
         }
     }, [template.id, templateVersion.id]);
 
-    const handleCreateFile = React.useCallback(async () => {
+    const handleCreateItem = React.useCallback(async (type: "dir" | "file") => {
         // get parent folder
-        var parentFolderPath = "";
         var parentEntry: WorkspaceTemplateVersionTreeItem | null = null;
         if (selectedItem) {
-            parentFolderPath = selectedItem;
-            parentEntry = GetTreeEntryByPath(parentFolderPath, treeItems);
+            parentEntry = GetTreeEntryByPath(selectedItem, treeItems);
             if (parentEntry) {
                 if (parentEntry.type === "file") {
-                    var p = parentFolderPath.split("/");
-                    parentFolderPath = p.filter((part, index) => index < p.length - 1).join("/");
-                    if (parentFolderPath !== "") {
-                        parentEntry = GetTreeEntryByPath(parentFolderPath, treeItems);
+                    if (GetDirName(parentEntry.full_path) !== "") {
+                        parentEntry = GetTreeEntryByPath(GetDirName(parentEntry.full_path), treeItems);
                     }
                 }
             }
         }
 
         var r = await Swal.fire({
-            title: 'Enter the name of the file',
+            title: `Enter the name of the ${type === "dir" ? "folder" : "file"}`,
             input: 'text',
-            inputLabel: 'File name',
-            inputPlaceholder: 'Enter file name here',
+            inputLabel: `${type === "dir" ? "Folder" : "File"} name`,
+            inputPlaceholder: `Enter ${type === "dir" ? "folder" : "file"} name here`,
             showCancelButton: true,
             reverseButtons: true,
-            inputValidator: (value) => {
+            inputValidator: async (value) => {
                 if (!value) {
                     return 'You need to write something!'
                 }
 
-                if (parentFolderPath !== "" && parentEntry === null) {
-                    return 'Parent folder does not exist!'
+                var itemPath = value;
+                // if parent entry is null the new item will be created in the root folder
+                if (parentEntry !== null) {
+                    itemPath = `${parentEntry.full_path}${!parentEntry.full_path.endsWith("/") && "/"}${value}`;
+                }
+
+                // check if item already exists
+                let [status, statusCode] = await Http.Request(
+                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(itemPath)}`,
+                    "GET",
+                    null
+                );
+
+                if (status === RequestStatus.OK) {
+                    return 'Item already exists';
+                } else if (statusCode !== 404) {
+                    return 'Failed to check if item already exists';
                 }
             },
             customClass: {
@@ -141,12 +167,19 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
         });
 
         if (r.isConfirmed && r.value) {
+            var itemPath = r.value;
+            // if parent entry is null the new item will be created in the root folder
+            if (parentEntry !== null) {
+                itemPath = `${parentEntry.full_path}${!parentEntry.full_path.endsWith("/") && "/"}${r.value}`;
+            }
+
+            // create file
             let [status] = await Http.Request(
                 `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries`,
                 "POST",
                 JSON.stringify({
-                    path: parentFolderPath + (parentFolderPath.endsWith("/") || parentFolderPath === "" ? "" : "/") + r.value,
-                    type: "file",
+                    path: itemPath,
+                    type: type,
                     content: "",
                 })
             );
@@ -156,132 +189,164 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
         }
 
         fetchTreeItems();
-    }, [fetchTreeItems, selectedItem, template.id, templateVersion.id, treeItems]);
+    }, [GetDirName, fetchTreeItems, selectedItem, template.id, templateVersion.id, treeItems]);
 
-    const handleCreateFolder = React.useCallback(async () => {
-        // get parent folder
-        var parentFolderPath = "";
-        var parentEntry: WorkspaceTemplateVersionTreeItem | null = null;
-        if (selectedItem) {
-            parentFolderPath = selectedItem;
-            parentEntry = GetTreeEntryByPath(parentFolderPath, treeItems);
-            if (parentEntry) {
-                if (parentEntry.type === "file") {
-                    var p = parentFolderPath.split("/");
-                    parentFolderPath = p.filter((part, index) => index < p.length - 1).join("/");
-                    if (parentFolderPath !== "") {
-                        parentEntry = GetTreeEntryByPath(parentFolderPath, treeItems);
-                    }
-                }
-            }
-        }
-
-        var r = await Swal.fire({
-            title: 'Enter the name of the folder',
-            input: 'text',
-            inputLabel: 'Folder name',
-            inputPlaceholder: 'Enter folder name here',
-            showCancelButton: true,
-            reverseButtons: true,
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'You need to write something!'
-                }
-
-                if (parentFolderPath !== "" && parentEntry === null) {
-                    return 'Parent folder does not exist!'
-                }
-            },
-            customClass: {
-                confirmButton: "btn btn-primary",
-                cancelButton: "btn btn-light me-1",
-                popup: "bg-dark text-light",
-            },
-            buttonsStyling: false,
-        });
-
-        if (r.isConfirmed && r.value) {
-            let [status] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries`,
-                "POST",
-                JSON.stringify({
-                    path: parentFolderPath + (parentFolderPath.endsWith("/") || parentFolderPath === "" ? "" : "/") + r.value,
-                    type: "dir",
-                    content: "",
-                })
+    const handleDeleteEntry = React.useCallback(async () => {
+        if (contextMenuEntry) {
+            await Http.Request(
+                `
+                ${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/
+                ${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}
+                `,
+                "DELETE",
+                null,
             );
-            if (status !== RequestStatus.OK) {
-                toast.error("Cannot add file");
-            }
+            setContextMenu(null);
+            setContextMenuEntry(null);
+            fetchTreeItems();
         }
+    }, [contextMenuEntry, fetchTreeItems, template.id, templateVersion.id]);
 
-        fetchTreeItems();
-    }, [fetchTreeItems, selectedItem, template.id, templateVersion.id, treeItems]);
+    const handleRenameEntry = React.useCallback(async () => {
+        if (contextMenuEntry) {
+            var r = await Swal.fire({
+                title: `Change ${contextMenuEntry.type === "dir" ? "folder" : "file"} name`,
+                input: 'text',
+                inputLabel: `${contextMenuEntry.type === "dir" ? "Folder" : "File"} name`,
+                inputPlaceholder: `Enter ${contextMenuEntry.type === "dir" ? "folder" : "file"} name here`,
+                showCancelButton: true,
+                reverseButtons: true,
+                inputValidator: async (value) => {
+                    // if (!value) {
+                    //     return 'You need to write something!'
+                    // }
+
+                    // if (parentFolderPath !== "" && parentEntry === null) {
+                    //     return 'Parent folder does not exist!'
+                    // }
+
+                    // // check if item already exists
+                    // var itemPath = parentFolderPath + (parentFolderPath.endsWith("/") || parentFolderPath === "" ? "" : "/") + value;
+                    // let [status, statusCode] = await Http.Request(
+                    //     `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(itemPath)}`,
+                    //     "GET",
+                    //     null
+                    // );
+
+                    // if (status === RequestStatus.OK) {
+                    //     return 'Item already exists';
+                    // } else if (statusCode !== 404) {
+                    //     return 'Failed to check if item already exists';
+                    // }
+                },
+                customClass: {
+                    confirmButton: "btn btn-primary",
+                    cancelButton: "btn btn-light me-1",
+                    popup: "bg-dark text-light",
+                },
+                buttonsStyling: false,
+            });
+
+
+            setContextMenu(null);
+            setContextMenuEntry(null);
+            fetchTreeItems();
+        }
+    }, [contextMenuEntry, fetchTreeItems]);
 
     React.useEffect(() => {
         fetchTreeItems();
     }, [fetchTreeItems]);
 
+    const sidebarContainer = React.useRef<any>(null);
+
     return (
         <React.Fragment>
-            <div className='d-flex justify-content-between pt-1'>
+            <div className='d-flex justify-content-between pt-1' style={{ height: 25 }}>
                 <span className='text-uppercase px-2' style={{ fontFamily: "Consolas", fontSize: "12", fontWeight: "bold" }}>
-                    {template.name}
+                    <Link to={`/templates/${template.id}`}>
+                        {template.name}
+                    </Link>
                 </span>
                 <div className='d-flex justify-content-end'>
-                    <Button size='sm' className='text-center' style={{ background: "none", border: "none", fontSize: 14 }} onClick={handleCreateFolder}>
+                    <Button
+                        size='sm'
+                        className='text-center'
+                        style={{ background: "none", border: "none", fontSize: 14 }}
+                        onClick={() => handleCreateItem("dir")}
+                    >
                         <FontAwesomeIcon icon={faFolderPlus} />
                     </Button>
-                    <Button size='sm' className='text-center' style={{ background: "none", border: "none", fontSize: 14 }} onClick={handleCreateFile}>
+                    <Button
+                        size='sm'
+                        className='text-center'
+                        style={{ background: "none", border: "none", fontSize: 14 }}
+                        onClick={() => handleCreateItem("file")}
+                    >
                         <FontAwesomeIcon icon={faFileCirclePlus} />
                     </Button>
                 </div>
             </div>
-            <div onContextMenu={handleContextMenu} style={{ cursor: "context-menu" }}>
-                <Box sx={{ minHeight: 352, minWidth: 250 }}>
+            <div
+                // onContextMenu={handleContextMenu}
+                style={{ cursor: "context-menu" }}
+                onClick={(e) => {
+                    if (sidebarContainer.current === e.target) {
+                        setSelectedItem(null);
+                    }
+                }}
+            >
+                <Box sx={{ minHeight: 352, minWidth: 250, height: "calc(100% - 45px)" }} ref={sidebarContainer}>
                     <SimpleTreeView
                         onSelectedItemsChange={(e, item) => {
-                            if (item) {
-                                // find item
-                                setSelectedItem(item);
-                            }
+                            setSelectedItem(item);
                         }}
                     >
                         {treeItems.map((item, index) =>
-                            <TreeEntry entry={item} key={index} />
+                            <TreeEntry entry={item} key={index} onContextMenu={handleContextMenu} />
                         )}
                     </SimpleTreeView>
                     <Menu
                         open={contextMenu !== null}
-                        onClose={handleClose}
+                        onClose={handleCloseContextMenu}
                         anchorReference="anchorPosition"
                         anchorPosition={
                             contextMenu !== null
                                 ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
                                 : undefined
                         }
-                    // PaperProps={{
-                    //     style: {
-                    //         backgroundColor: '#1e1e1e',
-                    //         color: '#fff',
-                    //         borderRadius: 8,
-                    //         minWidth: 160,
-                    //     },
-                    // }}
-                    // MenuListProps={{
-                    //     sx: {
-                    //         paddingY: 0.5,
-                    //     },
-                    // }}
+                        slotProps={{
+                            paper: {
+                                style: {
+                                    backgroundColor: '#1e1e1e',
+                                    color: '#fff',
+                                    borderRadius: 8,
+                                    minWidth: 160,
+                                },
+                            }
+                        }}
                     >
                         <MenuItem
                             sx={{
                                 '&:hover': {
                                     backgroundColor: '#333',
                                 },
+                                fontSize: 14
                             }}
+                            onClick={handleRenameEntry}
                         >
-                            Delete node
+                            Rename
+                        </MenuItem>
+                        <MenuItem
+                            sx={{
+                                '&:hover': {
+                                    backgroundColor: '#333',
+                                },
+                                fontSize: 14
+                            }}
+                            onClick={handleDeleteEntry}
+                        >
+                            Delete permanently
                         </MenuItem>
                     </Menu>
                 </Box>
