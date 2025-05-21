@@ -59,19 +59,19 @@ interface TemplateVersionEditorSidebarProps {
 
 export function TemplateVersionEditorSidebar({ template, templateVersion, onSelectionChange }: TemplateVersionEditorSidebarProps) {
     const [treeItems, setTreeItems] = React.useState<WorkspaceTemplateVersionTreeItem[]>([]);
-    const [selectedItem, setSelectedItem] = React.useState<string | null>(null);
+    const [selectedItem, setSelectedItem] = React.useState<WorkspaceTemplateVersionTreeItem | null>(null);
     const [contextMenuEntry, setContextMenuEntry] = React.useState<WorkspaceTemplateVersionTreeItem | null>(null);
 
     const GetDirName = React.useCallback((path: string) => {
         if (!path || path === "/") return "";
         const segments = path.split("/").filter(Boolean);
-        if (segments.length <= 1) return "/";
-        return "/" + segments.slice(0, -1).join("/");
+        if (segments.length <= 1) return "";
+        return segments.slice(0, -1).join("/");
     }, [])
 
     React.useEffect(() => {
         if (selectedItem) {
-            onSelectionChange(selectedItem);
+            onSelectionChange(selectedItem.full_path);
         }
     }, [onSelectionChange, selectedItem]);
 
@@ -114,16 +114,11 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
     }, [template.id, templateVersion.id]);
 
     const handleCreateItem = React.useCallback(async (type: "dir" | "file") => {
-        // get parent folder
-        var parentEntry: WorkspaceTemplateVersionTreeItem | null = null;
+        var defaultInputValue = "";
         if (selectedItem) {
-            parentEntry = GetTreeEntryByPath(selectedItem, treeItems);
-            if (parentEntry) {
-                if (parentEntry.type === "file") {
-                    if (GetDirName(parentEntry.full_path) !== "") {
-                        parentEntry = GetTreeEntryByPath(GetDirName(parentEntry.full_path), treeItems);
-                    }
-                }
+            defaultInputValue = selectedItem.type === "dir" ? selectedItem.full_path : GetDirName(selectedItem.full_path);
+            if (!defaultInputValue.endsWith("/") && defaultInputValue.length > 0) {
+                defaultInputValue += "/";
             }
         }
 
@@ -132,6 +127,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
             input: 'text',
             inputLabel: `${type === "dir" ? "Folder" : "File"} name`,
             inputPlaceholder: `Enter ${type === "dir" ? "folder" : "file"} name here`,
+            inputValue: defaultInputValue,
             showCancelButton: true,
             reverseButtons: true,
             inputValidator: async (value) => {
@@ -139,23 +135,34 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                     return 'You need to write something!'
                 }
 
-                var itemPath = value;
-                // if parent entry is null the new item will be created in the root folder
-                if (parentEntry !== null) {
-                    itemPath = `${parentEntry.full_path}${!parentEntry.full_path.endsWith("/") && "/"}${value}`;
+                if (value.startsWith("/")) {
+                    return "Path cannot start with '/'";
+                }
+
+                // check if parent entry is a folder
+                if (GetDirName(value) !== "") {
+                    var segments = GetDirName(value).split("/");
+                    for (let i = 0; i < segments.length; i++) {
+                        var parentEntry: WorkspaceTemplateVersionTreeItem | null = GetTreeEntryByPath(segments.slice(0, i + 1).join("/"), treeItems);
+                        if (parentEntry) {
+                            if (parentEntry.type !== "dir") {
+                                return `Cannot create ${type === "dir" ? "folder" : "file"}, parent path is not a folder.`;
+                            }
+                        }
+                    }
                 }
 
                 // check if item already exists
                 let [status, statusCode] = await Http.Request(
-                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(itemPath)}`,
+                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(value)}`,
                     "GET",
                     null
                 );
 
                 if (status === RequestStatus.OK) {
-                    return 'Item already exists';
+                    return 'Path already exists';
                 } else if (statusCode !== 404) {
-                    return 'Failed to check if item already exists';
+                    return 'Failed to check if path already exists';
                 }
             },
             customClass: {
@@ -167,24 +174,18 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
         });
 
         if (r.isConfirmed && r.value) {
-            var itemPath = r.value;
-            // if parent entry is null the new item will be created in the root folder
-            if (parentEntry !== null) {
-                itemPath = `${parentEntry.full_path}${!parentEntry.full_path.endsWith("/") && "/"}${r.value}`;
-            }
-
             // create file
             let [status] = await Http.Request(
                 `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries`,
                 "POST",
                 JSON.stringify({
-                    path: itemPath,
+                    path: r.value,
                     type: type,
                     content: "",
                 })
             );
             if (status !== RequestStatus.OK) {
-                toast.error("Cannot add file");
+                toast.error(`Failed to create ${type === "dir" ? "folder" : "file"}`);
             }
         }
 
@@ -193,17 +194,28 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
 
     const handleDeleteEntry = React.useCallback(async () => {
         if (contextMenuEntry) {
-            await Http.Request(
-                `
-                ${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/
-                ${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}
-                `,
-                "DELETE",
-                null,
-            );
-            setContextMenu(null);
-            setContextMenuEntry(null);
-            fetchTreeItems();
+            if ((await Swal.fire({
+                icon: "question",
+                title: `Are you sure you want to permanently delete '${contextMenuEntry.name}'?`,
+                text: "You cannot restore it",
+                showCancelButton: true,
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: "btn btn-primary",
+                    cancelButton: "btn btn-light me-1",
+                    popup: "bg-dark text-light",
+                },
+                buttonsStyling: false,
+            })).isConfirmed) {
+                await Http.Request(
+                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}`,
+                    "DELETE",
+                    null,
+                );
+                setContextMenu(null);
+                setContextMenuEntry(null);
+                fetchTreeItems();
+            }
         }
     }, [contextMenuEntry, fetchTreeItems, template.id, templateVersion.id]);
 
@@ -299,7 +311,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                 <Box sx={{ minHeight: 352, minWidth: 250, height: "calc(100% - 45px)" }} ref={sidebarContainer}>
                     <SimpleTreeView
                         onSelectedItemsChange={(e, item) => {
-                            setSelectedItem(item);
+                            setSelectedItem(item ? GetTreeEntryByPath(item, treeItems) : null);
                         }}
                     >
                         {treeItems.map((item, index) =>

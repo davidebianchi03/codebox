@@ -412,3 +412,28 @@ func (tgm *TarGZManager) writeAll(entries []TarEntry) error {
 
 	return nil
 }
+
+func (tgm *TarGZManager) MkDirAll(path string) error {
+	parts := strings.Split(path, "/")
+
+	for i := 0; i < len(parts); i++ {
+		p := strings.Join(parts[:i+1], "/")
+		entry, err := tgm.RetrieveEntry(p)
+		if err != nil {
+			return err
+		}
+
+		if entry == nil {
+			// create folder
+			if err := tgm.Mkdir(p); err != nil {
+				return err
+			}
+		} else {
+			if entry.Type != "dir" {
+				return fmt.Errorf("%s is a file", p)
+			}
+		}
+	}
+
+	return nil
+}

@@ -46,6 +46,11 @@ const FilesMap: FileMap[] = [
         language: "terraform",
     },
     {
+        extensions: ["docker-compose.yaml", "docker-compose.yml"],
+        icon: DockerIcon,
+        language: "yaml",
+    },
+    {
         extensions: ["yaml", "yml"],
         icon: YamlIcon,
         language: "yaml",
@@ -60,7 +65,7 @@ export function GetTypeForFile(filename: string): FileMap {
     };
     FilesMap.forEach(ft => {
         ft.extensions.forEach(ex => {
-            if (filename.endsWith(ex)) {
+            if (filename.endsWith(ex) && file.language === "") {
                 file = ft;
             }
         })

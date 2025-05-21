@@ -235,17 +235,41 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 		}
 
 		if parentEntry == nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"details": "parent entry does not exist",
-			})
-			return
-		}
+			parts := strings.Split(path, "/")
 
-		if parentEntry.Type != "dir" {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"details": "parent entry is not a directory",
-			})
-			return
+			for i := 0; i < len(parts); i++ {
+				p := strings.Join(parts[:i+1], "/")
+				entry, err := tgm.RetrieveEntry(p)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"details": "internal server error",
+					})
+					return
+				}
+
+				if entry != nil {
+					if entry.Type != "dir" {
+						c.JSON(http.StatusBadRequest, gin.H{
+							"details": "parent entry is not a directory",
+						})
+						return
+					}
+				}
+			}
+
+			if err := tgm.MkDirAll(parentEntryPath); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"details": "internal server error",
+				})
+				return
+			}
+		} else {
+			if parentEntry.Type != "dir" {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"details": "parent entry is not a directory",
+				})
+				return
+			}
 		}
 	}
 
