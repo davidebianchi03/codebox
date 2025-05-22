@@ -335,8 +335,8 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 }
 
 type UpdateTemplateVersionEntryRequestBody struct {
-	Path    string `json:"path" binding:"required"`
-	Content string `json:"content" binding:"required"`
+	Path    string  `json:"path" binding:"required"`
+	Content *string `json:"content" binding:"required"`
 }
 
 // CreateTemplateVersionEntry godoc
@@ -427,9 +427,8 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 			return
 		}
 
-		// check if the parent element of the destination exists and
-		// is a directory
-		parentEntryPath := filepath.Dir(strings.TrimSuffix(path, "/"))
+		// check if parent element exists and is a folder
+		parentEntryPath := filepath.Dir(strings.TrimSuffix(newPath, "/"))
 		if parentEntryPath != "." {
 			parentEntryPath = "./" + parentEntryPath
 			parentEntry, err := tgm.RetrieveEntry(parentEntryPath)
@@ -441,17 +440,41 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 			}
 
 			if parentEntry == nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"details": "parent entry does not exist",
-				})
-				return
-			}
+				parts := strings.Split(newPath, "/")
 
-			if parentEntry.Type != "dir" {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"details": "parent entry is not a directory",
-				})
-				return
+				for i := 0; i < len(parts); i++ {
+					p := strings.Join(parts[:i+1], "/")
+					entry, err := tgm.RetrieveEntry(p)
+					if err != nil {
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"details": "internal server error",
+						})
+						return
+					}
+
+					if entry != nil {
+						if entry.Type != "dir" {
+							c.JSON(http.StatusBadRequest, gin.H{
+								"details": "parent entry is not a directory",
+							})
+							return
+						}
+					}
+				}
+
+				if err := tgm.MkDirAll(parentEntryPath); err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"details": "internal server error",
+					})
+					return
+				}
+			} else {
+				if parentEntry.Type != "dir" {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"details": "parent entry is not a directory",
+					})
+					return
+				}
 			}
 		}
 
@@ -464,8 +487,8 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 	}
 
 	// update the content
-	if requestBody.Content != string(entry.Content) {
-		content, err := base64.StdEncoding.DecodeString(requestBody.Content)
+	if *requestBody.Content != string(entry.Content) {
+		content, err := base64.StdEncoding.DecodeString(*requestBody.Content)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"details": "invalid content, it must be a base64 string",

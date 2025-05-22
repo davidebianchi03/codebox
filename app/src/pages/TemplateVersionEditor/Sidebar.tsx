@@ -139,6 +139,10 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                     return "Path cannot start with '/'";
                 }
 
+                if (value.endsWith("/")) {
+                    return "Path cannot end with a trailing slash";
+                }
+
                 // check if parent entry is a folder
                 if (GetDirName(value) !== "") {
                     var segments = GetDirName(value).split("/");
@@ -193,6 +197,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
     }, [GetDirName, fetchTreeItems, selectedItem, template.id, templateVersion.id, treeItems]);
 
     const handleDeleteEntry = React.useCallback(async () => {
+        setContextMenu(null);
         if (contextMenuEntry) {
             if ((await Swal.fire({
                 icon: "question",
@@ -212,44 +217,63 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                     "DELETE",
                     null,
                 );
-                setContextMenu(null);
-                setContextMenuEntry(null);
                 fetchTreeItems();
             }
         }
+        setContextMenuEntry(null);
     }, [contextMenuEntry, fetchTreeItems, template.id, templateVersion.id]);
 
     const handleRenameEntry = React.useCallback(async () => {
+        setContextMenu(null);
         if (contextMenuEntry) {
             var r = await Swal.fire({
                 title: `Change ${contextMenuEntry.type === "dir" ? "folder" : "file"} name`,
                 input: 'text',
                 inputLabel: `${contextMenuEntry.type === "dir" ? "Folder" : "File"} name`,
                 inputPlaceholder: `Enter ${contextMenuEntry.type === "dir" ? "folder" : "file"} name here`,
+                inputValue: contextMenuEntry.full_path,
                 showCancelButton: true,
                 reverseButtons: true,
                 inputValidator: async (value) => {
-                    // if (!value) {
-                    //     return 'You need to write something!'
-                    // }
+                    if (!value) {
+                        return 'You need to write something!'
+                    }
 
-                    // if (parentFolderPath !== "" && parentEntry === null) {
-                    //     return 'Parent folder does not exist!'
-                    // }
+                    if (value.startsWith("/")) {
+                        return "Path cannot start with '/'";
+                    }
 
-                    // // check if item already exists
-                    // var itemPath = parentFolderPath + (parentFolderPath.endsWith("/") || parentFolderPath === "" ? "" : "/") + value;
-                    // let [status, statusCode] = await Http.Request(
-                    //     `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(itemPath)}`,
-                    //     "GET",
-                    //     null
-                    // );
+                    if (value.endsWith("/")) {
+                        return "Path cannot end with a trailing slash";
+                    }
 
-                    // if (status === RequestStatus.OK) {
-                    //     return 'Item already exists';
-                    // } else if (statusCode !== 404) {
-                    //     return 'Failed to check if item already exists';
-                    // }
+                    // check if parent entry is a folder
+                    if (GetDirName(value) !== "") {
+                        var segments = GetDirName(value).split("/");
+                        for (let i = 0; i < segments.length; i++) {
+                            var parentEntry: WorkspaceTemplateVersionTreeItem | null = GetTreeEntryByPath(segments.slice(0, i + 1).join("/"), treeItems);
+                            if (parentEntry) {
+                                if (parentEntry.type !== "dir") {
+                                    return `Cannot move ${contextMenuEntry.type === "dir" ? "folder" : "file"}, parent path is not a folder.`;
+                                }
+                            }
+                        }
+                    }
+
+                    if (value !== contextMenuEntry.full_path) {
+                        // check if item already exists
+                        let [status, statusCode] = await Http.Request(
+                            `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(value)}`,
+                            "GET",
+                            null
+                        );
+
+                        if (status === RequestStatus.OK) {
+                            return 'Path already exists';
+                        } else if (statusCode !== 404) {
+                            return 'Failed to check if path already exists';
+                        }
+                    }
                 },
                 customClass: {
                     confirmButton: "btn btn-primary",
@@ -259,12 +283,40 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                 buttonsStyling: false,
             });
 
+            if (r.isConfirmed && r.value) {
+                var fileContent = btoa("");
+                if (contextMenuEntry.type === "file") {
+                    // retrieve latest content
+                    let [status, statusCode, responseBody] = await Http.Request(
+                        `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}`,
+                        "GET",
+                        null,
+                    );
 
-            setContextMenu(null);
-            setContextMenuEntry(null);
+                    if (status === RequestStatus.OK && statusCode === 200) {
+                        fileContent = responseBody.content;
+                    }
+                }
+
+                let [status] = await Http.Request(
+                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}`,
+                    "PUT",
+                    JSON.stringify({
+                        path: r.value,
+                        content: fileContent,
+                    })
+                );
+                if (status !== RequestStatus.OK) {
+                    toast.error(`Failed to rename ${contextMenuEntry.type === "dir" ? "folder" : "file"}`);
+                } else {
+                    onSelectionChange(r.value);
+                }
+            }
+
             fetchTreeItems();
         }
-    }, [contextMenuEntry, fetchTreeItems]);
+        setContextMenuEntry(null);
+    }, [GetDirName, contextMenuEntry, fetchTreeItems, onSelectionChange, template.id, templateVersion.id, treeItems]);
 
     React.useEffect(() => {
         fetchTreeItems();

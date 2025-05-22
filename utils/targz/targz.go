@@ -323,7 +323,7 @@ func (tgm *TarGZManager) EntriesTree() ([]*TarTreeItem, error) {
 			// check if exists
 			var parentTreeItem *TarTreeItem
 
-			for _, part := range parts {
+			for i, part := range parts {
 				var source *[]*TarTreeItem
 				if parentTreeItem == nil {
 					source = tree
@@ -340,11 +340,17 @@ func (tgm *TarGZManager) EntriesTree() ([]*TarTreeItem, error) {
 				}
 
 				if !found {
+					entryType := entry.Type
+
+					if i < len(parts)-1 {
+						entryType = "dir"
+					}
+
 					item := TarTreeItem{
 						Name:     part,
-						FullPath: strings.TrimPrefix(entry.Path, "./"),
+						FullPath: strings.TrimPrefix(strings.Join(parts[:i+1], "/"), "./"),
 						Children: make([]*TarTreeItem, 0),
-						Type:     entry.Type,
+						Type:     entryType,
 					}
 
 					*source = append(*source, &item)

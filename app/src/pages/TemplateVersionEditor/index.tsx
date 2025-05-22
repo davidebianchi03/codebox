@@ -82,7 +82,6 @@ export function TemplateVersionEditor() {
                         if (timer.current) {
                             clearInterval(timer.current);
                         }
-                        UpdateFileContent();
                         setFileContent(atob(entry.content));
                         setOpenFilePath(entry.name);
                         setOpenFileType(GetTypeForFile(entry.name));
@@ -136,38 +135,39 @@ export function TemplateVersionEditor() {
                             />
                         </div>
                         <div className="ps-0 w-100 h-100">
-                            {
-                                openFilePath && (
+                            <div
+                                style={{ fontFamily: "Consolas", background: "#181818", height: "45px" }}
+                                className="d-flex align-items-center justify-content-between"
+                            >
+                                {openFilePath ? (
                                     <React.Fragment>
-                                        <div
-                                            style={{ fontFamily: "Consolas", background: "#181818", height: "45px" }}
-                                            className="d-flex align-items-center justify-content-between"
-                                        >
-                                            <div className="d-flex align-items-center ms-2">
-                                                <img src={openFileType?.icon} alt="" width={15} height={15} />
-                                                <span className="ms-1">{openFilePath}</span>
-                                                <span style={{
-                                                    width: 7,
-                                                    height: 7,
-                                                    borderRadius: "100%",
-                                                    background: editing ? `var(--tblr-yellow)` : `var(--tblr-success)`,
-                                                    marginLeft: 8
-                                                }}></span>
-                                            </div>
-                                            <Button color="success" size="sm" className="py-1 px-2 me-2">
-                                                Publish
-                                            </Button>
+                                        <div className="d-flex align-items-center ms-2">
+                                            <img src={openFileType?.icon} alt="" width={15} height={15} />
+                                            <span className="ms-1">{openFilePath}</span>
+                                            <span style={{
+                                                width: 7,
+                                                height: 7,
+                                                borderRadius: "100%",
+                                                background: editing ? `var(--tblr-yellow)` : `var(--tblr-success)`,
+                                                marginLeft: 8
+                                            }}></span>
                                         </div>
-                                        <Editor
-                                            height={"calc(100% - 45px)"}
-                                            language={openFileType?.language}
-                                            value={fileContent}
-                                            onChange={(value) => EditorHandleChange(value || "")}
-                                            theme="vs-dark"
-                                        />
-                                    </React.Fragment>
-                                )
-                            }
+                                    </React.Fragment>) :
+                                    <span></span>
+                                }
+                                <Button color="success" size="sm" className="py-1 px-2 me-2">
+                                    Publish
+                                </Button>
+                            </div>
+                            {openFilePath && (
+                                <Editor
+                                    height={"calc(100% - 45px)"}
+                                    language={openFileType?.language}
+                                    value={fileContent}
+                                    onChange={(value) => EditorHandleChange(value || "")}
+                                    theme="vs-dark"
+                                />
+                            )}
                         </div>
                     </div>
                 </React.Fragment >
