@@ -209,6 +209,13 @@ func HandleCreateTemplateVersionEntry(c *gin.Context) {
 		return
 	}
 
+	if tv.Published {
+		c.JSON(http.StatusLocked, gin.H{
+			"details": "cannot edit a template version that has already been released",
+		})
+		return
+	}
+
 	tgm := targz.TarGZManager{
 		Filepath: tv.Sources.GetAbsolutePath(),
 	}
@@ -382,6 +389,13 @@ func HandleUpdateTemplateVersionEntry(c *gin.Context) {
 		return
 	}
 
+	if tv.Published {
+		c.JSON(http.StatusLocked, gin.H{
+			"details": "cannot edit a template version that has already been released",
+		})
+		return
+	}
+
 	tgm := targz.TarGZManager{
 		Filepath: tv.Sources.GetAbsolutePath(),
 	}
@@ -531,6 +545,13 @@ func HandleDeleteTemplateVersionEntry(c *gin.Context) {
 
 	tv := getTemplateVersionFromContext(c)
 	if tv == nil {
+		return
+	}
+
+	if tv.Published {
+		c.JSON(http.StatusLocked, gin.H{
+			"details": "cannot edit a template version that has already been released",
+		})
 		return
 	}
 

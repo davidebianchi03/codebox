@@ -17,12 +17,15 @@ import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { WorkspaceType } from "../../types/workspace";
 import { Link } from "react-router-dom";
+import { CreateTemplateModal } from "./createTemplateModal";
 
 export default function TemplatesList() {
   // TODO: check if current user can manage templates
   const [currentUser, setCurrentUser] = useState<User>();
   const [templates, setTemplates] = useState<WorkspaceTemplate[]>();
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
+  const [showCreateTemplateModal, setShowCreateTemplateModal] = useState<boolean>(false);
+
   // TODO: debounce
   const [searchText, setSearchText] = useState<string>("");
 
@@ -68,6 +71,7 @@ export default function TemplatesList() {
           <div className="btn-list">
             <Button
               color="primary"
+              onClick={() => setShowCreateTemplateModal(true)}
             >
               Create template
             </Button>
@@ -91,7 +95,18 @@ export default function TemplatesList() {
                     <div className="d-flex pb-2 my-2 border-bottom align-items-center">
                       {
                         template.icon ? (
-                          <img src={template.icon} alt="custom template icon" />
+                          <img
+                            src={template.icon}
+                            style={{
+                              width: 50,
+                              height: 50,
+                              fontSize: 20,
+                              padding: 3,
+                              opacity: 0.5,
+                              borderRadius: 4,
+                            }}
+                            alt="custom template icon"
+                          />
                         ) : (
                           <div
                             style={{
@@ -131,6 +146,10 @@ export default function TemplatesList() {
           </Card>
         </Col>
       </Row>
+      <CreateTemplateModal
+        isOpen={showCreateTemplateModal}
+        onClose={() => setShowCreateTemplateModal(false)}
+      />
       <ToastContainer
         toastClassName={"bg-dark"}
       />
