@@ -11,6 +11,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
 
 // TemplatesList godoc
@@ -57,6 +58,37 @@ func HandleRetrieveTemplate(c *gin.Context) {
 	}
 
 	template, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if template == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, template)
+}
+
+// TemplatesRetrieve godoc
+// @Summary Retrieve template by name
+// @Schemes
+// @Description Retrieve a template by name
+// @Tags Templates
+// @Param name path string true "Template name"
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.WorkspaceTemplate
+// @Router /api/v1/templates-by-name/:ma,e [get]
+func HandleRetrieveTemplateByName(c *gin.Context) {
+	templateName, _ := c.Params.Get("templateName")
+
+	template, err := models.RetrieveWorkspaceTemplateByName(templateName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"details": "internal server error",
@@ -165,7 +197,7 @@ func HandleCreateTemplate(c *gin.Context) {
 	}
 
 	// create the first version
-	_, err = models.CreateTemplateVersion(*wt, fmt.Sprintf("version at %s", time.Now().Format("2006-01-02 15:04:05")), user)
+	tv, err := models.CreateTemplateVersion(*wt, fmt.Sprintf("version at %s", time.Now().Format("2006-01-02 15:04:05")), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"details": "internal server error",
@@ -174,6 +206,19 @@ func HandleCreateTemplate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, *wt)
+
+	// add README.md to sources
+	tgm := targz.TarGZManager{
+		Filepath: tv.Sources.GetAbsolutePath(),
+	}
+
+	if !tv.Sources.Exists() {
+		if err := tgm.CreateArchive(); err != nil {
+			return
+		}
+	}
+
+	tgm.WriteFile("./README.md", []byte(fmt.Sprintf("# %s", wt.Name)))
 }
 
 type UpdateTemplateRequestBody struct {

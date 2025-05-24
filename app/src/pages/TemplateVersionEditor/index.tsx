@@ -8,6 +8,9 @@ import { RequestStatus } from "../../api/types";
 import { WorkspaceTemplate, WorkspaceTemplateVersion, WorkspaceTemplateVersionEntry } from "../../types/templates";
 import { toast, ToastContainer } from "react-toastify";
 import { FileMap, GetTypeForFile } from "./FileType";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGear } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
 
 export function TemplateVersionEditor() {
     const { templateId, versionId } = useParams();
@@ -108,6 +111,48 @@ export function TemplateVersionEditor() {
         timer.current = setTimeout(UpdateFileContent, 800);
     }, [UpdateFileContent]);
 
+    const handlePublishVersion = useCallback(async () => {
+        var r = await Swal.fire({
+            title: `Publish version`,
+            text: "Publish new version of the template",
+            input: 'text',
+            inputLabel: `Name`,
+            inputPlaceholder: `First commit`,
+            inputValue: templateVersion?.name,
+            showCancelButton: true,
+            reverseButtons: true,
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'You need to write something!'
+                }
+            },
+            customClass: {
+                confirmButton: "btn btn-primary",
+                cancelButton: "btn btn-light me-1",
+                popup: "bg-dark text-light",
+            },
+            buttonsStyling: false,
+            confirmButtonText: "Publish",
+        });
+
+        if (r.isConfirmed && r.value) {
+            let [status, statusCode] = await Http.Request(
+                `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}`,
+                "PUT",
+                JSON.stringify({
+                    name: r.value,
+                    published: true,
+                })
+            );
+            if (status === RequestStatus.OK && statusCode === 200) {
+                navigate(`/templates/${template?.id}`);
+            } else {
+                toast.error("Failed to publish version");
+            }
+        }
+
+    }, [navigate, template?.id, templateId, templateVersion?.name, versionId]);
+
     useEffect(() => {
         fetchTemplate();
         fetchTemplateVersion();
@@ -155,9 +200,23 @@ export function TemplateVersionEditor() {
                                     </React.Fragment>) :
                                     <span></span>
                                 }
-                                <Button color="success" size="sm" className="py-1 px-2 me-2">
-                                    Publish
-                                </Button>
+                                <div>
+                                    <Button
+                                        color="transparent"
+                                        style={{ background: "none", border: "none" }}
+                                        className="py-1 px-2 me-2"
+                                    >
+                                        <FontAwesomeIcon icon={faGear} />
+                                    </Button>
+                                    <Button
+                                        color="success"
+                                        size="sm"
+                                        className="py-1 px-2 me-2"
+                                        onClick={handlePublishVersion}
+                                    >
+                                        Publish
+                                    </Button>
+                                </div>
                             </div>
                             {openFilePath && (
                                 <Editor

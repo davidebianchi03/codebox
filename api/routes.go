@@ -214,6 +214,12 @@ func V1ApiRoutes(router *gin.Engine) {
 			)
 		}
 
+		templatesByName := v1.Group("/templates-by-name")
+		{
+			templatesByName.GET("", permissions.AuthenticationRequiredRoute(templates.HandleListTemplates))
+			templatesByName.GET(":templateName", permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplateByName))
+		}
+
 		// runners related apis
 		runnersApis := v1.Group("/runners")
 		{

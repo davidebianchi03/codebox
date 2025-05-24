@@ -134,7 +134,7 @@ func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (
 	copySourcesFromLastVersion := false
 	if lastTemplateVersion != nil {
 		if lastTemplateVersion.Sources != nil {
-			copySourcesFromLastVersion = !lastTemplateVersion.Sources.Exists()
+			copySourcesFromLastVersion = lastTemplateVersion.Sources.Exists()
 		}
 	}
 

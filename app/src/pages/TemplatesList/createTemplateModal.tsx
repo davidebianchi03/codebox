@@ -26,7 +26,18 @@ export function CreateTemplateModal({ isOpen, onClose }: CreateTemplateModalProp
             description: ""
         },
         validationSchema: Yup.object({
-            name: Yup.string().required("This field is required"),
+            name: Yup.string().required("This field is required").test(
+                "already_exists",
+                "Another template with the same name already exists",
+                async (name) => {
+                    let [status, statusCode] = await Http.Request(
+                        `${Http.GetServerURL()}/api/v1/templates-by-name/${encodeURIComponent(name)}`,
+                        "GET",
+                        null
+                    );
+                    return status !== RequestStatus.OK || statusCode !== 200;
+                }
+            ),
             type: Yup.string().required("This field is required"),
         }),
         validateOnBlur: false,
@@ -43,7 +54,7 @@ export function CreateTemplateModal({ isOpen, onClose }: CreateTemplateModalProp
                 })
             );
 
-            if(status !== RequestStatus.OK || statusCode !== 201) {
+            if (status !== RequestStatus.OK || statusCode !== 201) {
                 toast.error("Failed to create template");
             } else {
                 var template = responseData as WorkspaceTemplate;

@@ -105,10 +105,6 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, tv)
 }
 
-type CreateTemplateVersionRequestBody struct {
-	Name string `json:"name" binding:"required,min=1"`
-}
-
 type UpdateTemplateVersionRequestBody struct {
 	Name      string `json:"name" binding:"required,min=1"`
 	Published bool   `json:"published"`
