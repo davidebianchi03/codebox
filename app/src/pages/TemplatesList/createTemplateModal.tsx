@@ -181,7 +181,7 @@ export function CreateTemplateModal({ isOpen, onClose }: CreateTemplateModalProp
                         </Row>
                         <div className="d-flex justify-content-end">
                             <Button
-                                color="light"
+                                color="accent"
                                 className="me-1"
                                 onClick={(e) => {
                                     e.preventDefault();

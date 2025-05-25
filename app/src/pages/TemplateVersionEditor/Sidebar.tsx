@@ -171,7 +171,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
             },
             customClass: {
                 confirmButton: "btn btn-primary",
-                cancelButton: "btn btn-light me-1",
+                cancelButton: "btn btn-accent me-1",
                 popup: "bg-dark text-light",
             },
             buttonsStyling: false,
@@ -207,7 +207,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                 reverseButtons: true,
                 customClass: {
                     confirmButton: "btn btn-primary",
-                    cancelButton: "btn btn-light me-1",
+                    cancelButton: "btn btn-accent me-1",
                     popup: "bg-dark text-light",
                 },
                 buttonsStyling: false,
@@ -277,7 +277,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                 },
                 customClass: {
                     confirmButton: "btn btn-primary",
-                    cancelButton: "btn btn-light me-1",
+                    cancelButton: "btn btn-accent me-1",
                     popup: "bg-dark text-light",
                 },
                 buttonsStyling: false,

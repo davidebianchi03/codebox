@@ -115,7 +115,7 @@ func RetrieveLatestTemplateVersionByTemplate(template WorkspaceTemplate) (*Works
 	return nil, nil
 }
 
-func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (*WorkspaceTemplateVersion, error) {
+func CreateTemplateVersion(template WorkspaceTemplate, name string, user User, configFilePath string) (*WorkspaceTemplateVersion, error) {
 	// retrieve the latest version for the template
 	lastTemplateVersion, err := RetrieveLatestTemplateVersionByTemplate(template)
 	if err != nil {
@@ -176,7 +176,7 @@ func CreateTemplateVersion(template WorkspaceTemplate, name string, user User) (
 		TemplateID:     template.ID,
 		Template:       &template,
 		Name:           name,
-		ConfigFilePath: "",
+		ConfigFilePath: configFilePath,
 		Sources:        &sourceFile,
 		Published:      false,
 		EditedByID:     user.ID,
@@ -197,6 +197,7 @@ func UpdateTemplateVersion(
 	name string,
 	published bool,
 	user User,
+	configFilePath string,
 ) (*WorkspaceTemplateVersion, error) {
 	// check if template version exists
 	templateVersion, err := RetrieveWorkspaceTemplateVersionsByIdByTemplate(template, tv.ID)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -158,23 +159,23 @@ func HandleCreateTemplate(c *gin.Context) {
 	}
 
 	// check if type is valid
-	valid := false
-	for _, workspaceType := range config.ListWorkspaceTypes() {
+	var workspaceType *config.WorkspaceType
+	for _, wt := range config.ListWorkspaceTypes() {
 		// check if the current workspace type supports
 		// templates as config source
 		templatesSupported := false
-		for _, configSource := range workspaceType.SupportedConfigSources {
+		for _, configSource := range wt.SupportedConfigSources {
 			if configSource == "template" {
 				templatesSupported = true
 			}
 		}
 
-		if templatesSupported && workspaceType.ID == requestBody.Type {
-			valid = true
+		if templatesSupported && wt.ID == requestBody.Type {
+			workspaceType = &wt
 		}
 	}
 
-	if !valid {
+	if workspaceType == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"details": "'type' is not valid",
 		})
@@ -197,7 +198,12 @@ func HandleCreateTemplate(c *gin.Context) {
 	}
 
 	// create the first version
-	tv, err := models.CreateTemplateVersion(*wt, fmt.Sprintf("version at %s", time.Now().Format("2006-01-02 15:04:05")), user)
+	tv, err := models.CreateTemplateVersion(
+		*wt,
+		fmt.Sprintf("version at %s", time.Now().Format("2006-01-02 15:04:05")),
+		user,
+		workspaceType.ConfigFilesDefaultPath,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"details": "internal server error",
@@ -218,7 +224,13 @@ func HandleCreateTemplate(c *gin.Context) {
 		}
 	}
 
+	configFilePath := tv.ConfigFilePath
+	if !strings.HasPrefix(configFilePath, "./") {
+		configFilePath = "./" + configFilePath
+	}
+
 	tgm.WriteFile("./README.md", []byte(fmt.Sprintf("# %s", wt.Name)))
+	tgm.WriteFile(configFilePath, []byte(""))
 }
 
 type UpdateTemplateRequestBody struct {

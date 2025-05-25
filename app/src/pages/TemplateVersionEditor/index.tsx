@@ -11,6 +11,7 @@ import { FileMap, GetTypeForFile } from "./FileType";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import { TemplateVersionSettingsModal } from "./TemplateVersionSettingsModal";
 
 export function TemplateVersionEditor() {
     const { templateId, versionId } = useParams();
@@ -22,6 +23,7 @@ export function TemplateVersionEditor() {
     const [templateVersion, setTemplateVersion] = useState<WorkspaceTemplateVersion>();
     const [openFileType, setOpenFileType] = useState<FileMap>();
     const [editing, setEditing] = useState<boolean>(false);
+    const [showEditTemplateVersionModal, setShowEditTemplateVersionModal] = useState<boolean>(false);
     const timer = useRef<NodeJS.Timeout | null>(null);
 
     const fetchTemplate = useCallback(async () => {
@@ -128,7 +130,7 @@ export function TemplateVersionEditor() {
             },
             customClass: {
                 confirmButton: "btn btn-primary",
-                cancelButton: "btn btn-light me-1",
+                cancelButton: "btn btn-accent me-1",
                 popup: "bg-dark text-light",
             },
             buttonsStyling: false,
@@ -142,6 +144,7 @@ export function TemplateVersionEditor() {
                 JSON.stringify({
                     name: r.value,
                     published: true,
+                    config_file_path: templateVersion?.config_file_relative_path,
                 })
             );
             if (status === RequestStatus.OK && statusCode === 200) {
@@ -151,7 +154,7 @@ export function TemplateVersionEditor() {
             }
         }
 
-    }, [navigate, template?.id, templateId, templateVersion?.name, versionId]);
+    }, [navigate, template?.id, templateId, templateVersion, versionId]);
 
     useEffect(() => {
         fetchTemplate();
@@ -205,6 +208,7 @@ export function TemplateVersionEditor() {
                                         color="transparent"
                                         style={{ background: "none", border: "none" }}
                                         className="py-1 px-2 me-2"
+                                        onClick={() => setShowEditTemplateVersionModal(true)}
                                     >
                                         <FontAwesomeIcon icon={faGear} />
                                     </Button>
@@ -232,6 +236,18 @@ export function TemplateVersionEditor() {
                 </React.Fragment >
             )}
             <ToastContainer />
+            {template && templateVersion && (
+                <TemplateVersionSettingsModal
+                    isOpen={showEditTemplateVersionModal}
+                    onClose={() => {
+                        fetchTemplateVersion();
+                        setShowEditTemplateVersionModal(false);
+                    }}
+                    template={template}
+                    templateVersion={templateVersion}
+                />
+            )}
+
         </React.Fragment >
     )
 }

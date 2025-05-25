@@ -87,7 +87,7 @@ export default function WorkspaceDetails() {
           confirmButtonText: "Delete",
           customClass: {
             popup: "bg-dark text-light",
-            cancelButton: "btn btn-light",
+            cancelButton: "btn btn-accent",
             confirmButton: "btn btn-warning",
           },
         })
@@ -127,7 +127,7 @@ export default function WorkspaceDetails() {
           confirmButtonText: "Update",
           customClass: {
             popup: "bg-dark text-light",
-            cancelButton: "btn btn-light",
+            cancelButton: "btn btn-accent",
             confirmButton: "btn btn-primary",
           },
         })

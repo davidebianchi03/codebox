@@ -106,8 +106,9 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 }
 
 type UpdateTemplateVersionRequestBody struct {
-	Name      string `json:"name" binding:"required,min=1"`
-	Published bool   `json:"published"`
+	Name           string `json:"name" binding:"required,min=1"`
+	Published      bool   `json:"published"`
+	ConfigFilePath string `json:"config_file_path"`
 }
 
 // UpdateTemplateversionByTemplate godoc
@@ -192,6 +193,7 @@ func HandleUpdateTemplateVersionByTemplate(c *gin.Context) {
 		requestBody.Name,
 		requestBody.Published,
 		user,
+		requestBody.ConfigFilePath,
 	)
 
 	if err != nil {
@@ -202,7 +204,12 @@ func HandleUpdateTemplateVersionByTemplate(c *gin.Context) {
 	}
 
 	if requestBody.Published {
-		_, err := models.CreateTemplateVersion(*wt, fmt.Sprintf("version at %s", time.Now().Format("2006-01-02 15:04:05")), user)
+		_, err := models.CreateTemplateVersion(
+			*wt,
+			fmt.Sprintf("version at %s", time.Now().Format("2006-01-02 15:04:05")),
+			user,
+			tv.ConfigFilePath,
+		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"details": "internal server error",
