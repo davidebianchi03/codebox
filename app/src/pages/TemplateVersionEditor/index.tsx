@@ -10,7 +10,6 @@ import { toast, ToastContainer } from "react-toastify";
 import { FileMap, GetTypeForFile } from "./FileType";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
-import Swal from "sweetalert2";
 import { TemplateVersionSettingsModal } from "./TemplateVersionSettingsModal";
 
 export function TemplateVersionEditor() {
@@ -24,6 +23,7 @@ export function TemplateVersionEditor() {
     const [openFileType, setOpenFileType] = useState<FileMap>();
     const [editing, setEditing] = useState<boolean>(false);
     const [showEditTemplateVersionModal, setShowEditTemplateVersionModal] = useState<boolean>(false);
+    const [publishTemplateVersion, setPublishTemplateVersion] = useState<boolean>(false);
     const timer = useRef<NodeJS.Timeout | null>(null);
 
     const fetchTemplate = useCallback(async () => {
@@ -53,14 +53,14 @@ export function TemplateVersionEditor() {
     }, [navigate, templateId, versionId]);
 
 
-    const UpdateFileContent = useCallback(async () => {
+    const UpdateFileContent = useCallback(async (value:string) => {
         if (openFilePath) {
             let [status] = await Http.Request(
                 `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}/entries/${encodeURIComponent(openFilePath)}`,
                 "PUT",
                 JSON.stringify({
                     path: openFilePath,
-                    content: btoa(fileContent),
+                    content: btoa(value),
                 })
             );
 
@@ -70,7 +70,7 @@ export function TemplateVersionEditor() {
                 setEditing(false);
             }
         }
-    }, [fileContent, openFilePath, templateId, versionId]);
+    }, [openFilePath, templateId, versionId]);
 
     const fetchFileContent = useCallback(async () => {
         if (selectedItemPath) {
@@ -110,51 +110,8 @@ export function TemplateVersionEditor() {
             clearTimeout(timer.current);
             timer.current = null;
         }
-        timer.current = setTimeout(UpdateFileContent, 800);
+        timer.current = setTimeout(() => UpdateFileContent(value), 800);
     }, [UpdateFileContent]);
-
-    const handlePublishVersion = useCallback(async () => {
-        var r = await Swal.fire({
-            title: `Publish version`,
-            text: "Publish new version of the template",
-            input: 'text',
-            inputLabel: `Name`,
-            inputPlaceholder: `First commit`,
-            inputValue: templateVersion?.name,
-            showCancelButton: true,
-            reverseButtons: true,
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'You need to write something!'
-                }
-            },
-            customClass: {
-                confirmButton: "btn btn-primary",
-                cancelButton: "btn btn-accent me-1",
-                popup: "bg-dark text-light",
-            },
-            buttonsStyling: false,
-            confirmButtonText: "Publish",
-        });
-
-        if (r.isConfirmed && r.value) {
-            let [status, statusCode] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}`,
-                "PUT",
-                JSON.stringify({
-                    name: r.value,
-                    published: true,
-                    config_file_path: templateVersion?.config_file_relative_path,
-                })
-            );
-            if (status === RequestStatus.OK && statusCode === 200) {
-                navigate(`/templates/${template?.id}`);
-            } else {
-                toast.error("Failed to publish version");
-            }
-        }
-
-    }, [navigate, template?.id, templateId, templateVersion, versionId]);
 
     useEffect(() => {
         fetchTemplate();
@@ -208,7 +165,10 @@ export function TemplateVersionEditor() {
                                         color="transparent"
                                         style={{ background: "none", border: "none" }}
                                         className="py-1 px-2 me-2"
-                                        onClick={() => setShowEditTemplateVersionModal(true)}
+                                        onClick={() => {
+                                            setPublishTemplateVersion(false);
+                                            setShowEditTemplateVersionModal(true)
+                                        }}
                                     >
                                         <FontAwesomeIcon icon={faGear} />
                                     </Button>
@@ -216,7 +176,10 @@ export function TemplateVersionEditor() {
                                         color="success"
                                         size="sm"
                                         className="py-1 px-2 me-2"
-                                        onClick={handlePublishVersion}
+                                        onClick={() => {
+                                            setPublishTemplateVersion(true);
+                                            setShowEditTemplateVersionModal(true);
+                                        }}
                                     >
                                         Publish
                                     </Button>
@@ -241,10 +204,12 @@ export function TemplateVersionEditor() {
                     isOpen={showEditTemplateVersionModal}
                     onClose={() => {
                         fetchTemplateVersion();
+                        setPublishTemplateVersion(false);
                         setShowEditTemplateVersionModal(false);
                     }}
                     template={template}
                     templateVersion={templateVersion}
+                    publish={publishTemplateVersion}
                 />
             )}
 

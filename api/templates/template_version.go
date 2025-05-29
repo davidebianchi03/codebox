@@ -105,6 +105,52 @@ func HandleRetrieveTemplateVersionByTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, tv)
 }
 
+// HandleRetrieveLatestTemplateVersionByTemplate godoc
+// @Summary Retrieve the latest template version
+// @Schemes
+// @Description Retrieve the latest template version
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.WorkspaceTemplateVersion
+// @Router /api/v1/templates/:templateId/latest-version [get]
+func HandleRetrieveLatestTemplateVersionByTemplate(c *gin.Context) {
+	templateId, _ := c.Params.Get("templateId")
+
+	ti, err := strconv.Atoi(templateId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	wt, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	tv, err := models.RetrieveLatestTemplateVersionByTemplate(*wt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if tv == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template version not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, tv)
+}
+
 type UpdateTemplateVersionRequestBody struct {
 	Name           string `json:"name" binding:"required,min=1"`
 	Published      bool   `json:"published"`

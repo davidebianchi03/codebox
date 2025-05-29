@@ -29,7 +29,7 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
             toast.error("Failed to fetch template versions");
             setVersions(undefined);
         }
-    }, []);
+    }, [template.id]);
 
     useEffect(() => {
         fetchVersions();

@@ -79,10 +79,12 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		if workspace.GitSource.Sources == nil {
 			return errors.New("source files do not exists")
 		}
-
 		configFilePath = workspace.GitSource.Sources.GetAbsolutePath()
 	} else {
-		panic("not implemented")
+		if workspace.TemplateVersion.Sources == nil {
+			return errors.New("source files do not exists")
+		}
+		configFilePath = workspace.TemplateVersion.Sources.GetAbsolutePath()
 	}
 
 	configFile, err := os.Open(configFilePath)
@@ -103,8 +105,6 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		_ = writer.WriteField("git_repository_url", workspace.GitSource.RepositoryURL)
-	}
-	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		_ = writer.WriteField("config_file_name", workspace.GitSource.ConfigFilePath)
 	} else {
 		_ = writer.WriteField("config_file_name", workspace.TemplateVersion.ConfigFilePath)

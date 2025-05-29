@@ -1,3 +1,5 @@
+import { Runner } from "./runner"
+import { WorkspaceTemplateVersion } from "./templates"
 import { User } from "./user"
 
 export interface GitSource {
@@ -13,9 +15,9 @@ export interface Workspace {
     user: User
     status: string
     type: string
-    runner: any
+    runner: Runner
     config_source: string
-    template_version: any
+    template_version: WorkspaceTemplateVersion
     git_source: GitSource|null
     config_source_file_path: string
     environment_variables: string[]

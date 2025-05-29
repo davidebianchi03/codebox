@@ -188,6 +188,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				":templateId/versions/:versionId",
 				permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplateVersionByTemplate),
 			)
+			templatesApis.GET(
+				":templateId/latest-version",
+				permissions.AuthenticationRequiredRoute(templates.HandleRetrieveLatestTemplateVersionByTemplate),
+			)
 			templatesApis.PUT(
 				":templateId/versions/:versionId",
 				permissions.AuthenticationRequiredRoute(templates.HandleUpdateTemplateVersionByTemplate),

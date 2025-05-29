@@ -16,7 +16,7 @@ import (
 
 type WorkspaceTemplateVersion struct {
 	ID             uint               `gorm:"primarykey" json:"id"`
-	TemplateID     uint               `json:"-"`
+	TemplateID     uint               `json:"template"`
 	Template       *WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;not null;" json:"-"`
 	Name           string             `gorm:"size:255;not null;" json:"name"`
 	ConfigFilePath string             `gorm:"type:text;" json:"config_file_relative_path"`
@@ -63,6 +63,22 @@ func CountWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (int64
 	return count, nil
 }
 
+func CountPublishedWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplate) (int64, error) {
+	var count int64
+	if err := dbconn.DB.
+		Model(&WorkspaceTemplateVersion{}).
+		Where(
+			map[string]interface{}{
+				"template_id": template.ID,
+				"published":   true,
+			},
+		).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func RetrieveWorkspaceTemplateVersionsByIdByTemplate(template WorkspaceTemplate, versionId uint) (*WorkspaceTemplateVersion, error) {
 	var tv *WorkspaceTemplateVersion
 	r := dbconn.DB.
@@ -88,7 +104,7 @@ func RetrieveWorkspaceTemplateVersionsByIdByTemplate(template WorkspaceTemplate,
 }
 
 func RetrieveLatestTemplateVersionByTemplate(template WorkspaceTemplate) (*WorkspaceTemplateVersion, error) {
-	count, err := CountWorkspaceTemplateVersionsByTemplate(template)
+	count, err := CountPublishedWorkspaceTemplateVersionsByTemplate(template)
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +118,7 @@ func RetrieveLatestTemplateVersionByTemplate(template WorkspaceTemplate) (*Works
 				&lastTemplateVersion,
 				map[string]interface{}{
 					"template_id": template.ID,
+					"published":   true,
 				},
 			)
 

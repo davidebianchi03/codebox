@@ -8,6 +8,7 @@ export interface WorkspaceTemplate {
 
 export interface WorkspaceTemplateVersion {
     id: number
+    template: number
     name: string
     config_file_relative_path: string
     published: boolean

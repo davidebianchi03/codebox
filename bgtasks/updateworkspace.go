@@ -24,6 +24,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 		Preload("GitSource").
 		Preload("GitSource.Sources").
 		Preload("TemplateVersion").
+		Preload("TemplateVersion.Template").
 		First(&workspace, map[string]interface{}{"ID": workspaceId})
 
 	if result.Error != nil {
@@ -80,7 +81,17 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 			return nil
 		}
 	} else {
-		panic("not implemented")
+		latestVersion, err := models.RetrieveLatestTemplateVersionByTemplate(*workspace.TemplateVersion.Template)
+		if err != nil {
+			workspace.AppendLogs(fmt.Sprintf("failed to create targz archive, %s", err.Error()))
+			workspace.Status = models.WorkspaceStatusError
+			dbconn.DB.Save(&workspace)
+			return nil
+		}
+
+		workspace.TemplateVersionID = &latestVersion.ID
+		workspace.TemplateVersion = latestVersion
+		dbconn.DB.Save(&workspace)
 	}
 
 	dbconn.DB.Save(&workspace)

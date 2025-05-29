@@ -27,6 +27,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 		Preload("GitSource").
 		Preload("GitSource.Sources").
 		Preload("TemplateVersion").
+		Preload("TemplateVersion.Sources").
 		First(&workspace, map[string]interface{}{
 			"ID": workspaceId,
 		})
@@ -95,6 +96,19 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 			}
 		} else {
 			workspace.AppendLogs("git source is nil")
+			workspace.Status = models.WorkspaceStatusError
+			return nil
+		}
+	} else {
+		// check if config files exist
+		if workspace.TemplateVersion.Sources == nil {
+			workspace.AppendLogs("Template version has no sources")
+			workspace.Status = models.WorkspaceStatusError
+			return nil
+		}
+
+		if !workspace.TemplateVersion.Sources.Exists() {
+			workspace.AppendLogs("Template version has no sources")
 			workspace.Status = models.WorkspaceStatusError
 			return nil
 		}
