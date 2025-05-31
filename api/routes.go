@@ -178,8 +178,10 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			templatesApis.GET("", permissions.AuthenticationRequiredRoute(templates.HandleListTemplates))
 			templatesApis.GET(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplate))
+			templatesApis.GET(":templateId/workspaces", permissions.AuthenticationRequiredRoute(templates.HandleListWorkspacesByTemplate))
 			templatesApis.POST("", permissions.AuthenticationRequiredRoute(templates.HandleCreateTemplate))
 			templatesApis.PUT(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleUpdateTemplate))
+			templatesApis.DELETE(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleDeleteWorkspace))
 			templatesApis.GET(
 				":templateId/versions",
 				permissions.AuthenticationRequiredRoute(templates.HandleListTemplateVersionsByTemplate),

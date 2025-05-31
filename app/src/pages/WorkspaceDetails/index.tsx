@@ -214,7 +214,9 @@ export default function WorkspaceDetails() {
                     onClick={HandleUpdateConfigFiles}
                   >
                     <FontAwesomeIcon icon={faCloudArrowUp} />
-                    <span className="ms-2">Update config files</span>
+                    <span className="ms-2">
+                      {workspace.config_source === "template" ? "Update template version" : "Update config files"}
+                    </span>
                   </Button>
                 )}
                 <Button

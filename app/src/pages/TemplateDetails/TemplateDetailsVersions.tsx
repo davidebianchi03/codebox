@@ -24,7 +24,7 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
         );
 
         if (status === RequestStatus.OK && statusCode === 200) {
-            setVersions(responseData);
+            setVersions((responseData as WorkspaceTemplateVersion[]).reverse());
         } else {
             toast.error("Failed to fetch template versions");
             setVersions(undefined);
@@ -60,7 +60,7 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
                             {versions && (
                                 <React.Fragment>
                                     {versions.length > 0 ? (
-                                        versions.reverse().map((version, index) => (
+                                        versions.map((version, index) => (
                                             <tr key={index}>
                                                 <td>
                                                     {version.name}

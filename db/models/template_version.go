@@ -242,3 +242,8 @@ func UpdateTemplateVersion(
 
 	return templateVersion, nil
 }
+
+func DeleteTemplateVersion(tv WorkspaceTemplateVersion) error {
+	os.RemoveAll(tv.Sources.GetAbsolutePath())
+	return dbconn.DB.Unscoped().Delete(&tv).Error
+}

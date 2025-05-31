@@ -316,3 +316,112 @@ func HandleUpdateTemplate(c *gin.Context) {
 
 	c.JSON(http.StatusOK, wt)
 }
+
+func HandleDeleteWorkspace(c *gin.Context) {
+	templateId, _ := c.Params.Get("templateId")
+
+	// get object
+	ti, err := strconv.Atoi(templateId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	wt, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if wt == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	workspaces, err := models.ListWorkspacesByTemplate(*wt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if len(workspaces) > 0 {
+		c.JSON(http.StatusConflict, gin.H{
+			"details": "cannot delete template, there are some workspace that are using it",
+		})
+		return
+	}
+
+	// remove versions
+	wtv, err := models.ListWorkspaceTemplateVersionsByTemplate(*wt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	for _, tv := range *wtv {
+		if err := models.DeleteTemplateVersion(tv); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"details": "internal server error",
+			})
+			return
+		}
+	}
+
+	// delete template
+	if err := models.DeleteTemplate(*wt); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, workspaces)
+}
+
+func HandleListWorkspacesByTemplate(c *gin.Context) {
+	templateId, _ := c.Params.Get("templateId")
+
+	// get object
+	ti, err := strconv.Atoi(templateId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	wt, err := models.RetrieveWorkspaceTemplateByID(uint(ti))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	if wt == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"details": "template not found",
+		})
+		return
+	}
+
+	workspaces, err := models.ListWorkspacesByTemplate(*wt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"details": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, workspaces)
+}

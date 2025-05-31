@@ -80,3 +80,24 @@ func UpdateWorkspaceTemplate(wt WorkspaceTemplate) error {
 
 	return nil
 }
+
+func ListWorkspacesByTemplate(wt WorkspaceTemplate) ([]Workspace, error) {
+	var workspaces []Workspace
+	err := dbconn.DB.
+		Preload("User").
+		Preload("TemplateVersion").
+		Joins("JOIN workspace_template_versions ON workspace_template_versions.id = workspaces.template_version_id").
+		Joins("JOIN workspace_templates ON workspace_templates.id = workspace_template_versions.template_id").
+		Where("workspace_templates.id = ?", wt.ID).
+		Find(&workspaces).Error
+
+	if err != nil {
+		return []Workspace{}, err
+	}
+
+	return workspaces, nil
+}
+
+func DeleteTemplate(wt WorkspaceTemplate) error {
+	return dbconn.DB.Unscoped().Delete(&wt).Error
+}
