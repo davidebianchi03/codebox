@@ -12,6 +12,7 @@ export interface WorkspaceTemplateVersion {
     name: string
     config_file_relative_path: string
     published: boolean
+    published_on: string
     edited_on: string
 }
 

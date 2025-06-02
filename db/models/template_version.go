@@ -23,6 +23,7 @@ type WorkspaceTemplateVersion struct {
 	SourcesID      uint               `json:"-"`
 	Sources        *File              `json:"-"`
 	Published      bool               `gorm:"default:false" json:"published"`
+	PublishedOn    *time.Time         `gorm:"default:null" json:"published_on"`
 	EditedByID     uint               `json:"-"`
 	EditedBy       *User              `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
 	EditedOn       time.Time          `json:"edited_on"`
@@ -196,6 +197,7 @@ func CreateTemplateVersion(template WorkspaceTemplate, name string, user User, c
 		ConfigFilePath: configFilePath,
 		Sources:        &sourceFile,
 		Published:      false,
+		PublishedOn:    nil,
 		EditedByID:     user.ID,
 		EditedBy:       &user,
 		EditedOn:       time.Now(),
@@ -228,6 +230,11 @@ func UpdateTemplateVersion(
 
 	if templateVersion.Published && !published {
 		return nil, errors.New("is not possible to unpublish a version")
+	}
+
+	if published && !templateVersion.Published {
+		now := time.Now()
+		templateVersion.PublishedOn = &now
 	}
 
 	templateVersion.Name = name

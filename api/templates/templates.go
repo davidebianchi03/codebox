@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/utils/randomnames"
 	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
 
@@ -200,7 +200,7 @@ func HandleCreateTemplate(c *gin.Context) {
 	// create the first version
 	tv, err := models.CreateTemplateVersion(
 		*wt,
-		fmt.Sprintf("version at %s", time.Now().Format("2006-01-02 15:04:05")),
+		randomnames.GenerateRandomName(),
 		user,
 		workspaceType.ConfigFilesDefaultPath,
 	)

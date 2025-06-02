@@ -15,7 +15,7 @@ require (
 
 require (
 	ariga.io/atlas v0.32.0 // indirect
-	ariga.io/atlas-go-sdk v0.7.0 // indirect
+	ariga.io/atlas-go-sdk v0.7.2 // indirect
 	ariga.io/atlas-provider-gorm v0.5.1 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect

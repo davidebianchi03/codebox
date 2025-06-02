@@ -1,19 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, CardHeader, Table } from "reactstrap";
+import { Card, CardBody, CardHeader, Table } from "reactstrap";
 import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
 import { toast } from "react-toastify";
 import { RequestStatus } from "../../api/types";
 import { Http } from "../../api/http";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
 
 interface TemplateDetailsVersionsProps {
     template: WorkspaceTemplate
 }
 
 export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsProps) {
-    const navigate = useNavigate();
     const [versions, setVersions] = useState<WorkspaceTemplateVersion[]>();
 
     const fetchVersions = useCallback(async () => {
@@ -51,9 +47,7 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
                                 <th>
                                     Updated on
                                 </th>
-                                <th>
-                                    Status
-                                </th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,25 +57,24 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
                                         versions.map((version, index) => (
                                             <tr key={index}>
                                                 <td>
-                                                    {version.name}
+                                                    <div className="mt-2">
+                                                        {version.name}
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    {new Date(version.edited_on).toLocaleString()}
+                                                    <div className="mt-2">
+                                                        {new Date(version.edited_on).toLocaleString()}
+                                                    </div>
                                                 </td>
                                                 <td style={{ width: 150 }}>
                                                     {version.published ? (
-                                                        <Badge color="success" className="text-white">
+                                                        <span className="btn border-success text-success w-100" style={{ cursor: "default" }}>
                                                             Released
-                                                        </Badge>
+                                                        </span>
                                                     ) : (
-                                                        <Button 
-                                                        color="primary"
-                                                         size="sm"
-                                                         onClick={() => navigate(`/templates/${template.id}/versions/${version.id}/editor`)}
-                                                         >
-                                                            Edit
-                                                            <FontAwesomeIcon icon={faPencil} className="ms-2" />
-                                                        </Button>
+                                                        <span className="btn border-primary text-primary w-100" style={{ cursor: "default" }}>
+                                                            Editing
+                                                        </span>
                                                     )}
                                                 </td>
                                             </tr>
