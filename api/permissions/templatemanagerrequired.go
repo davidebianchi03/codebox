@@ -15,7 +15,7 @@ func TemplateManagerRequiredRoute(handler gin.HandlerFunc) gin.HandlerFunc {
 				"detail": err.Error(),
 			})
 		} else {
-			if user.IsTemplateManager {
+			if user.IsTemplateManager || user.IsSuperuser {
 				handler(c)
 			} else {
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
