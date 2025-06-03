@@ -91,10 +91,8 @@ export function AdminUserDetails() {
     );
     if (status === RequestStatus.OK && statusCode === 200) {
       setCurrentUser(responseBody as User);
-    } else {
-      navigate(`/login?next=${encodeURIComponent(location.pathname)}`);
     }
-  }, [navigate, location]);
+  }, []);
 
   useEffect(() => {
     FetchUser();
