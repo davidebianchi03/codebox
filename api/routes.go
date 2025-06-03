@@ -178,10 +178,10 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			templatesApis.GET("", permissions.AuthenticationRequiredRoute(templates.HandleListTemplates))
 			templatesApis.GET(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplate))
-			templatesApis.GET(":templateId/workspaces", permissions.AuthenticationRequiredRoute(templates.HandleListWorkspacesByTemplate))
-			templatesApis.POST("", permissions.AuthenticationRequiredRoute(templates.HandleCreateTemplate))
-			templatesApis.PUT(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleUpdateTemplate))
-			templatesApis.DELETE(":templateId", permissions.AuthenticationRequiredRoute(templates.HandleDeleteWorkspace))
+			templatesApis.GET(":templateId/workspaces", permissions.TemplateManagerRequiredRoute(templates.HandleListWorkspacesByTemplate))
+			templatesApis.POST("", permissions.TemplateManagerRequiredRoute(templates.HandleCreateTemplate))
+			templatesApis.PUT(":templateId", permissions.TemplateManagerRequiredRoute(templates.HandleUpdateTemplate))
+			templatesApis.DELETE(":templateId", permissions.TemplateManagerRequiredRoute(templates.HandleDeleteWorkspace))
 			templatesApis.GET(
 				":templateId/versions",
 				permissions.AuthenticationRequiredRoute(templates.HandleListTemplateVersionsByTemplate),
@@ -196,7 +196,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			)
 			templatesApis.PUT(
 				":templateId/versions/:versionId",
-				permissions.AuthenticationRequiredRoute(templates.HandleUpdateTemplateVersionByTemplate),
+				permissions.TemplateManagerRequiredRoute(templates.HandleUpdateTemplateVersionByTemplate),
 			)
 			templatesApis.GET(
 				":templateId/versions/:versionId/entries",
@@ -208,15 +208,15 @@ func V1ApiRoutes(router *gin.Engine) {
 			)
 			templatesApis.POST(
 				":templateId/versions/:versionId/entries",
-				permissions.AuthenticationRequiredRoute(templates.HandleCreateTemplateVersionEntry),
+				permissions.TemplateManagerRequiredRoute(templates.HandleCreateTemplateVersionEntry),
 			)
 			templatesApis.PUT(
 				":templateId/versions/:versionId/entries/*path",
-				permissions.AuthenticationRequiredRoute(templates.HandleUpdateTemplateVersionEntry),
+				permissions.TemplateManagerRequiredRoute(templates.HandleUpdateTemplateVersionEntry),
 			)
 			templatesApis.DELETE(
 				":templateId/versions/:versionId/entries/*path",
-				permissions.AuthenticationRequiredRoute(templates.HandleDeleteTemplateVersionEntry),
+				permissions.TemplateManagerRequiredRoute(templates.HandleDeleteTemplateVersionEntry),
 			)
 		}
 

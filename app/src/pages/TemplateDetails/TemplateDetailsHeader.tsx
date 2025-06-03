@@ -10,12 +10,14 @@ import { Workspace, WorkspaceType } from "../../types/workspace";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import { TemplateSettingsModal } from "./TemplateSettingsModal";
+import { User } from "../../types/user";
 
 export interface TemplateDetailsProps {
     template: WorkspaceTemplate
+    user: User
 }
 
-export function TemplateDetailsHeader({ template: initialTemplate }: TemplateDetailsProps) {
+export function TemplateDetailsHeader({ template: initialTemplate, user }: TemplateDetailsProps) {
     const [template, setTemplate] = useState<WorkspaceTemplate>(initialTemplate);
     const [showActionsDropdown, setShowActionsDropdown] = useState<boolean>(false);
     const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -192,22 +194,24 @@ export function TemplateDetailsHeader({ template: initialTemplate }: TemplateDet
                     </p>
                 </div>
                 <div className="col d-flex justify-content-end">
-                    <Dropdown isOpen={showActionsDropdown} toggle={() => setShowActionsDropdown(!showActionsDropdown)}>
-                        <DropdownToggle color="accent">
-                            <FontAwesomeIcon icon={faEllipsisVertical} />
-                        </DropdownToggle>
-                        <DropdownMenu>
-                            <DropdownItem onClick={() => setShowSettingsModal(true)}>
-                                Settings
-                            </DropdownItem>
-                            <DropdownItem onClick={handleEditFiles}>
-                                Edit files
-                            </DropdownItem>
-                            <DropdownItem onClick={handleDeleteTemplate}>
-                                <span className="text-warning">Delete template</span>
-                            </DropdownItem>
-                        </DropdownMenu>
-                    </Dropdown>
+                    {(user.is_template_manager || user.is_superuser) && (
+                        <Dropdown isOpen={showActionsDropdown} toggle={() => setShowActionsDropdown(!showActionsDropdown)}>
+                            <DropdownToggle color="accent">
+                                <FontAwesomeIcon icon={faEllipsisVertical} />
+                            </DropdownToggle>
+                            <DropdownMenu>
+                                <DropdownItem onClick={() => setShowSettingsModal(true)}>
+                                    Settings
+                                </DropdownItem>
+                                <DropdownItem onClick={handleEditFiles}>
+                                    Edit files
+                                </DropdownItem>
+                                <DropdownItem onClick={handleDeleteTemplate}>
+                                    <span className="text-warning">Delete template</span>
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                    )}
                 </div>
             </div>
             <TemplateSettingsModal

@@ -9,12 +9,15 @@ import { TemplateDetailsVersions } from "./TemplateDetailsVersions";
 import { TemplateDetailsHeader } from "./TemplateDetailsHeader";
 import { TemplateDetailsSummary } from "./TemplateDetailsSummary";
 import { TemplateDetailsWorkspaces } from "./TemplateDetailsWorkspaces";
+import { User } from "../../types/user";
 
 export function TemplateDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [template, setTemplate] = useState<WorkspaceTemplate>();
     const [selectedTab, setSelectedTab] = useState<number>(0);
+
+    const [user, setUser] = useState<User | null>(null);
 
     const fetchTemplate = useCallback(async () => {
         var [status, statusCode, responseData] = await Http.Request(
@@ -33,18 +36,31 @@ export function TemplateDetailsPage() {
         }
     }, [id, navigate]);
 
+    const WhoAmI = useCallback(async () => {
+        let [status, statusCode, responseBody] = await Http.Request(
+            `${Http.GetServerURL()}/api/v1/auth/user-details`,
+            "GET",
+            null
+        );
+        if (status === RequestStatus.OK && statusCode === 200) {
+            var u = responseBody as User;
+            setUser(u);
+        }
+    }, []);
 
     useEffect(() => {
         fetchTemplate();
-    }, [fetchTemplate]);
+        WhoAmI();
+    }, [WhoAmI, fetchTemplate]);
 
     return (
         <React.Fragment>
             {template && (
                 <Container className="mt-4 mb-4">
-                    {template && (
+                    {template && user && (
                         <TemplateDetailsHeader
                             template={template}
+                            user={user}
                         />
                     )}
                     <Row className="mt-4">
@@ -74,15 +90,17 @@ export function TemplateDetailsPage() {
                                                                 <span className="nav-link-title">Versions </span>
                                                             </span>
                                                         </li>
-                                                        <li
-                                                            className={`nav-item ${selectedTab === 2 && "active"}`}
-                                                            onClick={() => setSelectedTab(2)}
-                                                        >
-                                                            <span className="nav-link pb-0 pt-0">
-                                                                {/* <span className="nav-link-icon d-md-none d-lg-inline-block"></span> */}
-                                                                <span className="nav-link-title">Workspaces that use this template</span>
-                                                            </span>
-                                                        </li>
+                                                        {(user?.is_template_manager || user?.is_superuser) && (
+                                                            <li
+                                                                className={`nav-item ${selectedTab === 2 && "active"}`}
+                                                                onClick={() => setSelectedTab(2)}
+                                                            >
+                                                                <span className="nav-link pb-0 pt-0">
+                                                                    {/* <span className="nav-link-icon d-md-none d-lg-inline-block"></span> */}
+                                                                    <span className="nav-link-title">Workspaces that use this template</span>
+                                                                </span>
+                                                            </li>
+                                                        )}
                                                     </ul>
                                                 </div>
                                             </div>

@@ -14,18 +14,19 @@ import (
 )
 
 type User struct {
-	ID            uint           `gorm:"primarykey" json:"-"`
-	Email         string         `gorm:"size:255; unique; not null;" json:"email"`
-	Password      string         `gorm:"not null;" json:"-"`
-	FirstName     string         `gorm:"size:255;" json:"first_name"`
-	LastName      string         `gorm:"size:255;" json:"last_name"`
-	Groups        []Group        `gorm:"many2many:user_groups;" json:"groups"`
-	SshPrivateKey string         `gorm:"not null;" json:"-"`
-	SshPublicKey  string         `gorm:"not null;" json:"-"`
-	IsSuperuser   bool           `gorm:"column:is_superuser; default:false" json:"is_superuser"`
-	CreatedAt     time.Time      `json:"-"`
-	UpdatedAt     time.Time      `json:"-"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                uint           `gorm:"primarykey" json:"-"`
+	Email             string         `gorm:"size:255; unique; not null;" json:"email"`
+	Password          string         `gorm:"not null;" json:"-"`
+	FirstName         string         `gorm:"size:255;" json:"first_name"`
+	LastName          string         `gorm:"size:255;" json:"last_name"`
+	Groups            []Group        `gorm:"many2many:user_groups;" json:"groups"`
+	SshPrivateKey     string         `gorm:"not null;" json:"-"`
+	SshPublicKey      string         `gorm:"not null;" json:"-"`
+	IsSuperuser       bool           `gorm:"column:is_superuser; default:false" json:"is_superuser"`
+	IsTemplateManager bool           `gorm:"column:is_template_manager; default:false" json:"is_template_manager"`
+	CreatedAt         time.Time      `json:"-"`
+	UpdatedAt         time.Time      `json:"-"`
+	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func generateSshKeys() (string, string, error) {

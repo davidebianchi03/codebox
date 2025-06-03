@@ -18,6 +18,7 @@ import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
 
 export function AdminUserDetails() {
   const [user, setUser] = useState<User>();
+  const [currentUser, setCurrentUser] = useState<User>();
   const [showChangePasswordModal, setShowChangePasswordModal] =
     useState<boolean>(false);
 
@@ -29,6 +30,7 @@ export function AdminUserDetails() {
       firstName: "",
       lastName: "",
       isAdmin: false,
+      isTemplateManager: false,
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("This field is required"),
@@ -41,6 +43,7 @@ export function AdminUserDetails() {
         first_name: values.firstName,
         last_name: values.lastName,
         is_superuser: values.isAdmin,
+        is_template_manager: values.isTemplateManager,
       };
       let [status, statusCode, responseData] = await Http.Request(
         `${Http.GetServerURL()}/api/v1/admin/users/${user?.email}`,
@@ -71,6 +74,7 @@ export function AdminUserDetails() {
         firstName: user.first_name || "",
         lastName: user.last_name || "",
         isAdmin: user.is_superuser,
+        isTemplateManager: user.is_template_manager,
       });
       setUser(user);
     } else {
@@ -79,9 +83,23 @@ export function AdminUserDetails() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email, navigate]);
 
+  const WhoAmI = useCallback(async () => {
+    let [status, statusCode, responseBody] = await Http.Request(
+      `${Http.GetServerURL()}/api/v1/auth/user-details`,
+      "GET",
+      null
+    );
+    if (status === RequestStatus.OK && statusCode === 200) {
+      setCurrentUser(responseBody as User);
+    } else {
+      navigate(`/login?next=${encodeURIComponent(location.pathname)}`);
+    }
+  }, [navigate, location]);
+
   useEffect(() => {
     FetchUser();
-  }, [FetchUser]);
+    WhoAmI();
+  }, [FetchUser, WhoAmI]);
 
   return (
     <>
@@ -144,10 +162,27 @@ export function AdminUserDetails() {
                 validation.handleChange(e);
               }}
               checked={validation.values.isAdmin}
+              disabled={user?.email === currentUser?.email}
             />
             <span className="form-check-label">Admin</span>
           </label>
         </div>
+        {
+          !validation.values.isAdmin && (
+            <div className="mb-3">
+              <label className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="isTemplateManager"
+                  onClick={validation.handleChange}
+                  checked={validation.values.isTemplateManager}
+                />
+                <span className="form-check-label">Template Manager</span>
+              </label>
+            </div>
+          )
+        }
         <div className="d-flex justify-content-end mt-5">
           <Button
             type="submit"

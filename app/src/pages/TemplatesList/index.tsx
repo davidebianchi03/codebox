@@ -20,8 +20,6 @@ import { Link } from "react-router-dom";
 import { CreateTemplateModal } from "./createTemplateModal";
 
 export default function TemplatesList() {
-  // TODO: check if current user can manage templates
-  const [currentUser, setCurrentUser] = useState<User>();
   const [templates, setTemplates] = useState<WorkspaceTemplate[]>();
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
   const [showCreateTemplateModal, setShowCreateTemplateModal] = useState<boolean>(false);
@@ -60,6 +58,24 @@ export default function TemplatesList() {
     fetchWorkspaceTypes();
   }, [fetchTemplates, fetchWorkspaceTypes]);
 
+  const [user, setUser] = useState<User | null>(null);
+
+  const WhoAmI = useCallback(async () => {
+    let [status, statusCode, responseBody] = await Http.Request(
+      `${Http.GetServerURL()}/api/v1/auth/user-details`,
+      "GET",
+      null
+    );
+    if (status === RequestStatus.OK && statusCode === 200) {
+      var u = responseBody as User;
+      setUser(u);
+    }
+  }, []);
+
+  useEffect(() => {
+    WhoAmI();
+  }, [WhoAmI]);
+
   return (
     <Container className="mt-4 mb-4">
       <div className="row g-2 align-items-center">
@@ -69,12 +85,14 @@ export default function TemplatesList() {
         </div>
         <div className="col-auto ms-auto d-print-none">
           <div className="btn-list">
-            <Button
-              color="primary"
-              onClick={() => setShowCreateTemplateModal(true)}
-            >
-              Create template
-            </Button>
+            {(user?.is_template_manager || user?.is_superuser) && (
+              <Button
+                color="primary"
+                onClick={() => setShowCreateTemplateModal(true)}
+              >
+                Create template
+              </Button>
+            )}
           </div>
         </div>
       </div>
