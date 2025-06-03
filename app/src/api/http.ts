@@ -4,11 +4,7 @@ import { LoginStatus, RequestStatus } from "./types";
 export class Http {
 
     public static GetServerURL() {
-        if (process.env.NODE_ENV === "development") {
-            return "http://localhost:8080"
-        } else {
-            return "";
-        }
+        return import.meta.env.VITE_SERVER_URL
     }
 
     /**

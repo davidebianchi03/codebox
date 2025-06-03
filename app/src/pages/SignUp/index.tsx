@@ -205,7 +205,7 @@ export default function SignUpPage() {
             </p>
             <p className="w-100 text-center">
               <small className="text-muted">
-                version: {process.env.REACT_APP_VERSION}
+                version: {import.meta.env.VITE_APP_VERSION}
               </small>
             </p>
           </div>

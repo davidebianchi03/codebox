@@ -106,7 +106,7 @@ export function AdminDashboard() {
                                             <tr>
                                                 <th>Version</th>
                                                 <td>
-                                                    {process.env.REACT_APP_VERSION}
+                                                    {import.meta.env.VITE_APP_VERSION}
                                                 </td>
                                             </tr>
                                         </tbody>

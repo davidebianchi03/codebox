@@ -11,3 +11,4 @@ codebox-agent-linux-amd64
 bin/
 test-vpn/
 codebox_debug
+dist/
