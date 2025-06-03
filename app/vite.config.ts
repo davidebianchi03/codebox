@@ -13,8 +13,8 @@ export default defineConfig({
     preprocessorOptions: {
       scss: {
         includePaths: [
-              path.resolve(__dirname, 'node_modules')
-            ],
+          path.resolve(__dirname, 'node_modules')
+        ],
         api: 'legacy'
       }
     }
@@ -24,4 +24,8 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 3000,
   },
+  build: {
+    outDir: './build',
+    emptyOutDir: true,
+  }
 });
