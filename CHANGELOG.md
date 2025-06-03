@@ -1,5 +1,8 @@
 # Changelog
 
+# Unreleased
+- added workspace templates
+
 # v0.0.22 - 2025-04-27
 - bug fix
 

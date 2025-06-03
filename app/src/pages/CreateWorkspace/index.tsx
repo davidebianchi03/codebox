@@ -19,10 +19,12 @@ import * as Yup from "yup";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Runner } from "../../types/runner";
 import { ToastContainer, toast } from "react-toastify";
+import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
   const [runners, setRunners] = useState<Runner[]>([]);
+  const [templates, setTemplates] = useState<WorkspaceTemplate[]>([]);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -36,6 +38,7 @@ export default function CreateWorkspace() {
       gitRefName: "",
       configFilesPath: "",
       environment: "",
+      template: "",
     },
     validationSchema: Yup.object({
       workspaceName: Yup.string()
@@ -55,10 +58,30 @@ export default function CreateWorkspace() {
         is: "git",
         then: (schema) => schema.required("Config file path is required"),
       }),
+      template: Yup.number().when("configSource", {
+        is: "template",
+        then: (schema) => schema.required("Template is required").min(0, "Template is required"),
+      }),
     }),
     validateOnChange: false,
     validateOnBlur: false,
     onSubmit: async (values) => {
+      var template = templates.find((t) => t.id === parseInt(values.template));
+      var templateVersion: WorkspaceTemplateVersion | null = null;
+
+      if (values.configSource === "template") {
+        if (!template) {
+          toast.error("Template not found");
+          return;
+        }
+
+        templateVersion = await RetrieveTemplateLatestVersion(template);
+        if (!templateVersion) {
+          toast.error("There are no versions available for this template");
+          return;
+        }
+      }
+
       var data = {
         name: values.workspaceName,
         type: values.workspaceType,
@@ -68,6 +91,7 @@ export default function CreateWorkspace() {
         git_ref_name: values.gitRefName,
         config_source_path: values.configFilesPath,
         environment_variables: values.environment.split("\n"),
+        template_version_id: templateVersion ? templateVersion.id : 0,
       };
 
       var [status, statusCode, responseData] = await Http.Request(
@@ -109,10 +133,37 @@ export default function CreateWorkspace() {
     }
   }, []);
 
+  const FetchTemplates = useCallback(async () => {
+    let [status, statusCode, responseData] = await Http.Request(
+      `${Http.GetServerURL()}/api/v1/templates`,
+      "GET",
+      null
+    );
+    if (status === RequestStatus.OK && statusCode === 200) {
+      setTemplates(responseData as WorkspaceTemplate[]);
+    }
+  }, []);
+
+  const RetrieveTemplateLatestVersion = useCallback(async (template: WorkspaceTemplate): Promise<WorkspaceTemplateVersion | null> => {
+    // fetch template versions
+    let [status, statusCode, responseData] = await Http.Request(
+      `${Http.GetServerURL()}/api/v1/templates/${template.id}/latest-version`,
+      "GET",
+      null
+    );
+
+    if (status === RequestStatus.OK && statusCode === 200) {
+      return responseData as WorkspaceTemplateVersion;
+    }
+
+    return null
+  }, []);
+
   useEffect(() => {
     FetchWorkspaceTypes();
     FetchRunners();
-  }, [FetchWorkspaceTypes, FetchRunners]);
+    FetchTemplates();
+  }, [FetchWorkspaceTypes, FetchRunners, FetchTemplates]);
 
   return (
     <>
@@ -338,7 +389,32 @@ export default function CreateWorkspace() {
                         </FormGroup>
                       </>
                     ) : (
-                      <div className="mb-3">TODO</div>
+                      <>
+                        <FormGroup>
+                          <Label>Template</Label>
+                          <Input
+                            name="template"
+                            type="select"
+                            value={validation.values.template}
+                            onChange={validation.handleChange}
+                            invalid={
+                              validation.errors.template !== undefined
+                            }
+                          >
+                            <option value={""}>Select a template</option>
+                            {
+                              templates.filter(
+                                (template) => template.type === validation.values.workspaceType
+                              ).map((template, index) => (
+                                <option key={index} value={template.id}>{template.name}</option>
+                              ))
+                            }
+                          </Input>
+                          <FormFeedback>
+                            {validation.errors.template}
+                          </FormFeedback>
+                        </FormGroup>
+                      </>
                     ))}
                 </CardBody>
               </Card>

@@ -15,6 +15,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCloudArrowUp, faGear } from "@fortawesome/free-solid-svg-icons";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
+import { WorkspaceTemplateVersion } from "../../types/templates";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
@@ -22,6 +23,7 @@ export default function WorkspaceDetails() {
   const [workspace, setWorkspace] = useState<Workspace>();
   const [fetchInterval, setFetchInterval] = useState(10000);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+  const [canUpdateConfigFiles, setCanUpdateConfigFiles] = useState<boolean>(false);
 
   const FetchWorkspace = useCallback(async () => {
     var [status, statusCode, responseData] = await Http.Request(
@@ -87,7 +89,7 @@ export default function WorkspaceDetails() {
           confirmButtonText: "Delete",
           customClass: {
             popup: "bg-dark text-light",
-            cancelButton: "btn btn-light",
+            cancelButton: "btn btn-accent",
             confirmButton: "btn btn-warning",
           },
         })
@@ -127,7 +129,7 @@ export default function WorkspaceDetails() {
           confirmButtonText: "Update",
           customClass: {
             popup: "bg-dark text-light",
-            cancelButton: "btn btn-light",
+            cancelButton: "btn btn-accent",
             confirmButton: "btn btn-primary",
           },
         })
@@ -149,6 +151,24 @@ export default function WorkspaceDetails() {
     }
   }, [FetchWorkspace, id]);
 
+  const CheckNewTemplateVersionAvailable = useCallback(async () => {
+    if (workspace) {
+      // fetch template versions
+      let [status, statusCode, responseData] = await Http.Request(
+        `${Http.GetServerURL()}/api/v1/templates/${workspace?.template_version.template}/latest-version`,
+        "GET",
+        null
+      );
+
+      if (status === RequestStatus.OK && statusCode === 200) {
+        var latestTemplateVersion = responseData as WorkspaceTemplateVersion;
+        setCanUpdateConfigFiles(latestTemplateVersion.id !== workspace?.template_version.id);
+      } else {
+        setCanUpdateConfigFiles(false);
+      }
+    }
+  }, [workspace]);
+
   useEffect(() => {
     if (
       workspace?.status === "creating" ||
@@ -160,7 +180,13 @@ export default function WorkspaceDetails() {
     } else {
       setFetchInterval(10000);
     }
-  }, [workspace]);
+
+    if (workspace?.config_source === "git") {
+      setCanUpdateConfigFiles(true);
+    } else {
+      CheckNewTemplateVersionAvailable();
+    }
+  }, [CheckNewTemplateVersionAvailable, workspace]);
 
   useEffect(() => {
     FetchWorkspace();
@@ -181,14 +207,18 @@ export default function WorkspaceDetails() {
           <div className="dropdown">
             {workspace?.status === "stopped" && (
               <React.Fragment>
-                <Button
-                  color="accent"
-                  className="me-1"
-                  onClick={HandleUpdateConfigFiles}
-                >
-                  <FontAwesomeIcon icon={faCloudArrowUp} />
-                  <span className="ms-2">Update config files</span>
-                </Button>
+                {canUpdateConfigFiles && (
+                  <Button
+                    color="accent"
+                    className="me-1"
+                    onClick={HandleUpdateConfigFiles}
+                  >
+                    <FontAwesomeIcon icon={faCloudArrowUp} />
+                    <span className="ms-2">
+                      {workspace.config_source === "template" ? "Update template version" : "Update config files"}
+                    </span>
+                  </Button>
+                )}
                 <Button
                   color="accent"
                   className="me-3"
@@ -225,7 +255,7 @@ export default function WorkspaceDetails() {
                 }}
               >
                 {workspace?.status === "running" ||
-                workspace?.status === "error"
+                  workspace?.status === "error"
                   ? "Stop workspace"
                   : "Start workspace"}
               </span>

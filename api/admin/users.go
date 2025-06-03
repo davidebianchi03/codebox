@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/utils"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
@@ -46,11 +47,12 @@ func HandleAdminRetrieveUser(c *gin.Context) {
 
 func HandleAdminCreateUser(c *gin.Context) {
 	var reqBody struct {
-		Email       string `json:"email" binding:"required,email"`
-		Password    string `json:"password" binding:"required"`
-		FirstName   string `json:"first_name" binding:"required"`
-		LastName    string `json:"last_name" binding:"required"`
-		IsSuperuser bool   `json:"is_superuser"`
+		Email             string `json:"email" binding:"required,email"`
+		Password          string `json:"password" binding:"required"`
+		FirstName         string `json:"first_name" binding:"required"`
+		LastName          string `json:"last_name" binding:"required"`
+		IsSuperuser       bool   `json:"is_superuser"`
+		IsTemplateManager bool   `json:"is_template_manager"`
 	}
 
 	if c.ShouldBindBodyWithJSON(&reqBody) != nil {
@@ -98,11 +100,12 @@ func HandleAdminCreateUser(c *gin.Context) {
 
 	// create new user
 	newUser := models.User{
-		Email:       reqBody.Email,
-		FirstName:   reqBody.FirstName,
-		LastName:    reqBody.LastName,
-		Password:    password,
-		IsSuperuser: reqBody.IsSuperuser,
+		Email:             reqBody.Email,
+		FirstName:         reqBody.FirstName,
+		LastName:          reqBody.LastName,
+		Password:          password,
+		IsSuperuser:       reqBody.IsSuperuser,
+		IsTemplateManager: reqBody.IsTemplateManager,
 	}
 
 	r = dbconn.DB.Create(&newUser)
@@ -117,6 +120,8 @@ func HandleAdminCreateUser(c *gin.Context) {
 }
 
 func HandleAdminUpdateUser(c *gin.Context) {
+	currentUser, _ := utils.GetUserFromContext(c)
+
 	var user *models.User
 	email, _ := c.Params.Get("email")
 
@@ -137,9 +142,10 @@ func HandleAdminUpdateUser(c *gin.Context) {
 	}
 
 	var requestBody struct {
-		FirstName   *string `json:"first_name"`
-		LastName    *string `json:"last_name"`
-		IsSuperuser *bool   `json:"is_superuser"`
+		FirstName         *string `json:"first_name"`
+		LastName          *string `json:"last_name"`
+		IsSuperuser       *bool   `json:"is_superuser"`
+		IsTemplateManager *bool   `json:"is_template_manager"`
 	}
 
 	if c.ShouldBindBodyWithJSON(&requestBody) != nil {
@@ -157,8 +163,12 @@ func HandleAdminUpdateUser(c *gin.Context) {
 		user.LastName = *requestBody.LastName
 	}
 
-	if requestBody.IsSuperuser != nil {
+	if requestBody.IsSuperuser != nil && user.Email != currentUser.Email {
 		user.IsSuperuser = *requestBody.IsSuperuser
+	}
+
+	if requestBody.IsTemplateManager != nil {
+		user.IsTemplateManager = *requestBody.IsTemplateManager
 	}
 
 	dbconn.DB.Save(&user)

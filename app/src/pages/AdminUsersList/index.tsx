@@ -61,13 +61,14 @@ export function AdminUsersList() {
                 <th>Email</th>
                 <th>First Name</th>
                 <th>Last Name</th>
-                <th>Admin</th>
+                <th className="text-center">Admin</th>
+                <th className="text-center">Template manager</th>
               </tr>
             </thead>
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={5}>There are no users</td>
+                  <td colSpan={6}>There are no users</td>
                 </tr>
               ) : (
                 users
@@ -81,8 +82,19 @@ export function AdminUsersList() {
                       </td>
                       <td>{user.first_name}</td>
                       <td>{user.last_name}</td>
-                      <td>
+                      <td className="text-center">
                         {user.is_superuser ? (
+                          <span className="badge bg-success text-white">
+                            Yes
+                          </span>
+                        ) : (
+                          <span className="badge bg-danger text-white">
+                            No
+                          </span>
+                        )}
+                      </td>
+                      <td className="text-center">
+                        {user.is_template_manager ? (
                           <span className="badge bg-success text-white">
                             Yes
                           </span>

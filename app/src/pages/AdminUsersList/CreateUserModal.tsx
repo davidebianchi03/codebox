@@ -26,6 +26,7 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
       firstName: "",
       lastName: "",
       isAdmin: false,
+      isTemplateManager: false,
       password: "",
       confirmPassword: "",
     },
@@ -94,6 +95,7 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
         first_name: values.firstName,
         last_name: values.lastName,
         is_superuser: values.isAdmin,
+        is_template_manager: values.isTemplateManager,
       };
       let [status, statusCode, responseData] = await Http.Request(
         `${Http.GetServerURL()}/api/v1/admin/users`,
@@ -181,15 +183,28 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
                 className="form-check-input"
                 type="checkbox"
                 name="isAdmin"
-                onClick={(e) => {
-                  validation.setFieldValue("publicUrl", "");
-                  validation.handleChange(e);
-                }}
+                onClick={validation.handleChange}
                 checked={validation.values.isAdmin}
               />
               <span className="form-check-label">Admin</span>
             </label>
           </div>
+          {
+            !validation.values.isAdmin && (
+              <div className="mb-3">
+                <label className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    name="isTemplateManager"
+                    onClick={validation.handleChange}
+                    checked={validation.values.isTemplateManager}
+                  />
+                  <span className="form-check-label">Template Manager</span>
+                </label>
+              </div>
+            )
+          }
           <div className="mb-3">
             <Label>Password</Label>
             <Input

@@ -98,10 +98,8 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	// remove configuration files if the source is git
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		if workspace.GitSource != nil {
-			configFiles, err := workspace.GitSource.GetConfigFileAbsPath()
-			if err == nil {
-				os.RemoveAll(configFiles)
-			}
+			os.RemoveAll(workspace.GitSource.Sources.GetAbsolutePath())
+			dbconn.DB.Unscoped().Delete(&workspace.GitSource)
 		}
 	}
 	workspace.ClearLogs()

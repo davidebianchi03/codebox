@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { RequestStatus } from "../api/types";
 import { User } from "../types/user";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGears, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBorderTopLeft, faGears, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
 import { Col, Row } from "reactstrap";
 
 interface Props {
@@ -96,6 +96,16 @@ export function Navbar({ user }: Props) {
                 </Row>
               </Link>
             )}
+            <Link to="/templates" className="dropdown-item">
+              <Row>
+                <Col md={4} className="pe-0">
+                  <FontAwesomeIcon icon={faBorderTopLeft} />
+                </Col>
+                <Col md={8} className="ps-0">
+                  Templates
+                </Col>
+              </Row>
+            </Link>
             <Link to="/" className="dropdown-item" onClick={HandleLogout}>
               <Row>
                 <Col md={4}>

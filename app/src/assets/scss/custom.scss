@@ -1,11 +1,11 @@
 // _custom.scss
 
 // import tabler's variables and bootstrap's functions
-@import "~bootstrap/scss/functions";
-@import "~@tabler/core/scss/_variables.scss";
+@import "bootstrap/scss/functions";
+@import "@tabler/core/scss/_variables.scss";
 
 $dark: #0a192c;
 
 // Import the rest of Bootstrap
-@import "~@tabler/core/scss/tabler.scss";
+@import "@tabler/core/scss/tabler.scss";
 

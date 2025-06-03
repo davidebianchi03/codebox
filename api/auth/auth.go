@@ -158,11 +158,12 @@ func HandleSignup(ctx *gin.Context) {
 
 	// create new user
 	newUser := models.User{
-		Email:       parsedBody.Email,
-		FirstName:   parsedBody.FirstName,
-		LastName:    parsedBody.LastName,
-		Password:    password,
-		IsSuperuser: usersCount == 0,
+		Email:             parsedBody.Email,
+		FirstName:         parsedBody.FirstName,
+		LastName:          parsedBody.LastName,
+		Password:          password,
+		IsSuperuser:       usersCount == 0,
+		IsTemplateManager: usersCount == 0,
 	}
 
 	r = dbconn.DB.Create(&newUser)

@@ -196,7 +196,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 			return
 		}
 	} else if parsedBody.ConfigSource == models.WorkspaceConfigSourceTemplate {
-		dbconn.DB.First(&templateVersion, map[string]interface{}{
+		dbconn.DB.Preload("Template").First(&templateVersion, map[string]interface{}{
 			"ID": parsedBody.TemplateVersionID,
 		})
 
