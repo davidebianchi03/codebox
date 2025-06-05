@@ -5,8 +5,6 @@ import {
   Input,
   Label,
 } from "reactstrap";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
@@ -15,6 +13,8 @@ import { User } from "../../types/user";
 import { AdminChangePasswordModal } from "./AdminChangePasswordModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
+import { RetrieveCurrentUserDetails } from "../../api/common";
+import { AdminRetrieveUserByEmail, AdminUpdateUser } from "../../api/admin";
 
 export function AdminUserDetails() {
   const [user, setUser] = useState<User>();
@@ -39,58 +39,47 @@ export function AdminUserDetails() {
     validateOnChange: false,
     validateOnBlur: false,
     onSubmit: async (values) => {
-      var requestBody = {
-        first_name: values.firstName,
-        last_name: values.lastName,
-        is_superuser: values.isAdmin,
-        is_template_manager: values.isTemplateManager,
-      };
-      let [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/admin/users/${user?.email}`,
-        "PATCH",
-        JSON.stringify(requestBody),
-        "application/json"
-      );
-      if (status === RequestStatus.OK && statusCode === 200) {
-        FetchUser();
-        toast.success("User has been updated");
-      } else if (statusCode === 409) {
-        toast.error(responseData.detail);
-      } else {
-        toast.error(`Failed to update user, received status ${statusCode}`);
+      if (user) {
+        if ((
+          await AdminUpdateUser(
+            user.email,
+            values.firstName,
+            values.lastName,
+            values.isAdmin,
+            values.isTemplateManager
+          )) !== undefined) {
+          FetchUser();
+          toast.success("User has been updated");
+        } else {
+          toast.error(`Failed to update user, try again later`);
+        }
       }
+
     },
   });
 
   const FetchUser = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/admin/users/${email}`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      var user = responseData as User;
-      validation.setValues({
-        firstName: user.first_name || "",
-        lastName: user.last_name || "",
-        isAdmin: user.is_superuser,
-        isTemplateManager: user.is_template_manager,
-      });
-      setUser(user);
-    } else {
-      navigate("/");
+    if (email) {
+      const user = await AdminRetrieveUserByEmail(email);
+      if (user) {
+        validation.setValues({
+          firstName: user.first_name || "",
+          lastName: user.last_name || "",
+          isAdmin: user.is_superuser,
+          isTemplateManager: user.is_template_manager,
+        });
+        setUser(user);
+      } else {
+        navigate("/");
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email, navigate]);
 
   const WhoAmI = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-details`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setCurrentUser(responseBody as User);
+    const user = await RetrieveCurrentUserDetails();
+    if (user) {
+      setCurrentUser(user);
     }
   }, []);
 

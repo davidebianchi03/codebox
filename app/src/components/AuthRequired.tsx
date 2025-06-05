@@ -1,29 +1,24 @@
 import { withRouter } from "../common/router";
-import { Http } from "../api/http";
 import React, { useCallback, useEffect, useState } from "react";
-import { RequestStatus } from "../api/types";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "../types/user";
 import { Navbar } from "./Navbar";
+import { RetrieveCurrentUserDetails } from "../api/common";
 
-type Props = {
+export type AuthRequiredProps = {
   children: string | JSX.Element | JSX.Element[] | (() => JSX.Element);
   showNavbar?: boolean;
 };
 
-function AuthRequired({ children, showNavbar = true }: Props) {
+function AuthRequired({ children, showNavbar = true }: AuthRequiredProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
 
   const WhoAmI = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-details`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setUser(responseBody as User);
+    const user = await RetrieveCurrentUserDetails();
+    if (user) {
+      setUser(user);
     } else {
       navigate(`/login?next=${encodeURIComponent(location.pathname)}`);
     }
@@ -32,7 +27,7 @@ function AuthRequired({ children, showNavbar = true }: Props) {
   useEffect(() => {
     WhoAmI();
   }, [WhoAmI]);
-  
+
   return (
     <React.Fragment>
       {user && (

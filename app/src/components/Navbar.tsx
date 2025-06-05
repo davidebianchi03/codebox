@@ -1,15 +1,14 @@
 import CodeboxLogo from "../assets/images/codebox-logo-white.png";
 import DefaultAvatar from "../assets/images/default-avatar.png";
 import sha256 from "crypto-js/sha256";
-import { Http } from "../api/http";
 import { Link, useNavigate } from "react-router-dom";
 import { InstanceSettings } from "../types/settings";
 import { useCallback, useEffect, useState } from "react";
-import { RequestStatus } from "../api/types";
 import { User } from "../types/user";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBorderTopLeft, faGears, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
 import { Col, Row } from "reactstrap";
+import { Logout, RetrieveInstanceSettings } from "../api/common";
 
 interface Props {
   user: User;
@@ -21,18 +20,14 @@ export function Navbar({ user }: Props) {
 
   const HandleLogout = (e: any) => {
     e.preventDefault();
-    Http.Request(`${Http.GetServerURL()}/api/v1/auth/logout`, "POST", null);
+    Logout();
     navigate("/login");
   };
 
   const FetchSettings = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/instance-settings`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setSettings(responseBody as InstanceSettings);
+    const s = await RetrieveInstanceSettings();
+    if (s) {
+      setSettings(s);
     }
   }, []);
 

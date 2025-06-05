@@ -22,6 +22,7 @@ import { RequestStatus } from "../../api/types";
 import { EditExposedPortsModal } from "./EditExposedPortsModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { RetrieveInstanceSettings } from "../../api/common";
 
 interface Props {
   workspace: Workspace;
@@ -54,8 +55,6 @@ export default function WorkspaceContainers({
 
       if (status === RequestStatus.OK && statusCode === 200) {
         setSelectedContainer(responseData);
-      } else {
-        return;
       }
     },
     [workspace]
@@ -115,13 +114,9 @@ export default function WorkspaceContainers({
   ]);
 
   const FetchSettings = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/instance-settings`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setSettings(responseBody as InstanceSettings);
+    const s = await RetrieveInstanceSettings();
+    if (s) {
+      setSettings(s);
     }
   }, []);
 

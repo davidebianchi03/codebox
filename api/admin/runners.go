@@ -192,7 +192,7 @@ func HandleAdminUpdateRunner(c *gin.Context) {
 	type RequestBody struct {
 		Name         string `json:"name" binding:"required"`
 		Type         string `json:"type" binding:"required"`
-		UsePublicUrl bool   `json:"use_public_url" binding:"required"`
+		UsePublicUrl *bool  `json:"use_public_url" binding:"required"`
 		PublicUrl    string `json:"public_url" binding:"required"`
 	}
 
@@ -207,7 +207,7 @@ func HandleAdminUpdateRunner(c *gin.Context) {
 
 	runner.Name = reqBody.Name
 	runner.Type = reqBody.Type
-	runner.UsePublicUrl = reqBody.UsePublicUrl
+	runner.UsePublicUrl = *reqBody.UsePublicUrl
 	runner.PublicUrl = reqBody.PublicUrl
 	dbconn.DB.Save(&runner)
 

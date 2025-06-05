@@ -2,36 +2,27 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardBody, Col, Row, Table } from "reactstrap";
 import { User } from "../../types/user";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { Workspace } from "../../types/workspace";
 import { toast } from "react-toastify";
+import { AdminListUsers, AdminListWorkspaces } from "../../api/admin";
 
 export function AdminDashboard() {
     const [users, setUsers] = useState<User[]>([]);
     const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
 
     const FetchUsers = useCallback(async () => {
-        let [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/admin/users`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setUsers(responseData as User[]);
+        const u = await AdminListUsers();
+        if (u) {
+            setUsers(u);
         } else {
             toast.error("Failed to fetch users");
         }
     }, []);
 
     const FetchWorkspaces = useCallback(async () => {
-        let [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/admin/workspaces`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setWorkspaces(responseData as Workspace[]);
+        const w = await AdminListWorkspaces();
+        if (w) {
+            setWorkspaces(w);
         } else {
             toast.error("Failed to fetch workspaces");
         }

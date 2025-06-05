@@ -10,6 +10,7 @@ import { TemplateDetailsHeader } from "./TemplateDetailsHeader";
 import { TemplateDetailsSummary } from "./TemplateDetailsSummary";
 import { TemplateDetailsWorkspaces } from "./TemplateDetailsWorkspaces";
 import { User } from "../../types/user";
+import { RetrieveCurrentUserDetails } from "../../api/common";
 
 export function TemplateDetailsPage() {
     const { id } = useParams();
@@ -37,14 +38,9 @@ export function TemplateDetailsPage() {
     }, [id, navigate]);
 
     const WhoAmI = useCallback(async () => {
-        let [status, statusCode, responseBody] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/auth/user-details`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK && statusCode === 200) {
-            var u = responseBody as User;
-            setUser(u);
+        const user = await RetrieveCurrentUserDetails();
+        if (user) {
+            setUser(user);
         }
     }, []);
 

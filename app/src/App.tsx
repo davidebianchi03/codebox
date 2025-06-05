@@ -12,7 +12,8 @@ import {
 } from "./routes/routes";
 import axios from "axios";
 
-axios.defaults.withCredentials = true
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
 
 export default function App() {
   return (

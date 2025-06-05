@@ -11,7 +11,7 @@ import {
   Label,
   Row,
 } from "reactstrap";
-import { Workspace, WorkspaceType } from "../../types/workspace";
+import { WorkspaceType } from "../../types/workspace";
 import { Http } from "../../api/http";
 import { RequestStatus } from "../../api/types";
 import { useFormik } from "formik";
@@ -20,6 +20,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Runner } from "../../types/runner";
 import { ToastContainer, toast } from "react-toastify";
 import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
+import { ListRunners } from "../../api/runner";
+import { APICreateWorkspace } from "../../api/workspace";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
@@ -82,30 +84,23 @@ export default function CreateWorkspace() {
         }
       }
 
-      var data = {
-        name: values.workspaceName,
-        type: values.workspaceType,
-        runner_id: parseInt(values.runner.toString()),
-        config_source: values.configSource,
-        git_repo_url: values.gitRepositoryURL,
-        git_ref_name: values.gitRefName,
-        config_source_path: values.configFilesPath,
-        environment_variables: values.environment.split("\n"),
-        template_version_id: templateVersion ? templateVersion.id : 0,
-      };
-
-      var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace`,
-        "POST",
-        JSON.stringify(data),
-        "application/json"
+      const w = await APICreateWorkspace(
+        values.workspaceName,
+        values.workspaceType,
+        parseInt(values.runner.toString()),
+        values.configSource,
+        values.gitRepositoryURL,
+        values.gitRefName,
+        values.configFilesPath,
+        values.environment.split("\n"),
+        templateVersion ? templateVersion.id : 0,
       );
-      if (status === RequestStatus.OK && statusCode === 201) {
-        var workspace = responseData as Workspace;
-        navigate(`/workspaces/${workspace.id}`);
+
+      if (w) {
+        navigate(`/workspaces/${w.id}`);
       } else {
         toast.error(
-          `Failed to create workspace, received status ${statusCode}`
+          `Failed to create workspace, try again later`
         );
       }
     },
@@ -123,13 +118,9 @@ export default function CreateWorkspace() {
   }, []);
 
   const FetchRunners = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/runners`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setRunners(responseData as Runner[]);
+    const r = await ListRunners();
+    if (r) {
+      setRunners(r);
     }
   }, []);
 

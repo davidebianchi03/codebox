@@ -9,13 +9,13 @@ import {
   Table,
 } from "reactstrap";
 import { Runner, RunnerType } from "../../types/runner";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { CreateRunnerModal } from "./CreateRunnerModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
+import { ListRunnerTypes } from "../../api/runner";
+import { AdminListRunners } from "../../api/admin";
 
 export function AdminRunners() {
   const [runners, setRunners] = useState<Runner[]>([]);
@@ -26,24 +26,16 @@ export function AdminRunners() {
   const [runnerToken, setRunnerToken] = useState<string>("");
 
   const FetchRunners = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/admin/runners`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setRunners(responseData as Runner[]);
+    const r = await AdminListRunners();
+    if (r) {
+      setRunners(r);
     }
   }, []);
 
   const FetchRunnerTypes = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/runner-types`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setRunnerTypes(responseData as RunnerType[]);
+    const rt = await ListRunnerTypes();
+    if (rt) {
+      setRunnerTypes(rt);
     }
   }, []);
 

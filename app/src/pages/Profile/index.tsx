@@ -21,6 +21,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { User } from "../../types/user";
 import { ChangePasswordModal } from "./ChangePasswordModal";
+import { RetrieveCurrentUserDetails } from "../../api/common";
 
 export default function Profile() {
   const [sshPublicKey, setSshPublicKey] = useState<string>("");
@@ -60,17 +61,13 @@ export default function Profile() {
   });
 
   const ResetForm = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-details`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setCurrentUser(responseBody);
+    const user = await RetrieveCurrentUserDetails();
+    if (user) {
+      setCurrentUser(user);
       validation.resetForm();
       validation.setValues({
-        firstName: responseBody.first_name,
-        lastName: responseBody.last_name,
+        firstName: user.first_name,
+        lastName: user.last_name,
       });
     }
 

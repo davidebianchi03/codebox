@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Container, Input, InputGroup, InputGroupText } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
+import { RequestApiToken } from "../../api/common";
 
 // TODO: improve login process use this token as
 // temporarily token to request a real token
@@ -11,15 +10,11 @@ export default function CliLogin() {
   const [token, setToken] = useState<string>("");
 
   const requestToken = useCallback(async () => {
-    var [status, statusCode, data] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/cli-login`,
-      "POST",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setToken(data.token);
+    const token = await RequestApiToken();
+    if (token) {
+      setToken(token);
     } else {
-      toast.error(`Cannot request new token, ${statusCode}`);
+      toast.error(`Cannot request new token,try again later`);
     }
   }, []);
 

@@ -6,12 +6,11 @@ import {
   Row,
   Table,
 } from "reactstrap";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { CreateUserModal } from "./CreateUserModal";
 import { ToastContainer } from "react-toastify";
 import { User } from "../../types/user";
 import { Link, useNavigate } from "react-router-dom";
+import { AdminListUsers } from "../../api/admin";
 
 export function AdminUsersList() {
   const [users, setUsers] = useState<User[]>([]);
@@ -22,13 +21,9 @@ export function AdminUsersList() {
   const navigate = useNavigate();
 
   const FetchUsers = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/admin/users`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setUsers(responseData as User[]);
+    const u = await AdminListUsers();
+    if (u) {
+      setUsers(u);
     }
   }, []);
 

@@ -10,10 +10,10 @@ import {
   ModalHeader,
 } from "reactstrap";
 import * as Yup from "yup";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { Runner, RunnerType } from "../../types/runner";
 import { toast } from "react-toastify";
+import { ListRunnerTypes } from "../../api/runner";
+import { AdminCreateRunner, AdminListRunners } from "../../api/admin";
 
 interface Props {
   isOpen: boolean;
@@ -24,13 +24,9 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
 
   const FetchRunnerTypes = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/runner-types`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setRunnerTypes(responseData as RunnerType[]);
+    const rt = await ListRunnerTypes();
+    if (rt) {
+      setRunnerTypes(rt);
     }
   }, []);
 
@@ -51,18 +47,16 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
         .test(
           "Another runner with the same name already exists",
           async (value) => {
-            let [status, statusCode, responseData] = await Http.Request(
-              `${Http.GetServerURL()}/api/v1/admin/runners`,
-              "GET",
-              null
-            );
-            if (status !== RequestStatus.OK && statusCode !== 200) {
-              return false;
+            const runners = await AdminListRunners();
+
+            if (runners) {
+              return (
+                (runners as Runner[]).find((r) => r.name === value) ===
+                undefined
+              );
             }
-            return (
-              (responseData as Runner[]).find((r) => r.name === value) ===
-              undefined
-            );
+
+            return false;
           }
         ),
       runnerType: Yup.string().required("Runner type is required"),
@@ -74,16 +68,12 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
             .test(
               "Another runner with the same public url already exists",
               async (value) => {
-                let [status, statusCode, responseData] = await Http.Request(
-                  `${Http.GetServerURL()}/api/v1/admin/runners`,
-                  "GET",
-                  null
-                );
-                if (status !== RequestStatus.OK && statusCode !== 200) {
+                const runners = await AdminListRunners();
+                if (!runners) {
                   return false;
                 }
                 return (
-                  (responseData as Runner[]).find(
+                  runners.find(
                     (r) => r.public_url === value && r.use_public_url
                   ) === undefined
                 );
@@ -94,25 +84,17 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
     validateOnChange: false,
     validateOnBlur: false,
     onSubmit: async (values) => {
-      var requestBody = {
-        name: values.runnerName,
-        type: values.runnerType,
-        use_public_url: values.usePublicUrl,
-        public_url: values.publicUrl,
-      };
-
-      let [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/admin/runners`,
-        "POST",
-        JSON.stringify(requestBody),
-        "application/json"
+      const runner = await AdminCreateRunner(
+        values.runnerName,
+        values.runnerType,
+        values.usePublicUrl,
+        values.publicUrl,
       );
-      if (status === RequestStatus.OK && statusCode === 201) {
-        HandleCloseModal(responseData.token);
-      } else if (statusCode === 409) {
-        toast.error(responseData.detail);
+
+      if (runner) {
+        HandleCloseModal(runner.token);
       } else {
-        toast.error(`Failed to create runner, received status ${statusCode}`);
+        toast.error(`Failed to create runner, try again later`);
       }
     },
   });
@@ -163,9 +145,8 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
             <Label>Runner type</Label>
             <select
               name="runnerType"
-              className={`form-control ${
-                validation.errors.runnerType ? "is-invalid" : ""
-              }`}
+              className={`form-control ${validation.errors.runnerType ? "is-invalid" : ""
+                }`}
               onChange={validation.handleChange}
               value={validation.values.runnerType}
             >

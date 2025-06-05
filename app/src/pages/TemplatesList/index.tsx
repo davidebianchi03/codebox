@@ -18,6 +18,7 @@ import { RequestStatus } from "../../api/types";
 import { WorkspaceType } from "../../types/workspace";
 import { Link } from "react-router-dom";
 import { CreateTemplateModal } from "./createTemplateModal";
+import { RetrieveCurrentUserDetails } from "../../api/common";
 
 export default function TemplatesList() {
   const [templates, setTemplates] = useState<WorkspaceTemplate[]>();
@@ -61,14 +62,9 @@ export default function TemplatesList() {
   const [user, setUser] = useState<User | null>(null);
 
   const WhoAmI = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-details`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      var u = responseBody as User;
-      setUser(u);
+    const user = await RetrieveCurrentUserDetails();
+    if (user) {
+      setUser(user);
     }
   }, []);
 

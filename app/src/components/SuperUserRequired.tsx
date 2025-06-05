@@ -1,12 +1,11 @@
 import { withRouter } from "../common/router";
-import { Http } from "../api/http";
 import { useCallback, useEffect, useState } from "react";
-import { RequestStatus } from "../api/types";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User } from "../types/user";
 import { Navbar } from "./Navbar";
 import { Badge, Card, CardBody, Col, Container, Row } from "reactstrap";
 import React from "react";
+import { RetrieveCurrentUserDetails } from "../api/common";
 
 type Props = {
   children: any;
@@ -19,20 +18,11 @@ function AuthRequired({ children, showNavbar = true }: Props) {
   const [user, setUser] = useState<User | null>(null);
 
   const WhoAmI = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-details`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      var u = responseBody as User;
-      if (!u.is_superuser) {
-        navigate("/");
-      } else {
-        setUser(u);
-      }
+    const user = await RetrieveCurrentUserDetails();
+    if (user) {
+      setUser(user);
     } else {
-      navigate("/login");
+      navigate(`/login`);
     }
   }, [navigate]);
 

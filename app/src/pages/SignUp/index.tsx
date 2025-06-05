@@ -14,6 +14,7 @@ import { Http } from "../../api/http";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
+import { RetrieveCurrentUserDetails } from "../../api/common";
 
 export default function SignUpPage() {
 
@@ -37,14 +38,9 @@ export default function SignUpPage() {
 
   const IsAuthenticated = useCallback(async () => {
     // redirect to home if user is already authenticated
-    let [status, statusCode] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-details`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
+    const user = await RetrieveCurrentUserDetails();
+    if (user !== undefined) {
       navigate("/");
-      return;
     }
   }, [navigate]);
 

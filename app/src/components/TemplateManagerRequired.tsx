@@ -1,10 +1,9 @@
 import { withRouter } from "../common/router";
-import { Http } from "../api/http";
 import React, { useCallback, useEffect, useState } from "react";
-import { RequestStatus } from "../api/types";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { User } from "../types/user";
 import { Navbar } from "./Navbar";
+import { RetrieveCurrentUserDetails } from "../api/common";
 
 type Props = {
   children: string | JSX.Element | JSX.Element[] | (() => JSX.Element);
@@ -12,27 +11,22 @@ type Props = {
 };
 
 function TemplateManagerRequired({ children, showNavbar = true }: Props) {
-  const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
 
   const WhoAmI = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-details`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setUser(responseBody as User);
+    const user = await RetrieveCurrentUserDetails();
+    if (user) {
+      setUser(user);
     } else {
-      navigate(`/login?next=${encodeURIComponent(location.pathname)}`);
+      navigate(`/login`);
     }
-  }, [navigate, location]);
+  }, [navigate]);
 
   useEffect(() => {
     WhoAmI();
   }, [WhoAmI]);
-  
+
   return (
     <React.Fragment>
       {user && (

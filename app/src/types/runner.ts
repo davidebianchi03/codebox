@@ -9,6 +9,10 @@ export interface Runner {
     last_contact: string;
 }
 
+export interface RunnerWithToken extends Runner {
+    token: string;
+}
+
 export interface RunnerType {
     id: string
     name: string

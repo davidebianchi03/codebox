@@ -10,10 +10,9 @@ import {
   ModalHeader,
 } from "reactstrap";
 import * as Yup from "yup";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { User } from "../../types/user";
 import { toast } from "react-toastify";
+import { AdminSetUserPassword } from "../../api/admin";
 
 interface Props {
   isOpen: boolean;
@@ -58,15 +57,7 @@ export function AdminChangePasswordModal({ isOpen, onClose, user }: Props) {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/admin/users/${user.email}/set-password`,
-        "POST",
-        JSON.stringify({
-          password: values.newPassword,
-        })
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
+      if (await AdminSetUserPassword(user.email, values.newPassword)) {
         toast.success("Password has been changed successfully");
         handleCloseModal();
       } else {

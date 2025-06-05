@@ -9,10 +9,9 @@ import {
   ModalHeader,
 } from "reactstrap";
 import * as Yup from "yup";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast } from "react-toastify";
 import { User } from "../../types/user";
+import { AdminCreateUser, AdminRetrieveUserByEmail } from "../../api/admin";
 
 interface Props {
   isOpen: boolean;
@@ -40,21 +39,16 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
           params: {},
           message: "Another user with the same email address already exists",
           test: async (value) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            var [_, statusCode] = await Http.Request(
-              `${Http.GetServerURL()}/api/v1/admin/users/${value}`,
-              "GET",
-              null
-            );
+            const user = await AdminRetrieveUserByEmail(value);
 
-            if (statusCode !== 200 && statusCode !== 404) {
+            if (user === undefined) {
               toast.error(
-                `Failed to check if user already exists - ${statusCode}`
+                `Failed to check if user already exists, try again later`
               );
               return false;
             }
 
-            return statusCode === 404;
+            return user === null;
           },
         }),
       firstName: Yup.string().required("This field is required"),
@@ -89,26 +83,18 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
     validateOnChange: false,
     validateOnBlur: false,
     onSubmit: async (values) => {
-      var requestBody = {
-        email: values.email,
-        password: values.password,
-        first_name: values.firstName,
-        last_name: values.lastName,
-        is_superuser: values.isAdmin,
-        is_template_manager: values.isTemplateManager,
-      };
-      let [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/admin/users`,
-        "POST",
-        JSON.stringify(requestBody),
-        "application/json"
+      const u = await AdminCreateUser(
+        values.email,
+        values.password,
+        values.firstName,
+        values.lastName,
+        values.isAdmin,
+        values.isTemplateManager,
       );
-      if (status === RequestStatus.OK && statusCode === 201) {
-        HandleCloseModal(responseData);
-      } else if (statusCode === 409) {
-        toast.error(responseData.detail);
+      if (u !== undefined) {
+        HandleCloseModal(u);
       } else {
-        toast.error(`Failed to create user, received status ${statusCode}`);
+        toast.error(`Failed to create user, unkwnown error`);
       }
     },
   });

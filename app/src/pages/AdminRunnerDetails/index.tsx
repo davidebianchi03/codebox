@@ -8,14 +8,14 @@ import {
   Row,
 } from "reactstrap";
 import { Runner, RunnerType } from "../../types/runner";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
+import { ListRunnerTypes } from "../../api/runner";
+import { AdminListRunners, AdminRetrieveRunnerById, AdminUpdateRunner } from "../../api/admin";
 
 export function AdminRunnerDetails() {
   const [runner, setRunner] = useState<Runner>();
@@ -25,13 +25,9 @@ export function AdminRunnerDetails() {
   const navigate = useNavigate();
 
   const FetchRunnerTypes = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/runner-types`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setRunnerTypes(responseData as RunnerType[]);
+    const rt = await ListRunnerTypes();
+    if (rt) {
+      setRunnerTypes(rt);
     }
   }, []);
 
@@ -48,19 +44,17 @@ export function AdminRunnerDetails() {
         .test(
           "Another runner with the same name already exists",
           async (value) => {
-            let [status, statusCode, responseData] = await Http.Request(
-              `${Http.GetServerURL()}/api/v1/admin/runners`,
-              "GET",
-              null
-            );
-            if (status !== RequestStatus.OK && statusCode !== 200) {
-              return false;
+            // TODO: runner by id
+            const runners = await AdminListRunners();
+            if (runners) {
+              return (
+                runners.find(
+                  (r) => r.name === value && r.id !== runner?.id
+                ) === undefined
+              );
             }
-            return (
-              (responseData as Runner[]).find(
-                (r) => r.name === value && r.id !== runner?.id
-              ) === undefined
-            );
+
+            return false;
           }
         ),
       runnerType: Yup.string().required("Runner type is required"),
@@ -72,17 +66,14 @@ export function AdminRunnerDetails() {
             .test(
               "Another runner with the same public url already exists",
               async (value) => {
-                let [status, statusCode, responseData] = await Http.Request(
-                  `${Http.GetServerURL()}/api/v1/admin/runners`,
-                  "GET",
-                  null
-                );
-                if (status !== RequestStatus.OK && statusCode !== 200) {
-                  toast.error(`Failed to update runner - ${statusCode}`);
+                // TODO: runner by name
+                const runners = await AdminListRunners();
+                if (!runners) {
+                  toast.error(`Failed to update runner, try again later`);
                   return false;
                 }
                 return (
-                  (responseData as Runner[]).find(
+                  runners.find(
                     (r) =>
                       r.public_url === value &&
                       r.use_public_url &&
@@ -96,50 +87,49 @@ export function AdminRunnerDetails() {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      let [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/admin/runners/${id}`,
-        "PUT",
-        JSON.stringify({
-          name: values.runnerName,
-          type: values.runnerType,
-          use_public_url: values.usePublicUrl,
-          public_url: values.publicUrl,
-        })
-      );
-      if (status !== RequestStatus.OK || statusCode !== 200) {
-        setRunnerTypes(responseData as RunnerType[]);
-      } else {
-        validation.resetForm();
-        FetchRunner();
+      if (id) {
+        const r = await AdminUpdateRunner(
+          parseInt(id),
+          values.runnerName,
+          values.runnerType,
+          values.usePublicUrl,
+          values.publicUrl
+        );
+        if (r) {
+          setRunner(r);
+        } else {
+          validation.resetForm();
+          FetchRunner();
+        }
       }
     },
   });
 
   const FetchRunner = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/admin/runners/${id}`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      var runner = responseData as Runner;
-      validation.setValues({
-        runnerName: runner.name,
-        runnerType: runner.type,
-        usePublicUrl: runner.use_public_url,
-        publicUrl: runner.public_url,
-      });
-      setRunner(runner);
-    } else {
-      navigate("/");
+    if (id) {
+      const r = await AdminRetrieveRunnerById(parseInt(id));
+      if (r) {
+        setRunner(r);
+      } else {
+        navigate("/");
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, navigate]);
 
   useEffect(() => {
     FetchRunner();
     FetchRunnerTypes();
   }, [FetchRunner, FetchRunnerTypes]);
+
+  useEffect(() => {
+    validation.setValues({
+      runnerName: runner?.name || "",
+      runnerType: runner?.type || "",
+      usePublicUrl: runner?.use_public_url || false,
+      publicUrl: runner?.public_url || "",
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runner]);
 
   return (
     <>
