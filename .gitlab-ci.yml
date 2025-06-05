@@ -59,7 +59,7 @@ build_server:
     GOARCH: amd64
   script:
     - mkdir -p bin
-    - go build -o bin/codebox -ldflags "-X config.ServerVersion=${CI_COMMIT_TAG}" main.go
+    - go build -o bin/codebox -ldflags "-X gitlab.com/codebox4073715/codebox/config.ServerVersion=${CI_COMMIT_TAG}" main.go
   artifacts:
     paths:
       - bin/codebox
