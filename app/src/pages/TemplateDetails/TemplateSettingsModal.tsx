@@ -3,9 +3,8 @@ import { Button, Col, FormFeedback, FormGroup, Input, Label, Modal, ModalBody, M
 import { WorkspaceTemplate } from "../../types/templates";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { RequestStatus } from "../../api/types";
 import { toast } from "react-toastify";
-import { Http } from "../../api/http";
+import { APIRetrieveTemplateByName, APIUpdateTemplate } from "../../api/templates";
 
 interface TemplateSettingsModalProps {
     isOpen: boolean
@@ -24,32 +23,15 @@ export function TemplateSettingsModal({ isOpen, onClose, template }: TemplateSet
                 "already_exists",
                 "Another template with the same name already exists",
                 async (name) => {
-                    let [status, statusCode, responseData] = await Http.Request(
-                        `${Http.GetServerURL()}/api/v1/templates-by-name/${encodeURIComponent(name)}`,
-                        "GET",
-                        null
-                    );
-                    if(status === RequestStatus.OK && statusCode === 200) {
-                        var resp = responseData as WorkspaceTemplate;
-                        return resp.id === template.id;
-                    }
-
-                    return false;
+                    const t = await APIRetrieveTemplateByName(name);
+                    return t === null;
                 }
             ),
         }),
         validateOnBlur: false,
         validateOnChange: false,
         onSubmit: async (values) => {
-            let [status, statusCode] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${template.id}`,
-                "PUT",
-                JSON.stringify({
-                    name: values.name,
-                })
-            );
-
-            if (status === RequestStatus.OK && statusCode === 200) {
+            if ((await APIUpdateTemplate(template.id, values.name)) !== undefined) {
                 validation.resetForm();
                 onClose();
             } else {

@@ -10,9 +10,8 @@ import {
   ModalHeader,
 } from "reactstrap";
 import * as Yup from "yup";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import Swal from "sweetalert2";
+import { APIChangePassword } from "../../api/common";
 
 interface Props {
   isOpen: boolean;
@@ -65,27 +64,15 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/auth/change-password`,
-        "POST",
-        JSON.stringify({
-          current_password: values.currentPassword,
-          new_password: values.newPassword,
-        })
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
+      if (await APIChangePassword(values.currentPassword, values.newPassword)) {
         await Swal.fire(
           "Password changed",
           "Password has been changed successfully!",
           "success"
         );
         handleCloseModal();
-        // TODO: logout
-      } else if (statusCode === 417) {
-        validation.setFieldError("currentPassword", "Wrong password");
       } else {
-        await Swal.fire("Unknown error", "Password change failed!", "error");
+        validation.setFieldError("currentPassword", "Wrong password");
       }
     },
   });

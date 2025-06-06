@@ -3,14 +3,13 @@ import { Button } from "reactstrap";
 import Editor from '@monaco-editor/react';
 import { TemplateVersionEditorSidebar } from "./Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
-import { WorkspaceTemplate, WorkspaceTemplateVersion, WorkspaceTemplateVersionEntry } from "../../types/templates";
+import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
 import { toast, ToastContainer } from "react-toastify";
 import { FileMap, GetTypeForFile } from "./FileType";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { TemplateVersionSettingsModal } from "./TemplateVersionSettingsModal";
+import { APIRetrieveTemplateById, APIRetrieveTemplateVersion, APIRetrieveTemplateVersionEntry, APIUpdateTemplateVersionEntry } from "../../api/templates";
 
 export function TemplateVersionEditor() {
     const { templateId, versionId } = useParams();
@@ -27,60 +26,48 @@ export function TemplateVersionEditor() {
     const timer = useRef<NodeJS.Timeout | null>(null);
 
     const fetchTemplate = useCallback(async () => {
-        let [status, statusCode, responseBody] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${templateId}`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setTemplate(responseBody as WorkspaceTemplate);
-        } else {
-            navigate(`/templates`);
+        if (templateId) {
+            const t = await APIRetrieveTemplateById(parseInt(templateId));
+            if (t) {
+                setTemplate(t);
+            } else {
+                navigate(`/templates`);
+            }
         }
     }, [navigate, templateId]);
 
     const fetchTemplateVersion = useCallback(async () => {
-        let [status, statusCode, responseBody] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setTemplateVersion(responseBody as WorkspaceTemplateVersion);
-        } else {
-            navigate(`/templates`);
+        if (templateId && versionId) {
+            const tv = await APIRetrieveTemplateVersion(parseInt(templateId), parseInt(versionId));
+            if (tv) {
+                setTemplateVersion(tv);
+            } else {
+                navigate(`/templates`);
+            }
         }
     }, [navigate, templateId, versionId]);
 
 
-    const UpdateFileContent = useCallback(async (value:string) => {
-        if (openFilePath) {
-            let [status] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}/entries/${encodeURIComponent(openFilePath)}`,
-                "PUT",
-                JSON.stringify({
-                    path: openFilePath,
-                    content: btoa(value),
-                })
-            );
-
-            if (status !== RequestStatus.OK) {
-                toast.error("Failed to update file content");
-            } else {
+    const UpdateFileContent = useCallback(async (value: string) => {
+        if (openFilePath && templateId && versionId) {
+            if (await APIUpdateTemplateVersionEntry(
+                parseInt(templateId),
+                parseInt(versionId),
+                openFilePath,
+                openFilePath,
+                btoa(value)
+            )) {
                 setEditing(false);
+            } else {
+                toast.error("Failed to update file content");
             }
         }
     }, [openFilePath, templateId, versionId]);
 
     const fetchFileContent = useCallback(async () => {
-        if (selectedItemPath) {
-            let [status, statusCode, responseBody] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${templateId}/versions/${versionId}/entries/${encodeURIComponent(selectedItemPath)}`,
-                "GET",
-                null
-            );
-            if (status === RequestStatus.OK && statusCode === 200) {
-                var entry = responseBody as WorkspaceTemplateVersionEntry;
+        if (selectedItemPath && templateId && versionId) {
+            const entry = await APIRetrieveTemplateVersionEntry(parseInt(templateId), parseInt(versionId), selectedItemPath);
+            if (entry) {
                 if (entry) {
                     if (entry.type === "file") {
                         // save previous content

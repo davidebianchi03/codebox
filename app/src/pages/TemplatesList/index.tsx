@@ -13,12 +13,12 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import { User } from "../../types/user";
 import { WorkspaceTemplate } from "../../types/templates";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { WorkspaceType } from "../../types/workspace";
 import { Link } from "react-router-dom";
 import { CreateTemplateModal } from "./createTemplateModal";
 import { RetrieveCurrentUserDetails } from "../../api/common";
+import { APIListWorkspacesTypes } from "../../api/workspace";
+import { APIListTemplates } from "../../api/templates";
 
 export default function TemplatesList() {
   const [templates, setTemplates] = useState<WorkspaceTemplate[]>();
@@ -29,14 +29,9 @@ export default function TemplatesList() {
   const [searchText, setSearchText] = useState<string>("");
 
   const fetchTemplates = useCallback(async () => {
-    var [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/templates`,
-      "GET",
-      null
-    );
-
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setTemplates(responseData);
+    const t = await APIListTemplates();
+    if (t) {
+      setTemplates(t);
     } else {
       toast.error("Failed to fetch templates");
       setTemplates([]);
@@ -44,13 +39,9 @@ export default function TemplatesList() {
   }, []);
 
   const fetchWorkspaceTypes = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace-types`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setWorkspaceTypes(responseData as WorkspaceType[]);
+    const wt = await APIListWorkspacesTypes();
+    if (wt) {
+      setWorkspaceTypes(wt);
     }
   }, []);
 

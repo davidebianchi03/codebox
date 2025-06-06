@@ -3,10 +3,9 @@ import React, { useCallback, useEffect } from "react";
 import { Alert, Button, Col, FormFeedback, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
 import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
 import * as Yup from "yup";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { APIUpdateTemplateVersion } from "../../api/templates";
 
 interface TemplateVersionSettingsModalProps {
     isOpen: boolean;
@@ -38,16 +37,15 @@ export function TemplateVersionSettingsModal({
         validateOnBlur: false,
         validateOnChange: false,
         onSubmit: async (values) => {
-            let [status, statusCode] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}`,
-                "PUT",
-                JSON.stringify({
-                    name: values.name,
-                    published: templateVersion.published || publish,
-                    config_file_path: values.configPath,
-                })
-            );
-            if (status === RequestStatus.OK && statusCode === 200) {
+            if (
+                await APIUpdateTemplateVersion(
+                    template.id,
+                    templateVersion.id,
+                    values.name,
+                    values.configPath,
+                    templateVersion.published || publish,
+                )
+            ) {
                 if (templateVersion.published || publish) {
                     navigate(`/templates/${template.id}`);
                 } else {

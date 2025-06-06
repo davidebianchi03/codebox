@@ -3,14 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from "reactstrap";
-import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
-import { Workspace, WorkspaceType } from "../../types/workspace";
+import { WorkspaceTemplate } from "../../types/templates";
+import { WorkspaceType } from "../../types/workspace";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import { TemplateSettingsModal } from "./TemplateSettingsModal";
 import { User } from "../../types/user";
+import { APIListWorkspacesTypes } from "../../api/workspace";
+import { APIDeleteTemplate, APIListTemplateVersionsByTemplate, APIListWorkspacesByTemplate, APIRetrieveTemplateById } from "../../api/templates";
 
 export interface TemplateDetailsProps {
     template: WorkspaceTemplate
@@ -25,13 +25,9 @@ export function TemplateDetailsHeader({ template: initialTemplate, user }: Templ
     const navigate = useNavigate();
 
     const fetchWorkspaceTypes = useCallback(async () => {
-        let [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/workspace-types`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setWorkspaceTypes(responseData as WorkspaceType[]);
+        const wt = await APIListWorkspacesTypes();
+        if (wt) {
+            setWorkspaceTypes(wt);
         }
     }, []);
 
@@ -41,14 +37,9 @@ export function TemplateDetailsHeader({ template: initialTemplate, user }: Templ
 
     const handleDeleteTemplate = useCallback(async () => {
         // check if there are workspacea that are based on this template
-        var [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${initialTemplate.id}/workspaces`,
-            "GET",
-            null
-        );
+        const workspaces = await APIListWorkspacesByTemplate(initialTemplate.id);
 
-        if (status === RequestStatus.OK && statusCode === 200) {
-            var workspaces = responseData as Workspace[];
+        if (workspaces) {
             if (workspaces.length === 0) {
                 if ((await Swal.fire({
                     title: "Delete template",
@@ -67,13 +58,7 @@ export function TemplateDetailsHeader({ template: initialTemplate, user }: Templ
                         confirmButton: "btn btn-primary",
                     },
                 })).isConfirmed) {
-                    [status] = await Http.Request(
-                        `${Http.GetServerURL()}/api/v1/templates/${initialTemplate.id}`,
-                        "DELETE",
-                        null
-                    );
-
-                    if (status === RequestStatus.OK) {
+                    if (await APIDeleteTemplate(initialTemplate.id)) {
                         navigate("/templates");
                     } else {
                         toast.error("Unknown error");
@@ -114,14 +99,8 @@ export function TemplateDetailsHeader({ template: initialTemplate, user }: Templ
     }, [initialTemplate, navigate]);
 
     const handleEditFiles = useCallback(async () => {
-        let [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions`,
-            "GET",
-            null
-        );
-
-        if (status === RequestStatus.OK && statusCode === 200) {
-            var versions = responseData as WorkspaceTemplateVersion[];
+        let versions = await APIListTemplateVersionsByTemplate(template.id);
+        if (versions) {
             versions = versions.filter((v) => !v.published).reverse();
             if (versions.length > 0) {
                 navigate(`/templates/${initialTemplate.id}/versions/${versions[0].id}/editor`)
@@ -134,18 +113,12 @@ export function TemplateDetailsHeader({ template: initialTemplate, user }: Templ
     }, [initialTemplate.id, navigate, template.id]);
 
     const fetchTemplate = useCallback(async () => {
-        var [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${initialTemplate.id}`,
-            "GET",
-            null
-        );
+        const t = await APIRetrieveTemplateById(initialTemplate.id);
 
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setTemplate(responseData);
-        } else if (statusCode === 404) {
-            navigate("/templates");
+        if (t) {
+            setTemplate(t);
         } else {
-            toast.error("Failed to fetch template details");
+            navigate("/templates");
         }
     }, [initialTemplate, navigate]);
 

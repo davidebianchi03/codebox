@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { WorkspaceTemplate } from "../../types/templates";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
 import { Col, Container, Row } from "reactstrap";
 import { TemplateDetailsVersions } from "./TemplateDetailsVersions";
@@ -11,6 +9,7 @@ import { TemplateDetailsSummary } from "./TemplateDetailsSummary";
 import { TemplateDetailsWorkspaces } from "./TemplateDetailsWorkspaces";
 import { User } from "../../types/user";
 import { RetrieveCurrentUserDetails } from "../../api/common";
+import { APIRetrieveTemplateById } from "../../api/templates";
 
 export function TemplateDetailsPage() {
     const { id } = useParams();
@@ -21,19 +20,16 @@ export function TemplateDetailsPage() {
     const [user, setUser] = useState<User | null>(null);
 
     const fetchTemplate = useCallback(async () => {
-        var [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${id}`,
-            "GET",
-            null
-        );
-
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setTemplate(responseData);
-        } else if (statusCode === 404) {
-            navigate("/templates");
-        } else {
-            toast.error("Failed to fetch template details");
-            setTemplate(undefined);
+        if (id) {
+            const t = await APIRetrieveTemplateById(parseInt(id));
+            if (t) {
+                setTemplate(t);
+            } else if (t === null) {
+                navigate("/templates");
+            } else {
+                toast.error("Failed to fetch template details");
+                setTemplate(undefined);
+            }
         }
     }, [id, navigate]);
 

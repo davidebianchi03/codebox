@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardBody, Container, Input } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { LoginStatus, RequestStatus } from "../../api/types";
+import { LoginStatus } from "../../api/types";
 import { Http } from "../../api/http";
-import { RetrieveCurrentUserDetails } from "../../api/common";
+import { APIInitialUserExists, RetrieveCurrentUserDetails } from "../../api/common";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,18 +15,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const CheckIfInitialUserExists = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/initial-user-exists`,
-      "GET",
-      null,
-      "application/json",
-    );
-
-    if (status === RequestStatus.OK && statusCode === 200) {
-      if (!(responseBody as any).exists) {
-        navigate("/signup");
-        return;
-      }
+    if (!(await APIInitialUserExists())) {
+      navigate("/signup");
     }
   }, [navigate]);
 

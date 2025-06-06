@@ -1,5 +1,14 @@
 import axios from "axios";
-import { Workspace } from "../types/workspace";
+import { Workspace, WorkspaceType } from "../types/workspace";
+
+export async function APIListWorkspaces():Promise<Workspace[]|undefined> {
+    try {
+        const r = await axios.get<Workspace[]>(`/api/v1/workspace`);
+        return r.data;
+    } catch {
+        return undefined;
+    }
+}
 
 export async function APICreateWorkspace(
     name: string,
@@ -24,6 +33,15 @@ export async function APICreateWorkspace(
             environment_variables: environment_variables,
             template_version_id: template_version_id,
         });
+        return r.data;
+    } catch {
+        return undefined;
+    }
+}
+
+export async function APIListWorkspacesTypes(): Promise<WorkspaceType[] | undefined> {
+    try {
+        const r = await axios.get<WorkspaceType[]>(`/api/v1/workspace-types`);
         return r.data;
     } catch {
         return undefined;

@@ -9,13 +9,12 @@ import {
   Label,
 } from "reactstrap";
 import { Workspace, WorkspaceType } from "../../types/workspace";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import {
   GetBeautyNameForStatus,
   GetWorkspaceStatusColor,
 } from "../../common/workspace";
 import { Link, useNavigate } from "react-router-dom";
+import { APIListWorkspaces, APIListWorkspacesTypes } from "../../api/workspace";
 
 export default function HomePage() {
   const [searchText, setSearchText] = useState<string>("");
@@ -24,28 +23,16 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   const FetchWorkspaces = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK) {
-      setWorkspaces(responseData as Workspace[]);
-    } else {
-      console.log(`Error: received ${statusCode} from server`);
+    const w = await APIListWorkspaces();
+    if (w) {
+      setWorkspaces(w);
     }
   }, []);
 
   const FetchWorkspaceTypes = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace-types`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK) {
-      setWorkspaceTypes(responseData as WorkspaceType[]);
-    } else {
-      console.log(`Error: received ${statusCode} from server`);
+    const wt = await APIListWorkspacesTypes();
+    if (wt) {
+      setWorkspaceTypes(wt);
     }
   }, []);
 
@@ -85,7 +72,7 @@ export default function HomePage() {
       <Card className="my-1">
         <CardBody>
           {workspaces.length &&
-          workspaces.filter((w) => w.name.indexOf(searchText) >= 0).length >
+            workspaces.filter((w) => w.name.indexOf(searchText) >= 0).length >
             0 ? (
             <>
               {workspaces

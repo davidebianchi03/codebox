@@ -12,8 +12,6 @@ import {
   Row,
 } from "reactstrap";
 import { WorkspaceType } from "../../types/workspace";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -21,7 +19,8 @@ import { Runner } from "../../types/runner";
 import { ToastContainer, toast } from "react-toastify";
 import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
 import { ListRunners } from "../../api/runner";
-import { APICreateWorkspace } from "../../api/workspace";
+import { APICreateWorkspace, APIListWorkspacesTypes } from "../../api/workspace";
+import { APIListTemplates, APIRetrieveTemplateLatestVersion } from "../../api/templates";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
@@ -77,7 +76,7 @@ export default function CreateWorkspace() {
           return;
         }
 
-        templateVersion = await RetrieveTemplateLatestVersion(template);
+        templateVersion = await APIRetrieveTemplateLatestVersion(template.id) || null;
         if (!templateVersion) {
           toast.error("There are no versions available for this template");
           return;
@@ -107,13 +106,9 @@ export default function CreateWorkspace() {
   });
 
   const FetchWorkspaceTypes = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace-types`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setWorkspaceTypes(responseData as WorkspaceType[]);
+    const wt = await APIListWorkspacesTypes();
+    if (wt) {
+      setWorkspaceTypes(wt);
     }
   }, []);
 
@@ -125,29 +120,10 @@ export default function CreateWorkspace() {
   }, []);
 
   const FetchTemplates = useCallback(async () => {
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/templates`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setTemplates(responseData as WorkspaceTemplate[]);
+    const t = await APIListTemplates();
+    if (t) {
+      setTemplates(t);
     }
-  }, []);
-
-  const RetrieveTemplateLatestVersion = useCallback(async (template: WorkspaceTemplate): Promise<WorkspaceTemplateVersion | null> => {
-    // fetch template versions
-    let [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/templates/${template.id}/latest-version`,
-      "GET",
-      null
-    );
-
-    if (status === RequestStatus.OK && statusCode === 200) {
-      return responseData as WorkspaceTemplateVersion;
-    }
-
-    return null
   }, []);
 
   useEffect(() => {

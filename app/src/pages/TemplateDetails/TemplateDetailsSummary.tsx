@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
-import { RequestStatus } from "../../api/types";
-import { Http } from "../../api/http";
 import ReactMarkdown from 'react-markdown';
+import { APIRetrieveTemplateLatestVersion, APIRetrieveTemplateVersionEntry } from "../../api/templates";
 
 interface TemplateDetailsSummaryProps {
     template: WorkspaceTemplate
@@ -14,15 +13,10 @@ export function TemplateDetailsSummary({ template }: TemplateDetailsSummaryProps
     const [readmeContent, setReadmeContent] = useState<string>();
 
     const FetchTemplateLatestVersion = useCallback(async () => {
-        // fetch template versions
-        let [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${template.id}/latest-version`,
-            "GET",
-            null
-        );
+        const lv = await APIRetrieveTemplateLatestVersion(template.id);
 
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setLatestVersion(responseData as WorkspaceTemplateVersion);
+        if (lv) {
+            setLatestVersion(lv);
         }
     }, [template.id]);
 
@@ -32,14 +26,9 @@ export function TemplateDetailsSummary({ template }: TemplateDetailsSummaryProps
 
     const FetchReadme = useCallback(async () => {
         if (latestVersion) {
-            let [status, statusCode, responseData] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${latestVersion.id}/entries/README.md`,
-                "GET",
-                null
-            );
-
-            if (status === RequestStatus.OK && statusCode === 200) {
-                setReadmeContent(atob(responseData.content));
+            const r = await APIRetrieveTemplateVersionEntry(template.id, latestVersion.id, "README.md");
+            if (r) {
+                setReadmeContent(atob(r.content));
             }
         }
     }, [latestVersion, template.id]);

@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Table } from "reactstrap";
 import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templates";
 import { toast } from "react-toastify";
-import { RequestStatus } from "../../api/types";
-import { Http } from "../../api/http";
+import { APIListTemplateVersionsByTemplate } from "../../api/templates";
 
 interface TemplateDetailsVersionsProps {
     template: WorkspaceTemplate
@@ -13,14 +12,9 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
     const [versions, setVersions] = useState<WorkspaceTemplateVersion[]>();
 
     const fetchVersions = useCallback(async () => {
-        var [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions`,
-            "GET",
-            null
-        );
-
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setVersions((responseData as WorkspaceTemplateVersion[]).reverse());
+        const v = await APIListTemplateVersionsByTemplate(template.id);
+        if (v) {
+            setVersions(v.reverse());
         } else {
             toast.error("Failed to fetch template versions");
             setVersions(undefined);

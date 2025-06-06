@@ -4,8 +4,6 @@ import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { Menu, MenuItem } from '@mui/material';
 import { WorkspaceTemplate, WorkspaceTemplateVersion, WorkspaceTemplateVersionTreeItem } from '../../types/templates';
 import { SidebarTreeItem } from './SidebarTreeItem';
-import { Http } from '../../api/http';
-import { RequestStatus } from '../../api/types';
 import { toast } from 'react-toastify';
 import { GetTypeForFile } from './FileType';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,6 +11,7 @@ import { Button } from 'reactstrap';
 import { faFileCirclePlus, faFolderPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom';
+import { APICreateTemplateVersionEntry, APIDeleteTemplateVersionEntry, APIListTemplateVersionEntry, APIRetrieveTemplateVersionEntry, APIUpdateTemplateVersionEntry } from '../../api/templates';
 
 interface SidebarEntryProps {
     entry: WorkspaceTemplateVersionTreeItem;
@@ -101,13 +100,9 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
     }, []);
 
     const fetchTreeItems = React.useCallback(async () => {
-        let [status, statusCode, responseBody] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK && statusCode === 200) {
-            setTreeItems(responseBody as WorkspaceTemplateVersionTreeItem[]);
+        const entries = await APIListTemplateVersionEntry(template.id, templateVersion.id);
+        if (entries) {
+            setTreeItems(entries);
         } else {
             toast.error("Failed to fetch entries");
         }
@@ -156,17 +151,8 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                     }
                 }
 
-                // check if item already exists
-                let [status, statusCode] = await Http.Request(
-                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(value)}`,
-                    "GET",
-                    null
-                );
-
-                if (status === RequestStatus.OK) {
+                if (await APIRetrieveTemplateVersionEntry(template.id, templateVersion.id, value)) {
                     return 'Path already exists';
-                } else if (statusCode !== 404) {
-                    return 'Failed to check if path already exists';
                 }
             },
             customClass: {
@@ -178,17 +164,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
         });
 
         if (r.isConfirmed && r.value) {
-            // create file
-            let [status] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries`,
-                "POST",
-                JSON.stringify({
-                    path: r.value,
-                    type: type,
-                    content: "",
-                })
-            );
-            if (status !== RequestStatus.OK) {
+            if ((await APICreateTemplateVersionEntry(template.id, templateVersion.id, r.value, type, "")) === undefined) {
                 toast.error(`Failed to create ${type === "dir" ? "folder" : "file"}`);
             }
         }
@@ -212,11 +188,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                 },
                 buttonsStyling: false,
             })).isConfirmed) {
-                await Http.Request(
-                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}`,
-                    "DELETE",
-                    null,
-                );
+                await APIDeleteTemplateVersionEntry(template.id, templateVersion.id, contextMenuEntry.full_path);
                 fetchTreeItems();
             }
         }
@@ -261,16 +233,10 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
                     }
 
                     if (value !== contextMenuEntry.full_path) {
-                        // check if item already exists
-                        let [status, statusCode] = await Http.Request(
-                            `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(value)}`,
-                            "GET",
-                            null
-                        );
-
-                        if (status === RequestStatus.OK) {
+                        const entry = await APIRetrieveTemplateVersionEntry(template.id, templateVersion.id, value);
+                        if (entry) {
                             return 'Path already exists';
-                        } else if (statusCode !== 404) {
+                        } else if (entry === undefined) {
                             return 'Failed to check if path already exists';
                         }
                     }
@@ -286,27 +252,19 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
             if (r.isConfirmed && r.value) {
                 var fileContent = btoa("");
                 if (contextMenuEntry.type === "file") {
-                    // retrieve latest content
-                    let [status, statusCode, responseBody] = await Http.Request(
-                        `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}`,
-                        "GET",
-                        null,
-                    );
-
-                    if (status === RequestStatus.OK && statusCode === 200) {
-                        fileContent = responseBody.content;
+                    const entry = await APIRetrieveTemplateVersionEntry(template.id, templateVersion.id, contextMenuEntry.full_path);
+                    if (entry) {
+                        fileContent = entry.content;
                     }
                 }
 
-                let [status] = await Http.Request(
-                    `${Http.GetServerURL()}/api/v1/templates/${template.id}/versions/${templateVersion.id}/entries/${encodeURIComponent(contextMenuEntry.full_path)}`,
-                    "PUT",
-                    JSON.stringify({
-                        path: r.value,
-                        content: fileContent,
-                    })
-                );
-                if (status !== RequestStatus.OK) {
+                if ((await APIUpdateTemplateVersionEntry(
+                    template.id,
+                    templateVersion.id,
+                    contextMenuEntry.full_path,
+                    r.value,
+                    fileContent
+                )) === undefined) {
                     toast.error(`Failed to rename ${contextMenuEntry.type === "dir" ? "folder" : "file"}`);
                 } else {
                     onSelectionChange(r.value);

@@ -3,11 +3,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Button, Col, FormFeedback, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
 import * as Yup from "yup";
 import { WorkspaceType } from "../../types/workspace";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast } from "react-toastify";
-import { WorkspaceTemplate } from "../../types/templates";
 import { useNavigate } from "react-router-dom";
+import { APIListWorkspacesTypes } from "../../api/workspace";
+import { APICreateTemplate, APIRetrieveTemplateByName } from "../../api/templates";
 
 interface CreateTemplateModalProps {
     isOpen: boolean
@@ -30,12 +29,7 @@ export function CreateTemplateModal({ isOpen, onClose }: CreateTemplateModalProp
                 "already_exists",
                 "Another template with the same name already exists",
                 async (name) => {
-                    let [status, statusCode] = await Http.Request(
-                        `${Http.GetServerURL()}/api/v1/templates-by-name/${encodeURIComponent(name)}`,
-                        "GET",
-                        null
-                    );
-                    return status !== RequestStatus.OK || statusCode !== 200;
+                    return await APIRetrieveTemplateByName(name) === null;
                 }
             ),
             type: Yup.string().required("This field is required"),
@@ -43,38 +37,21 @@ export function CreateTemplateModal({ isOpen, onClose }: CreateTemplateModalProp
         validateOnBlur: false,
         validateOnChange: false,
         onSubmit: async (values) => {
-            let [status, statusCode, responseData] = await Http.Request(
-                `${Http.GetServerURL()}/api/v1/templates`,
-                "POST",
-                JSON.stringify({
-                    name: values.name,
-                    type: values.type,
-                    description: values.description,
-                    icon: values.icon
-                })
-            );
-
-            if (status !== RequestStatus.OK || statusCode !== 201) {
-                toast.error("Failed to create template");
+            const t = await APICreateTemplate(values.name, values.type, values.description, values.icon);
+            if (t) {
+                navigate(`/templates/${t.id}`);
             } else {
-                var template = responseData as WorkspaceTemplate;
-                navigate(`/templates/${template.id}`);
+                toast.error("Failed to create template");
             }
         }
     });
 
     const fetchWorkspaceTypes = useCallback(async () => {
-        let [status, statusCode, responseData] = await Http.Request(
-            `${Http.GetServerURL()}/api/v1/workspace-types`,
-            "GET",
-            null
-        );
-        if (status === RequestStatus.OK) {
-            setWorkspaceTypes((responseData as WorkspaceType[]).filter((wt) => (
+        const wt = await APIListWorkspacesTypes();
+        if (wt) {
+            setWorkspaceTypes(wt.filter((wt) => (
                 wt.supported_config_sources.find((scs) => scs === "template") !== undefined))
             );
-        } else {
-            console.log(`Error: received ${statusCode} from server`);
         }
     }, []);
 

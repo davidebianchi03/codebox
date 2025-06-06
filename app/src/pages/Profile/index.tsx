@@ -12,8 +12,6 @@ import {
   Label,
   Row,
 } from "reactstrap";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
@@ -21,7 +19,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { User } from "../../types/user";
 import { ChangePasswordModal } from "./ChangePasswordModal";
-import { RetrieveCurrentUserDetails } from "../../api/common";
+import { APIRetrieveSshPublicKey, APIUpdateCurrentUserDetails, RetrieveCurrentUserDetails } from "../../api/common";
 
 export default function Profile() {
   const [sshPublicKey, setSshPublicKey] = useState<string>("");
@@ -41,21 +39,10 @@ export default function Profile() {
     validateOnChange: false,
     validateOnBlur: false,
     onSubmit: async (values) => {
-      var data = {
-        first_name: values.firstName,
-        last_name: values.lastName,
-      };
-
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/auth/user-details`,
-        "PATCH",
-        JSON.stringify(data),
-        "application/json"
-      );
-      if (status === RequestStatus.OK && statusCode === 200) {
+      if (await APIUpdateCurrentUserDetails(values.firstName, values.lastName)) {
         toast.info(`Profile has been updated`);
       } else {
-        toast.error(`Failed to update profile, received status ${statusCode}`);
+        toast.error(`Failed to update profile, try again later`);
       }
     },
   });
@@ -75,13 +62,9 @@ export default function Profile() {
   }, []);
 
   const FetchPublicKey = useCallback(async () => {
-    let [status, statusCode, responseBody] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/auth/user-ssh-public-key`,
-      "GET",
-      null
-    );
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setSshPublicKey(responseBody.public_key);
+    const pk = await APIRetrieveSshPublicKey();
+    if (pk) {
+      setSshPublicKey(pk);
     }
   }, []);
 
@@ -221,7 +204,7 @@ export default function Profile() {
         isOpen={showChangePasswordModal}
         onClose={() => setShowChangePasswordModal(false)}
       />
-      <ToastContainer 
+      <ToastContainer
         toastClassName={"bg-dark"}
       />
     </Container>
