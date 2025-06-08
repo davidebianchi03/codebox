@@ -11,10 +11,9 @@ import {
   ModalHeader,
   Table,
 } from "reactstrap";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
 import { EditExposedPortsAddPortModal } from "./EditExposedPortsAddPortModal";
+import { APIDeleteWorkspaceContainerPort, APIListWorkspaceContainerPorts } from "../../api/workspace";
 
 interface Props {
   isOpen: boolean;
@@ -42,16 +41,13 @@ export function EditExposedPortsModal({
 
   const FetchSelectedContainerPorts = useCallback(
     async (containerName: string) => {
-      // fetch exposed ports
-      var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
-        }/container/${containerName}/port`,
-        "GET",
-        null
-      );
+      const ports = await APIListWorkspaceContainerPorts(
+        workspace.id,
+        containerName
+      )
 
-      if (status === RequestStatus.OK && statusCode === 200) {
-        setContainerExposedPorts(responseData);
+      if (ports) {
+        setContainerExposedPorts(ports);
       } else {
         toast.error("Failed to fetch workspace container ports");
         setContainerExposedPorts([]);
@@ -62,19 +58,11 @@ export function EditExposedPortsModal({
 
   const handleDeletePort = useCallback(
     async (port: ContainerPort) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/container/${container.container_name
-        }/port/${port.port_number}`,
-        "DELETE",
-        null
-      );
-
-      if (statusCode !== 204) {
-        toast.error("Failed to remove port");
-      } else {
+      if (await APIDeleteWorkspaceContainerPort(workspace.id, container.container_name, port.port_number)) {
         FetchSelectedContainerPorts(container.container_name);
         onChange();
+      } else {
+        toast.error("Failed to remove port");
       }
     },
     [workspace.id, container.container_name, FetchSelectedContainerPorts, onChange]

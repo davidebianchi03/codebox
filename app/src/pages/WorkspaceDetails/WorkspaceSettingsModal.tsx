@@ -11,9 +11,8 @@ import {
 import { Workspace } from "../../types/workspace";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
+import { APIUpdateWorkspace } from "../../api/workspace";
 
 interface Props {
   isOpen: boolean;
@@ -41,20 +40,15 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      var requestBody = JSON.stringify({
-        git_repo_url: values.gitRepoUrl,
-        git_ref_name: values.gitRefName,
-        config_source_path: values.configSourcePath,
-        environment_variables: values.environmentVariables !== "" ? values.environmentVariables.split("\n") : [],
-      });
-
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}`,
-        "PATCH",
-        requestBody
+      const r = await APIUpdateWorkspace(
+        workspace.id,
+        values.gitRepoUrl,
+        values.gitRefName,
+        values.configSourcePath,
+        values.environmentVariables !== "" ? values.environmentVariables.split("\n") : [],
       );
 
-      if (status === RequestStatus.OK && statusCode === 200) {
+      if (r) {
         toast.success("Workspace has been updated");
         handleCloseModal();
       } else {

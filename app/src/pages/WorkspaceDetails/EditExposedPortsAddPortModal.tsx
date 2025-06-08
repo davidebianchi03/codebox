@@ -14,11 +14,10 @@ import {
   ModalBody,
   ModalHeader,
 } from "reactstrap";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast, ToastContainer } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { APICreateWorkspaceContainerPort, APIListWorkspaceContainerPorts } from "../../api/workspace";
 
 interface Props {
   isOpen: boolean;
@@ -39,16 +38,9 @@ export function EditExposedPortsAddPortModal({
 
   const FetchSelectedContainerPorts = useCallback(
     async (containerName: string) => {
-      // fetch exposed ports
-      var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
-        }/container/${containerName}/port`,
-        "GET",
-        null
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
-        setContainerExposedPorts(responseData);
+      const ports = await APIListWorkspaceContainerPorts(workspace.id, containerName);
+      if (ports) {
+        setContainerExposedPorts(ports);
       } else {
         toast.error("Failed to fetch workspace container ports");
         setContainerExposedPorts([]);
@@ -89,22 +81,17 @@ export function EditExposedPortsAddPortModal({
         ),
     }),
     onSubmit: async (values) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/container/${container.container_name
-        }/port`,
-        "POST",
-        JSON.stringify({
-          port_number: values.portNumber,
-          service_name: values.serviceName,
-          public: values.public,
-        })
-      );
-
-      if (statusCode !== 201) {
-        toast.error("Failed to add port");
-      } else {
+      const p = await APICreateWorkspaceContainerPort(
+        workspace.id,
+        container.container_name,
+        values.portNumber,
+        values.serviceName,
+        values.public
+      )
+      if (p) {
         handleClose();
+      } else {
+        toast.error("Failed to add port");
       }
     },
   });

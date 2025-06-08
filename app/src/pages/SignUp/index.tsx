@@ -9,12 +9,11 @@ import {
 } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate } from "react-router-dom";
-import { LoginStatus } from "../../api/types";
-import { Http } from "../../api/http";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import { APIInitialUserExists, RetrieveCurrentUserDetails } from "../../api/common";
+import { APISignUp } from "../../api/auth";
 
 export default function SignUpPage() {
 
@@ -82,11 +81,10 @@ export default function SignUpPage() {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      let [status, code] = await Http.SignUp(values.email, values.password, values.firstName, values.lastName)
-      if (status !== LoginStatus.OK || code < 200 || code > 299) {
-        toast.error(`Error, recived status ${code}`);
+      if (await APISignUp(values.email, values.password, values.firstName, values.lastName)) {
+        navigate("/login");
       } else {
-        navigate("/login")
+        toast.error(`An unexpected error occured, try again later.`);
       }
     },
   });

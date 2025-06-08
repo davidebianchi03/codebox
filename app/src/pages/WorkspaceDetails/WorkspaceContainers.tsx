@@ -17,12 +17,11 @@ import VsCodeIcon from "../../assets/images/vscode.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
 import { InstanceSettings } from "../../types/settings";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { EditExposedPortsModal } from "./EditExposedPortsModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { RetrieveInstanceSettings } from "../../api/common";
+import { APIListWorkspaceContainers, APIListWorkspaceContainerPorts, APIRetrieveWorkspaceContainer } from "../../api/workspace";
 
 interface Props {
   workspace: Workspace;
@@ -45,16 +44,9 @@ export default function WorkspaceContainers({
 
   const FetchSelectedContainer = useCallback(
     async (containerName: string) => {
-      // fetch container details
-      var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
-        }/container/${containerName}`,
-        "GET",
-        null
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
-        setSelectedContainer(responseData);
+      const c = await APIRetrieveWorkspaceContainer(workspace.id, containerName);
+      if (c) {
+        setSelectedContainer(c);
       }
     },
     [workspace]
@@ -62,39 +54,27 @@ export default function WorkspaceContainers({
 
   const FetchSelectedContainerPorts = useCallback(
     async (containerName: string) => {
-      // fetch exposed ports
-      var [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${workspace.id
-        }/container/${containerName}/port`,
-        "GET",
-        null
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
-        setSelectedContainerExposedPorts(responseData);
+      const ports = await APIListWorkspaceContainerPorts(workspace.id, containerName);
+      if (ports) {
+        setSelectedContainerExposedPorts(ports);
       }
     },
     [workspace]
   );
 
   const FetchContainers = useCallback(async () => {
-    var [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/container`,
-      "GET",
-      null
-    );
-
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setContainers(responseData);
-      if (selectedContainer === null && responseData.length > 0) {
-        FetchSelectedContainer(responseData[0].container_name);
-        FetchSelectedContainerPorts(responseData[0].container_name);
+    const c = await APIListWorkspaceContainers(workspace.id);
+    if (c) {
+      setContainers(c);
+      if (selectedContainer === null && c.length > 0) {
+        FetchSelectedContainer(c[0].container_name);
+        FetchSelectedContainerPorts(c[0].container_name);
       }
 
-      if (selectedContainer !== null && responseData.length === 0) {
+      if (selectedContainer !== null && c.length === 0) {
         setSelectedContainer(null);
       } else {
-        var sc = (responseData as WorkspaceContainer[]).find(
+        var sc = c.find(
           (container) =>
             container.container_id === selectedContainer?.container_id
         );

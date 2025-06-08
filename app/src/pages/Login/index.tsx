@@ -2,9 +2,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardBody, Container, Input } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { LoginStatus } from "../../api/types";
-import { Http } from "../../api/http";
 import { APIInitialUserExists, RetrieveCurrentUserDetails } from "../../api/common";
+import { APILogin } from "../../api/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -44,16 +43,12 @@ export default function LoginPage() {
     }
 
     // process login
-    let [status] = await Http.Login(email, password);
-    if (status === LoginStatus.OK) {
+    const token = await APILogin(email, password);
+    if (token) {
       setError("");
       navigate(searchParams.get("next") || "/");
     } else {
-      if (status === LoginStatus.INVALID_CREDENTIALS) {
-        setError("Invalid credentials");
-      } else {
-        setError("Unknown error, check that server is reachable");
-      }
+      setError("Invalid credentials");
     }
   };
 

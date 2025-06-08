@@ -1,8 +1,7 @@
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { Workspace } from "../../types/workspace";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { APIRetrieveWorkspaceLogs } from "../../api/workspace";
 
 interface Props {
   workspace: Workspace;
@@ -14,15 +13,11 @@ export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
   const logsContainerRef = useRef<any>(null);
 
   const FetchLogs = useCallback(async () => {
-    var [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace/${workspace.id}/logs`,
-      "GET",
-      null
-    );
+    const l = await APIRetrieveWorkspaceLogs(workspace.id);
 
-    if (status === RequestStatus.OK && statusCode === 200) {
-      var scrollToBottom = (responseData.logs as string).length !== logs.length;
-      setLogs(responseData.logs);
+    if (l) {
+      var scrollToBottom = l.length !== logs.length;
+      setLogs(l);
 
       // if length of logs has changed scroll to the last row of logs
       if (scrollToBottom) {

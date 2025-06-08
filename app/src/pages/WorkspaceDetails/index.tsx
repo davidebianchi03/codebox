@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Http } from "../../api/http";
-import { RequestStatus } from "../../api/types";
 import { toast } from "react-toastify";
 import { Workspace } from "../../types/workspace";
 import { Button, Col, Container, Row } from "reactstrap";
@@ -15,7 +13,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCloudArrowUp, faGear } from "@fortawesome/free-solid-svg-icons";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
-import { WorkspaceTemplateVersion } from "../../types/templates";
+import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace, APIUpdateWorkspaceConfig } from "../../api/workspace";
+import { APIRetrieveTemplateLatestVersion } from "../../api/templates";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
@@ -26,142 +25,114 @@ export default function WorkspaceDetails() {
   const [canUpdateConfigFiles, setCanUpdateConfigFiles] = useState<boolean>(false);
 
   const FetchWorkspace = useCallback(async () => {
-    var [status, statusCode, responseData] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace/${id}`,
-      "GET",
-      null
-    );
-
-    if (status === RequestStatus.OK && statusCode === 200) {
-      setWorkspace(responseData as Workspace);
-    } else if (statusCode === 404) {
-      navigate("/");
-    } else {
-      toast.error(
-        `Failed to fetch workspace details, received status ${statusCode}`
-      );
-    }
-  }, [id, navigate]);
-
-  const HandleStartWorkspace = async () => {
-    var [status, statusCode] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace/${id}/start`,
-      "POST",
-      null
-    );
-
-    if (status === RequestStatus.OK && statusCode === 200) {
-      FetchWorkspace();
-    } else {
-      toast.error(`Failed to start workspace, received status ${statusCode}`);
-    }
-  };
-
-  const HandleStopWorkspace = async () => {
-    var [status, statusCode] = await Http.Request(
-      `${Http.GetServerURL()}/api/v1/workspace/${id}/stop`,
-      "POST",
-      null
-    );
-
-    if (status === RequestStatus.OK && statusCode === 200) {
-      FetchWorkspace();
-    } else {
-      toast.error(`Failed to stop workspace, received status ${statusCode}`);
-    }
-  };
-
-  const HandleDeleteWorkspace = async (force: boolean) => {
-    if (
-      (
-        await Swal.fire({
-          title: "Delete workspace",
-          icon: "warning",
-          text: `
-            Are you sure that you want to delete this workspace?
-            ${force && (`
-              Force-deleting a workspace may result in orphaned containers if runner errors, 
-              including connection issues or container removal failures, are encountered
-            `)}
-          `,
-          showCancelButton: true,
-          reverseButtons: true,
-          confirmButtonText: "Delete",
-          customClass: {
-            popup: "bg-dark text-light",
-            cancelButton: "btn btn-accent",
-            confirmButton: "btn btn-warning",
-          },
-        })
-      ).isConfirmed
-    ) {
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${id}`,
-        "DELETE",
-        JSON.stringify({
-          skip_errors: force,
-        })
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
-        FetchWorkspace();
+    if (id) {
+      const w = await APIRetrieveWorkspaceById(parseInt(id))
+      if (w) {
+        setWorkspace(w);
+      } else if (w === null) {
+        navigate("/");
       } else {
         toast.error(
-          `Failed to delete workspace, received status ${statusCode}`
+          `Failed to fetch workspace details, try again later`
         );
       }
     }
-  };
+  }, [id, navigate]);
 
-  const HandleUpdateConfigFiles = useCallback(async () => {
-    if (
-      (
-        await Swal.fire({
-          title: "Update configuration files",
-          text: `
-            Updating configuration files to the latest version may cause data loss. 
-            Are you sure you want to proceed?
-          `,
-          icon: "warning",
-          showCancelButton: true,
-          reverseButtons: true,
-          cancelButtonText: "Cancel",
-          confirmButtonText: "Update",
-          customClass: {
-            popup: "bg-dark text-light",
-            cancelButton: "btn btn-accent",
-            confirmButton: "btn btn-primary",
-          },
-        })
-      ).isConfirmed
-    ) {
-      var [status, statusCode] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/workspace/${id}/update-config`,
-        "POST",
-        null
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
+  const HandleStartWorkspace = useCallback(async () => {
+    if (id) {
+      if (await APIStartWorkspace(parseInt(id))) {
         FetchWorkspace();
       } else {
-        toast.error(
-          `Failed to update workspace configuration, received status ${statusCode}`
-        );
+        toast.error(`Failed to start workspace, try again later`);
+      }
+    }
+  }, [FetchWorkspace, id]);
+
+  const HandleStopWorkspace = useCallback(async () => {
+    if (id) {
+      if (await APIStopWorkspace(parseInt(id))) {
+        FetchWorkspace();
+      } else {
+        toast.error(`Failed to stop workspace, try again later`);
+      }
+    }
+  }, [FetchWorkspace, id]);
+
+  const HandleDeleteWorkspace = useCallback(async (force: boolean) => {
+    if (id) {
+      if (
+        (
+          await Swal.fire({
+            title: "Delete workspace",
+            icon: "warning",
+            text: `
+              Are you sure that you want to delete this workspace?
+              ${force && (`
+                Force-deleting a workspace may result in orphaned containers if runner errors, 
+                including connection issues or container removal failures, are encountered
+              `)}
+            `,
+            showCancelButton: true,
+            reverseButtons: true,
+            confirmButtonText: "Delete",
+            customClass: {
+              popup: "bg-dark text-light",
+              cancelButton: "btn btn-accent",
+              confirmButton: "btn btn-warning",
+            },
+          })
+        ).isConfirmed
+      ) {
+        if (await APIDeleteWorkspace(parseInt(id))) {
+          FetchWorkspace();
+        } else {
+          toast.error(
+            `Failed to delete workspace, try again later`
+          );
+        }
+      }
+    }
+  }, [FetchWorkspace, id]);
+
+  const HandleUpdateConfigFiles = useCallback(async () => {
+    if (id) {
+      if (
+        (
+          await Swal.fire({
+            title: "Update configuration files",
+            text: `
+              Updating configuration files to the latest version may cause data loss. 
+              Are you sure you want to proceed?
+            `,
+            icon: "warning",
+            showCancelButton: true,
+            reverseButtons: true,
+            cancelButtonText: "Cancel",
+            confirmButtonText: "Update",
+            customClass: {
+              popup: "bg-dark text-light",
+              cancelButton: "btn btn-accent",
+              confirmButton: "btn btn-primary",
+            },
+          })
+        ).isConfirmed
+      ) {
+        if (await APIUpdateWorkspaceConfig(parseInt(id))) {
+          FetchWorkspace();
+        } else {
+          toast.error(
+            `Failed to update workspace configuration, try again later`
+          );
+        }
       }
     }
   }, [FetchWorkspace, id]);
 
   const CheckNewTemplateVersionAvailable = useCallback(async () => {
     if (workspace) {
-      // fetch template versions
-      let [status, statusCode, responseData] = await Http.Request(
-        `${Http.GetServerURL()}/api/v1/templates/${workspace?.template_version.template}/latest-version`,
-        "GET",
-        null
-      );
-
-      if (status === RequestStatus.OK && statusCode === 200) {
-        var latestTemplateVersion = responseData as WorkspaceTemplateVersion;
+      const  latestTemplateVersion = await APIRetrieveTemplateLatestVersion(workspace?.template_version.template)
+      if (latestTemplateVersion) {
         setCanUpdateConfigFiles(latestTemplateVersion.id !== workspace?.template_version.id);
       } else {
         setCanUpdateConfigFiles(false);
