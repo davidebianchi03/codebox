@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.32 - 2025-06-08
+- moved all frontend http requests to a dedicated file
+
 # v0.0.31 - 2025-06-05
 - bug fix
 
