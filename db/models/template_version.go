@@ -16,17 +16,17 @@ import (
 
 type WorkspaceTemplateVersion struct {
 	ID             uint               `gorm:"primarykey" json:"id"`
-	TemplateID     uint               `json:"template"`
+	TemplateID     uint               `gorm:"column:template_id;" json:"template"`
 	Template       *WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;not null;" json:"-"`
-	Name           string             `gorm:"size:255;not null;" json:"name"`
-	ConfigFilePath string             `gorm:"type:text;" json:"config_file_relative_path"`
-	SourcesID      uint               `json:"-"`
+	Name           string             `gorm:"column:name; size:255;not null;" json:"name"`
+	ConfigFilePath string             `gorm:"column:config_file_path; type:text;" json:"config_file_relative_path"`
+	SourcesID      uint               `gorm:"column:sources_id;" json:"-"`
 	Sources        *File              `json:"-"`
-	Published      bool               `gorm:"default:false" json:"published"`
-	PublishedOn    *time.Time         `gorm:"default:null" json:"published_on"`
-	EditedByID     uint               `json:"-"`
+	Published      bool               `gorm:"column:published; default:false" json:"published"`
+	PublishedOn    *time.Time         `gorm:"column:published_on; default:null" json:"published_on"`
+	EditedByID     uint               `gorm:"column:edited_by_id;" json:"-"`
 	EditedBy       *User              `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
-	EditedOn       time.Time          `json:"edited_on"`
+	EditedOn       time.Time          `gorm:"column:edited_on;" json:"edited_on"`
 	CreatedAt      time.Time          `json:"-"`
 	UpdatedAt      time.Time          `json:"-"`
 	DeletedAt      gorm.DeletedAt     `gorm:"index" json:"-"`

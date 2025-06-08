@@ -9,10 +9,10 @@ import (
 
 type WorkspaceTemplate struct {
 	ID          uint           `gorm:"primarykey"  json:"id"`
-	Name        string         `gorm:"size:255;unique;not null;"  json:"name"`
-	Type        string         `gorm:"size:255;"  json:"type"`
-	Description string         `json:"description"`
-	Icon        string         `gorm:"type:text;" json:"icon"`
+	Name        string         `gorm:"column:name; size:255;unique;not null;"  json:"name"`
+	Type        string         `gorm:"column:type; size:255;"  json:"type"`
+	Description string         `gorm:"column:description;" json:"description"`
+	Icon        string         `gorm:"column:icon; type:text;" json:"icon"`
 	CreatedAt   time.Time      `gorm:"index" json:"-"`
 	UpdatedAt   time.Time      `gorm:"index" json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`

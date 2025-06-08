@@ -13,8 +13,8 @@ import (
 type File struct {
 	ID        uint           `gorm:"column:id; primarykey" json:"-"`
 	Filepath  string         `gorm:"column:filepath; not null" json:"-"` // relative path
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
+	CreatedAt time.Time      `gorm:"column:created_at;" json:"-"`
+	UpdatedAt time.Time      `gorm:"column:updated_at;" json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 

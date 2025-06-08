@@ -12,12 +12,12 @@ import (
 
 type AuthorizationCode struct {
 	ID        uint   `gorm:"primarykey"`
-	Code      string `gorm:"size:255"`
-	TokenID   uint
+	Code      string `gorm:"column:code; size:255"`
+	TokenID   uint   `gorm:"column:token_id;"`
 	Token     *Token
-	ExpiresAt time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ExpiresAt time.Time      `gorm:"column:expires_at;"`
+	CreatedAt time.Time      `gorm:"column:created_at;"`
+	UpdatedAt time.Time      `gorm:"column:updated_at;"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
