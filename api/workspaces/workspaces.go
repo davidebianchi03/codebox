@@ -2,6 +2,7 @@ package workspaces
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/work"
@@ -498,20 +499,9 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 		})
 		return
 	}
-
-	var reqBody struct {
-		SkipErrors *bool `json:"skip_errors"`
-	}
-	if err = ctx.ShouldBindBodyWithJSON(&reqBody); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"detail": "missing or invalid field",
-		})
-		return
-	}
-
 	skipErrors := false
-	if reqBody.SkipErrors != nil {
-		skipErrors = *reqBody.SkipErrors
+	if strings.ToLower(ctx.Request.URL.Query().Get("skip_errors")) == "true" {
+		skipErrors = true
 	}
 
 	workspace.Status = models.WorkspaceStatusDeleting
@@ -519,7 +509,10 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 	dbconn.DB.Save(&workspace)
 
 	// start bg task
-	bgtasks.BgTasksEnqueuer.Enqueue("delete_workspace", work.Q{"workspace_id": workspace.ID, "skip_errors": skipErrors})
+	bgtasks.BgTasksEnqueuer.Enqueue(
+		"delete_workspace",
+		work.Q{"workspace_id": workspace.ID, "skip_errors": skipErrors},
+	)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"detail": "deleting workspace...",

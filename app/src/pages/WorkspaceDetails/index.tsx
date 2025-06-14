@@ -84,7 +84,7 @@ export default function WorkspaceDetails() {
           })
         ).isConfirmed
       ) {
-        if (await APIDeleteWorkspace(parseInt(id))) {
+        if (await APIDeleteWorkspace(parseInt(id), force)) {
           FetchWorkspace();
         } else {
           toast.error(

@@ -10,9 +10,15 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
-// POST /api/v1/login
-// validate email and password and return token in response
-// also set a cookie for the token
+// login godoc
+// @Summary Login
+// @Schemes
+// @Description Login using email and password
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 204 {object} []models.Workspace
+// @Router /api/v1/templates/:templateId [put]
 func HandleLogin(ctx *gin.Context) {
 	var parsedBody struct {
 		Email    string `json:"email"`

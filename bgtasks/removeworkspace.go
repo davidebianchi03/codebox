@@ -25,7 +25,6 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	if workspace.ID <= 0 {
 		return errors.New("workspace not found")
 	}
-	defer dbconn.DB.Save(&workspace)
 
 	ri := runnerinterface.RunnerInterface{
 		Runner: workspace.Runner,
@@ -35,6 +34,7 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	if err != nil && !skipErrors {
 		workspace.AppendLogs(fmt.Sprintf("failed to remove workspace, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError
+		dbconn.DB.Save(&workspace)
 		return errors.New("failed to remove workspace")
 	}
 
@@ -46,10 +46,11 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 			details, err := ri.GetDetails(&workspace)
 			if err != nil {
 				workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
-				workspace.Status = models.WorkspaceStatusError
 				if skipErrors {
 					break
 				} else {
+					workspace.Status = models.WorkspaceStatusError
+					dbconn.DB.Save(&workspace)
 					return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
 				}
 			}
@@ -75,8 +76,9 @@ func (jobContext *Context) DeleteWorkspace(job *work.Job) error {
 	details, err := ri.GetDetails(&workspace)
 	if err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
-		workspace.Status = models.WorkspaceStatusError
 		if !skipErrors {
+			workspace.Status = models.WorkspaceStatusError
+			dbconn.DB.Save(&workspace)
 			return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
 		}
 		workspace.Status = models.WorkspaceStatusDeleting

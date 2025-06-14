@@ -1,4 +1,18 @@
 definitions:
+  models.GitWorkspaceSource:
+    properties:
+      config_file_relative_path:
+        description: path of the configuration files relative to the root of the repo
+        type: string
+      id:
+        type: integer
+      ref_name:
+        type: string
+      repository_url:
+        type: string
+      sourcesID:
+        type: integer
+    type: object
   models.Group:
     properties:
       createdAt:
@@ -9,6 +23,21 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  models.Runner:
+    properties:
+      id:
+        type: integer
+      last_contact:
+        type: string
+      name:
+        type: string
+      public_url:
+        type: string
+      type:
+        type: string
+      use_public_url:
+        type: boolean
     type: object
   models.User:
     properties:
@@ -22,8 +51,40 @@ definitions:
         type: array
       is_superuser:
         type: boolean
+      is_template_manager:
+        type: boolean
       last_name:
         type: string
+    type: object
+  models.Workspace:
+    properties:
+      config_source:
+        description: template/git
+        type: string
+      created_at:
+        type: string
+      environment_variables:
+        items:
+          type: string
+        type: array
+      git_source:
+        $ref: '#/definitions/models.GitWorkspaceSource'
+      id:
+        type: integer
+      name:
+        type: string
+      runner:
+        $ref: '#/definitions/models.Runner'
+      status:
+        type: string
+      template_version:
+        $ref: '#/definitions/models.WorkspaceTemplateVersion'
+      type:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
     type: object
   models.WorkspaceTemplate:
     properties:
@@ -42,13 +103,7 @@ definitions:
     properties:
       config_file_relative_path:
         type: string
-      createdAt:
-        type: string
-      editedBy:
-        $ref: '#/definitions/models.User'
-      editedByID:
-        type: integer
-      editedOn:
+      edited_on:
         type: string
       id:
         type: integer
@@ -56,14 +111,10 @@ definitions:
         type: string
       published:
         type: boolean
-      sourcesID:
-        type: integer
-      template:
-        $ref: '#/definitions/models.WorkspaceTemplate'
-      templateID:
-        type: integer
-      updatedAt:
+      published_on:
         type: string
+      template:
+        type: integer
     type: object
   targz.TarEntry:
     properties:
@@ -82,6 +133,8 @@ definitions:
         items:
           $ref: '#/definitions/targz.TarTreeItem'
         type: array
+      full_path:
+        type: string
       name:
         type: string
       type:
@@ -114,14 +167,6 @@ definitions:
     - path
     - type
     type: object
-  templates.CreateTemplateVersionRequestBody:
-    properties:
-      name:
-        minLength: 1
-        type: string
-    required:
-    - name
-    type: object
   templates.UpdateTemplateRequestBody:
     properties:
       description:
@@ -145,6 +190,8 @@ definitions:
     type: object
   templates.UpdateTemplateVersionRequestBody:
     properties:
+      config_file_path:
+        type: string
       name:
         minLength: 1
         type: string
@@ -196,6 +243,27 @@ paths:
       summary: Create template
       tags:
       - Templates
+  /api/v1/templates-by-name/:name:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a template by name
+      parameters:
+      - description: Template name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WorkspaceTemplate'
+      summary: Retrieve template by name
+      tags:
+      - Templates
   /api/v1/templates/:id:
     get:
       consumes:
@@ -218,27 +286,51 @@ paths:
       tags:
       - Templates
   /api/v1/templates/:templateId:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a template
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            items:
+              $ref: '#/definitions/models.WorkspaceTemplate'
+            type: array
+      summary: Delete template
+      tags:
+      - Templates
     put:
       consumes:
       - application/json
-      description: Update a template
-      parameters:
-      - description: Template data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/templates.UpdateTemplateRequestBody'
+      description: List workspaces that use a template
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            items:
+              $ref: '#/definitions/models.Workspace'
+            type: array
+      summary: List workspaces that use a template
+      tags:
+      - Templates
+  /api/v1/templates/:templateId/latest-version:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the latest template version
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.WorkspaceTemplate'
-            type: array
-      summary: Update template
+            $ref: '#/definitions/models.WorkspaceTemplateVersion'
+      summary: Retrieve the latest template version
       tags:
       - Templates
   /api/v1/templates/:templateId/versions:
@@ -256,27 +348,6 @@ paths:
               $ref: '#/definitions/models.WorkspaceTemplateVersion'
             type: array
       summary: List template versions by template
-      tags:
-      - Templates
-    post:
-      consumes:
-      - application/json
-      description: Create new template version
-      parameters:
-      - description: Template version data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/templates.CreateTemplateVersionRequestBody'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.WorkspaceTemplateVersion'
-      summary: Create new template version
       tags:
       - Templates
   /api/v1/templates/:templateId/versions/:templateId/entries:

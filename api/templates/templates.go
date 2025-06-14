@@ -85,7 +85,7 @@ func HandleRetrieveTemplate(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} models.WorkspaceTemplate
-// @Router /api/v1/templates-by-name/:ma,e [get]
+// @Router /api/v1/templates-by-name/:name [get]
 func HandleRetrieveTemplateByName(c *gin.Context) {
 	templateName, _ := c.Params.Get("templateName")
 
@@ -317,6 +317,15 @@ func HandleUpdateTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, wt)
 }
 
+// TemplateDelete godoc
+// @Summary Delete template
+// @Schemes
+// @Description Delete a template
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 204 {object} []models.WorkspaceTemplate
+// @Router /api/v1/templates/:templateId [delete]
 func HandleDeleteWorkspace(c *gin.Context) {
 	templateId, _ := c.Params.Get("templateId")
 
@@ -385,9 +394,18 @@ func HandleDeleteWorkspace(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, workspaces)
+	c.JSON(http.StatusNoContent, workspaces)
 }
 
+// ListWorkspacesByTemplate godoc
+// @Summary List workspaces that use a template
+// @Schemes
+// @Description List workspaces that use a template
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 204 {object} []models.Workspace
+// @Router /api/v1/templates/:templateId [put]
 func HandleListWorkspacesByTemplate(c *gin.Context) {
 	templateId, _ := c.Params.Get("templateId")
 

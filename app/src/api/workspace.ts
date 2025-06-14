@@ -73,9 +73,11 @@ export async function APIUpdateWorkspace(
     }
 }
 
-export async function APIDeleteWorkspace(workspaceId: number): Promise<boolean> {
+export async function APIDeleteWorkspace(workspaceId: number, skipErrors: boolean): Promise<boolean> {
     try {
-        await axios.delete<Workspace>(`/api/v1/workspace/${workspaceId}`);
+        await axios.delete<Workspace>(
+            `/api/v1/workspace/${workspaceId}?skip_errors=${skipErrors ? "true" : "false"}`
+        );
         return true
     } catch {
         return false;

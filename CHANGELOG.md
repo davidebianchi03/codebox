@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.33 - 2025-06-14
+- fixed bug on workspace deletion
+
 # v0.0.32 - 2025-06-08
 - moved all frontend http requests to a dedicated file
 

@@ -65,6 +65,38 @@
                 }
             }
         },
+        "/api/v1/templates-by-name/:name": {
+            "get": {
+                "description": "Retrieve a template by name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Retrieve template by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Template name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.WorkspaceTemplate"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/templates/:id": {
             "get": {
                 "description": "Retrieve a template by id",
@@ -99,7 +131,7 @@
         },
         "/api/v1/templates/:templateId": {
             "put": {
-                "description": "Update a template",
+                "description": "List workspaces that use a template",
                 "consumes": [
                     "application/json"
                 ],
@@ -109,26 +141,62 @@
                 "tags": [
                     "Templates"
                 ],
-                "summary": "Update template",
-                "parameters": [
-                    {
-                        "description": "Template data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
+                "summary": "List workspaces that use a template",
+                "responses": {
+                    "204": {
+                        "description": "No Content",
                         "schema": {
-                            "$ref": "#/definitions/templates.UpdateTemplateRequestBody"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Workspace"
+                            }
                         }
                     }
+                }
+            },
+            "delete": {
+                "description": "Delete a template",
+                "consumes": [
+                    "application/json"
                 ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Delete template",
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/models.WorkspaceTemplate"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/templates/:templateId/latest-version": {
+            "get": {
+                "description": "Retrieve the latest template version",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Retrieve the latest template version",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.WorkspaceTemplateVersion"
                         }
                     }
                 }
@@ -155,38 +223,6 @@
                             "items": {
                                 "$ref": "#/definitions/models.WorkspaceTemplateVersion"
                             }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create new template version",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Templates"
-                ],
-                "summary": "Create new template version",
-                "parameters": [
-                    {
-                        "description": "Template version data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/templates.CreateTemplateVersionRequestBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.WorkspaceTemplateVersion"
                         }
                     }
                 }
@@ -384,6 +420,27 @@
         }
     },
     "definitions": {
+        "models.GitWorkspaceSource": {
+            "type": "object",
+            "properties": {
+                "config_file_relative_path": {
+                    "description": "path of the configuration files relative to the root of the repo",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ref_name": {
+                    "type": "string"
+                },
+                "repository_url": {
+                    "type": "string"
+                },
+                "sourcesID": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Group": {
             "type": "object",
             "properties": {
@@ -398,6 +455,29 @@
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Runner": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "last_contact": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "public_url": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "use_public_url": {
+                    "type": "boolean"
                 }
             }
         },
@@ -419,8 +499,56 @@
                 "is_superuser": {
                     "type": "boolean"
                 },
+                "is_template_manager": {
+                    "type": "boolean"
+                },
                 "last_name": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Workspace": {
+            "type": "object",
+            "properties": {
+                "config_source": {
+                    "description": "template/git",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "environment_variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "git_source": {
+                    "$ref": "#/definitions/models.GitWorkspaceSource"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "runner": {
+                    "$ref": "#/definitions/models.Runner"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "template_version": {
+                    "$ref": "#/definitions/models.WorkspaceTemplateVersion"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
                 }
             }
         },
@@ -450,16 +578,7 @@
                 "config_file_relative_path": {
                     "type": "string"
                 },
-                "createdAt": {
-                    "type": "string"
-                },
-                "editedBy": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "editedByID": {
-                    "type": "integer"
-                },
-                "editedOn": {
+                "edited_on": {
                     "type": "string"
                 },
                 "id": {
@@ -471,17 +590,11 @@
                 "published": {
                     "type": "boolean"
                 },
-                "sourcesID": {
-                    "type": "integer"
+                "published_on": {
+                    "type": "string"
                 },
                 "template": {
-                    "$ref": "#/definitions/models.WorkspaceTemplate"
-                },
-                "templateID": {
                     "type": "integer"
-                },
-                "updatedAt": {
-                    "type": "string"
                 }
             }
         },
@@ -510,6 +623,9 @@
                     "items": {
                         "$ref": "#/definitions/targz.TarTreeItem"
                     }
+                },
+                "full_path": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -559,18 +675,6 @@
                 }
             }
         },
-        "templates.CreateTemplateVersionRequestBody": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            }
-        },
         "templates.UpdateTemplateRequestBody": {
             "type": "object",
             "required": [
@@ -609,6 +713,9 @@
                 "name"
             ],
             "properties": {
+                "config_file_path": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
