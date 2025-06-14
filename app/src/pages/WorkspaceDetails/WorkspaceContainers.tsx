@@ -180,7 +180,11 @@ export default function WorkspaceContainers({
                             className="d-flex alert rounded align-items-center px-2"
                             style={{ cursor: "pointer", height: 50 }}
                             onClick={() => {
-                              window.location.href = `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}&container_name=${selectedContainer.container_name}&server_hostname=${settings?.external_url}`;
+                              window.location.href = (
+                                `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}` +
+                                `&container_name=${selectedContainer.container_name}` +
+                                `&server_hostname=${settings?.external_url.replaceAll("https://", "").replaceAll("http://", "")}`
+                              );
                             }}
                           >
                             <img src={VsCodeIcon} alt="vscode" width={25} className="me-3" />
