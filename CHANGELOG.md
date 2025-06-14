@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.34 - 2025-06-14
+- show runner versions in admin area
+
 # v0.0.33 - 2025-06-14
 - fixed bug on workspace deletion
 
