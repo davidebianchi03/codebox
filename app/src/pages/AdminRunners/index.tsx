@@ -111,6 +111,7 @@ export function AdminRunners() {
                 <th>Type</th>
                 <th>Supported workspace types</th>
                 <th>Last contact</th>
+                <th>Version</th>
               </tr>
             </thead>
             <tbody>
@@ -161,6 +162,9 @@ export function AdminRunners() {
                             : new Date(
                               runner.last_contact
                             ).toLocaleString()}
+                        </td>
+                        <td>
+                          {runner.version.length > 0 ? runner.version : "N/A"}
                         </td>
                       </tr>
                     );

@@ -7,6 +7,7 @@ export interface Runner {
     use_public_url: boolean;
     public_url: string;
     last_contact: string;
+    version: string
 }
 
 export interface RunnerWithToken extends Runner {

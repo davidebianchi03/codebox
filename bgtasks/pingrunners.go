@@ -18,9 +18,10 @@ func (jobContext *Context) PingRunners(job *work.Job) error {
 	for _, runner := range runners {
 		ri := runnerinterface.RunnerInterface{Runner: &runner}
 
-		_, err := ri.GetRunnerVersion()
+		version, err := ri.GetRunnerVersion()
 		if err == nil {
 			now := time.Now()
+			runner.Version = version
 			runner.LastContact = &now
 			dbconn.DB.Save(&runner)
 		}

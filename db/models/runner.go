@@ -17,6 +17,7 @@ type Runner struct {
 	UsePublicUrl  bool           `gorm:"column:use_public_url; default:false;" json:"use_public_url"`
 	PublicUrl     string         `gorm:"column:public_url; type:text;" json:"public_url"`
 	LastContact   *time.Time     `gorm:"column:last_contact;" json:"last_contact"`
+	Version       string         `gorm:"column:version; default:''; size:255;" json:"version"`
 	CreatedAt     time.Time      `gorm:"column:created_at;" json:"-"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at;" json:"-"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
