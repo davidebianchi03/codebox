@@ -44,5 +44,5 @@ services:
     restart: always
 
 volumes:
-  - codeboxdb
-  - vscode_server_extensions
+  codeboxdb:
+  vscode_server_extensions:
