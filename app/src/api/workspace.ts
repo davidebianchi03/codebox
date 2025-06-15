@@ -36,7 +36,7 @@ export async function APICreateWorkspace(
     template_version_id: number,
 ): Promise<Workspace | undefined> {
     try {
-        const r = await axios.post<Workspace>(`/api/v1/workspaces`, {
+        const r = await axios.post<Workspace>(`/api/v1/workspace`, {
             name: name,
             type: type,
             runner_id: runner_id,
@@ -61,7 +61,7 @@ export async function APIUpdateWorkspace(
     environment_variables: string[],
 ): Promise<Workspace | undefined> {
     try {
-        const r = await axios.patch<Workspace>(`/api/v1/workspaces${workspaceId}`, {
+        const r = await axios.patch<Workspace>(`/api/v1/workspace${workspaceId}`, {
             git_repo_url: git_repo_url,
             git_ref_name: git_ref_name,
             config_source_path: config_source_path,
