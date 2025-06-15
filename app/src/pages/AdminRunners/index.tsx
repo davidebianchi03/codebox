@@ -103,7 +103,7 @@ export function AdminRunners() {
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
-          <Table striped className="mt-4">
+          <Table striped className="mt-4" responsive>
             <thead>
               <tr>
                 <th>#</th>

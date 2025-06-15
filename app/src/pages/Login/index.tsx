@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, CardBody, Container, Input } from "reactstrap";
+import { Button, Card, CardBody, Container, FormGroup, Input, Label } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { APIInitialUserExists, RetrieveCurrentUserDetails } from "../../api/common";
@@ -8,6 +8,7 @@ import { APILogin } from "../../api/auth";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
 
@@ -33,7 +34,7 @@ export default function LoginPage() {
     CheckIfInitialUserExists();
   }, [IsAuthenticated, CheckIfInitialUserExists]);
 
-  const SubmitLoginForm = async (event: any) => {
+  const SubmitLoginForm = useCallback(async (event: any) => {
     event.preventDefault();
 
     // validate fields
@@ -43,14 +44,14 @@ export default function LoginPage() {
     }
 
     // process login
-    const token = await APILogin(email, password);
+    const token = await APILogin(email, password, rememberMe);
     if (token) {
       setError("");
       navigate(searchParams.get("next") || "/");
     } else {
       setError("Invalid credentials");
     }
-  };
+  }, [email, navigate, password, rememberMe, searchParams]);
 
   return (
     <React.Fragment>
@@ -75,7 +76,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                <div className="mb-4">
+                <div className="mb-2">
                   <label className="form-label">Password</label>
                   <Input
                     type="password"
@@ -92,6 +93,17 @@ export default function LoginPage() {
                     {error}
                   </p>
                 )}
+                <FormGroup className="d-flex align-items-center">
+                  <Input
+                    type="checkbox"
+                    id="remeber_me"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <Label for="remeber_me" className="mt-2 ms-2">
+                    Remember me
+                  </Label>
+                </FormGroup>
                 <div className="d-flex justify-content-between">
                   <Button color="primary w-75 mx-auto" type="submit">
                     Login

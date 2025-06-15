@@ -1,10 +1,11 @@
 import axios from "axios";
 
-export async function APILogin(email: string, password: string) {
+export async function APILogin(email: string, password: string, rememberMe: boolean) {
     try {
         const r = await axios.post<{ token: string }>(`/api/v1/auth/login`, {
             email: email,
-            password: password
+            password: password,
+            remember_me: rememberMe
         });
         return r.data.token;
     } catch {

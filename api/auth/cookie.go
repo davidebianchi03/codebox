@@ -8,14 +8,15 @@ import (
 )
 
 // set authentication cookie
-func SetAuthCookie(ctx *gin.Context, token string) error {
+func SetAuthCookie(ctx *gin.Context, token string, tokenDuration int) error {
 	// Set auth cookie, duration is set to zero because
 	// token expiration has been already set in DB
 	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie(
 		config.Environment.AuthCookieName,
 		token,
-		0,
+		// 0 to set cookie for browser session
+		tokenDuration,
 		"",
 		"",
 		false,

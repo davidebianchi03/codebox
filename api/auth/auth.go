@@ -10,31 +10,35 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
-// login godoc
+type LoginRequestBody struct {
+	Email      string `json:"email" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+	RememberMe bool   `json:"remember_me"`
+}
+
+// Login godoc
 // @Summary Login
 // @Schemes
-// @Description Login using email and password
+// @Description Login
 // @Tags Templates
 // @Accept json
 // @Produce json
-// @Success 204 {object} []models.Workspace
-// @Router /api/v1/templates/:templateId [put]
+// @Param request body LoginRequestBody true "Credentials"
+// @Success 200 {object}
+// @Router /api/v1/auth/login [post]
 func HandleLogin(ctx *gin.Context) {
-	var parsedBody struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var requestBody *LoginRequestBody
 
-	err := ctx.ShouldBindBodyWithJSON(&parsedBody)
+	err := ctx.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
+			"detail": "missing or invalid field",
 		})
 		return
 	}
 
 	var user models.User
-	result := dbconn.DB.Where("email=?", parsedBody.Email).Find(&user)
+	result := dbconn.DB.Where("email=?", requestBody.Email).Find(&user)
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -49,7 +53,7 @@ func HandleLogin(ctx *gin.Context) {
 		return
 	}
 
-	if !user.CheckPassword(parsedBody.Password) {
+	if !user.CheckPassword(requestBody.Password) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"detail": "invalid credentials",
 		})
@@ -73,7 +77,12 @@ func HandleLogin(ctx *gin.Context) {
 	}
 
 	// Set auth cookie
-	SetAuthCookie(ctx, token.Token)
+	cookieDuration := 0
+	if requestBody.RememberMe {
+		cookieDuration = 3600 * 24 * 20
+	}
+
+	SetAuthCookie(ctx, token.Token, cookieDuration)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"token":      token.Token,
@@ -196,7 +205,7 @@ func HandleLogout(ctx *gin.Context) {
 	dbconn.DB.Unscoped().Delete(&token)
 
 	// clear cookies
-	SetAuthCookie(ctx, "")
+	SetAuthCookie(ctx, "", 0)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
