@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gorm.io/gorm"
 )
 
@@ -49,5 +50,10 @@ func CreateToken(user User, duration time.Duration) (Token, error) {
 		ExpirationDate: &tokenExpiration,
 		User:           user,
 	}
+
+	if err := dbconn.DB.Create(&token).Error; err != nil {
+		return Token{}, err
+	}
+
 	return token, nil
 }

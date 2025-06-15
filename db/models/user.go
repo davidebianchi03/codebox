@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"time"
 
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -102,4 +103,47 @@ func ValidatePassword(password string) error {
 		)
 	}
 	return nil
+}
+
+func CreateUser(email, firstName, lastName, password string, isSuperUser, isTemplateManager bool) (user *User, err error) {
+	password, err = HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	// create new user
+	newUser := User{
+		Email:             email,
+		FirstName:         firstName,
+		LastName:          lastName,
+		Password:          password,
+		IsSuperuser:       isSuperUser,
+		IsTemplateManager: isTemplateManager,
+	}
+
+	r := dbconn.DB.Create(&newUser)
+	if r.Error != nil {
+		return nil, r.Error
+	}
+
+	return user, nil
+}
+
+func RetrieveUserByEmail(email string) (user *User, err error) {
+	result := dbconn.DB.Where("email=?", email).Find(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected > 0 {
+		return user, nil
+	}
+	return nil, nil
+}
+
+func CountAllUsers() (count int64, err error) {
+	if err = dbconn.DB.Model(User{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

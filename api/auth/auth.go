@@ -37,30 +37,7 @@ func HandleLogin(ctx *gin.Context) {
 		return
 	}
 
-	var user models.User
-	result := dbconn.DB.Where("email=?", requestBody.Email).Find(&user)
-	if result.Error != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if user.ID == 0 {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"detail": "invalid credentials",
-		})
-		return
-	}
-
-	if !user.CheckPassword(requestBody.Password) {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"detail": "invalid credentials",
-		})
-		return
-	}
-
-	token, err := models.CreateToken(user, time.Duration(time.Hour*24*20))
+	user, err := models.RetrieveUserByEmail(requestBody.Email)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
@@ -68,15 +45,30 @@ func HandleLogin(ctx *gin.Context) {
 		return
 	}
 
-	result = dbconn.DB.Create(&token)
-	if result.Error != nil {
+	if user == nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"detail": "invalid credentials",
+		})
+		return
+	}
+
+	if !user.CheckPassword(requestBody.Password) {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"detail": "invalid credentials",
+		})
+		return
+	}
+
+	token, err := models.CreateToken(*user, time.Duration(time.Hour*24*20))
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	// Set auth cookie
+	// Set auth cookie,
+	// duration = 0 means that cookie expires when browser session ends
 	cookieDuration := 0
 	if requestBody.RememberMe {
 		cookieDuration = 3600 * 24 * 20
@@ -90,14 +82,28 @@ func HandleLogin(ctx *gin.Context) {
 	})
 }
 
+type SignUpRequestBody struct {
+	Email     string `json:"email" binding:"required,email"`
+	FirstName string `json:"first_name"  binding:"required"`
+	LastName  string `json:"last_name"  binding:"required"`
+	Password  string `json:"password"  binding:"required"`
+}
+
 // TODO: ratelimit
-// POST /api/v1/signup
-// check if a user already exists,
-// check if another user with the same email address exists
-// validate password
+// Signup godoc
+// @Summary Signup
+// @Schemes
+// @Description Signup
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Param request body SignupRequestBody true "Credentials"
+// @Success 200 {object}
+// @Router /api/v1/auth/signup [post]
 func HandleSignup(ctx *gin.Context) {
-	var usersCount int64
-	if err := dbconn.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
+	usersCount, err := models.CountAllUsers()
+
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -111,14 +117,8 @@ func HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	var parsedBody struct {
-		Email     string `json:"email" binding:"required,email"`
-		FirstName string `json:"first_name"  binding:"required"`
-		LastName  string `json:"last_name"  binding:"required"`
-		Password  string `json:"password"  binding:"required"`
-	}
-
-	err := ctx.ShouldBindBodyWithJSON(&parsedBody)
+	var requestBody *SignUpRequestBody
+	err = ctx.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"detail": err.Error(),
@@ -127,7 +127,7 @@ func HandleSignup(ctx *gin.Context) {
 	}
 
 	// validate password
-	if err := models.ValidatePassword(parsedBody.Password); err != nil {
+	if err := models.ValidatePassword(requestBody.Password); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"detail": err.Error(),
 		})
@@ -137,7 +137,7 @@ func HandleSignup(ctx *gin.Context) {
 	// check if user with the same email already exists
 	users := []models.User{}
 	r := dbconn.DB.Find(&users, map[string]interface{}{
-		"email": parsedBody.Email,
+		"email": requestBody.Email,
 	})
 
 	if r.Error != nil {
@@ -163,26 +163,16 @@ func HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	password, err := models.HashPassword(parsedBody.Password)
+	newUser, err := models.CreateUser(
+		requestBody.Email,
+		requestBody.FirstName,
+		requestBody.LastName,
+		requestBody.Password,
+		usersCount == 0,
+		usersCount == 0,
+	)
+
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	// create new user
-	newUser := models.User{
-		Email:             parsedBody.Email,
-		FirstName:         parsedBody.FirstName,
-		LastName:          parsedBody.LastName,
-		Password:          password,
-		IsSuperuser:       usersCount == 0,
-		IsTemplateManager: usersCount == 0,
-	}
-
-	r = dbconn.DB.Create(&newUser)
-	if r.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -192,8 +182,15 @@ func HandleSignup(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, newUser)
 }
 
-// /api/v1/logout
-// delete token and clear cookies
+// Logout godoc
+// @Summary Logout
+// @Schemes
+// @Description Logout
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Success 200 {object}
+// @Router /api/v1/auth/logout [post]
 func HandleLogout(ctx *gin.Context) {
 	token, err := utils.GetTokenFromContext(ctx)
 	if err != nil {
