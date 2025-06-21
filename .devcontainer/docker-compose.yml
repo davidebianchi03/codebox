@@ -40,9 +40,7 @@ services:
       - cap_net_raw
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - vscode_server:/home/vscode/.codebox/vscode-server
     restart: always
 
 volumes:
   codeboxdb:
-  vscode_server:
