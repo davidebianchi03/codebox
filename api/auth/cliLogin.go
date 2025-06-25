@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api/utils"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -29,13 +28,6 @@ func HandleCliLogin(c *gin.Context) {
 
 	token, err := models.CreateToken(user, time.Duration(time.Hour*24*90))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if err = dbconn.DB.Create(&token).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})

@@ -72,7 +72,7 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
-	_ = writer.WriteField("guid", strconv.Itoa(int(workspace.ID)))
+	_ = writer.WriteField("id", strconv.Itoa(int(workspace.ID)))
 
 	configFilePath := ""
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit && workspace.GitSource != nil {
@@ -297,7 +297,7 @@ func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
 
 func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool {
 	url := fmt.Sprintf(
-		"%s/api/v1/agent-forward/?path=%s&workspace_guid=%s&container_id=%s",
+		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
 		ri.getRunnerBaseUrl(),
 		url.QueryEscape("/"),
 		strconv.Itoa(int(container.WorkspaceID)),
@@ -339,7 +339,7 @@ func (ri *RunnerInterface) ForwardHttp(
 	req *http.Request,
 ) error {
 	url := fmt.Sprintf(
-		"%s/api/v1/agent-forward/?path=%s&workspace_guid=%s&container_id=%s",
+		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
 		ri.getRunnerBaseUrl(),
 		url.QueryEscape(path),
 		strconv.Itoa(int(workspace.ID)),
@@ -369,7 +369,7 @@ func (ri *RunnerInterface) ForwardSsh(
 	req *http.Request,
 ) error {
 	url := fmt.Sprintf(
-		"%s/api/v1/agent-forward/?path=%s&workspace_guid=%s&container_id=%s",
+		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
 		ri.getRunnerBaseUrl(),
 		url.QueryEscape("/"),
 		strconv.Itoa(int(workspace.ID)),

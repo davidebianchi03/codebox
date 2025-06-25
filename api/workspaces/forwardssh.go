@@ -74,13 +74,13 @@ func HandleForwardSsh(ctx *gin.Context) {
 		Runner: workspace.Runner,
 	}
 	if err := ri.ForwardSsh(&workspace, &container, ctx.Writer, ctx.Request); err != nil {
-		ctx.JSON(http.StatusTeapot, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusTeapot, gin.H{
-		"detail": "internal server error",
+		"detail": "connection closed",
 	})
 }

@@ -28,7 +28,7 @@ export async function APIUpdateCurrentUserDetails(firstName: string, lastName: s
 
 export async function APIRetrieveSshPublicKey(): Promise<string | undefined> {
     try {
-        const r = await axios.patch<{ public_key: string }>(`/api/v1/auth/user-ssh-public-key`);
+        const r = await axios.get<{ public_key: string }>(`/api/v1/auth/user-ssh-public-key`);
         return r.data.public_key;
     } catch {
         return undefined;
