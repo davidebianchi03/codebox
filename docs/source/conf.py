@@ -1,3 +1,4 @@
+import os
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -9,7 +10,7 @@
 project = 'codebox'
 copyright = '2025, Davide Bianchi'
 author = 'Davide Bianchi'
-version = "x.x.x"
+version = os.getenv("CI_COMMIT_TAG", "dbg-v1.0.0")
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

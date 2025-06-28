@@ -3,7 +3,6 @@ stages:
   - build_sources
   - build_and_publish_docker_image
 
-
 pages:
   stage: pages
   pages: true
@@ -24,8 +23,8 @@ pages:
   artifacts:
     paths:
       - public
-  # rules:
-  #   - if: $CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
   #   - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
 # Start of download_cli stage
