@@ -18,13 +18,12 @@ pages:
     - source .venv/bin/activate
     - cd docs
     - pip install -r requirements.txt
-    - sphinx-build -M html ./source ./build --fail-on-warning
+    - sphinx-build -M html ./source ./public --fail-on-warning
+    - mv public ..
   when: always
-  pages:
-    publish: docs/build/
   artifacts:
     paths:
-      - docs/build/
+      - public
   # rules:
   #   - if: $CI_COMMIT_TAG
 

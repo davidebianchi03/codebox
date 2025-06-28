@@ -16,3 +16,4 @@ dist/
 venv/
 *.pyc
 docs/build
+public/
