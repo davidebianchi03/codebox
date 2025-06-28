@@ -20,6 +20,8 @@ pages:
     - pip install -r requirements.txt
     - sphinx-build -M html ./source ./build --fail-on-warning
   when: always
+  pages:
+    publish: docs/build/
   artifacts:
     paths:
       - docs/build/
