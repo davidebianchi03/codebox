@@ -91,6 +91,9 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install github.com/swaggo/swag/cmd/swag@latest && \
     sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 USER root
 
 
