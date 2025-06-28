@@ -1,0 +1,4 @@
+sphinx==8.2.3
+furo==2024.8.6
+sphinx-autobuild==2024.10.3
+myst-parser==4.0.1

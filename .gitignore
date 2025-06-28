@@ -12,3 +12,7 @@ bin/
 test-vpn/
 codebox_debug
 dist/
+.venv/
+venv/
+*.pyc
+docs/build
