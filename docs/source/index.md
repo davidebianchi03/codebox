@@ -11,4 +11,5 @@ This software is still an alpha version
 :maxdepth: 2
 
 guide/server/quickstart
+guide/server/configuration
 ```
