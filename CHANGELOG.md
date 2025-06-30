@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.38 - 2025-06-30
+- Added cli command to change users password
+
 # v0.0.37 - 2025-06-28
 - bug fix
 

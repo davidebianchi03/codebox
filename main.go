@@ -1,17 +1,43 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"log"
+	"log/slog"
 	"os"
 	"strconv"
-
-	"gitlab.com/codebox4073715/codebox/bgtasks"
-	"gitlab.com/codebox4073715/codebox/config"
+	"syscall"
 
 	"gitlab.com/codebox4073715/codebox/api"
+	"gitlab.com/codebox4073715/codebox/bgtasks"
+	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gitlab.com/codebox4073715/codebox/db/models"
+	"golang.org/x/term"
 )
+
+func prepareTerminal() *term.Terminal {
+	if !term.IsTerminal(syscall.Stdin) {
+		slog.Warn("std::cin is not a terminal")
+	}
+	if !term.IsTerminal(syscall.Stdout) {
+		slog.Warn("std::cout is not a terminal")
+	}
+
+	oldState, err := term.MakeRaw(syscall.Stdin)
+	defer func() {
+		err = errors.Join(err, term.Restore(syscall.Stdin, oldState))
+	}()
+
+	screen := struct {
+		io.Reader
+		io.Writer
+	}{os.Stdin, os.Stdout}
+	terminal := term.NewTerminal(screen, "")
+	return terminal
+}
 
 func main() {
 	err := config.InitCodeBoxEnv()
@@ -33,7 +59,6 @@ func main() {
 	}
 
 	switch os.Args[1] {
-	// TODO: command to reset the password for a user
 	case "runserver":
 		err = bgtasks.InitBgTasks(config.Environment.RedisHost, config.Environment.RedisPort, uint(config.Environment.TasksConcurrency), "")
 		if err != nil {
@@ -44,6 +69,63 @@ func main() {
 		r := api.SetupRouter()
 		log.Printf("listening at 0.0.0.0:%d\n", config.Environment.ServerPort)
 		r.Run(fmt.Sprintf(":%s", strconv.Itoa(config.Environment.ServerPort)))
+		os.Exit(0)
+	case "set-password":
+		terminal := prepareTerminal()
+		fmt.Print("Enter email: ")
+		email, err := terminal.ReadLine()
+		if err != nil {
+			os.Exit(1)
+			return
+		}
+
+		password, err := terminal.ReadPassword("New password:")
+		if err != nil {
+			os.Exit(1)
+			return
+		}
+
+		passwordConfirm, err := terminal.ReadPassword("Confirm the password")
+		if err != nil {
+			os.Exit(1)
+			return
+		}
+
+		if password != passwordConfirm {
+			fmt.Println("Passwords do not match")
+			os.Exit(1)
+			return
+		}
+
+		user, err := models.RetrieveUserByEmail(email)
+		if err != nil {
+			fmt.Println("Failed to retrieve user")
+			os.Exit(1)
+			return
+		}
+
+		if user == nil {
+			fmt.Println("User not found")
+			os.Exit(1)
+			return
+		}
+
+		if err := models.ValidatePassword(password); err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+			return
+		}
+
+		password, err = models.HashPassword(password)
+		if err != nil {
+			fmt.Println("Unknown error")
+			os.Exit(1)
+			return
+		}
+		user.Password = password
+		dbconn.DB.Save(&user)
+
+		os.Exit(0)
 	default:
 		log.Fatalf("Invalid command '%s'", os.Args[1])
 		os.Exit(1)

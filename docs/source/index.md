@@ -12,4 +12,5 @@ This software is still an alpha version
 
 guide/server/quickstart
 guide/server/configuration
+guide/server/cli
 ```
