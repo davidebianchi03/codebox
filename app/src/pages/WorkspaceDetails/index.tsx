@@ -168,7 +168,7 @@ export default function WorkspaceDetails() {
   }, [FetchWorkspace, fetchInterval]);
 
   return (
-    <Container className="mt-4 mb-4">
+    <Container className="mt-4 mb-4 pb-4">
       <div className="row g-2 align-items-center mb-4">
         <div className="col">
           <div className="page-pretitle">Workspace</div>
