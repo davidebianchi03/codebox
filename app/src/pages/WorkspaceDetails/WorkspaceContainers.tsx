@@ -1,6 +1,5 @@
 import {
   Badge,
-  Button,
   Card,
   CardBody,
   CardHeader,
@@ -17,11 +16,11 @@ import VsCodeIcon from "../../assets/images/vscode.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
 import { InstanceSettings } from "../../types/settings";
-import { EditExposedPortsModal } from "./EditExposedPortsModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { RetrieveInstanceSettings } from "../../api/common";
 import { APIListWorkspaceContainers, APIListWorkspaceContainerPorts, APIRetrieveWorkspaceContainer } from "../../api/workspace";
+import { ExposedPortsDropdown } from "./ExposedPortsDropdown";
 
 interface Props {
   workspace: Workspace;
@@ -39,8 +38,6 @@ export default function WorkspaceContainers({
     useState<ContainerPort[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [settings, setSettings] = useState<InstanceSettings>();
-  const [showEditExposedPortsModal, setShowEditExposedPortaModal] =
-    useState(false);
 
   const FetchSelectedContainer = useCallback(
     async (containerName: string) => {
@@ -166,12 +163,15 @@ export default function WorkspaceContainers({
                   </Col>
                   <Col sm={7} className="ms-3">
                     <h4 className="d-flex justify-content-end mt-1">
-                      <Button
-                        color="accent"
-                        onClick={() => setShowEditExposedPortaModal(true)}
-                      >
-                        <span className="me-2">Edit exposed ports</span>
-                      </Button>
+                      {selectedContainer && (
+                        <ExposedPortsDropdown
+                          onChange={() => {
+                            FetchSelectedContainerPorts(selectedContainer.container_name);
+                          }}
+                          workspace={workspace}
+                          container={selectedContainer}
+                        />
+                      )}
                     </h4>
                     {selectedContainer && (
                       <>
@@ -256,20 +256,6 @@ export default function WorkspaceContainers({
               </>
             )}
           </CardBody>
-          {workspace && selectedContainer && (
-            <EditExposedPortsModal
-              isOpen={showEditExposedPortsModal}
-              onClose={() => {
-                setShowEditExposedPortaModal(false);
-                FetchSelectedContainerPorts(selectedContainer.container_name);
-              }}
-              onChange={() => {
-                FetchSelectedContainerPorts(selectedContainer.container_name);
-              }}
-              workspace={workspace}
-              container={selectedContainer}
-            />
-          )}
         </Card >
       )
       }

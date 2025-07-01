@@ -198,7 +198,7 @@ export async function APIDeleteWorkspaceContainerPort(
     portNumber: number,
 ): Promise<boolean> {
     try {
-        await axios.post<ContainerPort>(
+        await axios.delete<ContainerPort>(
             `/api/v1/workspace/${workspaceId}/container/${containerName}/port/${portNumber}`
         );
         return true;
