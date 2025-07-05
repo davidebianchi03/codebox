@@ -10,7 +10,28 @@ This software is still an alpha version
 ```{toctree}
 :maxdepth: 2
 
+guide/intro
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Codebox Server
+
 guide/server/quickstart
 guide/server/configuration
 guide/server/cli
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Codebox Runner
+
+guide/runner/quickstart
+
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Codebox CLI
+
 ```
