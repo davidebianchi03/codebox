@@ -5,6 +5,7 @@ import {
   CardBody,
   Col,
   Input,
+  Label,
   Row,
   Table,
 } from "reactstrap";
@@ -24,6 +25,7 @@ export function AdminRunners() {
   const [showCreateRunnerModal, setCreateRunnerModal] =
     useState<boolean>(false);
   const [runnerToken, setRunnerToken] = useState<string>("");
+  const [runnerId, setRunnerID] = useState<string>("");
 
   const FetchRunners = useCallback(async () => {
     const r = await AdminListRunners();
@@ -53,7 +55,7 @@ export function AdminRunners() {
           </Button>
         </div>
       </div>
-      {runnerToken.length > 0 && (
+      {runnerToken.length > 0 && runnerId.length > 0 && (
         <Row>
           <Col md={12}>
             <Card style={{ borderRadius: 5 }}>
@@ -65,16 +67,40 @@ export function AdminRunners() {
                     style={{ height: 25 }}
                     onClick={() => {
                       setRunnerToken("");
+                      setRunnerID("");
                     }}
                   >
                     <FontAwesomeIcon icon={faXmark} />
                   </Button>
                 </div>
                 <p>
-                  Use the following token to register the runner, it will not
+                  Use the following ID and token to register the runner, the token will not
                   longer be visible
                 </p>
                 <div className="d-flex align-items-center">
+                  <Label className="mt-2 me-6">
+                    ID
+                  </Label>
+                  <Input
+                    value={runnerId}
+                    style={{ background: "var(--tblr-primary-darken)" }}
+                    className="text-white"
+                    disabled
+                  />
+                  <Button
+                    className="bg-transparent"
+                    onClick={() => {
+                      navigator.clipboard.writeText(runnerId);
+                      toast.info("Copied to clipboard");
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faCopy} />
+                  </Button>
+                </div>
+                <div className="d-flex align-items-center mt-2">
+                  <Label className="mt-2 me-3">
+                    Token
+                  </Label>
                   <Input
                     value={runnerToken}
                     style={{ background: "var(--tblr-primary-darken)" }}
@@ -179,13 +205,15 @@ export function AdminRunners() {
       </Row>
       <CreateRunnerModal
         isOpen={showCreateRunnerModal}
-        onClose={(token) => {
+        onClose={(id, token) => {
           setCreateRunnerModal(false);
           FetchRunners();
-          if (token) {
+          if (token && id) {
             setRunnerToken(token);
+            setRunnerID(id);
           } else {
             setRunnerToken("");
+            setRunnerID("");
           }
         }}
       />

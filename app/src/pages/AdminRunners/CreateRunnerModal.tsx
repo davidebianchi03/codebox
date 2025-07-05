@@ -17,7 +17,7 @@ import { AdminCreateRunner, AdminListRunners } from "../../api/admin";
 
 interface Props {
   isOpen: boolean;
-  onClose: (token: string | null) => void;
+  onClose: (id: string | null, token: string | null) => void;
 }
 
 export function CreateRunnerModal({ isOpen, onClose }: Props) {
@@ -45,6 +45,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
       runnerName: Yup.string()
         .required("Runner name is required")
         .test(
+          "test_unique",          
           "Another runner with the same name already exists",
           async (value) => {
             const runners = await AdminListRunners();
@@ -92,23 +93,23 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
       );
 
       if (runner) {
-        HandleCloseModal(runner.token);
+        HandleCloseModal(runner.id.toString(), runner.token);
       } else {
         toast.error(`Failed to create runner, try again later`);
       }
     },
   });
 
-  const HandleCloseModal = (token: string | null) => {
+  const HandleCloseModal = (id: string | null, token: string | null) => {
     validation.resetForm();
-    onClose(token);
+    onClose(id, token);
   };
 
   return (
     <Modal
       isOpen={isOpen}
       toggle={() => {
-        HandleCloseModal(null);
+        HandleCloseModal(null, null);
       }}
       centered
       size="lg"
@@ -117,7 +118,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
     >
       <ModalHeader
         toggle={() => {
-          HandleCloseModal(null);
+          HandleCloseModal(null, null);
         }}
       >
         Add new runner
@@ -191,7 +192,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
               className="me-2"
               onClick={(e) => {
                 e.preventDefault();
-                HandleCloseModal(null);
+                HandleCloseModal(null, null);
               }}
             >
               Cancel

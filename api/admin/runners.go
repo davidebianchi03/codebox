@@ -164,6 +164,7 @@ func HandleAdminCreateRunner(c *gin.Context) {
 	bgtasks.BgTasksEnqueuer.Enqueue("ping_runners", work.Q{})
 
 	c.JSON(http.StatusCreated, gin.H{
+		"id":    runner.ID,
 		"token": token,
 	})
 }
