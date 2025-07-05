@@ -1,5 +1,9 @@
 # Changelog
 
+# v0.0.39 - 2025-07-05
+- fixed registration of a new runner
+- added docs about runners
+
 # v0.0.38 - 2025-06-30
 - Added cli command to change users password
 
