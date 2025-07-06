@@ -128,7 +128,7 @@ export async function APIUpdateTemplateVersion(
     published: boolean,
 ): Promise<WorkspaceTemplateVersion | undefined> {
     try {
-        const r = await axios.patch<WorkspaceTemplateVersion>(
+        const r = await axios.put<WorkspaceTemplateVersion>(
             `/api/v1/templates/${templateId}/versions/${versionId}`,
             {
                 name: name,

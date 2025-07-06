@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.40 - 2025-07-06
+- bug fix
+
 # v0.0.39 - 2025-07-05
 - fixed registration of a new runner
 - added docs about runners
