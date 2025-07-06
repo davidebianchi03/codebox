@@ -46,7 +46,7 @@ export async function APICreateTemplate(
     icon: string,
 ): Promise<WorkspaceTemplate | undefined> {
     try {
-        const r = await axios.put<WorkspaceTemplate>(
+        const r = await axios.post<WorkspaceTemplate>(
             `/api/v1/templates/`,
             {
                 name: name,
