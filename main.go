@@ -40,7 +40,7 @@ func prepareTerminal() *term.Terminal {
 }
 
 // @title           Codebox API
-// @version         1.0
+// @version         {{version_placeholder}}
 // @description     Codebox server
 
 // @license.name  MIT

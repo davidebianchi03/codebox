@@ -6,13 +6,20 @@ stages:
 pages:
   stage: pages
   pages: true
-  image: python:3.13-bookworm
+  image: dadebia/codebox-release-cli:latest
   variables:
     LC_ALL: C.UTF-8
     LANG: C.UTF-8
   tags:
     - docker-linux
   script:
+    # generate OpenAPI specification
+    - sed -i "s/{{version_placeholder}}/${CI_COMMIT_TAG}/g" main.go
+    - go install github.com/swaggo/swag/cmd/swag@latest
+    - swag init
+    - cp docs/swagger.yaml docs/source/_specs
+
+    # build docs using sphynx
     - python3 -m venv .venv
     - source .venv/bin/activate
     - cd docs
@@ -23,9 +30,8 @@ pages:
   artifacts:
     paths:
       - public
-  rules:
-    - if: $CI_COMMIT_TAG
-  #   - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  # rules:
+  #   - if: $CI_COMMIT_TAG
 
 # Start of download_cli stage
 download_cli:
