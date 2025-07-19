@@ -9,6 +9,8 @@ import (
 
 	"gitlab.com/codebox4073715/codebox/config"
 	"gorm.io/gorm"
+
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 )
 
 // workspace status
@@ -117,4 +119,58 @@ func (w *Workspace) GetDefaultEnvironmentVariables() []string {
 		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_ID=%d", w.Runner.ID),
 		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_NAME=%s", w.Runner.Name),
 	}
+}
+
+/*
+Filter workspaces by owner
+*/
+func ListUserWorkspaces(user User) ([]Workspace, error) {
+	workspaces := []Workspace{}
+	r := dbconn.DB.
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		Preload("Runner").
+		Preload("User").
+		Find(
+			&workspaces,
+			map[string]interface{}{
+				"user_id": user.ID,
+			},
+		)
+
+	if r.Error != nil {
+		return []Workspace{}, r.Error
+	}
+
+	return workspaces, nil
+}
+
+/*
+Retrieve a workspace by workspace id and owner.
+If workspace does not exist return nil.
+*/
+func RetrieveWorkspaceByUserAndId(user User, id uint) (*Workspace, error) {
+	workspace := Workspace{}
+	r := dbconn.DB.
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		Preload("Runner").
+		Preload("User").
+		Find(
+			&workspace,
+			map[string]interface{}{
+				"ID":      id,
+				"user_id": user.ID,
+			},
+		)
+
+	if r.Error != nil {
+		return nil, r.Error
+	}
+
+	if r.RowsAffected == 1 {
+		return &workspace, nil
+	}
+
+	return nil, nil
 }

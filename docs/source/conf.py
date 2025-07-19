@@ -15,7 +15,13 @@ version = os.getenv("CI_COMMIT_TAG", "dbg-v1.0.0")
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['myst_parser']
+extensions = [
+    'myst_parser',
+    # 'sphinxcontrib.openapi',
+    # 'sphinxcontrib.httpdomain',
+    # 'sphinx.ext.extlinks',
+    'sphinxcontrib.redoc',
+]
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -41,3 +47,15 @@ source_suffix = {
 
 # The master toctree document.
 master_doc = 'index'
+
+# redoc (Open API)
+redoc = [
+    {
+        'name': 'Codebox Server API',
+        'page': 'api/codebox-server/index',
+        'spec': '_specs/swagger.yaml',
+        'opts': {
+            'lazy-rendering': True
+        },
+    },
+]

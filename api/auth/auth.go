@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
@@ -20,11 +21,11 @@ type LoginRequestBody struct {
 // @Summary Login
 // @Schemes
 // @Description Login
-// @Tags Templates
+// @Tags Authentication
 // @Accept json
 // @Produce json
 // @Param request body LoginRequestBody true "Credentials"
-// @Success 200 {object}
+// @Success 200 {object} serializers.TokenSerializer
 // @Router /api/v1/auth/login [post]
 func HandleLogin(ctx *gin.Context) {
 	var requestBody *LoginRequestBody
@@ -76,10 +77,7 @@ func HandleLogin(ctx *gin.Context) {
 
 	SetAuthCookie(ctx, token.Token, cookieDuration)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"token":      token.Token,
-		"expiration": token.ExpirationDate,
-	})
+	ctx.JSON(http.StatusOK, serializers.LoadTokenSerializer(token))
 }
 
 type SignUpRequestBody struct {
@@ -94,11 +92,11 @@ type SignUpRequestBody struct {
 // @Summary Signup
 // @Schemes
 // @Description Signup
-// @Tags Templates
+// @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param request body SignupRequestBody true "Credentials"
-// @Success 200 {object}
+// @Param request body SignUpRequestBody true "Credentials"
+// @Success 200 {object} serializers.UserSerializer
 // @Router /api/v1/auth/signup [post]
 func HandleSignup(ctx *gin.Context) {
 	usersCount, err := models.CountAllUsers()
@@ -179,17 +177,17 @@ func HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, newUser)
+	ctx.JSON(http.StatusCreated, serializers.LoadUserSerializer(*newUser))
 }
 
 // Logout godoc
 // @Summary Logout
 // @Schemes
 // @Description Logout
-// @Tags Templates
+// @Tags Authentication
 // @Accept json
 // @Produce json
-// @Success 200 {object}
+// @Success 200 ""
 // @Router /api/v1/auth/logout [post]
 func HandleLogout(ctx *gin.Context) {
 	token, err := utils.GetTokenFromContext(ctx)

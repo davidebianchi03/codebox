@@ -13,9 +13,15 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
-/*
-GET api/v1/workspace
-*/
+// HandleListWorkspaces godoc
+// @Summary List workspaces
+// @Schemes
+// @Description List workspaces created by the current user
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} []models.Workspace
+// @Router /api/v1/workspace [get]
 func HandleListWorkspaces(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -25,9 +31,8 @@ func HandleListWorkspaces(ctx *gin.Context) {
 		return
 	}
 
-	var workspaces []models.Workspace
-	result := dbconn.DB.Preload("GitSource").Preload("TemplateVersion").Find(&workspaces, map[string]interface{}{"user_id": user.ID})
-	if result.Error != nil {
+	workspaces, err := models.ListUserWorkspaces(user)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -36,9 +41,15 @@ func HandleListWorkspaces(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, workspaces)
 }
 
-/*
-GET api/v1/workspace/:id
-*/
+// HandleRetrieveWorkspace godoc
+// @Summary Retrieve workspace by id
+// @Schemes
+// @Description Retrieve a workspace by id
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.Workspace
+// @Router /api/v1/workspace/:id [get]
 func HandleRetrieveWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
