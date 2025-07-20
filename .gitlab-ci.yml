@@ -22,6 +22,8 @@ pages:
     # build docs using sphynx
     - python3 -m venv .venv
     - source .venv/bin/activate
+    - pip install setuptools
+    - pip install wheel
     - cd docs
     - pip install -r requirements.txt
     - sphinx-build -M html ./source ./build --fail-on-warning
