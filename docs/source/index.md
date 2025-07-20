@@ -20,6 +20,7 @@ guide/intro
 guide/server/quickstart
 guide/server/configuration
 guide/server/cli
+guide/server/api
 ```
 
 ```{toctree}
