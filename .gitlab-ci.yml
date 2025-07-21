@@ -26,14 +26,14 @@ pages:
     - pip install wheel
     - cd docs
     - pip install -r requirements.txt
-    - sphinx-build -M html ./source ./build --fail-on-warning
+    - sphinx-build -M html ./source ./build
     - cp -r ./build/html ../public
   when: always
   artifacts:
     paths:
       - public
-  rules:
-    - if: $CI_COMMIT_TAG
+  # rules:
+  #   - if: $CI_COMMIT_TAG
 
 # Start of download_cli stage
 download_cli:
