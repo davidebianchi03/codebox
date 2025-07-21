@@ -35,3 +35,12 @@ func ListAvailableRunnerTypes() []RunnerChoice {
 		},
 	}
 }
+
+func RetrieveRunnerTypeByID(id string) *RunnerChoice {
+	for _, runner := range ListAvailableRunnerTypes() {
+		if runner.ID == id {
+			return &runner
+		}
+	}
+	return nil
+}

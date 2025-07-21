@@ -42,7 +42,7 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 			}
 			dbconn.DB.Save(&gitSources)
 
-			workspace.GitSource.SourcesID = gitSources.ID
+			workspace.GitSource.SourcesID = &gitSources.ID
 			workspace.GitSource.Sources = &gitSources
 			dbconn.DB.Save(&workspace)
 		}

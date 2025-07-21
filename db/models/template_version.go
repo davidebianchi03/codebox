@@ -80,6 +80,29 @@ func CountPublishedWorkspaceTemplateVersionsByTemplate(template WorkspaceTemplat
 	return count, nil
 }
 
+func RetrieveWorkspaceTemplateVersionsById(versionId uint) (*WorkspaceTemplateVersion, error) {
+	var tv *WorkspaceTemplateVersion
+	r := dbconn.DB.
+		Preload("Template").
+		Preload("Sources").
+		Find(
+			&tv,
+			map[string]interface{}{
+				"id": versionId,
+			},
+		)
+
+	if r.Error != nil {
+		return nil, r.Error
+	}
+
+	if r.RowsAffected == 0 {
+		return nil, nil
+	}
+
+	return tv, nil
+}
+
 func RetrieveWorkspaceTemplateVersionsByIdByTemplate(template WorkspaceTemplate, versionId uint) (*WorkspaceTemplateVersion, error) {
 	var tv *WorkspaceTemplateVersion
 	r := dbconn.DB.

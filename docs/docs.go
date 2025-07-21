@@ -559,8 +559,40 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Workspace"
+                                "$ref": "#/definitions/serializers.WorkspaceSerializer"
                             }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Create a workspace",
+                "parameters": [
+                    {
+                        "description": "Data for creating a workspace",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspaces.CreateWorkspaceRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
                         }
                     }
                 }
@@ -583,7 +615,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Workspace"
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
                         }
                     }
                 }
@@ -813,6 +845,37 @@ const docTemplate = `{
                 }
             }
         },
+        "serializers.GitWorkspaceSourceSerializer": {
+            "type": "object",
+            "properties": {
+                "config_file_relative_path": {
+                    "type": "string"
+                },
+                "ref_name": {
+                    "type": "string"
+                },
+                "repository_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.RunnerSerializer": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "last_contact": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "serializers.TokenSerializer": {
             "type": "object",
             "properties": {
@@ -841,6 +904,64 @@ const docTemplate = `{
                 },
                 "last_name": {
                     "type": "string"
+                }
+            }
+        },
+        "serializers.WorkspaceSerializer": {
+            "type": "object",
+            "properties": {
+                "config_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "environment_variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "git_source": {
+                    "$ref": "#/definitions/serializers.GitWorkspaceSourceSerializer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "runner": {
+                    "$ref": "#/definitions/serializers.RunnerSerializer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "template_version": {
+                    "$ref": "#/definitions/serializers.WorkspaceTemplateVersionSerializer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/serializers.UserSerializer"
+                }
+            }
+        },
+        "serializers.WorkspaceTemplateVersionSerializer": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "published": {
+                    "type": "boolean"
                 }
             }
         },
@@ -970,13 +1091,55 @@ const docTemplate = `{
                     "type": "boolean"
                 }
             }
+        },
+        "workspaces.CreateWorkspaceRequestBody": {
+            "type": "object",
+            "required": [
+                "config_source",
+                "environment_variables",
+                "name",
+                "runner_id",
+                "type"
+            ],
+            "properties": {
+                "config_source": {
+                    "type": "string"
+                },
+                "config_source_path": {
+                    "type": "string"
+                },
+                "environment_variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "git_ref_name": {
+                    "type": "string"
+                },
+                "git_repo_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "runner_id": {
+                    "type": "integer"
+                },
+                "template_version_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "{{version_placeholder}}",
 	Host:             "localhost:8080",
 	BasePath:         "",
 	Schemes:          []string{},

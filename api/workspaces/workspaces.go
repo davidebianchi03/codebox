@@ -2,10 +2,12 @@ package workspaces
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/work"
+	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/config"
@@ -20,7 +22,7 @@ import (
 // @Tags Workspaces
 // @Accept json
 // @Produce json
-// @Success 200 {object} []models.Workspace
+// @Success 200 {object} []serializers.WorkspaceSerializer
 // @Router /api/v1/workspace [get]
 func HandleListWorkspaces(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
@@ -38,7 +40,7 @@ func HandleListWorkspaces(ctx *gin.Context) {
 		})
 		return
 	}
-	ctx.JSON(http.StatusOK, workspaces)
+	ctx.JSON(http.StatusOK, serializers.LoadMultipleWorkspaceSerializer(workspaces))
 }
 
 // HandleRetrieveWorkspace godoc
@@ -48,7 +50,7 @@ func HandleListWorkspaces(ctx *gin.Context) {
 // @Tags Workspaces
 // @Accept json
 // @Produce json
-// @Success 200 {object} models.Workspace
+// @Success 200 {object} serializers.WorkspaceSerializer
 // @Router /api/v1/workspace/:id [get]
 func HandleRetrieveWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
@@ -67,46 +69,57 @@ func HandleRetrieveWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Preload("GitSource").Preload("TemplateVersion").Find(
-		&workspace,
-		map[string]interface{}{"ID": id, "user_id": user.ID},
-	)
+	workspaceId, err := strconv.Atoi(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspce not found",
+		})
+		return
+	}
 
-	if result.Error != nil {
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, uint(workspaceId))
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if result.RowsAffected == 0 {
+	if workspace == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, workspace)
+	ctx.JSON(http.StatusOK, *serializers.LoadWorkspaceSerializer(workspace))
 }
 
-/*
-POST api/v1/workspace
-*/
-func HandleCreateWorkspace(c *gin.Context) {
-	var parsedBody struct {
-		Name                 string   `json:"name" binding:"required"`
-		Type                 string   `json:"type" binding:"required"`
-		RunnerID             uint     `json:"runner_id" binding:"required"`
-		ConfigSource         string   `json:"config_source" binding:"required"`
-		TemplateVersionID    uint     `json:"template_version_id"`
-		GitRepoUrl           string   `json:"git_repo_url"`
-		GitRefName           string   `json:"git_ref_name"`
-		ConfigSourceFilePath string   `json:"config_source_path"`
-		EnvironmentVariables []string `json:"environment_variables" binding:"required"`
-	}
+type CreateWorkspaceRequestBody struct {
+	Name                 string   `json:"name" binding:"required"`
+	Type                 string   `json:"type" binding:"required"`
+	RunnerID             uint     `json:"runner_id" binding:"required"`
+	ConfigSource         string   `json:"config_source" binding:"required"`
+	TemplateVersionID    uint     `json:"template_version_id"`
+	GitRepoUrl           string   `json:"git_repo_url"`
+	GitRefName           string   `json:"git_ref_name"`
+	ConfigSourceFilePath string   `json:"config_source_path"`
+	EnvironmentVariables []string `json:"environment_variables" binding:"required"`
+}
 
-	err := c.ShouldBindBodyWithJSON(&parsedBody)
+// HandleRetrieveWorkspace godoc
+// @Summary Create a workspace
+// @Schemes
+// @Description Create a new workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param request body CreateWorkspaceRequestBody true "Data for creating a workspace"
+// @Success 201 {object} serializers.WorkspaceSerializer
+// @Router /api/v1/workspace [post]
+func HandleCreateWorkspace(c *gin.Context) {
+	var requestBody *CreateWorkspaceRequestBody
+	err := c.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": err.Error(),
@@ -122,15 +135,8 @@ func HandleCreateWorkspace(c *gin.Context) {
 		return
 	}
 
-	workspaceTypeFound := false
-	for _, t := range config.ListWorkspaceTypes() {
-		if t.ID == parsedBody.Type {
-			workspaceTypeFound = true
-			break
-		}
-	}
-
-	if !workspaceTypeFound {
+	wt := config.RetrieveWorkspaceType(requestBody.Type)
+	if wt == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": "invalid workspace type",
 		})
@@ -138,40 +144,41 @@ func HandleCreateWorkspace(c *gin.Context) {
 	}
 
 	// validate runner
-	runner := &models.Runner{}
-	r := dbconn.DB.First(&runner, map[string]interface{}{
-		"ID": parsedBody.RunnerID,
-	})
-
-	if r.Error != nil {
+	runner, err := models.RetrieveRunnerByID(requestBody.RunnerID)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if r.RowsAffected <= 0 {
+	if runner == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": "runner matching runner_id and type not found",
 		})
 		return
 	}
 
-	typeFound := false
+	rt := config.RetrieveRunnerTypeByID(runner.Type)
+	if rt == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "runner matching runner_id and type not found",
+		})
+		return
+	}
 
-	for _, rt := range config.ListAvailableRunnerTypes() {
-		if rt.ID == runner.Type {
-			for _, wt := range rt.SupportedTypes {
-				if wt.ID == parsedBody.Type {
-					typeFound = true
-				}
-			}
+	// check if the runner supports the requested workspace type
+	supported := false
+	for _, supportedType := range rt.SupportedTypes {
+		if supportedType.ID == wt.ID {
+			supported = true
+			break
 		}
 	}
 
-	if !typeFound {
+	if !supported {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "runner matching runner_id and type not found",
+			"detail": "runner does not support the requested workspace type",
 		})
 		return
 	}
@@ -180,37 +187,40 @@ func HandleCreateWorkspace(c *gin.Context) {
 	// validate workspace configuration source
 	var gitSource *models.GitWorkspaceSource
 	var templateVersion *models.WorkspaceTemplateVersion
-	if parsedBody.ConfigSource == models.WorkspaceConfigSourceGit {
-		if parsedBody.GitRepoUrl == "" {
+	if requestBody.ConfigSource == models.WorkspaceConfigSourceGit {
+		if requestBody.GitRepoUrl == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"detail": "missing param 'git_repo_url",
 			})
 			return
 		}
-		if parsedBody.ConfigSourceFilePath == "" {
+		if requestBody.ConfigSourceFilePath == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"detail": "missing param 'config_source_path",
 			})
 			return
 		}
 
-		gitSource = &models.GitWorkspaceSource{
-			RepositoryURL:  parsedBody.GitRepoUrl,
-			RefName:        parsedBody.GitRefName,
-			ConfigFilePath: parsedBody.ConfigSourceFilePath,
-		}
+		gitSource, err = models.CreateGitWorkspaceSource(
+			requestBody.GitRepoUrl,
+			requestBody.GitRefName,
+			requestBody.ConfigSourceFilePath,
+		)
 
-		r := dbconn.DB.Create(gitSource)
-		if r.Error != nil {
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"detail": "internal server error",
 			})
 			return
 		}
-	} else if parsedBody.ConfigSource == models.WorkspaceConfigSourceTemplate {
-		dbconn.DB.Preload("Template").First(&templateVersion, map[string]interface{}{
-			"ID": parsedBody.TemplateVersionID,
-		})
+	} else if requestBody.ConfigSource == models.WorkspaceConfigSourceTemplate {
+		templateVersion, err = models.RetrieveWorkspaceTemplateVersionsById(requestBody.TemplateVersionID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "internal server error",
+			})
+			return
+		}
 
 		if templateVersion == nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -219,7 +229,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 			return
 		}
 
-		if templateVersion.Template.Type != parsedBody.Type {
+		if templateVersion.Template.Type != requestBody.Type {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"detail": "requested template version does not exist",
 			})
@@ -232,33 +242,18 @@ func HandleCreateWorkspace(c *gin.Context) {
 		return
 	}
 
-	// create new database row
-	var templateVersionID *uint
-	if templateVersion != nil {
-		templateVersionID = &templateVersion.ID
-	}
+	workspace, err := models.CreateWorkspace(
+		requestBody.Name,
+		&currentUser,
+		requestBody.Type,
+		runner,
+		requestBody.ConfigSource,
+		templateVersion,
+		gitSource,
+		requestBody.EnvironmentVariables,
+	)
 
-	var gitSourceID *uint
-	if gitSource != nil {
-		gitSourceID = &gitSource.ID
-	}
-
-	workspace := models.Workspace{
-		Name:                 parsedBody.Name,
-		User:                 &currentUser,
-		Status:               models.WorkspaceStatusStarting,
-		Type:                 parsedBody.Type,
-		Runner:               runner,
-		ConfigSource:         parsedBody.ConfigSource,
-		TemplateVersionID:    templateVersionID,
-		TemplateVersion:      templateVersion,
-		GitSourceID:          gitSourceID,
-		GitSource:            gitSource,
-		EnvironmentVariables: parsedBody.EnvironmentVariables,
-	}
-
-	r = dbconn.DB.Create(&workspace)
-	if r.Error != nil {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})

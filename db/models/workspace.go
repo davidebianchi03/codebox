@@ -174,3 +174,55 @@ func RetrieveWorkspaceByUserAndId(user User, id uint) (*Workspace, error) {
 
 	return nil, nil
 }
+
+/*
+Create a new workspace, this function will add new row to the database.
+It will not start the workspace, it will only create the database entry.
+*/
+func CreateWorkspace(
+	name string,
+	user *User,
+	workspaceType string,
+	runner *Runner,
+	configSource string,
+	templateVersion *WorkspaceTemplateVersion,
+	gitSource *GitWorkspaceSource,
+	environmentVariables []string,
+) (*Workspace, error) {
+
+	var templateVersionID *uint
+	if templateVersion != nil {
+		templateVersionID = &templateVersion.ID
+	} else {
+		templateVersionID = nil
+	}
+
+	var gitSourceID *uint
+	if gitSource != nil {
+		gitSourceID = &gitSource.ID
+	} else {
+		gitSourceID = nil
+	}
+
+	workspace := Workspace{
+		Name:                 name,
+		UserID:               user.ID,
+		User:                 user,
+		Status:               WorkspaceStatusStarting,
+		Type:                 workspaceType,
+		RunnerID:             runner.ID,
+		Runner:               runner,
+		ConfigSource:         configSource,
+		TemplateVersionID:    templateVersionID,
+		TemplateVersion:      templateVersion,
+		GitSourceID:          gitSourceID,
+		GitSource:            gitSource,
+		EnvironmentVariables: environmentVariables,
+	}
+
+	r := dbconn.DB.Create(&workspace)
+	if r.Error != nil {
+		return nil, r.Error
+	}
+	return &workspace, nil
+}

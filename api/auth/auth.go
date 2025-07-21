@@ -77,7 +77,7 @@ func HandleLogin(ctx *gin.Context) {
 
 	SetAuthCookie(ctx, token.Token, cookieDuration)
 
-	ctx.JSON(http.StatusOK, serializers.LoadTokenSerializer(token))
+	ctx.JSON(http.StatusOK, serializers.LoadTokenSerializer(&token))
 }
 
 type SignUpRequestBody struct {
@@ -177,7 +177,7 @@ func HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, serializers.LoadUserSerializer(*newUser))
+	ctx.JSON(http.StatusCreated, serializers.LoadUserSerializer(newUser))
 }
 
 // Logout godoc
