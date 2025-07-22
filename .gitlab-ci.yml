@@ -20,6 +20,7 @@ pages:
     - cp docs/swagger.yaml docs/source/_specs
 
     # build docs using sphynx
+    - export CI_COMMIT_TAG=v1.1.1
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install setuptools
