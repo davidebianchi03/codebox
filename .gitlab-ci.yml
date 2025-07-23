@@ -13,7 +13,6 @@ pages:
   tags:
     - docker-linux
   script:
-    - export CI_COMMIT_TAG=v1.1.1
     # generate OpenAPI specification
     - sed -i "s/{{version_placeholder}}/${CI_COMMIT_TAG}/g" main.go
     - go install github.com/swaggo/swag/cmd/swag@latest
@@ -33,8 +32,8 @@ pages:
   artifacts:
     paths:
       - public
-  # rules:
-  #   - if: $CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
 
 # Start of download_cli stage
 download_cli:
