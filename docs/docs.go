@@ -12,7 +12,7 @@ const docTemplate = `{
         "contact": {},
         "license": {
             "name": "MIT",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "url": "https://mit-license.org"
         },
         "version": "{{.Version}}"
     },
@@ -598,6 +598,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/workspace-types": {
+            "get": {
+                "description": "List workspace types",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "List workspace types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceTypeSerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace/:id": {
             "get": {
                 "description": "Retrieve a workspace by id",
@@ -617,6 +640,142 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/serializers.WorkspaceSerializer"
                         }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Update a workspace",
+                "parameters": [
+                    {
+                        "description": "Data to update a workspace",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspaces.CreateWorkspaceRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Delete a workspace",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:id/start": {
+            "post": {
+                "description": "Start a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Start a workspace",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:id/stop": {
+            "post": {
+                "description": "Stop a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Stop a workspace",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/logs": {
+            "get": {
+                "description": "Retrieve workspace logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Retrieve workspace logs",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/update-config": {
+            "post": {
+                "description": "Update workspace configuration, retrieving the configuration files from the git repository or template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Update workspace configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -962,6 +1121,26 @@ const docTemplate = `{
                 }
             }
         },
+        "serializers.WorkspaceTypeSerializer": {
+            "type": "object",
+            "properties": {
+                "config_files_default_path": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "supported_config_sources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "targz.TarEntry": {
             "type": "object",
             "properties": {
@@ -1136,7 +1315,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "v1.1.1",
+	Version:          "{{version_placeholder}}",
 	Host:             "localhost:8080",
 	BasePath:         "",
 	Schemes:          []string{},
