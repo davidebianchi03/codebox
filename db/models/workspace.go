@@ -226,3 +226,43 @@ func CreateWorkspace(
 	}
 	return &workspace, nil
 }
+
+/*
+Update a workspace
+*/
+func UpdateWorkspace(
+	workspace *Workspace,
+	name string,
+	status string,
+	runner *Runner,
+	configSource string,
+	templateVersion *WorkspaceTemplateVersion,
+	gitSource *GitWorkspaceSource,
+	environmentVariables []string,
+) (*Workspace, error) {
+
+	workspace.Name = name
+	workspace.Status = status
+	workspace.RunnerID = runner.ID
+	workspace.Runner = runner
+	workspace.ConfigSource = configSource
+	if templateVersion != nil {
+		workspace.TemplateVersionID = &templateVersion.ID
+	} else {
+		workspace.TemplateVersionID = nil
+	}
+	workspace.TemplateVersion = templateVersion
+	if gitSource != nil {
+		workspace.GitSourceID = &gitSource.ID
+	} else {
+		workspace.GitSourceID = nil
+	}
+	workspace.GitSource = gitSource
+	workspace.EnvironmentVariables = environmentVariables
+
+	if err := dbconn.DB.Save(&workspace).Error; err != nil {
+		return nil, err
+	}
+
+	return workspace, nil
+}

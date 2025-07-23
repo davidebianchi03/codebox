@@ -11,7 +11,6 @@ import (
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/config"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -266,9 +265,15 @@ func HandleCreateWorkspace(c *gin.Context) {
 	c.JSON(http.StatusCreated, workspace)
 }
 
-/*
-POST api/v1/workspace/:id/stop
-*/
+// HandleStopWorkspace godoc
+// @Summary Stop a workspace
+// @Schemes
+// @Description Stop a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.WorkspaceSerializer
+// @Router /api/v1/workspace/:id/stop [post]
 func HandleStopWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -278,28 +283,23 @@ func HandleStopWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	id, found := ctx.Params.Get("workspaceId")
-	if !found {
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Preload("GitSource").Preload("TemplateVersion").Find(
-		&workspace,
-		map[string]interface{}{"ID": id, "user_id": user.ID},
-	)
-
-	if result.Error != nil {
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if result.RowsAffected == 0 {
+	if workspace == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
@@ -313,21 +313,41 @@ func HandleStopWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	workspace.Status = models.WorkspaceStatusStopping
+	workspace, err = models.UpdateWorkspace(
+		workspace,
+		workspace.Name,
+		models.WorkspaceStatusStopping,
+		workspace.Runner,
+		workspace.ConfigSource,
+		workspace.TemplateVersion,
+		workspace.GitSource,
+		workspace.EnvironmentVariables,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
 	workspace.ClearLogs()
-	dbconn.DB.Save(&workspace)
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("stop_workspace", work.Q{"workspace_id": workspace.ID})
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"detail": "stopping workspace...",
-	})
+	ctx.JSON(http.StatusOK, serializers.LoadWorkspaceSerializer(workspace))
 }
 
-/*
-POST api/v1/workspace/:id/start
-*/
+// HandleStartWorkspace godoc
+// @Summary Start a workspace
+// @Schemes
+// @Description Start a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.WorkspaceSerializer
+// @Router /api/v1/workspace/:id/start [post]
 func HandleStartWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -337,24 +357,23 @@ func HandleStartWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	id, found := ctx.Params.Get("workspaceId")
-	if !found {
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
-	if result.Error != nil {
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if result.RowsAffected == 0 {
+	if workspace == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
@@ -368,21 +387,49 @@ func HandleStartWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	workspace.Status = models.WorkspaceStatusStarting
+	workspace, err = models.UpdateWorkspace(
+		workspace,
+		workspace.Name,
+		models.WorkspaceStatusStarting,
+		workspace.Runner,
+		workspace.ConfigSource,
+		workspace.TemplateVersion,
+		workspace.GitSource,
+		workspace.EnvironmentVariables,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
 	workspace.ClearLogs()
-	dbconn.DB.Save(&workspace)
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"detail": "starting workspace...",
-	})
+	ctx.JSON(http.StatusOK, serializers.LoadWorkspaceSerializer(workspace))
 }
 
-/*
-PUT/PATCH api/v1/workspace/:id
-*/
+type UpdateWorkspaceRequestBody struct {
+	GitRepoUrl           *string   `json:"git_repo_url"`
+	GitRefName           *string   `json:"git_ref_name"`
+	ConfigSourcePath     *string   `json:"config_source_path"`
+	EnvironmentVariables *[]string `json:"environment_variables"`
+}
+
+// HandleUpdateWorkspace godoc
+// @Summary Update a workspace
+// @Schemes
+// @Description Update a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param request body CreateWorkspaceRequestBody true "Data to update a workspace"
+// @Success 200 {object} serializers.WorkspaceSerializer
+// @Router /api/v1/workspace/:id [put]
 func HandleUpdateWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -391,25 +438,16 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		})
 		return
 	}
-
-	id, found := ctx.Params.Get("workspaceId")
-	if !found {
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var workspace *models.Workspace
-	result := dbconn.DB.
-		Preload("Runner").
-		Preload("GitSource").
-		Preload("TemplateVersion").
-		Find(
-			&workspace,
-			map[string]interface{}{"ID": id, "user_id": user.ID},
-		)
-	if result.Error != nil {
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -430,13 +468,7 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	var reqBody struct {
-		GitRepoUrl           *string   `json:"git_repo_url"`
-		GitRefName           *string   `json:"git_ref_name"`
-		ConfigSourcePath     *string   `json:"config_source_path"`
-		EnvironmentVariables *[]string `json:"environment_variables"`
-	}
-
+	var reqBody UpdateWorkspaceRequestBody
 	if err := ctx.ShouldBindBodyWithJSON(&reqBody); err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{
 			"detail": "missing or invalid request argument",
@@ -445,34 +477,55 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 	}
 
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
-		gitSource := workspace.GitSource
-		if reqBody.GitRepoUrl != nil {
-			gitSource.RepositoryURL = *reqBody.GitRepoUrl
+		gitSource, err := models.UpdateGitWorkspaceSource(
+			workspace.GitSource,
+			*reqBody.GitRepoUrl,
+			*reqBody.GitRefName,
+			*reqBody.ConfigSourcePath,
+		)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "internal server error",
+			})
+			return
 		}
 
-		if reqBody.GitRefName != nil {
-			gitSource.RefName = *reqBody.GitRefName
-		}
-
-		if reqBody.ConfigSourcePath != nil {
-			gitSource.ConfigFilePath = *reqBody.ConfigSourcePath
-		}
-		dbconn.DB.Save(&gitSource)
-	} else {
-		panic("not implemented")
+		workspace.GitSource = gitSource
 	}
 
 	if reqBody.EnvironmentVariables != nil {
-		workspace.EnvironmentVariables = *reqBody.EnvironmentVariables
+		workspace, err = models.UpdateWorkspace(
+			workspace,
+			workspace.Name,
+			workspace.Status,
+			workspace.Runner,
+			workspace.ConfigSource,
+			workspace.TemplateVersion,
+			workspace.GitSource,
+			*reqBody.EnvironmentVariables,
+		)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "internal server error",
+			})
+			return
+		}
 	}
 
-	dbconn.DB.Save(&workspace)
 	ctx.JSON(http.StatusOK, workspace)
 }
 
-/*
-DELETE api/v1/workspace/:id
-*/
+// HandleDeleteWorkspace godoc
+// @Summary Delete a workspace
+// @Schemes
+// @Description Delete a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /api/v1/workspace/:id [delete]
 func HandleDeleteWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -482,37 +535,53 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	id, found := ctx.Params.Get("workspaceId")
-	if !found {
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
-	if result.Error != nil {
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if result.RowsAffected == 0 {
+	if workspace == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
+
 	skipErrors := false
 	if strings.ToLower(ctx.Request.URL.Query().Get("skip_errors")) == "true" {
 		skipErrors = true
 	}
 
-	workspace.Status = models.WorkspaceStatusDeleting
+	workspace, err = models.UpdateWorkspace(
+		workspace,
+		workspace.Name,
+		models.WorkspaceStatusDeleting,
+		workspace.Runner,
+		workspace.ConfigSource,
+		workspace.TemplateVersion,
+		workspace.GitSource,
+		workspace.EnvironmentVariables,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
 	workspace.ClearLogs()
-	dbconn.DB.Save(&workspace)
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue(
@@ -525,9 +594,15 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 	})
 }
 
-/*
-POST api/v1/workspace/:workspaceId/update-config
-*/
+// HandleDeleteWorkspace godoc
+// @Summary Update workspace configuration
+// @Schemes
+// @Description Update workspace configuration, retrieving the configuration files from the git repository or template
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/workspace/:workspaceId/update-config [post]
 func HandleUpdateWorkspaceConfiguration(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -537,24 +612,17 @@ func HandleUpdateWorkspaceConfiguration(ctx *gin.Context) {
 		return
 	}
 
-	id, found := ctx.Params.Get("workspaceId")
-	if !found {
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var workspace *models.Workspace
-	result := dbconn.DB.
-		Preload("Runner").
-		Preload("GitSource").
-		Preload("TemplateVersion").
-		Find(
-			&workspace,
-			map[string]interface{}{"ID": id, "user_id": user.ID},
-		)
-	if result.Error != nil {
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
@@ -575,11 +643,28 @@ func HandleUpdateWorkspaceConfiguration(ctx *gin.Context) {
 		return
 	}
 
-	workspace.Status = models.WorkspaceStatusStarting
+	workspace, err = models.UpdateWorkspace(
+		workspace,
+		workspace.Name,
+		models.WorkspaceStatusStarting,
+		workspace.Runner,
+		workspace.ConfigSource,
+		workspace.TemplateVersion,
+		workspace.GitSource,
+		workspace.EnvironmentVariables,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
 	workspace.ClearLogs()
+
 	workspace.AppendLogs("Updating workspace configuration sources...")
 	bgtasks.BgTasksEnqueuer.Enqueue("update_workspace_config", work.Q{"workspace_id": workspace.ID})
-	dbconn.DB.Save(&workspace)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"details": "starting workspace",

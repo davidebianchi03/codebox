@@ -32,3 +32,23 @@ func CreateGitWorkspaceSource(gitRepoUrl, gitRefName, configSourceFilePath strin
 	}
 	return gitSource, nil
 }
+
+/*
+UpdateGitWorkspaceSource updates the GitWorkspaceSource with the given parameters.
+*/
+func UpdateGitWorkspaceSource(
+	gitSource *GitWorkspaceSource,
+	gitRepoUrl,
+	gitRefName,
+	configSourceFilePath string,
+) (*GitWorkspaceSource, error) {
+	gitSource.RepositoryURL = gitRepoUrl
+	gitSource.RefName = gitRefName
+	gitSource.ConfigFilePath = configSourceFilePath
+
+	r := dbconn.DB.Save(gitSource)
+	if r.Error != nil {
+		return nil, r.Error
+	}
+	return gitSource, nil
+}
