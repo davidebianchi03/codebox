@@ -679,9 +679,6 @@ const docTemplate = `{
                 },
                 "repository_url": {
                     "type": "string"
-                },
-                "sourcesID": {
-                    "type": "integer"
                 }
             }
         },
@@ -1139,7 +1136,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "{{version_placeholder}}",
+	Version:          "v1.1.1",
 	Host:             "localhost:8080",
 	BasePath:         "",
 	Schemes:          []string{},

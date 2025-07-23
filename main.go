@@ -44,7 +44,7 @@ func prepareTerminal() *term.Terminal {
 // @description     Codebox server
 
 // @license.name  MIT
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.url   https://mit-license.org
 
 // @host      localhost:8080
 func main() {

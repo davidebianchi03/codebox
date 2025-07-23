@@ -11,6 +11,7 @@ project = 'codebox'
 copyright = '2025, Davide Bianchi'
 author = 'Davide Bianchi'
 version = os.getenv("CI_COMMIT_TAG", "dbg-v1.0.0")
+server_base_url = os.getenv("CI_PAGES_URL", "http://127.0.0.1:8000")
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -25,7 +26,6 @@ extensions = [
 
 templates_path = ['_templates']
 exclude_patterns = []
-
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -59,3 +59,14 @@ redoc = [
         },
     },
 ]
+
+myst_enable_extensions = [
+    "colon_fence",
+    "html_admonition",
+    "html_image",
+    "substitution",
+]
+
+myst_substitutions = {
+    "server_base_url": server_base_url,
+}
