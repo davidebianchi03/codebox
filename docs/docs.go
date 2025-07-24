@@ -740,6 +740,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/workspace/:workspaceId/": {
+            "get": {
+                "description": "List all containers for a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "ListWorkspaceContainersByWorkspace",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.WorkspaceContainerSerializer"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace/:workspaceId/logs": {
             "get": {
                 "description": "Retrieve workspace logs",
@@ -1059,6 +1085,38 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "last_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.WorkspaceContainerSerializer": {
+            "type": "object",
+            "properties": {
+                "agent_last_contact": {
+                    "type": "string"
+                },
+                "container_id": {
+                    "type": "string"
+                },
+                "container_image": {
+                    "type": "string"
+                },
+                "container_name": {
+                    "type": "string"
+                },
+                "container_user_id": {
+                    "type": "integer"
+                },
+                "container_user_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "workspace_path": {
                     "type": "string"
                 }
             }

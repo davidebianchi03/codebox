@@ -4,112 +4,131 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
-func ListWorkspaceContainersByWorkspace(c *gin.Context) {
-	user, err := utils.GetUserFromContext(c)
+// ListWorkspaceContainersByWorkspace godoc
+// @Summary ListWorkspaceContainersByWorkspace
+// @Schemes
+// @Description List all containers for a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} []serializers.WorkspaceContainerSerializer
+// @Router /api/v1/workspace/:workspaceId/ [get]
+func ListWorkspaceContainersByWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	id, found := c.Params.Get("workspaceId")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
+	if workspace == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var containers []models.WorkspaceContainer
-	result = dbconn.DB.Find(&containers, map[string]interface{}{"workspace_id": workspace.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+	containers, err := models.ListWorkspaceContainersByWorkspace(*workspace)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, containers)
+	ctx.JSON(
+		http.StatusOK,
+		serializers.LoadMultipleWorkspaceContainerSerializers(containers),
+	)
 }
 
-func RetrieveWorkspaceContainersByWorkspace(c *gin.Context) {
-	user, err := utils.GetUserFromContext(c)
+// RetrieveWorkspaceContainersByWorkspace godoc
+// @Summary RetrieveWorkspaceContainersByWorkspace
+// @Schemes
+// @Description Retrieve a specific container by name in a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.WorkspaceContainerSerializer
+// @Router /api/v1/workspace/:workspaceId/:containerName [get]
+func RetrieveWorkspaceContainersByWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	workspaceId, found := c.Params.Get("workspaceId")
+	workspaceId, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	containerName, found := ctx.Params.Get("containerName")
 	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	containerName, found := c.Params.Get("containerName")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, workspaceId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
+	if workspace == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var container models.WorkspaceContainer
-	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+	container, err := models.RetrieveWorkspaceContainerByName(*workspace, containerName)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
+	if container == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "container not found",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, container)
+	ctx.JSON(
+		http.StatusOK,
+		serializers.LoadWorkspaceContainerSerializer(container),
+	)
 }
