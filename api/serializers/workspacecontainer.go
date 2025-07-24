@@ -7,15 +7,15 @@ import (
 )
 
 type WorkspaceContainerSerializer struct {
-	ContainerID       string     `gorm:"column:container_id; size:255" json:"container_id"`
-	ContainerName     string     `gorm:"column:container_name; size:255" json:"container_name"`
-	ContainerImage    string     `gorm:"column:container_image; size:255" json:"container_image"`
-	ContainerUserID   uint       `gorm:"column:container_user_id;" json:"container_user_id"`
-	ContainerUserName string     `gorm:"size:255" json:"container_user_name"`
-	AgentLastContact  *time.Time `gorm:"column:agent_last_contact;" json:"agent_last_contact"`
-	WorkspacePath     string     `gorm:"column:workspace_path; size:255" json:"workspace_path"`
-	CreatedAt         time.Time  `gorm:"column:created_at;" json:"created_at"`
-	UpdatedAt         time.Time  `gorm:"column:updated_at;" json:"updated_at"`
+	ContainerID       string     `json:"container_id"`
+	ContainerName     string     `json:"container_name"`
+	ContainerImage    string     `json:"container_image"`
+	ContainerUserID   uint       `json:"container_user_id"`
+	ContainerUserName string     `json:"container_user_name"`
+	AgentLastContact  *time.Time `json:"agent_last_contact"`
+	WorkspacePath     string     `json:"workspace_path"`
+	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
 }
 
 func LoadWorkspaceContainerSerializer(container *models.WorkspaceContainer) *WorkspaceContainerSerializer {

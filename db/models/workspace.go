@@ -165,6 +165,9 @@ func RetrieveWorkspaceByUserAndId(user User, id uint) (*Workspace, error) {
 		)
 
 	if r.Error != nil {
+		if r.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
 		return nil, r.Error
 	}
 

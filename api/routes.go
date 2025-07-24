@@ -149,7 +149,7 @@ func V1ApiRoutes(router *gin.Engine) {
 			)
 			workspaceApis.POST(
 				"/:workspaceId/container/:containerName/port",
-				permissions.AuthenticationRequiredRoute(workspaces.HandleCretateContainerPortByWorkspaceContainer),
+				permissions.AuthenticationRequiredRoute(workspaces.HandleCreateContainerPortByWorkspaceContainer),
 			)
 			workspaceApis.GET(
 				"/:workspaceId/container/:containerName/port/:portNumber",

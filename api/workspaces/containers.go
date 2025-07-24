@@ -17,7 +17,7 @@ import (
 // @Accept json
 // @Produce json
 // @Success 200 {object} []serializers.WorkspaceContainerSerializer
-// @Router /api/v1/workspace/:workspaceId/ [get]
+// @Router /api/v1/workspace/:workspaceId/container [get]
 func ListWorkspaceContainersByWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -71,7 +71,7 @@ func ListWorkspaceContainersByWorkspace(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} serializers.WorkspaceContainerSerializer
-// @Router /api/v1/workspace/:workspaceId/:containerName [get]
+// @Router /api/v1/workspace/:workspaceId/container/:containerName [get]
 func RetrieveWorkspaceContainersByWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {

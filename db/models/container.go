@@ -42,6 +42,9 @@ func RetrieveWorkspaceContainerByName(workspace Workspace, containerName string)
 	var container WorkspaceContainer
 	result := dbconn.DB.Where("workspace_id = ? AND container_name = ?", workspace.ID, containerName).First(&container)
 	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &container, nil
