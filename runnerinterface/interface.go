@@ -397,7 +397,7 @@ func (ri *RunnerInterface) ForwardTcpPort(
 	container *models.WorkspaceContainer,
 	rw http.ResponseWriter,
 	req *http.Request,
-	port string,
+	port uint,
 ) error {
 	url := fmt.Sprintf(
 		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
@@ -409,7 +409,7 @@ func (ri *RunnerInterface) ForwardTcpPort(
 
 	proxyHeaders := http.Header{}
 	proxyHeaders.Set("X-CodeBox-Forward-Host", "127.0.0.1")
-	proxyHeaders.Set("X-CodeBox-Forward-Port", port)
+	proxyHeaders.Set("X-CodeBox-Forward-Port", strconv.Itoa(int(port)))
 	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
 	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "tcp_over_websocket")
 	proxyHeaders.Set("X-Codebox-Runner-Token", ri.Runner.Token)

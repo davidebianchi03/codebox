@@ -332,6 +332,7 @@ func HandleStopWorkspace(ctx *gin.Context) {
 	}
 
 	workspace.ClearLogs()
+	workspace.AppendLogs("Stopping workspace...")
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("stop_workspace", work.Q{"workspace_id": workspace.ID})
@@ -406,6 +407,7 @@ func HandleStartWorkspace(ctx *gin.Context) {
 	}
 
 	workspace.ClearLogs()
+	workspace.AppendLogs("Starting workspace...")
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
@@ -582,6 +584,7 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 	}
 
 	workspace.ClearLogs()
+	workspace.AppendLogs("Deleting workspace...")
 
 	// start bg task
 	bgtasks.BgTasksEnqueuer.Enqueue(

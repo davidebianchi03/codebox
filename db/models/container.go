@@ -28,7 +28,11 @@ ListWorkspaceContainersByWorkspace retrieves all containers for a given workspac
 */
 func ListWorkspaceContainersByWorkspace(workspace Workspace) ([]WorkspaceContainer, error) {
 	var containers []WorkspaceContainer
-	result := dbconn.DB.Where("workspace_id = ?", workspace.ID).Find(&containers)
+	result := dbconn.DB.
+		Preload("Workspace").
+		Where("workspace_id = ?", workspace.ID).
+		Find(&containers)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -40,7 +44,11 @@ RetrieveWorkspaceContainerByName retrieves a specific container by name in a wor
 */
 func RetrieveWorkspaceContainerByName(workspace Workspace, containerName string) (*WorkspaceContainer, error) {
 	var container WorkspaceContainer
-	result := dbconn.DB.Where("workspace_id = ? AND container_name = ?", workspace.ID, containerName).First(&container)
+	result := dbconn.DB.
+		Preload("Workspace").
+		Where("workspace_id = ? AND container_name = ?", workspace.ID, containerName).
+		First(&container)
+
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil

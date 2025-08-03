@@ -167,6 +167,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId/container/:containerName/forward-ssh",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleForwardSsh),
 			)
+			workspaceApis.Any(
+				"/:workspaceId/container/:containerName/forward-tcp/:portNumber",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleForwardTcp),
+			)
 			workspaceApis.POST(
 				"/:workspaceId/update-config",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspaceConfiguration),
