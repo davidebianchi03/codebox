@@ -36,3 +36,9 @@ guide/runner/quickstart
 :caption: Codebox CLI
 
 ```
+
+```{toctree}
+:maxdepth: 2
+:caption: Wokspaces
+guide/workspaces/docker-compose
+```
