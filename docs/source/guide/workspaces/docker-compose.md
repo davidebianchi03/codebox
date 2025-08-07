@@ -20,7 +20,7 @@ You can specify the working directory path using the `com.codebox.workspace_path
 You can specify the default user for container access using the `com.codebox.user` label. If not set, Codebox will attempt to automatically determine the appropriate username (e.g., `com.codebox.user=user`).
 
 ## Environment variables
-Codebox provides a set of default environment variables that can be used within your Docker Compose configuration. In addition to these, you can also define your own custom environment variables. The default environment variables include:
+Codebox provides a set of default environment variables that can be used within your Docker Compose configuration. These variables are automatically converted to lowercase before being injected. You can also define your own custom environment variables. The default environment variables include:
 - `CODEBOX_WORKSPACE_ID` – The unique identifier of the workspace
 - `CODEBOX_WORKSPACE_NAME` – The name of the workspace
 - `CODEBOX_WORKSPACE_OWNER_EMAIL` – The email address of the workspace owner
@@ -31,6 +31,26 @@ Codebox provides a set of default environment variables that can be used within 
 
 ### Example
 ```yml
+version: "3.8"
 
+services:
+    dev:
+        build:
+            context: .
+            args:
+                USER_NAME: ${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
+                USER_EMAIL: ${CODEBOX_WORKSPACE_OWNER_EMAIL:-}
+                USER_FIRST_NAME: ${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
+                USER_LAST_NAME: ${CODEBOX_WORKSPACE_OWNER_LAST_NAME:-}
+        stdin_open: true
+        tty: true
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - workspace:/home/${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
+        labels:
+            - com.codebox.user=${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
+
+volumes:
+    workspace:
 ```
-You can view the full source code here
+You can view the full source code [here](https://gitlab.com/codebox4073715/codebox/examples/docker-compose/001-basic-stack).
