@@ -41,4 +41,5 @@ guide/runner/quickstart
 :maxdepth: 2
 :caption: Wokspaces
 guide/workspaces/docker-compose
+guide/workspaces/dev-container
 ```

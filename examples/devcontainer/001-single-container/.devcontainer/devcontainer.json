@@ -1,0 +1,11 @@
+{
+	"name": "001-single-container",
+	"workspaceFolder": "/workspace",
+	"customizations": {
+		"vscode": {
+			"extensions": []
+		},
+		"settings": {}
+	},
+	"remoteUser": "vscode"
+}
