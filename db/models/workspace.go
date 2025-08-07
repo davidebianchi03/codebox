@@ -112,12 +112,12 @@ owner email, first name and last name
 func (w *Workspace) GetDefaultEnvironmentVariables() []string {
 	return []string{
 		fmt.Sprintf("CODEBOX_WORKSPACE_ID=%d", w.ID),
-		fmt.Sprintf("CODEBOX_WORKSPACE_NAME=%s", w.Name),
-		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_EMAIL=%s", w.User.Email),
-		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_FIRST_NAME=%s", w.User.FirstName),
-		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_LAST_NAME=%s", w.User.LastName),
+		fmt.Sprintf("CODEBOX_WORKSPACE_NAME=%s", strings.ToLower(w.Name)),
+		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_EMAIL=%s", strings.ToLower(w.User.Email)),
+		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_FIRST_NAME=%s", strings.ToLower(w.User.FirstName)),
+		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_LAST_NAME=%s", strings.ToLower(w.User.LastName)),
 		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_ID=%d", w.Runner.ID),
-		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_NAME=%s", w.Runner.Name),
+		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_NAME=%s", strings.ToLower(w.Runner.Name)),
 	}
 }
 
