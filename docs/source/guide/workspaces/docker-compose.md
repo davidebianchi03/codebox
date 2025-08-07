@@ -1,5 +1,5 @@
 # Docker Compose
-Codebox enables you to define the structure of a workspace using a standard docker-compose file. 
+Codebox supports docker-compose standard to define the structure of a workspace.
 
 ## Compose file
 While you can use a regular Docker Compose configuration to define your workspace, Codebox provides a set of custom labels that can be added to containers to seamlessly integrate your stack with the Codebox environment.
@@ -20,7 +20,7 @@ You can specify the working directory path using the `com.codebox.workspace_path
 You can specify the default user for container access using the `com.codebox.user` label. If not set, Codebox will attempt to automatically determine the appropriate username (e.g., `com.codebox.user=user`).
 
 ## Environment variables
-Codebox provides a set of default environment variables that can be used within your Docker Compose configuration. These variables are automatically converted to lowercase before being injected. You can also define your own custom environment variables. The default environment variables include:
+Codebox provides a set of default environment variables that can be used within your Docker Compose configuration. All of these variables — except for the email address — are automatically converted to lowercase before being injected. You can also define your own custom environment variables as needed. The default environment variables include:
 - `CODEBOX_WORKSPACE_ID` – The unique identifier of the workspace
 - `CODEBOX_WORKSPACE_NAME` – The name of the workspace
 - `CODEBOX_WORKSPACE_OWNER_EMAIL` – The email address of the workspace owner
@@ -53,4 +53,4 @@ services:
 volumes:
     workspace:
 ```
-You can view the full source code [here](https://gitlab.com/codebox4073715/codebox/examples/docker-compose/001-basic-stack).
+You can view the full source code and more examples [here](https://gitlab.com/codebox4073715/codebox/examples/docker-compose).
