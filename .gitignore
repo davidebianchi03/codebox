@@ -17,3 +17,5 @@ venv/
 *.pyc
 docs/build
 public/
+swagger.json
+swagger.yaml

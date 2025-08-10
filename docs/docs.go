@@ -10,11 +10,103 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {},
+        "license": {
+            "name": "MIT",
+            "url": "https://mit-license.org"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "description": "Login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.TokenSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "description": "Logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/signup": {
+            "post": {
+                "description": "Signup",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Signup",
+                "parameters": [
+                    {
+                        "description": "Credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.SignUpRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.UserSerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/templates": {
             "get": {
                 "description": "List all templates",
@@ -89,15 +181,6 @@ const docTemplate = `{
                     "Templates"
                 ],
                 "summary": "Retrieve template by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Template name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -121,15 +204,6 @@ const docTemplate = `{
                     "Templates"
                 ],
                 "summary": "Retrieve template by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Template ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -142,7 +216,7 @@ const docTemplate = `{
         },
         "/api/v1/templates/:templateId": {
             "put": {
-                "description": "List workspaces that use a template",
+                "description": "Update a template",
                 "consumes": [
                     "application/json"
                 ],
@@ -152,14 +226,25 @@ const docTemplate = `{
                 "tags": [
                     "Templates"
                 ],
-                "summary": "List workspaces that use a template",
+                "summary": "Update template",
+                "parameters": [
+                    {
+                        "description": "Template data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/templates.UpdateTemplateRequestBody"
+                        }
+                    }
+                ],
                 "responses": {
-                    "204": {
-                        "description": "No Content",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Workspace"
+                                "$ref": "#/definitions/models.WorkspaceTemplate"
                             }
                         }
                     }
@@ -428,9 +513,342 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/templates/:templateId/workspaces": {
+            "get": {
+                "description": "List workspaces that use a template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "List workspaces that use a template",
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Workspace"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace": {
+            "get": {
+                "description": "List workspaces created by the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "List workspaces",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Create a workspace",
+                "parameters": [
+                    {
+                        "description": "Data for creating a workspace",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspaces.CreateWorkspaceRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace-types": {
+            "get": {
+                "description": "List workspace types",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "List workspace types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceTypeSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:id": {
+            "get": {
+                "description": "Retrieve a workspace by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Retrieve workspace by id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Update a workspace",
+                "parameters": [
+                    {
+                        "description": "Data to update a workspace",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspaces.CreateWorkspaceRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Delete a workspace",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:id/start": {
+            "post": {
+                "description": "Start a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Start a workspace",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:id/stop": {
+            "post": {
+                "description": "Stop a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Stop a workspace",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/": {
+            "get": {
+                "description": "List all containers for a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "ListWorkspaceContainersByWorkspace",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.WorkspaceContainerSerializer"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/logs": {
+            "get": {
+                "description": "Retrieve workspace logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Retrieve workspace logs",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/update-config": {
+            "post": {
+                "description": "Update workspace configuration, retrieving the configuration files from the git repository or template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Update workspace configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "auth.LoginRequestBody": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "remember_me": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "auth.SignUpRequestBody": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "models.GitWorkspaceSource": {
             "type": "object",
             "properties": {
@@ -446,9 +864,6 @@ const docTemplate = `{
                 },
                 "repository_url": {
                     "type": "string"
-                },
-                "sourcesID": {
-                    "type": "integer"
                 }
             }
         },
@@ -489,6 +904,9 @@ const docTemplate = `{
                 },
                 "use_public_url": {
                     "type": "boolean"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         },
@@ -606,6 +1024,178 @@ const docTemplate = `{
                 },
                 "template": {
                     "type": "integer"
+                }
+            }
+        },
+        "serializers.GitWorkspaceSourceSerializer": {
+            "type": "object",
+            "properties": {
+                "config_file_relative_path": {
+                    "type": "string"
+                },
+                "ref_name": {
+                    "type": "string"
+                },
+                "repository_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.RunnerSerializer": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "last_contact": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.TokenSerializer": {
+            "type": "object",
+            "properties": {
+                "expiration": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.UserSerializer": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "is_superuser": {
+                    "type": "boolean"
+                },
+                "is_template_manager": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.WorkspaceContainerSerializer": {
+            "type": "object",
+            "properties": {
+                "agent_last_contact": {
+                    "type": "string"
+                },
+                "container_id": {
+                    "type": "string"
+                },
+                "container_image": {
+                    "type": "string"
+                },
+                "container_name": {
+                    "type": "string"
+                },
+                "container_user_id": {
+                    "type": "integer"
+                },
+                "container_user_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "workspace_path": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.WorkspaceSerializer": {
+            "type": "object",
+            "properties": {
+                "config_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "environment_variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "git_source": {
+                    "$ref": "#/definitions/serializers.GitWorkspaceSourceSerializer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "runner": {
+                    "$ref": "#/definitions/serializers.RunnerSerializer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "template_version": {
+                    "$ref": "#/definitions/serializers.WorkspaceTemplateVersionSerializer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/serializers.UserSerializer"
+                }
+            }
+        },
+        "serializers.WorkspaceTemplateVersionSerializer": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "published": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "serializers.WorkspaceTypeSerializer": {
+            "type": "object",
+            "properties": {
+                "config_files_default_path": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "supported_config_sources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -735,18 +1325,60 @@ const docTemplate = `{
                     "type": "boolean"
                 }
             }
+        },
+        "workspaces.CreateWorkspaceRequestBody": {
+            "type": "object",
+            "required": [
+                "config_source",
+                "environment_variables",
+                "name",
+                "runner_id",
+                "type"
+            ],
+            "properties": {
+                "config_source": {
+                    "type": "string"
+                },
+                "config_source_path": {
+                    "type": "string"
+                },
+                "environment_variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "git_ref_name": {
+                    "type": "string"
+                },
+                "git_repo_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "runner_id": {
+                    "type": "integer"
+                },
+                "template_version_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
+	Version:          "{{version_placeholder}}",
+	Host:             "localhost:8080",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Codebox API",
+	Description:      "Codebox server",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -14,3 +14,10 @@ func GetUserFromContext(ctx *gin.Context) (models.User, error) {
 
 	return token.User, nil
 }
+
+// GetTokenFromContext retrieves the token from the context
+func ErrorResponse(ctx *gin.Context, status int, message string) {
+	ctx.JSON(status, gin.H{
+		"detail": message,
+	})
+}

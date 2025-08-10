@@ -391,3 +391,34 @@ func (ri *RunnerInterface) ForwardSsh(
 	proxy.ServeHTTP(rw, req)
 	return nil
 }
+
+func (ri *RunnerInterface) ForwardTcpPort(
+	workspace *models.Workspace,
+	container *models.WorkspaceContainer,
+	rw http.ResponseWriter,
+	req *http.Request,
+	port uint,
+) error {
+	url := fmt.Sprintf(
+		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
+		ri.getRunnerBaseUrl(),
+		url.QueryEscape("/"),
+		strconv.Itoa(int(workspace.ID)),
+		container.ContainerID,
+	)
+
+	proxyHeaders := http.Header{}
+	proxyHeaders.Set("X-CodeBox-Forward-Host", "127.0.0.1")
+	proxyHeaders.Set("X-CodeBox-Forward-Port", strconv.Itoa(int(port)))
+	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
+	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "tcp_over_websocket")
+	proxyHeaders.Set("X-Codebox-Runner-Token", ri.Runner.Token)
+
+	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
+	if err != nil {
+		return err
+	}
+
+	proxy.ServeHTTP(rw, req)
+	return nil
+}

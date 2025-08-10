@@ -11,15 +11,21 @@ project = 'codebox'
 copyright = '2025, Davide Bianchi'
 author = 'Davide Bianchi'
 version = os.getenv("CI_COMMIT_TAG", "dbg-v1.0.0")
+server_base_url = os.getenv("CI_PAGES_URL", "http://127.0.0.1:8000")
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['myst_parser']
+extensions = [
+    'myst_parser',
+    # 'sphinxcontrib.openapi',
+    # 'sphinxcontrib.httpdomain',
+    # 'sphinx.ext.extlinks',
+    'sphinxcontrib.redoc',
+]
 
 templates_path = ['_templates']
 exclude_patterns = []
-
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -41,3 +47,26 @@ source_suffix = {
 
 # The master toctree document.
 master_doc = 'index'
+
+# redoc (Open API)
+redoc = [
+    {
+        'name': 'Codebox Server API',
+        'page': 'api/codebox-server/index',
+        'spec': '_specs/swagger.yaml',
+        'opts': {
+            'lazy-rendering': True
+        },
+    },
+]
+
+myst_enable_extensions = [
+    "colon_fence",
+    "html_admonition",
+    "html_image",
+    "substitution",
+]
+
+myst_substitutions = {
+    "server_base_url": server_base_url,
+}

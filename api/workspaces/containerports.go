@@ -4,374 +4,188 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
+// ListContainerPortsByWorkspaceContainer godoc
+// @Summary ListContainerPortsByWorkspaceContainer
+// @Schemes
+// @Description List all ports for a container in a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} []serializers.WorkspaceContainerPort
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/port [get]
 func ListContainerPortsByWorkspaceContainer(c *gin.Context) {
-	user, err := utils.GetUserFromContext(c)
+	container, err := retrieveContainerByWorkspaceAndName(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
 		return
 	}
 
-	workspaceId, found := c.Params.Get("workspaceId")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+	containerPorts, err := models.ListContainerPortsByWorkspaceContainer(*container)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
-
-	containerName, found := c.Params.Get("containerName")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	var container models.WorkspaceContainer
-	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "container not found",
-		})
-		return
-	}
-
-	var containerPorts []models.WorkspaceContainerPort
-	result = dbconn.DB.Find(&containerPorts, map[string]interface{}{"container_id": container.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, containerPorts)
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadMultipleWorkspaceContainerPorts(containerPorts),
+	)
 }
 
-func RetrieveContainerPortsByWorkspaceContainer(c *gin.Context) {
-	user, err := utils.GetUserFromContext(c)
+// RetrieveContainerPortsByWorkspaceContainer godoc
+// @Summary RetrieveContainerPortsByWorkspaceContainer
+// @Schemes
+// @Description Retrieve a specific port by number for a container in a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.WorkspaceContainerPort
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/port/:portNumber [get]
+func RetrieveContainerPortsByWorkspaceContainer(ctx *gin.Context) {
+	container, err := retrieveContainerByWorkspaceAndName(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
 		return
 	}
 
-	workspaceId, found := c.Params.Get("workspaceId")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+	portNumber, err := utils.GetUIntParamFromContext(ctx, "portNumber")
+	if err != nil {
+		utils.ErrorResponse(ctx, http.StatusNotFound, "port not found")
 		return
 	}
 
-	containerName, found := c.Params.Get("containerName")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+	if portNumber < 1 || portNumber > 65535 {
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "invalid port number")
+		return
+	}
+	containerPort, err := models.RetrieveContainerPortByPortNumber(*container, portNumber)
+	if err != nil {
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	portNumber, found := c.Params.Get("portNumber")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+	if containerPort == nil {
+		utils.ErrorResponse(ctx, http.StatusNotFound, "port not found")
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	var container models.WorkspaceContainer
-	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "container not found",
-		})
-		return
-	}
-
-	var containerPort models.WorkspaceContainerPort
-	result = dbconn.DB.Find(&containerPort, map[string]interface{}{"container_id": container.ID, "port_number": portNumber})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "port not found",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, containerPort)
+	ctx.JSON(
+		http.StatusOK,
+		serializers.LoadWorkspaceContainerPort(containerPort),
+	)
 }
 
-func HandleCretateContainerPortByWorkspaceContainer(c *gin.Context) {
-	user, err := utils.GetUserFromContext(c)
+type CreateContainerPortRequestBody struct {
+	PortNumber  uint   `json:"port_number" binding:"required"`
+	ServiceName string `json:"service_name" binding:"required"`
+	Public      bool   `json:"public"`
+}
+
+// HandleCreateContainerPortByWorkspaceContainer godoc
+// @Summary Expose a new port for a container in a workspace
+// @Schemes
+// @Description Expose a new port for a container in a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param request body CreateContainerPortRequestBody true "CreateContainerPortRequestBody	"
+// @Success 201 {object} serializers.WorkspaceContainerPort
+// @Router/api/v1/workspace/:workspaceId/container/:containerName/port [post]
+func HandleCreateContainerPortByWorkspaceContainer(c *gin.Context) {
+	container, err := retrieveContainerByWorkspaceAndName(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
 		return
 	}
 
-	workspaceId, found := c.Params.Get("workspaceId")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	containerName, found := c.Params.Get("containerName")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	var container models.WorkspaceContainer
-	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "container not found",
-		})
-		return
-	}
-
-	var reqBody struct {
-		PortNumber  uint   `json:"port_number" binding:"required"`
-		ServiceName string `json:"service_name" binding:"required"`
-		Public      bool   `json:"public"`
-	}
-
+	var reqBody CreateContainerPortRequestBody
 	if err := c.ShouldBindBodyWithJSON(&reqBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "missing or invalid request argument",
-		})
+		utils.ErrorResponse(c, http.StatusBadRequest, "missing or invalid request argument")
 		return
 	}
 
 	if reqBody.PortNumber < 1 || reqBody.PortNumber > 65535 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "invalid port number",
-		})
+		utils.ErrorResponse(c, http.StatusBadRequest, "invalid port number")
 		return
 	}
 
-	var count int64
-
-	if err := dbconn.DB.
-		Model(&models.WorkspaceContainerPort{}).
-		Where(map[string]interface{}{
-			"container_id": container.ID,
-			"port_number":  reqBody.PortNumber,
-		}).Count(&count).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	port, err := models.RetrieveContainerPortByPortNumber(*container, reqBody.PortNumber)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	if count > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "this port is already exposed",
-		})
+	if port != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "this port is already exposed")
 		return
 	}
 
-	if err := dbconn.DB.
-		Model(&models.WorkspaceContainerPort{}).
-		Where(map[string]interface{}{
-			"container_id": container.ID,
-			"service_name": reqBody.ServiceName,
-		}).Count(&count).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	port, err = models.RetrieveContainerPortByServiceName(*container, reqBody.ServiceName)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	if count > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "another port with the same name already exists",
-		})
+	if port != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "this service name is already exposed")
 		return
 	}
 
-	containerPort := models.WorkspaceContainerPort{
-		ContainerID: container.ID,
-		ServiceName: reqBody.ServiceName,
-		PortNumber:  uint(reqBody.PortNumber),
-		Public:      reqBody.Public,
+	containerPort, err := models.CreateContainerPort(
+		*container,
+		reqBody.ServiceName,
+		reqBody.PortNumber,
+		reqBody.Public,
+	)
+
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
 	}
 
-	dbconn.DB.Save(&containerPort)
-	c.JSON(http.StatusCreated, containerPort)
+	c.JSON(
+		http.StatusCreated,
+		serializers.LoadWorkspaceContainerPort(containerPort),
+	)
 }
 
+// HandleDeleteContainerPortByWorkspaceContainer godoc
+// @Summary DeleteContainerPortByWorkspaceContainer
+// @Schemes
+// @Description Delete a specific port by number for a container in a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router/api/v1/workspace/:workspaceId/container/:containerName/port/:portNumber [delete]
 func HandleDeleteContainerPortByWorkspaceContainer(c *gin.Context) {
-	user, err := utils.GetUserFromContext(c)
+	container, err := retrieveContainerByWorkspaceAndName(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
 		return
 	}
 
-	workspaceId, found := c.Params.Get("workspaceId")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+	portNumber, err := utils.GetUIntParamFromContext(c, "portNumber")
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "port not found")
 		return
 	}
 
-	containerName, found := c.Params.Get("containerName")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+	port, err := models.RetrieveContainerPortByPortNumber(*container, portNumber)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	portNumber, found := c.Params.Get("portNumber")
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+	if port == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "port not found")
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": workspaceId, "user_id": user.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	if err := models.DeleteContainerPort(port); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
-		return
-	}
-
-	var container models.WorkspaceContainer
-	result = dbconn.DB.Find(&container, map[string]interface{}{"container_name": containerName, "workspace_id": workspace.ID})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "container not found",
-		})
-		return
-	}
-
-	var containerPort models.WorkspaceContainerPort
-	result = dbconn.DB.Find(&containerPort, map[string]interface{}{"container_id": container.ID, "port_number": portNumber})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "port not found",
-		})
-		return
-	}
-
-	dbconn.DB.Unscoped().Delete(&containerPort)
 
 	c.JSON(http.StatusNoContent, gin.H{
 		"detail": "port has been removed",

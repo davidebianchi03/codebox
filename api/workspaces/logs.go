@@ -5,10 +5,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api/utils"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
+// HandleRetrieveWorkspaceLogs godoc
+// @Summary Retrieve workspace logs
+// @Schemes
+// @Description Retrieve workspace logs
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/workspace/:workspaceId/logs [get]
 func HandleRetrieveWorkspaceLogs(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
@@ -18,24 +26,23 @@ func HandleRetrieveWorkspaceLogs(ctx *gin.Context) {
 		return
 	}
 
-	id, found := ctx.Params.Get("workspaceId")
-	if !found {
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})
 		return
 	}
 
-	var workspace models.Workspace
-	result := dbconn.DB.Find(&workspace, map[string]interface{}{"ID": id, "user_id": user.ID})
-	if result.Error != nil {
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
-	if result.RowsAffected == 0 {
+	if workspace == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"detail": "workspace not found",
 		})

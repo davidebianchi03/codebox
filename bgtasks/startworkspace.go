@@ -50,7 +50,7 @@ func (jobContext *Context) StartWorkspace(job *work.Job) error {
 				}
 				dbconn.DB.Save(&gitSources)
 
-				workspace.GitSource.SourcesID = gitSources.ID
+				workspace.GitSource.SourcesID = &gitSources.ID
 				workspace.GitSource.Sources = &gitSources
 				dbconn.DB.Save(&workspace.GitSource)
 				dbconn.DB.Save(&workspace)

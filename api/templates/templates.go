@@ -41,7 +41,6 @@ func HandleListTemplates(c *gin.Context) {
 // @Schemes
 // @Description Retrieve a template by id
 // @Tags Templates
-// @Param id path string true "Template ID"
 // @Accept json
 // @Produce json
 // @Success 200 {object} models.WorkspaceTemplate
@@ -81,7 +80,6 @@ func HandleRetrieveTemplate(c *gin.Context) {
 // @Schemes
 // @Description Retrieve a template by name
 // @Tags Templates
-// @Param name path string true "Template name"
 // @Accept json
 // @Produce json
 // @Success 200 {object} models.WorkspaceTemplate
@@ -405,7 +403,7 @@ func HandleDeleteWorkspace(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 204 {object} []models.Workspace
-// @Router /api/v1/templates/:templateId [put]
+// @Router /api/v1/templates/:templateId/workspaces [get]
 func HandleListWorkspacesByTemplate(c *gin.Context) {
 	templateId, _ := c.Params.Get("templateId")
 

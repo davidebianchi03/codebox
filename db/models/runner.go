@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gorm.io/gorm"
 )
 
@@ -21,4 +22,16 @@ type Runner struct {
 	CreatedAt     time.Time      `gorm:"column:created_at;" json:"-"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at;" json:"-"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+func RetrieveRunnerByID(id uint) (*Runner, error) {
+	var runner Runner
+	if err := dbconn.DB.
+		Preload("AllowedGroups").
+		First(&runner, map[string]interface{}{
+			"ID": id,
+		}).Error; err != nil {
+		return nil, err
+	}
+	return &runner, nil
 }

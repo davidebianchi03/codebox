@@ -20,6 +20,7 @@ guide/intro
 guide/server/quickstart
 guide/server/configuration
 guide/server/cli
+guide/server/api
 ```
 
 ```{toctree}
@@ -34,4 +35,17 @@ guide/runner/quickstart
 :maxdepth: 2
 :caption: Codebox CLI
 
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Wokspaces
+guide/workspaces/docker-compose
+guide/workspaces/dev-container
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Authentication
+guide/authentication/git
 ```

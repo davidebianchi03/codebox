@@ -56,3 +56,6 @@ EXPOSE 8000
 WORKDIR /codebox
 
 VOLUME [ "/codebox/data" ]
+
+# go install github.com/swaggo/swag/cmd/swag@latest
+# go install github.com/swaggo/swag/cmd/swag@latest

@@ -9,6 +9,8 @@ import (
 
 	"gitlab.com/codebox4073715/codebox/config"
 	"gorm.io/gorm"
+
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 )
 
 // workspace status
@@ -111,10 +113,159 @@ func (w *Workspace) GetDefaultEnvironmentVariables() []string {
 	return []string{
 		fmt.Sprintf("CODEBOX_WORKSPACE_ID=%d", w.ID),
 		fmt.Sprintf("CODEBOX_WORKSPACE_NAME=%s", strings.ToLower(w.Name)),
-		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_EMAIL=%s", strings.ToLower(w.User.Email)),
+		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_EMAIL=%s", w.User.Email),
 		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_FIRST_NAME=%s", strings.ToLower(w.User.FirstName)),
 		fmt.Sprintf("CODEBOX_WORKSPACE_OWNER_LAST_NAME=%s", strings.ToLower(w.User.LastName)),
 		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_ID=%d", w.Runner.ID),
 		fmt.Sprintf("CODEBOX_WORKSPACE_RUNNER_NAME=%s", strings.ToLower(w.Runner.Name)),
 	}
+}
+
+/*
+Filter workspaces by owner
+*/
+func ListUserWorkspaces(user User) ([]Workspace, error) {
+	workspaces := []Workspace{}
+	r := dbconn.DB.
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		Preload("Runner").
+		Preload("User").
+		Find(
+			&workspaces,
+			map[string]interface{}{
+				"user_id": user.ID,
+			},
+		)
+
+	if r.Error != nil {
+		return []Workspace{}, r.Error
+	}
+
+	return workspaces, nil
+}
+
+/*
+Retrieve a workspace by workspace id and owner.
+If workspace does not exist return nil.
+*/
+func RetrieveWorkspaceByUserAndId(user User, id uint) (*Workspace, error) {
+	workspace := Workspace{}
+	r := dbconn.DB.
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		Preload("Runner").
+		Preload("User").
+		Find(
+			&workspace,
+			map[string]interface{}{
+				"ID":      id,
+				"user_id": user.ID,
+			},
+		)
+
+	if r.Error != nil {
+		if r.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, r.Error
+	}
+
+	if r.RowsAffected == 1 {
+		return &workspace, nil
+	}
+
+	return nil, nil
+}
+
+/*
+Create a new workspace, this function will add new row to the database.
+It will not start the workspace, it will only create the database entry.
+*/
+func CreateWorkspace(
+	name string,
+	user *User,
+	workspaceType string,
+	runner *Runner,
+	configSource string,
+	templateVersion *WorkspaceTemplateVersion,
+	gitSource *GitWorkspaceSource,
+	environmentVariables []string,
+) (*Workspace, error) {
+
+	var templateVersionID *uint
+	if templateVersion != nil {
+		templateVersionID = &templateVersion.ID
+	} else {
+		templateVersionID = nil
+	}
+
+	var gitSourceID *uint
+	if gitSource != nil {
+		gitSourceID = &gitSource.ID
+	} else {
+		gitSourceID = nil
+	}
+
+	workspace := Workspace{
+		Name:                 name,
+		UserID:               user.ID,
+		User:                 user,
+		Status:               WorkspaceStatusStarting,
+		Type:                 workspaceType,
+		RunnerID:             runner.ID,
+		Runner:               runner,
+		ConfigSource:         configSource,
+		TemplateVersionID:    templateVersionID,
+		TemplateVersion:      templateVersion,
+		GitSourceID:          gitSourceID,
+		GitSource:            gitSource,
+		EnvironmentVariables: environmentVariables,
+	}
+
+	r := dbconn.DB.Create(&workspace)
+	if r.Error != nil {
+		return nil, r.Error
+	}
+	return &workspace, nil
+}
+
+/*
+Update a workspace
+*/
+func UpdateWorkspace(
+	workspace *Workspace,
+	name string,
+	status string,
+	runner *Runner,
+	configSource string,
+	templateVersion *WorkspaceTemplateVersion,
+	gitSource *GitWorkspaceSource,
+	environmentVariables []string,
+) (*Workspace, error) {
+
+	workspace.Name = name
+	workspace.Status = status
+	workspace.RunnerID = runner.ID
+	workspace.Runner = runner
+	workspace.ConfigSource = configSource
+	if templateVersion != nil {
+		workspace.TemplateVersionID = &templateVersion.ID
+	} else {
+		workspace.TemplateVersionID = nil
+	}
+	workspace.TemplateVersion = templateVersion
+	if gitSource != nil {
+		workspace.GitSourceID = &gitSource.ID
+	} else {
+		workspace.GitSourceID = nil
+	}
+	workspace.GitSource = gitSource
+	workspace.EnvironmentVariables = environmentVariables
+
+	if err := dbconn.DB.Save(&workspace).Error; err != nil {
+		return nil, err
+	}
+
+	return workspace, nil
 }

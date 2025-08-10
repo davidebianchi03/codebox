@@ -39,6 +39,14 @@ func prepareTerminal() *term.Terminal {
 	return terminal
 }
 
+// @title           Codebox API
+// @version         {{version_placeholder}}
+// @description     Codebox server
+
+// @license.name  MIT
+// @license.url   https://mit-license.org
+
+// @host      localhost:8080
 func main() {
 	err := config.InitCodeBoxEnv()
 	if err != nil {
