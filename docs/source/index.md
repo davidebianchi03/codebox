@@ -43,3 +43,9 @@ guide/runner/quickstart
 guide/workspaces/docker-compose
 guide/workspaces/dev-container
 ```
+
+```{toctree}
+:maxdepth: 2
+:caption: Authentication
+guide/authentication/git
+```

@@ -1,5 +1,6 @@
 {
 	"name": "001-single-container",
+	"image": "mcr.microsoft.com/devcontainers/base:latest",
 	"workspaceFolder": "/workspace",
 	"customizations": {
 		"vscode": {
