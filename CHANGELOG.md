@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.43 - 2025-08-11
+- bug fix
+
 # v0.0.42 - 2025-08-10
 - added documentation for APIs
 

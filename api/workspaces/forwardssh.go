@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
@@ -16,13 +17,19 @@ func HandleForwardSsh(ctx *gin.Context) {
 
 	workspace := container.Workspace
 
-	if workspace.Runner == nil {
+	runner, err :=  models.RetrieveRunnerByID(workspace.RunnerID) 
+	if err != nil {
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+		return
+	}
+	
+	if runner == nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, "runner not found")
 		return
 	}
 
 	ri := runnerinterface.RunnerInterface{
-		Runner: workspace.Runner,
+		Runner: runner,
 	}
 	if err := ri.ForwardSsh(&workspace, container, ctx.Writer, ctx.Request); err != nil {
 		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
