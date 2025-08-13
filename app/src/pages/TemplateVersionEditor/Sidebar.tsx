@@ -31,7 +31,7 @@ function TreeEntry({ entry, onContextMenu }: SidebarEntryProps) {
                 onContextMenu(e, entry);
             }}
         >
-            {entry.children.map((e, index) => <TreeEntry entry={e} key={index} onContextMenu={onContextMenu} />)}
+            {entry.children.map((e, index) => <TreeEntry entry={e} key={index} onContextMenu={onContextMenu}/>)}
         </SidebarTreeItem>
     )
 }
@@ -54,9 +54,10 @@ interface TemplateVersionEditorSidebarProps {
     template: WorkspaceTemplate
     templateVersion: WorkspaceTemplateVersion
     onSelectionChange: (selectedItem: string) => void;
+    onDelete: (fullpath: string) => void;
 }
 
-export function TemplateVersionEditorSidebar({ template, templateVersion, onSelectionChange }: TemplateVersionEditorSidebarProps) {
+export function TemplateVersionEditorSidebar({ template, templateVersion, onSelectionChange, onDelete }: TemplateVersionEditorSidebarProps) {
     const [treeItems, setTreeItems] = React.useState<WorkspaceTemplateVersionTreeItem[]>([]);
     const [selectedItem, setSelectedItem] = React.useState<WorkspaceTemplateVersionTreeItem | null>(null);
     const [contextMenuEntry, setContextMenuEntry] = React.useState<WorkspaceTemplateVersionTreeItem | null>(null);
@@ -190,6 +191,7 @@ export function TemplateVersionEditorSidebar({ template, templateVersion, onSele
             })).isConfirmed) {
                 await APIDeleteTemplateVersionEntry(template.id, templateVersion.id, contextMenuEntry.full_path);
                 fetchTreeItems();
+                onDelete(contextMenuEntry.full_path);
             }
         }
         setContextMenuEntry(null);

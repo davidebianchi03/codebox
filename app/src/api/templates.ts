@@ -167,11 +167,16 @@ export async function APIRetrieveTemplateVersionEntry(
     templateId: number,
     versionId: number,
     path: string
-): Promise<WorkspaceTemplateVersionEntry | undefined> {
+): Promise<WorkspaceTemplateVersionEntry | null | undefined> {
     try {
         const r = await axios.get<WorkspaceTemplateVersionEntry>(`/api/v1/templates/${templateId}/versions/${versionId}/entries/${encodeURIComponent(path)}`);
         return r.data;
-    } catch {
+    } catch (error) {
+        if(isAxiosError(error)) {
+            if (error.response?.status === 404) {
+                return null;
+            }
+        }
         return undefined;
     }
 }

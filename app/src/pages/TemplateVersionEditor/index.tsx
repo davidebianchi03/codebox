@@ -124,6 +124,13 @@ export function TemplateVersionEditor() {
                                 template={template}
                                 templateVersion={templateVersion}
                                 onSelectionChange={(si) => setSelectedItemPath(si)}
+                                onDelete={(item) => {
+                                    if(selectedItemPath?.startsWith(item) || selectedItemPath === item) {
+                                        setSelectedItemPath(null);
+                                        setOpenFilePath("");
+                                        setFileContent("");
+                                    }
+                                }}
                             />
                         </div>
                         <div className="ps-0 w-100 h-100">
