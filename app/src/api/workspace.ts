@@ -61,7 +61,7 @@ export async function APIUpdateWorkspace(
     environment_variables: string[],
 ): Promise<Workspace | undefined> {
     try {
-        const r = await axios.patch<Workspace>(`/api/v1/workspace${workspaceId}`, {
+        const r = await axios.patch<Workspace>(`/api/v1/workspace/${workspaceId}`, {
             git_repo_url: git_repo_url,
             git_ref_name: git_ref_name,
             config_source_path: config_source_path,
