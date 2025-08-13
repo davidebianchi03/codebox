@@ -1,7 +1,7 @@
 # Changelog
 All changes will be reported in this file
 
-# [Unreleased]
+# [v0.0.44] - 2025-08-13
 - bug fix
 
 # [v0.0.43] - 2025-08-11
