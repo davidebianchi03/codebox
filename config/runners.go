@@ -29,7 +29,7 @@ func ListAvailableRunnerTypes() []RunnerChoice {
 					SupportedConfigSources: []string{
 						"git",
 					},
-					ConfigFilesDefaultPath: ".devcontainer",
+					ConfigFilesDefaultPath: ".devcontainer/devcontainer.json",
 				},
 			},
 		},

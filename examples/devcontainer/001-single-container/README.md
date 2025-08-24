@@ -6,5 +6,5 @@ This example demonstrates how to define a simple workspace based on a single con
 
 To use this example in Codebox, create a new workspace with the following settings:
 
-- Repository URL: `gitlab.com/codebox/codebox`
-- Config files path: `examples/devcontainer/001-single-container/.devcontainer`
+- Repository URL: `https://gitlab.com/codebox4073715/codebox.git`
+- Config files path: `examples/devcontainer/001-single-container/.devcontainer/devcontainer.json`

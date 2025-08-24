@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:8.0.41
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    volumes:
+      - dbdata:/var/lib/mysql
+    restart: always
+
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${CODEBOX_DB_ROOT_PASSWORD:-password}
+    labels:
+      - com.codebox.port.phpmyadmin=80
+      - com.codebox.port.phpmyadmin.public=false
+
+  app:
+    build: .
+    cap_add:
+      - NET_ADMIN
+      - cap_net_admin
+      - cap_net_raw
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+
+volumes:
+  dbdata:

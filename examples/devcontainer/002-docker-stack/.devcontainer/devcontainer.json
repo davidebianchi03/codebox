@@ -1,0 +1,13 @@
+{
+	"name": "002-docker-stack",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspace",
+	"customizations": {
+		"vscode": {
+			"extensions": []
+		},
+		"settings": {}
+	},
+	"remoteUser": "vscode"
+}

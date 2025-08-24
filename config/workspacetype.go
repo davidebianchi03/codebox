@@ -25,7 +25,7 @@ func ListWorkspaceTypes() []WorkspaceType {
 			SupportedConfigSources: []string{
 				"git",
 			},
-			ConfigFilesDefaultPath: ".devcontainer",
+			ConfigFilesDefaultPath: ".devcontainer/devcontainer.json",
 		},
 	}
 }
