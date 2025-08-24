@@ -1,7 +1,7 @@
 # Changelog
 All changes will be reported in this file
 
-# [Unreleased]
+# [v0.0.45] - 2025-08-24
 
 ### Fixed
 
