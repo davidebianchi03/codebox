@@ -29,14 +29,20 @@ services:
       - com.codebox.port.phpmyadmin.public=false
 
   app:
-    build: .
-    cap_add:
-      - NET_ADMIN
-      - cap_net_admin
-      - cap_net_raw
+    build:
+        context: .
+        args:
+            USER_NAME: ${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
+            USER_EMAIL: ${CODEBOX_WORKSPACE_OWNER_EMAIL:-}
+            USER_FIRST_NAME: ${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
+            USER_LAST_NAME: ${CODEBOX_WORKSPACE_OWNER_LAST_NAME:-}
+    stdin_open: true
+    tty: true
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: always
+        - /var/run/docker.sock:/var/run/docker.sock
+        - workspace:/home/${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
+    labels:
+        - com.codebox.user=${CODEBOX_WORKSPACE_OWNER_FIRST_NAME:-}
 
 volumes:
   dbdata:
