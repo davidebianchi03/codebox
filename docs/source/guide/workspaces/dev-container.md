@@ -29,6 +29,17 @@ Codebox provides a set of default environment variables that can be used within 
 
 ### Example
 ```json
-
+{
+	"name": "001-single-container",
+	"image": "mcr.microsoft.com/devcontainers/base:latest",
+	"workspaceFolder": "/workspace",
+	"customizations": {
+		"vscode": {
+			"extensions": []
+		},
+		"settings": {}
+	},
+	"remoteUser": "vscode"
+}
 ```
 You can view the full source code and more examples [here](https://gitlab.com/codebox4073715/codebox/-/tree/master/examples/devcontainer). 
