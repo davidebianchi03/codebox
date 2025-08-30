@@ -1,6 +1,12 @@
 # Changelog
 All changes will be reported in this file
 
+# [v0.0.46] - 2025-08-30
+
+### Fixed
+
+- Fixed a bug where the forward TCP API runner didn't load a relationship.
+
 # [v0.0.45] - 2025-08-24
 
 ### Fixed

@@ -17,7 +17,13 @@ func HandleForwardTcp(ctx *gin.Context) {
 
 	workspace := container.Workspace
 
-	if workspace.Runner == nil {
+	runner, err := models.RetrieveRunnerByID(workspace.RunnerID)
+	if err != nil {
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if runner == nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, "runner not found")
 		return
 	}
@@ -43,7 +49,7 @@ func HandleForwardTcp(ctx *gin.Context) {
 	}
 
 	ri := runnerinterface.RunnerInterface{
-		Runner: workspace.Runner,
+		Runner: runner,
 	}
 	if err := ri.ForwardTcpPort(&workspace, container, ctx.Writer, ctx.Request, portNumber); err != nil {
 		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
