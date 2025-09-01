@@ -35,19 +35,6 @@ func HandleForwardTcp(ctx *gin.Context) {
 		return
 	}
 
-	port, err := models.RetrieveContainerPortByPortNumber(*container, portNumber)
-	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
-		return
-	}
-
-	if port == nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"detail": "port not found",
-		})
-		return
-	}
-
 	ri := runnerinterface.RunnerInterface{
 		Runner: runner,
 	}

@@ -21,6 +21,7 @@ import { WorkspaceTemplate, WorkspaceTemplateVersion } from "../../types/templat
 import { ListRunners } from "../../api/runner";
 import { APICreateWorkspace, APIListWorkspacesTypes } from "../../api/workspace";
 import { APIListTemplates, APIRetrieveTemplateLatestVersion } from "../../api/templates";
+import { EnvEditor } from "../../components/EnvEditor";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
@@ -91,7 +92,7 @@ export default function CreateWorkspace() {
         values.gitRepositoryURL,
         values.gitRefName,
         values.configFilesPath,
-        values.environment.split("\n"),
+        values.environment.split("\n").filter((line) => line.trim() !== ""),
         templateVersion ? templateVersion.id : 0,
       );
 
@@ -394,18 +395,15 @@ export default function CreateWorkspace() {
                   <p>
                     <Label className="mb-0">Environment</Label>
                     <small className="text-muted">
-                      Define environment variables, one per line, using the format
-                      'KEY=VALUE'
+                      Define environment variables
                     </small>
                   </p>
-                  <textarea
-                    className={`form-control ${!!validation.errors.environment ? "is-invalid" : ""
-                      }`}
-                    rows={10}
-                    placeholder="VAR1=VALUE1"
-                    name="environment"
-                    onChange={validation.handleChange}
-                  ></textarea>
+                  <EnvEditor
+                    value={validation.values.environment}
+                    onChange={(value) => {
+                      validation.setFieldValue("environment", value)
+                    }}
+                  />
                   <FormFeedback>{validation.errors.environment}</FormFeedback>
                 </FormGroup>
               </CardBody>

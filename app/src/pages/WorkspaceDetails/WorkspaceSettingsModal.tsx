@@ -13,6 +13,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import { APIUpdateWorkspace } from "../../api/workspace";
+import { EnvEditor } from "../../components/EnvEditor";
 
 interface Props {
   isOpen: boolean;
@@ -125,12 +126,11 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
             )}
             <div className="mb-3">
               <Label>Environment variables</Label>
-              <Input
-                name="environmentVariables"
-                type="textarea"
-                placeholder="Define environment variables, one per line, using the format 'KEY=VALUE'"
-                onChange={validation.handleChange}
+              <EnvEditor
                 value={validation.values.environmentVariables}
+                onChange={(value) => {
+                  validation.setFieldValue("environmentVariables", value);
+                }}
                 invalid={!!validation.errors.environmentVariables}
               />
               <FormFeedback>
