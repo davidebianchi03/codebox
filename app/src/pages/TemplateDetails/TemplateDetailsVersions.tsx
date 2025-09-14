@@ -32,58 +32,25 @@ export function TemplateDetailsVersions({ template }: TemplateDetailsVersionsPro
                     <h3>Versions</h3>
                 </CardHeader>
                 <CardBody className="pt-0">
-                    <Table striped>
-                        <thead>
-                            <tr>
-                                <th>
-                                    Name
-                                </th>
-                                <th>
-                                    Updated on
-                                </th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {versions && (
-                                <React.Fragment>
-                                    {versions.length > 0 ? (
-                                        versions.map((version, index) => (
-                                            <tr key={index}>
-                                                <td>
-                                                    <div className="mt-2">
-                                                        {version.name}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className="mt-2">
-                                                        {new Date(version.edited_on).toLocaleString()}
-                                                    </div>
-                                                </td>
-                                                <td style={{ width: 150 }}>
-                                                    {version.published ? (
-                                                        <span className="btn border-success text-success w-100" style={{ cursor: "default" }}>
-                                                            Released
-                                                        </span>
-                                                    ) : (
-                                                        <span className="btn border-primary text-primary w-100" style={{ cursor: "default" }}>
-                                                            Editing
-                                                        </span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={3} className="text-center">
-                                                No versions available
-                                            </td>
-                                        </tr>
-                                    )}
-                                </React.Fragment>
-                            )}
-                        </tbody>
-                    </Table>
+                    <ul className="timeline timeline-simple">
+                        {versions?.map((version, index) => (
+                            <React.Fragment key={index}>
+                                <li className="timeline-event">
+                                    <div className="card timeline-event-card">
+                                        <div className="card-body">
+                                            <div className="text-secondary float-end">
+                                                {new Date(version.edited_on).toLocaleString()}
+                                            </div>
+                                            <h4>{version.name}</h4>
+                                            <p className="text-secondary">
+                                                {version.published ? "Released" : "Editing"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            </React.Fragment>
+                        ))}
+                    </ul>
                 </CardBody>
             </Card>
         </React.Fragment>
