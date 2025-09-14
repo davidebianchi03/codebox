@@ -3,9 +3,10 @@ package serializers
 import "gitlab.com/codebox4073715/codebox/db/models"
 
 type WorkspaceTemplateVersionSerializer struct {
-	ID        uint   `json:"id"`
-	Name      string `json:"name"`
-	Published bool   `json:"published"`
+	ID         uint   `json:"id"`
+	TemplateID uint   `json:"template_id"`
+	Name       string `json:"name"`
+	Published  bool   `json:"published"`
 }
 
 func LoadWorkspaceTemplateVersionSerializer(templateVersion *models.WorkspaceTemplateVersion) *WorkspaceTemplateVersionSerializer {
@@ -13,9 +14,10 @@ func LoadWorkspaceTemplateVersionSerializer(templateVersion *models.WorkspaceTem
 		return nil
 	}
 	return &WorkspaceTemplateVersionSerializer{
-		ID:        templateVersion.ID,
-		Name:      templateVersion.Name,
-		Published: templateVersion.Published,
+		ID:         templateVersion.ID,
+		TemplateID: templateVersion.TemplateID,
+		Name:       templateVersion.Name,
+		Published:  templateVersion.Published,
 	}
 }
 

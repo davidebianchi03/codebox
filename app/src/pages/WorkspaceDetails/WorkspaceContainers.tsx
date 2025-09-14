@@ -252,7 +252,11 @@ export default function WorkspaceContainers({
               </>
             ) : (
               <>
-                <h4 className="text-center">No containers found</h4>
+                {workspace.status === "running" ? (
+                  <h4 className="text-center mb-3">No containers found</h4>
+                ) : (
+                  <h4 className="text-center mb-3">Workspace is not running</h4>
+                )}
               </>
             )}
           </CardBody>

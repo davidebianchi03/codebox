@@ -16,7 +16,7 @@ import (
 
 type WorkspaceTemplateVersion struct {
 	ID             uint               `gorm:"primarykey" json:"id"`
-	TemplateID     uint               `gorm:"column:template_id;" json:"template"`
+	TemplateID     uint               `gorm:"column:template_id;" json:"template_id"`
 	Template       *WorkspaceTemplate `gorm:"constraint:OnDelete:CASCADE;not null;" json:"-"`
 	Name           string             `gorm:"column:name; size:255;not null;" json:"name"`
 	ConfigFilePath string             `gorm:"column:config_file_path; type:text;" json:"config_file_relative_path"`

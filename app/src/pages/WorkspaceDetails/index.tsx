@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Workspace } from "../../types/workspace";
 import { Button, Col, Container, Row } from "reactstrap";
@@ -14,12 +14,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCloudArrowUp, faGear } from "@fortawesome/free-solid-svg-icons";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
 import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace, APIUpdateWorkspaceConfig } from "../../api/workspace";
-import { APIRetrieveTemplateLatestVersion } from "../../api/templates";
+import { APIRetrieveTemplateById, APIRetrieveTemplateLatestVersion } from "../../api/templates";
+import { WorkspaceTemplate } from "../../types/templates";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [workspace, setWorkspace] = useState<Workspace>();
+  const [workspaceTemplate, setWorkspaceTemplate] = useState<WorkspaceTemplate | null>(null);
   const [fetchInterval, setFetchInterval] = useState(10000);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [canUpdateConfigFiles, setCanUpdateConfigFiles] = useState<boolean>(false);
@@ -131,11 +133,24 @@ export default function WorkspaceDetails() {
 
   const CheckNewTemplateVersionAvailable = useCallback(async () => {
     if (workspace) {
-      const  latestTemplateVersion = await APIRetrieveTemplateLatestVersion(workspace?.template_version.template)
+      const latestTemplateVersion = await APIRetrieveTemplateLatestVersion(
+        workspace?.template_version.template_id
+      );
       if (latestTemplateVersion) {
         setCanUpdateConfigFiles(latestTemplateVersion.id !== workspace?.template_version.id);
       } else {
         setCanUpdateConfigFiles(false);
+      }
+    }
+  }, [workspace]);
+
+  const FetchWorkspaceTemplate = useCallback(async () => {
+    if (workspace?.template_version.template_id) {
+      const template = await APIRetrieveTemplateById(workspace.template_version.template_id);
+      if (template) {
+        setWorkspaceTemplate(template);
+      } else {
+        setWorkspaceTemplate(null);
       }
     }
   }, [workspace]);
@@ -167,12 +182,35 @@ export default function WorkspaceDetails() {
     };
   }, [FetchWorkspace, fetchInterval]);
 
+  useEffect(() => {
+    FetchWorkspaceTemplate();
+  }, [FetchWorkspaceTemplate]);
+
   return (
     <Container className="mt-4 mb-4 pb-4">
       <div className="row g-2 align-items-center mb-4">
         <div className="col">
           <div className="page-pretitle">Workspace</div>
-          <h2 className="page-title">{workspace?.name}</h2>
+          <h2 className="page-title mb-2">{workspace?.name}</h2>
+          <p className="text-muted fs-6 fw-bolder mb-0">
+            {workspace?.type.replaceAll("_", " ").toUpperCase()}
+          </p>
+          <p className="text-muted fs-6 fw-bolder mb-0 d-flex align-items-center">
+            Config loaded from {workspace?.config_source === "git" ? "git repository" : "template"}&nbsp;
+            {workspace?.config_source === "git" ? (
+              <small className="text-muted fs-6 fw-bolder badge bg-dark">
+                {workspace?.git_source?.repository_url}
+              </small>
+            ) : (
+              workspaceTemplate && (
+                <Link to={`/templates/${workspaceTemplate.id}`} className="text-decoration-none">
+                  <small className="text-muted fs-6 fw-bolder badge bg-dark">
+                    {workspaceTemplate?.name}
+                  </small>
+                </Link>
+              )
+            )}
+          </p>
         </div>
         <div className="col-auto ms-auto d-print-none">
           <div className="dropdown">
