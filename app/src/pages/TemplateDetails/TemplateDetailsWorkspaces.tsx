@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, CardBody, CardHeader, Table } from "reactstrap";
+import { Badge, Card, CardBody, CardHeader, Input, Table } from "reactstrap";
 import { WorkspaceTemplate } from "../../types/templates";
 import { Workspace } from "../../types/workspace";
 import { APIListWorkspacesByTemplate } from "../../api/templates";
+import { GetBeautyNameForStatus, GetWorkspaceStatusColor } from "../../common/workspace";
 
 interface TemplateDetailsWorkspacesProps {
     template: WorkspaceTemplate
@@ -10,6 +11,7 @@ interface TemplateDetailsWorkspacesProps {
 
 export function TemplateDetailsWorkspaces({ template }: TemplateDetailsWorkspacesProps) {
     const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+    const [searchText, setSearchText] = useState<string>("");
 
     const FetchWorkspacesUsingTemplate = useCallback(async () => {
         const w = await APIListWorkspacesByTemplate(template.id);
@@ -29,6 +31,12 @@ export function TemplateDetailsWorkspaces({ template }: TemplateDetailsWorkspace
                     <h3>Workspaces</h3>
                 </CardHeader>
                 <CardBody className="pt-0">
+                    <Input
+                        placeholder="Search workspaces..."
+                        className="mb-3"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                    />
                     <Table striped>
                         <thead>
                             <tr>
@@ -38,29 +46,55 @@ export function TemplateDetailsWorkspaces({ template }: TemplateDetailsWorkspace
                                 <th>
                                     Owner
                                 </th>
+                                <th>
+                                    Status
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
-                                <React.Fragment>
-                                    {workspaces.length > 0 ? (
-                                        workspaces.map((workspace, index) => (
-                                            <tr key={index}>
-                                                <td>
+                            <React.Fragment>
+                                {workspaces.filter(
+                                    (w) => w.name.toLowerCase().includes(searchText.toLowerCase()) ||
+                                        w.user.first_name.toLowerCase().includes(searchText.toLowerCase()) ||
+                                        w.user.last_name.toLowerCase().includes(searchText.toLowerCase())
+                                ).length > 0 ? (
+                                    workspaces.filter(
+                                        (w) => w.name.toLowerCase().includes(searchText.toLowerCase()) ||
+                                            w.user.first_name.toLowerCase().includes(searchText.toLowerCase()) ||
+                                            w.user.last_name.toLowerCase().includes(searchText.toLowerCase())
+                                    ).map((workspace, index) => (
+                                        <tr key={index}>
+                                            <td>
+                                                <div className="mt-1">
                                                     {workspace.name}
-                                                </td>
-                                                <td style={{ width: 150 }}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="mt-1">
                                                     {workspace.user.first_name} {workspace.user.last_name}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={2} className="text-center">
-                                                There are't workspaces that use this template
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="mt-1">
+                                                    <Badge
+                                                        color={GetWorkspaceStatusColor(workspace.status)}
+                                                        className="text-white mb-2"
+                                                        style={{ fontSize: 11 }}
+                                                    >
+                                                        {GetBeautyNameForStatus(workspace.status)}
+                                                    </Badge>
+                                                </div>
                                             </td>
                                         </tr>
-                                    )}
-                                </React.Fragment>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={3} className="text-center">
+                                            {workspaces.length === 0 ? "No workspaces are using this template yet." : "No workspaces found."}
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
                         </tbody>
                     </Table>
                 </CardBody>
