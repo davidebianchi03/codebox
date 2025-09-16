@@ -36,8 +36,25 @@ export function AdminDashboard() {
     return (
         <React.Fragment>
             <Row>
-                <Col md={12}>
-                    <Row>
+                <Col md={12} className="mt-5">
+                    <Row >
+                        <Col md={4}>
+                            <Card>
+                                <CardBody>
+                                    <h2>System info</h2>
+                                    <Table>
+                                        <tbody>
+                                            <tr>
+                                                <th>Version</th>
+                                                <td>
+                                                    {import.meta.env.VITE_APP_VERSION}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </Table>
+                                </CardBody>
+                            </Card>
+                        </Col>
                         <Col md={4}>
                             <Card>
                                 <CardBody>
@@ -67,7 +84,7 @@ export function AdminDashboard() {
                         <Col md={4}>
                             <Card>
                                 <CardBody>
-                                    <h2>Workspaces</h2>
+                                    <h2>Runners</h2>
                                     <div>
                                         <h1>
                                             {workspaces.length} <small style={{ fontSize: 12 }}>workspaces</small>
@@ -83,23 +100,6 @@ export function AdminDashboard() {
                                                     </td>
                                                 </tr>
                                             ))}
-                                        </tbody>
-                                    </Table>
-                                </CardBody>
-                            </Card>
-                        </Col>
-                        <Col md={4}>
-                            <Card>
-                                <CardBody>
-                                    <h2>System info</h2>
-                                    <Table>
-                                        <tbody>
-                                            <tr>
-                                                <th>Version</th>
-                                                <td>
-                                                    {import.meta.env.VITE_APP_VERSION}
-                                                </td>
-                                            </tr>
                                         </tbody>
                                     </Table>
                                 </CardBody>
