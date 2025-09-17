@@ -24,6 +24,9 @@ type Runner struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+/*
+RetrieveRunnerByID retrieves a runner by its ID, including its allowed groups.
+*/
 func RetrieveRunnerByID(id uint) (*Runner, error) {
 	var runner Runner
 	if err := dbconn.DB.
@@ -34,4 +37,19 @@ func RetrieveRunnerByID(id uint) (*Runner, error) {
 		return nil, err
 	}
 	return &runner, nil
+}
+
+/*
+CountOnlineRunners counts the number of online runners.
+A runner is considered online if its last contact time is within the last 5 minutes.
+*/
+func CountOnlineRunners() (int64, error) {
+	var count int64
+	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
+	if err := dbconn.DB.Model(&Runner{}).
+		Where("last_contact >= ?", fiveMinutesAgo).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

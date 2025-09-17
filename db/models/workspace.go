@@ -269,3 +269,16 @@ func UpdateWorkspace(
 
 	return workspace, nil
 }
+
+/*
+CountAllOnlineWorkspaces counts the number of workspaces that are currently running.
+*/
+func CountAllOnlineWorkspaces() (int64, error) {
+	var count int64
+	if err := dbconn.DB.Model(&Workspace{}).
+		Where("status = ?", WorkspaceStatusRunning).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}

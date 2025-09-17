@@ -141,6 +141,9 @@ func RetrieveUserByEmail(email string) (user *User, err error) {
 	return nil, nil
 }
 
+/*
+CountAllUsers counts the total number of users in the database.
+*/
 func CountAllUsers() (count int64, err error) {
 	if err = dbconn.DB.Model(User{}).Count(&count).Error; err != nil {
 		return 0, err

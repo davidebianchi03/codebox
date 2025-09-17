@@ -257,6 +257,10 @@ func V1ApiRoutes(router *gin.Engine) {
 		adminApis := v1.Group("/admin")
 		{
 			adminApis.GET(
+				"stats",
+				permissions.AdminRequiredRoute(admin.HandleAdminStats),
+			)
+			adminApis.GET(
 				"runners",
 				permissions.AdminRequiredRoute(admin.HandleAdminListRunners),
 			)
