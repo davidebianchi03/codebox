@@ -85,6 +85,23 @@ func (u *User) CheckPassword(password string) bool {
 	return err == nil
 }
 
+/*
+GetLastLogin retrieves the last login time of the user by checking
+the most recent token creation time.
+If the user has never logged in, it returns nil.
+*/
+func (u *User) GetLastLogin() (*time.Time, error) {
+	var token Token
+	result := dbconn.DB.Where("user_id = ?", u.ID).Order("created_at DESC").First(&token)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil // No login records found
+		}
+		return nil, result.Error // Some other error occurred
+	}
+	return &token.CreatedAt, nil
+}
+
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
 	return string(bytes), err
@@ -129,6 +146,23 @@ func CreateUser(email, firstName, lastName, password string, isSuperUser, isTemp
 	return user, nil
 }
 
+/*
+ListUsers retrieves all users from the database ordered by -CreatedAt.
+Limit specifies the maximum number of users to retrieve.
+If limit is -1 all users are retrieved.
+*/
+func ListUsers(limit int) (users *[]User, err error) {
+	users = &[]User{}
+	result := dbconn.DB.Order("created_at DESC").Limit(limit).Find(users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return users, nil
+}
+
+/*
+RetrieveUserByEmail retrieves a user by their email address.
+*/
 func RetrieveUserByEmail(email string) (user *User, err error) {
 	result := dbconn.DB.Where("email=?", email).Find(&user)
 	if result.Error != nil {

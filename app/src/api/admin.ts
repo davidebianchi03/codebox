@@ -2,10 +2,24 @@ import axios, { isAxiosError } from "axios";
 import { User } from "../types/user";
 import { Workspace } from "../types/workspace";
 import { Runner, RunnerWithToken } from "../types/runner";
+import { AdminStats } from "../types/admin";
 
-export async function AdminListUsers(): Promise<User[] | undefined> {
+export async function AdminRetrieveStats() : Promise<AdminStats | undefined> {
     try {
-        const r = await axios.get<User[]>(`/api/v1/admin/users`);
+        const r = await axios.get<AdminStats>(`/api/v1/admin/stats`);
+        return r.data;
+    } catch {
+        return undefined;
+    }
+}
+
+export async function AdminListUsers(limit: number = -1): Promise<User[] | undefined> {
+    try {
+        const r = await axios.get<User[]>(`/api/v1/admin/users`, {
+            params: {
+                limit: limit
+            }
+        });
         return r.data;
     } catch {
         return undefined;

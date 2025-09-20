@@ -1,71 +1,48 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
-import { Workspace } from "../../types/workspace";
+import { Card, Col, Row, Table } from "reactstrap";
 import { toast } from "react-toastify";
-import { AdminListWorkspaces } from "../../api/admin";
-import Chart from "react-apexcharts";
-import ReactApexChart from "react-apexcharts";
+import { AdminRetrieveStats } from "../../api/admin";
+import { AdminStats } from "../../types/admin";
+import { LoginsInLast7Days } from "./LoginsInLast7Days";
+import { User } from "../../types/user";
+import { RetrieveCurrentUserDetails } from "../../api/common";
+import { TimeSince } from "../../common/time";
+import { UsersListTable } from "./UsersListTable";
+import { RunnersListTable } from "./RunnersListTable";
 
-
-const ActivityChart = {
-    series: [{
-        name: "STOCK ABC",
-        data: [30, 40, 45, 50, 49, 60, 70]
-    }],
-    options: {
-        chart: {
-            type: 'area',
-            height: 350,
-            zoom: {
-                enabled: false
-            }
-        },
-        dataLabels: {
-            enabled: false
-        },
-        stroke: {
-            curve: 'straight'
-        },
-
-        title: {
-            text: 'Fundamental Analysis of Stocks',
-            align: 'left'
-        },
-        subtitle: {
-            text: 'Price Movements',
-            align: 'left'
-        },
-        labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-        xaxis: {
-            type: 'datetime',
-        },
-        yaxis: {
-            opposite: true
-        },
-        legend: {
-            horizontalAlign: 'left'
-        }
-    },
-
-
-}
 
 export function AdminDashboard() {
-    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+    const [stats, setStats] = useState<AdminStats>();
+    const [user, setUser] = useState<User>();
 
+    const FetchAdminStats = useCallback(
+        async () => {
+            const data = await AdminRetrieveStats();
+            if (data === undefined) {
+                toast.error("Failed to fetch admin stats");
+                return;
+            }
+            setStats(data);
+        },
+        [],
+    );
 
-    const FetchWorkspaces = useCallback(async () => {
-        const w = await AdminListWorkspaces();
-        if (w) {
-            setWorkspaces(w);
-        } else {
-            toast.error("Failed to fetch workspaces");
-        }
-    }, []);
+    const FetchUserDetails = useCallback(
+        async () => {
+            const data = await RetrieveCurrentUserDetails();
+            if (data === undefined) {
+                toast.error("Failed to fetch user details");
+                return;
+            }
+            setUser(data);
+        },
+        [],
+    );
 
     useEffect(() => {
-        FetchWorkspaces();
-    }, [FetchWorkspaces]);
+        FetchAdminStats();
+        FetchUserDetails();
+    }, [FetchAdminStats, FetchUserDetails]);
 
     return (
         <React.Fragment>
@@ -76,117 +53,39 @@ export function AdminDashboard() {
                         <Col md={3} className="mb-4">
                             <Card body>
                                 <h3>Total Users</h3>
-                                <h1>12</h1>
+                                <h1>{stats?.total_users}</h1>
                             </Card>
                         </Col>
                         <Col md={3} className="mb-4">
                             <Card body>
                                 <h3>Active Workspaces</h3>
-                                <h1>7</h1>
+                                <h1>{stats?.online_workspaces}</h1>
                             </Card>
                         </Col>
                         <Col md={3} className="mb-4">
                             <Card body>
                                 <h3>Online Runners</h3>
-                                <h1>5</h1>
+                                <h1>{stats?.online_runners}</h1>
                             </Card>
                         </Col>
                         <Col md={3} className="mb-4">
                             <Card body>
                                 <h3>Last Login</h3>
-                                <h1>5 minutes ago</h1>
+                                <h1>{user?.last_login ? TimeSince(new Date(user.last_login)) : "N/A"}</h1>
                             </Card>
                         </Col>
                     </Row>
                     <Row>
                         <Col md={4} className="mb-4">
-                            <Card body>
-                                <h3 className="mb-2">Recent Activity</h3>
-                                <p>Logins in the last 7 days</p>
-                                <ReactApexChart
-                                    options={{
-                                        chart: {
-                                            type: 'area',
-                                            height: 350,
-                                            zoom: {
-                                                enabled: false
-                                            },
-                                            toolbar: {
-                                                show: false
-                                            }
-                                        },
-                                        dataLabels: {
-                                            enabled: false
-                                        },
-                                        stroke: {
-                                            curve: 'smooth'
-                                        },
-                                        labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-                                        xaxis: {
-                                            // type: 'datetime',
-                                            labels: {
-                                                style: {
-                                                    colors: '#fff'
-                                                }
-                                            }
-                                        },
-                                        yaxis: {
-                                            opposite: true,
-                                            labels: {
-                                                style: {
-                                                    colors: '#fff'
-                                                }
-                                            }
-                                        },
-                                        legend: {
-                                            show: false
-                                        },
-                                        grid: {
-                                            show: false
-                                        },
-                                        tooltip: {
-                                            enabled: false,
-                                        }
-                                    }}
-                                    series={ActivityChart.series}
-                                    type="area"
-                                    height={200}
-                                />
-                            </Card>
+                            <LoginsInLast7Days data={stats?.login_counts_last_7_days || []} />
                         </Col>
                         <Col md={8} className="mb-4">
-                            <Card body>
-                                <h3 className="mb-2">Users</h3>
-                                <Table className="table table-vcenter card-table">
-                                    <thead>
-                                        <th className="p-2">Name</th>
-                                        <th className="p-2">Email</th>
-                                        <th className="p-2">Last Login</th>
-                                        <th className="p-2">Status</th>
-                                    </thead>
-                                    <tbody>
-
-                                    </tbody>
-                                </Table>
-                            </Card>
+                            <UsersListTable />
                         </Col>
                     </Row>
                     <Row>
                         <Col md={12} className="mb-4">
-                            <Card body>
-                                <h3 className="mb-2">Runners</h3>
-                                <Table>
-                                    <thead>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Last Login</th>
-                                        <th>Status</th>
-                                    </thead>
-                                    <tbody>
-
-                                    </tbody>
-                                </Table>
-                            </Card>
+                            <RunnersListTable/>
                         </Col>
                     </Row>
                 </Col>

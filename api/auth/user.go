@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
@@ -38,7 +39,7 @@ func HandleRetriveUserDetails(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, serializers.LoadUserSerializer(&user))
 }
 
 // PUT or PATCH /api/v1/auth/user-details
@@ -74,7 +75,7 @@ func HandleUpdateUserDetails(ctx *gin.Context) {
 
 	dbconn.DB.Save(&user)
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, serializers.LoadUserSerializer(&user))
 }
 
 // GET /api/v1/auth/user-ssh-public-key

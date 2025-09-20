@@ -2,47 +2,76 @@ package admin
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
+// HandleAdminListUsers godoc
+// @Summary Admin List Users
+// @Schemes
+// @Description List all users ordered by creation date descending
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} []serializers.UserSerializer
+// @Router /api/v1/admin/users [get]
 func HandleAdminListUsers(c *gin.Context) {
-	var users *[]models.User
+	limit := c.Query("limit")
+	if limit == "" {
+		limit = "-1"
+	}
 
-	if dbconn.DB.Find(&users).Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	// validate limit
+	parsedLimit, err := strconv.Atoi(limit)
+	if err != nil {
+		utils.ErrorResponse(c, 400, "invalid limit")
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	if parsedLimit < -1 || parsedLimit == 0 {
+		utils.ErrorResponse(c, 400, "invalid limit")
+		return
+	}
+
+	// retrieve users
+	users, err := models.ListUsers(parsedLimit)
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
+		return
+	}
+
+	c.JSON(http.StatusOK, serializers.LoadMultipleUserSerializer(*users))
 }
 
+// HandleAdminRetrieveUser godoc
+// @Summary Admin Retrieve User
+// @Schemes
+// @Description Admin Retrieve User
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.UserSerializer
+// @Router /api/v1/admin/users/{email} [get]
 func HandleAdminRetrieveUser(c *gin.Context) {
-	var user *models.User
 	email, _ := c.Params.Get("email")
 
-	if dbconn.DB.Find(&user, map[string]interface{}{
-		"email": email,
-	}).Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	user, err := models.RetrieveUserByEmail(email)
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
 		return
 	}
 
-	if user.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "user not found",
-		})
+	if user == nil {
+		utils.ErrorResponse(c, 404, "user not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, serializers.LoadUserSerializer(user))
 }
 
 func HandleAdminCreateUser(c *gin.Context) {
