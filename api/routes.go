@@ -292,10 +292,6 @@ func V1ApiRoutes(router *gin.Engine) {
 				"users/:email",
 				permissions.AdminRequiredRoute(admin.HandleAdminUpdateUser),
 			)
-			adminApis.PATCH(
-				"users/:email",
-				permissions.AdminRequiredRoute(admin.HandleAdminUpdateUser),
-			)
 			adminApis.POST(
 				"users/:email/set-password",
 				permissions.AdminRequiredRoute(admin.HandleAdminSetUserPassword),

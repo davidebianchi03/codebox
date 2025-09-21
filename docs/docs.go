@@ -19,6 +19,110 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/admin/stats": {
+            "get": {
+                "description": "Admin Stats",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin Stats",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.AdminStatsSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/users": {
+            "get": {
+                "description": "List all users ordered by creation date descending",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin List Users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.UserSerializer"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Admin Create User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin Create User",
+                "parameters": [
+                    {
+                        "description": "User info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.AdminCreateUserRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.UserSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/users/{email}": {
+            "get": {
+                "description": "Admin Retrieve User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin Retrieve User",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.UserSerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/login": {
             "post": {
                 "description": "Login",
@@ -740,7 +844,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/workspace/:workspaceId/": {
+        "/api/v1/workspace/:workspaceId/container": {
             "get": {
                 "description": "List all containers for a workspace",
                 "consumes": [
@@ -761,6 +865,78 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/serializers.WorkspaceContainerSerializer"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/container/:containerName": {
+            "get": {
+                "description": "Retrieve a specific container by name in a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "RetrieveWorkspaceContainersByWorkspace",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceContainerSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/container/:containerName/port": {
+            "get": {
+                "description": "List all ports for a container in a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "ListContainerPortsByWorkspaceContainer",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.WorkspaceContainerPort"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/:workspaceId/container/:containerName/port/:portNumber": {
+            "get": {
+                "description": "Retrieve a specific port by number for a container in a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "RetrieveContainerPortsByWorkspaceContainer",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceContainerPort"
                         }
                     }
                 }
@@ -808,6 +984,35 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "admin.AdminCreateUserRequestBody": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "is_superuser": {
+                    "type": "boolean"
+                },
+                "is_template_manager": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "auth.LoginRequestBody": {
             "type": "object",
             "required": [
@@ -1022,7 +1227,27 @@ const docTemplate = `{
                 "published_on": {
                     "type": "string"
                 },
-                "template": {
+                "template_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "serializers.AdminStatsSerializer": {
+            "type": "object",
+            "properties": {
+                "login_counts_last_7_days": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "online_runners": {
+                    "type": "integer"
+                },
+                "online_workspaces": {
+                    "type": "integer"
+                },
+                "total_users": {
                     "type": "integer"
                 }
             }
@@ -1084,7 +1309,30 @@ const docTemplate = `{
                 "is_template_manager": {
                     "type": "boolean"
                 },
+                "last_login": {
+                    "type": "string"
+                },
                 "last_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.WorkspaceContainerPort": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "port_number": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "boolean"
+                },
+                "service_name": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -1176,6 +1424,9 @@ const docTemplate = `{
                 },
                 "published": {
                     "type": "boolean"
+                },
+                "template_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1323,6 +1574,24 @@ const docTemplate = `{
                 },
                 "published": {
                     "type": "boolean"
+                }
+            }
+        },
+        "workspaces.CreateContainerPortRequestBody": {
+            "type": "object",
+            "required": [
+                "port_number",
+                "service_name"
+            ],
+            "properties": {
+                "port_number": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "boolean"
+                },
+                "service_name": {
+                    "type": "string"
                 }
             }
         },

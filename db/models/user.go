@@ -122,7 +122,18 @@ func ValidatePassword(password string) error {
 	return nil
 }
 
-func CreateUser(email, firstName, lastName, password string, isSuperUser, isTemplateManager bool) (user *User, err error) {
+/*
+CreateUser creates a new user in the database with the provided details.
+The password is hashed before storing it in the database.
+*/
+func CreateUser(
+	email string,
+	firstName string,
+	lastName string,
+	password string,
+	isSuperUser bool,
+	isTemplateManager bool,
+) (user *User, err error) {
 	password, err = HashPassword(password)
 	if err != nil {
 		return nil, err
@@ -173,6 +184,14 @@ func RetrieveUserByEmail(email string) (user *User, err error) {
 		return user, nil
 	}
 	return nil, nil
+}
+
+/*
+UpdateUser updates the user's details in the database.
+*/
+func UpdateUser(user *User) error {
+	result := dbconn.DB.Save(user)
+	return result.Error
 }
 
 /*

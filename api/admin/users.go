@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -74,186 +73,177 @@ func HandleAdminRetrieveUser(c *gin.Context) {
 	c.JSON(http.StatusOK, serializers.LoadUserSerializer(user))
 }
 
+type AdminCreateUserRequestBody struct {
+	Email             string `json:"email" binding:"required,email"`
+	Password          string `json:"password" binding:"required"`
+	FirstName         string `json:"first_name" binding:"required"`
+	LastName          string `json:"last_name" binding:"required"`
+	IsSuperuser       bool   `json:"is_superuser"`
+	IsTemplateManager bool   `json:"is_template_manager"`
+}
+
+// HandleAdminCreateUser godoc
+// @Summary Admin Create User
+// @Schemes
+// @Description Admin Create User
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param request body AdminCreateUserRequestBody true "User info"
+// @Success 200 {object} serializers.UserSerializer
+// @Router /api/v1/admin/users [post]
 func HandleAdminCreateUser(c *gin.Context) {
-	var reqBody struct {
-		Email             string `json:"email" binding:"required,email"`
-		Password          string `json:"password" binding:"required"`
-		FirstName         string `json:"first_name" binding:"required"`
-		LastName          string `json:"last_name" binding:"required"`
-		IsSuperuser       bool   `json:"is_superuser"`
-		IsTemplateManager bool   `json:"is_template_manager"`
-	}
+	var reqBody AdminCreateUserRequestBody
 
 	if c.ShouldBindBodyWithJSON(&reqBody) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "missing or invalid field",
-		})
+		utils.ErrorResponse(c, 400, "invalid or missing argument")
 		return
 	}
 
 	// check if exists another user with the same email address
-	users := []models.User{}
-	r := dbconn.DB.Find(&users, map[string]interface{}{
-		"email": reqBody.Email,
-	})
-
-	if r.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	user, err := models.RetrieveUserByEmail(reqBody.Email)
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
 		return
 	}
 
-	if len(users) > 0 {
-		c.JSON(http.StatusConflict, gin.H{
-			"detail": "another user with the same email already exists",
-		})
+	if user != nil {
+		utils.ErrorResponse(c, 409, "another user with the same email already exists")
 		return
 	}
 
 	// validate password
 	if err := models.ValidatePassword(reqBody.Password); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
-		})
-		return
-	}
-
-	password, err := models.HashPassword(reqBody.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(c, 400, err.Error())
 		return
 	}
 
 	// create new user
-	newUser := models.User{
-		Email:             reqBody.Email,
-		FirstName:         reqBody.FirstName,
-		LastName:          reqBody.LastName,
-		Password:          password,
-		IsSuperuser:       reqBody.IsSuperuser,
-		IsTemplateManager: reqBody.IsTemplateManager,
-	}
-
-	r = dbconn.DB.Create(&newUser)
-	if r.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	u, err := models.CreateUser(
+		reqBody.Email,
+		reqBody.FirstName,
+		reqBody.LastName,
+		reqBody.Password,
+		reqBody.IsSuperuser,
+		reqBody.IsTemplateManager,
+	)
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
 		return
 	}
 
-	c.JSON(http.StatusCreated, newUser)
+	c.JSON(http.StatusCreated, serializers.LoadUserSerializer(u))
 }
 
+type AdminUpdateUserRequestBody struct {
+	FirstName         string `json:"first_name"`
+	LastName          string `json:"last_name"`
+	IsSuperuser       bool   `json:"is_superuser"`
+	IsTemplateManager bool   `json:"is_template_manager"`
+}
+
+// HandleAdminUpdateUser godoc
+// @Summary Admin update user
+// @Schemes
+// @Description Admin update user
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param request body AdminUpdateUserRequestBody true "User info"
+// @Success 200 {object} serializers.UserSerializer
+// @Router /api/v1/admin/users/{email} [put]
 func HandleAdminUpdateUser(c *gin.Context) {
 	currentUser, _ := utils.GetUserFromContext(c)
-
-	var user *models.User
 	email, _ := c.Params.Get("email")
 
-	if dbconn.DB.Find(&user, map[string]interface{}{
-		"email": email,
-	}).Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if user.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "user not found",
-		})
-		return
-	}
-
-	var requestBody struct {
-		FirstName         *string `json:"first_name"`
-		LastName          *string `json:"last_name"`
-		IsSuperuser       *bool   `json:"is_superuser"`
-		IsTemplateManager *bool   `json:"is_template_manager"`
-	}
-
+	var requestBody AdminUpdateUserRequestBody
 	if c.ShouldBindBodyWithJSON(&requestBody) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "invalid or missing argument",
-		})
+		utils.ErrorResponse(c, 400, "invalid or missing argument")
 		return
 	}
 
-	if requestBody.FirstName != nil {
-		user.FirstName = *requestBody.FirstName
+	user, err := models.RetrieveUserByEmail(email)
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
+		return
 	}
 
-	if requestBody.LastName != nil {
-		user.LastName = *requestBody.LastName
+	if user == nil {
+		utils.ErrorResponse(c, 404, "user not found")
+		return
 	}
 
-	if requestBody.IsSuperuser != nil && user.Email != currentUser.Email {
-		user.IsSuperuser = *requestBody.IsSuperuser
+	// update fields
+	user.FirstName = requestBody.FirstName
+	user.LastName = requestBody.LastName
+	user.IsSuperuser = requestBody.IsSuperuser
+	user.IsTemplateManager = requestBody.IsTemplateManager
+
+	// prevent admin from removing their own superuser status
+	// this could lock them out of the admin panel
+	if !requestBody.IsSuperuser && user.Email == currentUser.Email {
+		user.IsSuperuser = true
 	}
 
-	if requestBody.IsTemplateManager != nil {
-		user.IsTemplateManager = *requestBody.IsTemplateManager
+	if err := models.UpdateUser(user); err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
+		return
 	}
 
-	dbconn.DB.Save(&user)
-
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, serializers.LoadUserSerializer(user))
 }
 
+type AdminSetUserPasswordRequestBody struct {
+	Password string `json:"password" binding:"required"`
+}
+
+// AdminSetUserPassword godoc
+// @Summary Admin update user password
+// @Schemes
+// @Description Admin update user password
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param request body AdminSetUserPasswordRequestBody true "User info"
+// @Success 200
+// @Router /api/v1/admin/users/{email}/set-password [post]
 func HandleAdminSetUserPassword(c *gin.Context) {
-	var user *models.User
-	var err error
 	email, _ := c.Params.Get("email")
 
-	if dbconn.DB.Find(&user, map[string]interface{}{
-		"email": email,
-	}).Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if user.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "user not found",
-		})
-		return
-	}
-
-	var requestBody struct {
-		Password string `json:"password" binding:"required"`
-	}
-
+	var requestBody AdminSetUserPasswordRequestBody
 	if c.ShouldBindBodyWithJSON(&requestBody) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "invalid or missing argument",
-		})
+		utils.ErrorResponse(c, 400, "invalid or missing argument")
+		return
+	}
+
+	user, err := models.RetrieveUserByEmail(email)
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
+		return
+	}
+
+	if user == nil {
+		utils.ErrorResponse(c, 404, "user not found")
 		return
 	}
 
 	// validate password
 	if err := models.ValidatePassword(requestBody.Password); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
-		})
+		utils.ErrorResponse(c, 400, err.Error())
 		return
 	}
 
 	user.Password, err = models.HashPassword(requestBody.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(c, 500, "internal server error")
 		return
 	}
 
-	dbconn.DB.Save(&user)
+	if err := models.UpdateUser(user); err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"detail": "password changed",
 	})
