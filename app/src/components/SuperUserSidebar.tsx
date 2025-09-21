@@ -26,7 +26,7 @@ const SidebarItems: SidebarItem[] = [
 
 
 export const SuperUserSidebar = () => {
-    const location = useLocation();    
+    const location = useLocation();
 
     return (
         <aside className="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
@@ -62,8 +62,13 @@ export const SuperUserSidebar = () => {
                                     );
                                 } else if (item.type === "link" && item.link) {
                                     return (
-                                        <li className="nav-item" key={index}>
-                                            <Link to={item.link} className={`nav-link ${matchPath(item.link, location.pathname) ? "active" : ""}`}>
+                                        <li
+                                            className={`nav-item ${matchPath(item.link, location.pathname) ? "active" : ""}`}
+                                            key={index}
+                                        >
+                                            <Link
+                                                to={item.link}
+                                                className="nav-link">
                                                 {item.icon && (
                                                     <span className="nav-link-icon d-md-none d-lg-inline-block">
                                                         {item.icon}
