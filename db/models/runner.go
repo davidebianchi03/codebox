@@ -25,6 +25,18 @@ type Runner struct {
 }
 
 /*
+ListRunners retrieves a list of runners with pagination support.
+If limit is -1, it retrieves all runners.
+*/
+func ListRunners(limit int, offset int) ([]Runner, error) {
+	var runners []Runner
+	if err := dbconn.DB.Limit(limit).Offset(offset).Find(&runners).Error; err != nil {
+		return nil, err
+	}
+	return runners, nil
+}
+
+/*
 RetrieveRunnerByID retrieves a runner by its ID, including its allowed groups.
 */
 func RetrieveRunnerByID(id uint) (*Runner, error) {

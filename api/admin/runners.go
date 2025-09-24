@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/work"
+	"gitlab.com/codebox4073715/codebox/api/serializers"
+	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
@@ -37,16 +40,40 @@ func RandStringBytesRmndr(n int) string {
 	return string(b)
 }
 
+// AdminRunners godoc
+// @Summary Admin Runners
+// @Schemes
+// @Description Admin Runners
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.AdminRunnersSerializer
+// @Router /api/v1/admin/runners [get]
 func HandleAdminListRunners(c *gin.Context) {
-	var runners []models.Runner
-	r := dbconn.DB.Find(&runners)
-	if r.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	limit := c.Query("limit")
+	if limit == "" {
+		limit = "-1"
+	}
+
+	// validate limit
+	parsedLimit, err := strconv.Atoi(limit)
+	if err != nil {
+		utils.ErrorResponse(c, 400, "invalid limit")
 		return
 	}
-	c.JSON(http.StatusOK, runners)
+
+	if parsedLimit < -1 || parsedLimit == 0 {
+		utils.ErrorResponse(c, 400, "invalid limit")
+		return
+	}
+
+	runners, err := models.ListRunners(parsedLimit, 0)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	c.JSON(http.StatusOK, serializers.LoadMultipleAdminRunnerSerializer(runners))
 }
 
 func HandleAdminRetrieveRunners(c *gin.Context) {

@@ -31,7 +31,11 @@ export function UsersListTable() {
                     <tbody>
                         {users.map((u, idx) => (
                             <tr key={idx}>
-                                <td className="p-2">{u.first_name} {u.last_name}</td>
+                                <td className="p-2">
+                                    <Link to={`/admin/users/${u.email}`}>
+                                        <b>{u.first_name} {u.last_name}</b>
+                                    </Link>
+                                </td>
                                 <td className="p-2">{u.email}</td>
                                 <td className="p-2">{u.last_login ? new Date(u.last_login).toLocaleString() : "Never logged in"}</td>
                             </tr>

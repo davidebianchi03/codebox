@@ -111,9 +111,13 @@ export async function AdminListWorkspaces(): Promise<Workspace[] | undefined> {
     }
 }
 
-export async function AdminListRunners(): Promise<Runner[] | undefined> {
+export async function AdminListRunners(limit: number = -1): Promise<Runner[] | undefined> {
     try {
-        const r = await axios.get<Runner[]>(`/api/v1/admin/runners`);
+        const r = await axios.get<Runner[]>(`/api/v1/admin/runners`, {
+            params: {
+                limit: limit
+            }
+        });
         return r.data;
     } catch {
         return undefined;
