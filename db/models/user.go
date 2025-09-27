@@ -44,8 +44,8 @@ func generateSshKeys() (string, string, error) {
 
 	// Run ssh-keygen command to generate keys
 	cmd := exec.Command("ssh-keygen", "-t", "rsa", "-b", "2048", "-f", privateKeyPath, "-N", "", "-C", "")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
 
 	err = cmd.Run()
 	if err != nil {
@@ -133,8 +133,8 @@ func CreateUser(
 	password string,
 	isSuperUser bool,
 	isTemplateManager bool,
-) (user *User, err error) {
-	password, err = HashPassword(password)
+) (*User, error) {
+	password, err := HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func CreateUser(
 		return nil, r.Error
 	}
 
-	return user, nil
+	return &newUser, nil
 }
 
 /*
@@ -191,6 +191,14 @@ UpdateUser updates the user's details in the database.
 */
 func UpdateUser(user *User) error {
 	result := dbconn.DB.Save(user)
+	return result.Error
+}
+
+/*
+DeleteUser deletes the given user
+*/
+func DeleteUser(user *User) error {
+	result := dbconn.DB.Unscoped().Delete(user)
 	return result.Error
 }
 

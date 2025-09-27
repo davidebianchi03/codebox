@@ -5,8 +5,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gocraft/work"
 	"gitlab.com/codebox4073715/codebox/api/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
+	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -191,6 +193,41 @@ func HandleAdminUpdateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, serializers.LoadUserSerializer(user))
+}
+
+// HandleAdminDeleteUser godoc
+// @Summary Admin delete user
+// @Schemes
+// @Description Admin delete user
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /api/v1/admin/users/{email} [delete]
+func HandleAdminDeleteUser(c *gin.Context) {
+	currentUser, _ := utils.GetUserFromContext(c)
+	email, _ := c.Params.Get("email")
+
+	user, err := models.RetrieveUserByEmail(email)
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
+		return
+	}
+
+	if user == nil {
+		utils.ErrorResponse(c, 404, "user not found")
+		return
+	}
+
+	if user == &currentUser {
+		utils.ErrorResponse(c, 400, "you cannot delete yourself")
+	}
+
+	bgtasks.BgTasksEnqueuer.Enqueue("delete_user", work.Q{"user_email": user.Email})
+
+	c.JSON(http.StatusNoContent, gin.H{
+		"detail": "user deletion has been scheduled",
+	})
 }
 
 type AdminSetUserPasswordRequestBody struct {

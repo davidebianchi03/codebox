@@ -35,16 +35,19 @@ func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInsta
 	)
 
 	// workspaces jobs
-	pool.Job("start_workspace", (*Context).StartWorkspace)
-	pool.Job("stop_workspace", (*Context).StopWorkspace)
-	pool.Job("delete_workspace", (*Context).DeleteWorkspace)
-	pool.Job("update_workspace_config", (*Context).UpdateWorkspaceConfigFiles)
-	pool.Job("ping_agents", (*Context).PingAgents)
+	pool.Job("start_workspace", (*Context).StartWorkspaceTask)
+	pool.Job("stop_workspace", (*Context).StopWorkspaceTask)
+	pool.Job("delete_workspace", (*Context).DeleteWorkspaceTask)
+	pool.Job("update_workspace_config", (*Context).UpdateWorkspaceConfigFilesTask)
+	pool.Job("ping_agents", (*Context).PingAgentsTask)
 	pool.PeriodicallyEnqueue("0 */2 * * * *", "ping_agents") // every 5 minutes (0 */5 * * * *)
 
 	// runners jobs
-	pool.Job("ping_runners", (*Context).PingRunners)
+	pool.Job("ping_runners", (*Context).PingRunnersTask)
 	pool.PeriodicallyEnqueue("0 */2 * * * *", "ping_runners") // every 2 minutes (0 */2 * * * *)
+
+	// user jobs
+	pool.Job("delete_user", (*Context).DeleteUserTask)
 
 	pool.Start()
 	return nil

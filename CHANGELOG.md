@@ -6,6 +6,7 @@ All changes will be reported in this file
 ### Fixed
 
 - UI/UX improvements
+- Refactoring of admin interface
 
 # [v0.0.46] - 2025-08-30
 

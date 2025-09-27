@@ -292,6 +292,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"users/:email",
 				permissions.AdminRequiredRoute(admin.HandleAdminUpdateUser),
 			)
+			adminApis.DELETE(
+				"users/:email",
+				permissions.AdminRequiredRoute(admin.HandleAdminDeleteUser),
+			)
 			adminApis.POST(
 				"users/:email/set-password",
 				permissions.AdminRequiredRoute(admin.HandleAdminSetUserPassword),

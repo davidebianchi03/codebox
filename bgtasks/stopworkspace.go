@@ -11,7 +11,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
-func (jobContext *Context) StopWorkspace(job *work.Job) error {
+func (jobContext *Context) StopWorkspaceTask(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace *models.Workspace

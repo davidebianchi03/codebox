@@ -14,7 +14,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
 
-func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
+func (jobContext *Context) UpdateWorkspaceConfigFilesTask(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
 	var workspace *models.Workspace
@@ -97,5 +97,5 @@ func (jobContext *Context) UpdateWorkspaceConfigFiles(job *work.Job) error {
 	dbconn.DB.Save(&workspace)
 	workspace.AppendLogs("Config files have been updated")
 
-	return jobContext.StartWorkspace(job)
+	return jobContext.StartWorkspaceTask(job)
 }

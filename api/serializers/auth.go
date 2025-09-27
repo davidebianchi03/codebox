@@ -37,18 +37,21 @@ type UserSerializer struct {
 	IsSuperUser       bool    `json:"is_superuser"`
 	IsTemplateManager bool    `json:"is_template_manager"`
 	LastLogin         *string `json:"last_login"`
+	CreatedAt         string  `json:"created_at"`
 }
 
 func LoadUserSerializer(user *models.User) *UserSerializer {
-	lastLogin, err := user.GetLastLogin()
-	if err != nil {
-		lastLogin = nil
-	}
-
 	var lastLoginPtr *string
-	if lastLogin != nil {
-		isoString := lastLogin.Format(time.RFC3339)
-		lastLoginPtr = &isoString
+	if user.ID > 0 {
+		lastLogin, err := user.GetLastLogin()
+		if err != nil {
+			lastLogin = nil
+		}
+
+		if lastLogin != nil {
+			isoString := lastLogin.Format(time.RFC3339)
+			lastLoginPtr = &isoString
+		}
 	}
 
 	return &UserSerializer{
@@ -58,6 +61,7 @@ func LoadUserSerializer(user *models.User) *UserSerializer {
 		IsSuperUser:       user.IsSuperuser,
 		IsTemplateManager: user.IsTemplateManager,
 		LastLogin:         lastLoginPtr,
+		CreatedAt:         user.CreatedAt.Format(time.RFC3339),
 	}
 }
 

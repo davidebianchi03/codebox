@@ -182,3 +182,16 @@ export async function AdminUpdateRunner(
         return undefined;
     }
 }
+
+export async function AdminDeleteUser(
+    userEmail: string,
+): Promise<boolean> {
+    try {
+        await axios.delete<Runner>(
+            `/api/v1/admin/users/${userEmail}`
+        );
+        return true;
+    } catch {
+        return false;
+    }
+}

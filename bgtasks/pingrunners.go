@@ -9,7 +9,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
-func (jobContext *Context) PingRunners(job *work.Job) error {
+func (jobContext *Context) PingRunnersTask(job *work.Job) error {
 	var runners []models.Runner
 	if err := dbconn.DB.Find(&runners).Error; err != nil {
 		return err
