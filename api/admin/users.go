@@ -285,3 +285,16 @@ func HandleAdminSetUserPassword(c *gin.Context) {
 		"detail": "password changed",
 	})
 }
+
+// HandleAdminImpersonateUser godoc
+// @Summary API for admins to impersonate a user
+// @Schemes
+// @Description API for admins to impersonate a user
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/admin/users/{email}/impersonate [post]
+func HandleAdminImpersonateUser(c *gin.Context) {
+
+}

@@ -304,6 +304,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"workspaces",
 				permissions.AdminRequiredRoute(admin.AdminListWorkspaces),
 			)
+			adminApis.POST(
+				"users/:email/impersonate",
+				permissions.AdminRequiredRoute(admin.HandleAdminImpersonateUser),
+			)
 		}
 	}
 

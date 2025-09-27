@@ -1,4 +1,4 @@
-import { faBorderTopLeft, faGears, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBorderTopLeft, faGears, faRightFromBracket, faUser, faUserSecret } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ import { RootState } from "../redux/store";
 export function UserDropdown() {
     const navigate = useNavigate();
     const [settings, setSettings] = useState<InstanceSettings | null>(null);
-    const user = useSelector((state:RootState) => state.user);
+    const user = useSelector((state: RootState) => state.user);
 
     const HandleLogout = (e: any) => {
         e.preventDefault();
@@ -34,73 +34,78 @@ export function UserDropdown() {
 
     return (
         <React.Fragment>
-            <div className="nav-item dropdown">
-                <span
-                    className="nav-link d-flex lh-1 p-0 px-2"
-                    data-bs-toggle="dropdown"
-                    aria-label="Open user menu"
-                >
-                    <img
-                        className="avatar avatar-sm"
-                        src={
-                            settings?.use_gravatar && user
-                                ? `https://www.gravatar.com/avatar/${sha256(user?.email)}`
-                                : DefaultAvatar
-                        }
-                        alt="avatar"
-                    />
-                    <div className="d-none d-xl-block ps-2">
-                        <div>
-                            <b>
-                                {user?.first_name} {user?.last_name}
-                            </b>
+            <div className="d-flex">
+                <div className="mx-1 px-2 text-warning btn btn-outline-warning">
+                    <FontAwesomeIcon icon={faUserSecret} />
+                </div>
+                <div className="nav-item dropdown">
+                    <span
+                        className="nav-link d-flex lh-1 p-0 px-2"
+                        data-bs-toggle="dropdown"
+                        aria-label="Open user menu"
+                    >
+                        <img
+                            className="avatar avatar-sm"
+                            src={
+                                settings?.use_gravatar && user
+                                    ? `https://www.gravatar.com/avatar/${sha256(user?.email)}`
+                                    : DefaultAvatar
+                            }
+                            alt="avatar"
+                        />
+                        <div className="d-none d-xl-block ps-2">
+                            <div>
+                                <b>
+                                    {user?.first_name} {user?.last_name}
+                                </b>
+                            </div>
+                            <div className="mt-1 small text-secondary">{user?.email}</div>
                         </div>
-                        <div className="mt-1 small text-secondary">{user?.email}</div>
-                    </div>
-                </span>
-                <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <Link to="/profile" className="dropdown-item">
-                        <Row>
-                            <Col md={4}>
-                                <FontAwesomeIcon icon={faUser} />
-                            </Col>
-                            <Col md={8}>
-                                Profile
-                            </Col>
-                        </Row>
-                    </Link>
-                    {user?.is_superuser && (
-                        <Link to="/admin" className="dropdown-item">
+                    </span>
+                    <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        <Link to="/profile" className="dropdown-item">
                             <Row>
-                                <Col md={4} className="pe-0">
-                                    <FontAwesomeIcon icon={faGears} />
+                                <Col md={4}>
+                                    <FontAwesomeIcon icon={faUser} />
                                 </Col>
-                                <Col md={8} className="ps-0">
-                                    Admin Area
+                                <Col md={8}>
+                                    Profile
                                 </Col>
                             </Row>
                         </Link>
-                    )}
-                    <Link to="/templates" className="dropdown-item">
-                        <Row>
-                            <Col md={4} className="pe-0">
-                                <FontAwesomeIcon icon={faBorderTopLeft} />
-                            </Col>
-                            <Col md={8} className="ps-0">
-                                Templates
-                            </Col>
-                        </Row>
-                    </Link>
-                    <Link to="/" className="dropdown-item" onClick={HandleLogout}>
-                        <Row>
-                            <Col md={4}>
-                                <FontAwesomeIcon icon={faRightFromBracket} />
-                            </Col>
-                            <Col md={8}>
-                                Logout
-                            </Col>
-                        </Row>
-                    </Link>
+                        {user?.is_superuser && (
+                            <Link to="/admin" className="dropdown-item">
+                                <Row>
+                                    <Col md={4} className="pe-0">
+                                        <FontAwesomeIcon icon={faGears} />
+                                    </Col>
+                                    <Col md={8} className="ps-0">
+                                        Admin Area
+                                    </Col>
+                                </Row>
+                            </Link>
+                        )}
+                        <Link to="/templates" className="dropdown-item">
+                            <Row>
+                                <Col md={4} className="pe-0">
+                                    <FontAwesomeIcon icon={faBorderTopLeft} />
+                                </Col>
+                                <Col md={8} className="ps-0">
+                                    Templates
+                                </Col>
+                            </Row>
+                        </Link>
+                        <Link to="/" className="dropdown-item" onClick={HandleLogout}>
+                            <Row>
+                                <Col md={4}>
+                                    <FontAwesomeIcon icon={faRightFromBracket} />
+                                </Col>
+                                <Col md={8}>
+                                    Logout
+                                </Col>
+                            </Row>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </React.Fragment>

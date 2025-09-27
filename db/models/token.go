@@ -12,14 +12,16 @@ import (
 var secretKey = []byte("secret-key") // TODO: replace on build
 
 type Token struct {
-	ID             uint       `gorm:"primarykey"`
-	Token          string     `gorm:"column:token; size:255;unique;"`
-	ExpirationDate *time.Time `gorm:"column:expiration_date;"`
-	UserID         uint       `gorm:"column:user_id;"`
-	User           User       `gorm:"constraint:OnDelete:CASCADE;"`
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	DeletedAt      gorm.DeletedAt `gorm:"index"`
+	ID                 uint       `gorm:"primarykey"`
+	Token              string     `gorm:"column:token; size:255;unique;"`
+	ExpirationDate     *time.Time `gorm:"column:expiration_date;"`
+	UserID             uint       `gorm:"column:user_id;"`
+	User               User       `gorm:"constraint:OnDelete:CASCADE;"`
+	ImpersonatedUserID uint       `gorm:"column:impersonated_user_id;"`
+	ImpersonatedUser   *User      `gorm:"constraint:OnDelete:CASCADE;"`
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	DeletedAt          gorm.DeletedAt `gorm:"index"`
 }
 
 func generateJWTToken(userId uint, expiration time.Time) (string, error) {

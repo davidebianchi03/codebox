@@ -10,6 +10,23 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
+/*
+Method that returns if the user is being impersonated
+*/
+func UserIsBeingImpersonated(c *gin.Context) (bool, error) {
+	t, err := utils.GetTokenFromContext(c)
+	if err != nil {
+		return false, err
+	}
+
+	u, err := utils.GetUserFromContext(c)
+	if err != nil {
+		return false, err
+	}
+
+	return t.User.Email != u.Email, nil
+}
+
 // TODO: ratelimit
 // GET /api/v1/auth/initial-user-exists
 // retrieve if at least one user exists for the current instance of codebox
@@ -33,13 +50,20 @@ func HandleRetrieveInitialUserExists(ctx *gin.Context) {
 func HandleRetriveUserDetails(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	ctx.JSON(http.StatusOK, serializers.LoadCurrentUserSerializer(&user, false))
+	impersonated, err := UserIsBeingImpersonated(ctx)
+	if err != nil {
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		serializers.LoadCurrentUserSerializer(&user, impersonated),
+	)
 }
 
 // PUT or PATCH /api/v1/auth/user-details

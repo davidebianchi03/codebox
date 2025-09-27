@@ -177,7 +177,10 @@ func HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, serializers.LoadCurrentUserSerializer(newUser, false))
+	ctx.JSON(
+		http.StatusCreated,
+		serializers.LoadCurrentUserSerializer(newUser, false),
+	)
 }
 
 // Logout godoc
