@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
+  Card,
   Col,
+  Container,
   FormFeedback,
   Input,
   Label,
@@ -132,109 +134,132 @@ export function AdminRunnerDetails() {
   }, [runner]);
 
   return (
-    <>
-      <Button
-        color="accent"
-        className="me-2 mb-4"
-        onClick={(e) => {
-          e.preventDefault();
-          navigate("/admin/runners");
-        }}
-      >
-        <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
-        Back
-      </Button>
-      <Row>
-        <Col md={12}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              validation.handleSubmit();
-              return false;
-            }}
-          >
-            <div className="mb-3">
-              <Label>Runner name</Label>
-              <Input
-                name="runnerName"
-                value={validation.values.runnerName}
-                onChange={validation.handleChange}
-                invalid={!!validation.errors.runnerName}
-              />
-              <FormFeedback>{validation.errors.runnerName}</FormFeedback>
-            </div>
-            <div className="mb-3">
-              <Label>Runner type</Label>
-              <select
-                name="runnerType"
-                className={`form-control ${validation.errors.runnerType ? "is-invalid" : ""
-                  }`}
-                onChange={validation.handleChange}
-                value={validation.values.runnerType}
-              >
-                <option value={""}>Select runner type</option>
-                {runnerTypes.map((t) => (
-                  <option value={t.id} key={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-              <small className="text-muted">
-                Supported workspaces:{" "}
-                {runnerTypes
-                  .find((r) => r.id === validation.values.runnerType)
-                  ?.supported_types.map((st) => st.name)
-                  .join(", ")}
-              </small>
-              <FormFeedback>{validation.errors.runnerType}</FormFeedback>
-            </div>
-            <div className="mb-3">
-              <label className="form-check">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  name="usePublicUrl"
-                  onClick={(e) => {
-                    validation.handleChange(e);
-                  }}
-                  checked={validation.values.usePublicUrl}
-                />
-                <span className="form-check-label">Use public url</span>
-              </label>
-            </div>
-            <div className="mb-3">
-              <Label>Public url</Label>
-              <Input
-                placeholder="http://my-host.example.com:12345"
-                name="publicUrl"
-                onChange={validation.handleChange}
-                value={validation.values.publicUrl}
-                invalid={validation.errors.publicUrl ? true : false}
-                disabled={!validation.values.usePublicUrl}
-              />
-              <FormFeedback>{validation.errors.publicUrl}</FormFeedback>
-            </div>
-            <div className="d-flex justify-content-end mt-4">
-              <Button
-                color="accent"
-                className="me-2"
-                onClick={(e) => {
+    <React.Fragment>
+      <Container>
+        <Button
+          color="accent"
+          className="me-2 mb-4"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/admin/runners");
+          }}
+        >
+          <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
+          Back
+        </Button>
+        <Row>
+          <Col md={12}>
+            <Card body>
+              <form
+                onSubmit={(e) => {
                   e.preventDefault();
-                  FetchRunner();
+                  validation.handleSubmit();
+                  return false;
                 }}
               >
-                Cancel
-              </Button>
-              <Button type="submit" color="primary">
-                Save
-              </Button>
-            </div>
-          </form>
-        </Col>
-      </Row>
-      <ToastContainer
-        toastClassName={"bg-dark"}
-      />
-    </>
+                <div className="mb-3">
+                  <Label>Runner name</Label>
+                  <Input
+                    name="runnerName"
+                    value={validation.values.runnerName}
+                    onChange={validation.handleChange}
+                    invalid={!!validation.errors.runnerName}
+                  />
+                  <FormFeedback>{validation.errors.runnerName}</FormFeedback>
+                </div>
+                <div className="mb-3">
+                  <Label>Runner type</Label>
+                  <select
+                    name="runnerType"
+                    className={`form-control ${validation.errors.runnerType ? "is-invalid" : ""
+                      }`}
+                    onChange={validation.handleChange}
+                    value={validation.values.runnerType}
+                  >
+                    <option value={""}>Select runner type</option>
+                    {runnerTypes.map((t) => (
+                      <option value={t.id} key={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                  <small className="text-muted">
+                    Supported workspaces:{" "}
+                    {runnerTypes
+                      .find((r) => r.id === validation.values.runnerType)
+                      ?.supported_types.map((st) => st.name)
+                      .join(", ")}
+                  </small>
+                  <FormFeedback>{validation.errors.runnerType}</FormFeedback>
+                </div>
+                <div className="mb-3">
+                  <label className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      name="usePublicUrl"
+                      onClick={(e) => {
+                        validation.handleChange(e);
+                      }}
+                      checked={validation.values.usePublicUrl}
+                    />
+                    <span className="form-check-label">Use public url</span>
+                  </label>
+                </div>
+                <div className="mb-3">
+                  <Label>Public url</Label>
+                  <Input
+                    placeholder="http://my-host.example.com:12345"
+                    name="publicUrl"
+                    onChange={validation.handleChange}
+                    value={validation.values.publicUrl}
+                    invalid={validation.errors.publicUrl ? true : false}
+                    disabled={!validation.values.usePublicUrl}
+                  />
+                  <FormFeedback>{validation.errors.publicUrl}</FormFeedback>
+                </div>
+                <div className="mb-3">
+                  <Label>Status</Label>
+                  {new Date(runner?.last_contact || "") > new Date(Date.now() - 5 * 60 * 1000)
+                    ? (
+                      <React.Fragment>
+                        <span className="text-success pe-1">●</span>
+                        Online
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment>
+                        <span className="text-danger pe-1">●</span>
+                        Offline
+                      </React.Fragment>
+                    )}
+                </div>
+                <div className="mb-3">
+                  <Label>Last contact</Label>
+                  {runner?.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"}
+                </div>
+                <div className="d-flex justify-content-end mt-4">
+                  <Button
+                    color="accent"
+                    className="me-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      FetchRunner();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" color="primary">
+                    Save
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </Col>
+        </Row>
+        <ToastContainer
+          toastClassName={"bg-dark"}
+        />
+      </Container>
+    </React.Fragment>
   );
 }

@@ -9,19 +9,59 @@ interface SidebarItem {
     icon?: JSX.Element;
     type: "link" | "header";
     link?: string;
+    activeOnLinks?: string[];
 }
 
 const SidebarItems: SidebarItem[] = [
-    { title: "Overview", type: "header" },
-    { title: "Dashboard", icon: <HomeIcon />, type: "link", link: "/admin" },
-    { title: "Users", icon: <UserIcon />, type: "link", link: "/admin/users" },
+    {
+        title: "Overview",
+        type: "header"
+    },
+    {
+        title: "Dashboard",
+        icon: <HomeIcon />,
+        type: "link", link:
+            "/admin"
+    },
+    {
+        title: "Users",
+        icon: <UserIcon />,
+        type: "link",
+        link: "/admin/users",
+        activeOnLinks: ["/admin/users", "/admin/users/:userEmail"]
+    },
     // { title: "Groups", icon: <GroupIcon />, type: "link", link: "/admin/groups" },
-    { title: "Runners", icon: <BackhoeIcon />, type: "link", link: "/admin/runners" },
-    { title: "System", type: "header" },
-    { title: "Authentication", icon: <PasswordUserIcon />, type: "link", link: "/admin/runners" },
-    { title: "Credits", type: "header" },
-    { title: "License", icon: <LicenseIcon />, type: "link", link: "/admin/runners" },
-    { title: "Third party packages", icon: <PackagesIcon />, type: "link", link: "/admin/runners" },
+    {
+        title: "Runners",
+        icon: <BackhoeIcon />, type: "link", link: "/admin/runners",
+        activeOnLinks: ["/admin/runners", "/admin/runners/:id"]
+    },
+    {
+        title: "System",
+        type: "header"
+    },
+    {
+        title: "Authentication",
+        icon: <PasswordUserIcon />,
+        type: "link",
+        link: "/admin/auth"
+    },
+    {
+        title: "Credits",
+        type: "header"
+    },
+    {
+        title: "License",
+        icon: <LicenseIcon />,
+        type: "link",
+        link: "/admin/license"
+    },
+    {
+        title: "Third party packages",
+        icon: <PackagesIcon />,
+        type: "link",
+        link: "/admin/3rd-packages"
+    },
 ];
 
 
@@ -61,9 +101,13 @@ export const SuperUserSidebar = () => {
                                         </li>
                                     );
                                 } else if (item.type === "link" && item.link) {
+                                    let active = matchPath(item.link, location.pathname);
+                                    item.activeOnLinks?.forEach(v => {
+                                        active = active || matchPath(v, location.pathname);
+                                    })
                                     return (
                                         <li
-                                            className={`nav-item ${matchPath(item.link, location.pathname) ? "active" : ""}`}
+                                            className={`nav-item ${active ? "active" : ""}`}
                                             key={index}
                                         >
                                             <Link
