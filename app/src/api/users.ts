@@ -104,3 +104,12 @@ export async function AdminSetUserPassword(userEmail: string, newPassword: strin
         return false;
     }
 }
+
+export async function AdminImpersonateUser(userEmail:string): Promise<boolean> {
+    try {
+        await axios.post(`/api/v1/admin/users/${userEmail}/impersonate`);
+        return true;
+    } catch {
+        return false;
+    }
+}

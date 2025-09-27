@@ -35,9 +35,11 @@ export function UserDropdown() {
     return (
         <React.Fragment>
             <div className="d-flex">
-                <div className="mx-1 px-2 text-warning btn btn-outline-warning">
-                    <FontAwesomeIcon icon={faUserSecret} />
-                </div>
+                {user.impersonated && (
+                    <div className="mx-1 px-2 text-warning btn btn-outline-warning">
+                        <FontAwesomeIcon icon={faUserSecret} />
+                    </div>
+                )}
                 <div className="nav-item dropdown">
                     <span
                         className="nav-link d-flex lh-1 p-0 px-2"

@@ -36,6 +36,8 @@ function TemplateManagerRequired({ children }: TemplateManagerRequiredProps) {
                     {children}
                 </React.Fragment>
             );
+        } else {
+            navigate("/");
         }
     }
 

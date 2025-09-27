@@ -296,5 +296,82 @@ func HandleAdminSetUserPassword(c *gin.Context) {
 // @Success 200
 // @Router /api/v1/admin/users/{email}/impersonate [post]
 func HandleAdminImpersonateUser(c *gin.Context) {
+	// TODO: limit the impersonation only to jwt tokens used in cookies
+	email, _ := c.Params.Get("email")
 
+	user, err := models.RetrieveUserByEmail(email)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if user == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "user not found")
+		return
+	}
+
+	if user.IsSuperuser {
+		utils.ErrorResponse(c, http.StatusBadRequest, "cannot impersonate a superuser")
+		return
+	}
+
+	// start impersonation and create impersonation log
+	token, err := utils.GetTokenFromContext(c)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	token.ImpersonatedUserID = user.ID
+	token.ImpersonatedUser = user
+
+	if err := models.UpdateToken(token); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	_, err = models.CreateImpersonationLog(
+		token,
+		token.User,
+		c.ClientIP(),
+		*user,
+	)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"detail": "impersonation started",
+	})
+}
+
+// HandleStopImpersonation godoc
+// @Summary API to stop the impersonation of a user
+// @Schemes
+// @Description API to stop the impersonation of a user
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/admin/users/{email}/stop-impersonation [post]
+func HandleStopImpersonation(c *gin.Context) {
+	token, err := utils.GetTokenFromContext(c)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if token.ImpersonatedUser == nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"no user is being impersonated in this session",
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"detail": "impersonation has been stopped",
+	})
 }

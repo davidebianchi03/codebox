@@ -37,6 +37,8 @@ function SuperUserRequired({ children }: SuperUserRequiredProps) {
           {children}
         </React.Fragment>
       );
+    } else {
+      navigate("/");
     }
   }
 

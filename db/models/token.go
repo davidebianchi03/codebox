@@ -63,6 +63,14 @@ func CreateToken(user User, duration time.Duration) (Token, error) {
 }
 
 /*
+Update a token
+*/
+func UpdateToken(token Token) error {
+	r := dbconn.DB.Save(&token)
+	return r.Error
+}
+
+/*
 GetLoginCountPerDayInLast7Days returns an array of login counts for each of the last 7 days.
 The array is ordered from oldest to newest day.
 */

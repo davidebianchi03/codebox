@@ -12,6 +12,10 @@ func GetUserFromContext(ctx *gin.Context) (models.User, error) {
 		return models.User{}, err
 	}
 
+	if token.ImpersonatedUser != nil {
+		return *token.ImpersonatedUser, nil
+	}
+
 	return token.User, nil
 }
 

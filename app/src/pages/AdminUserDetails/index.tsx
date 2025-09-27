@@ -18,7 +18,7 @@ import * as Yup from "yup";
 import { AdminChangePasswordModal } from "./AdminChangePasswordModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
-import { AdminDeleteUser, AdminRetrieveUserByEmail, AdminUpdateUser } from "../../api/users";
+import { AdminDeleteUser, AdminImpersonateUser, AdminRetrieveUserByEmail, AdminUpdateUser } from "../../api/users";
 import React from "react";
 import Swal from "sweetalert2";
 import { AdminUser } from "../../types/user";
@@ -133,6 +133,17 @@ export function AdminUserDetails() {
       }
     }
   }, [navigate, user]);
+
+  const HandleImpersonateUser = useCallback(async() => {
+    if(user) {
+      if(await AdminImpersonateUser(user.email)) {
+        // force the reload of the page
+        window.location.href = "/";
+      } else {
+        toast.error(`Failed to impersonate ${user.email}`)
+      }
+    }
+  }, [user]);
 
   return (
     <React.Fragment>
@@ -266,7 +277,7 @@ export function AdminUserDetails() {
                           <b>Last Login:</b>
                         </p>
                         <p>
-                          {new Date(user?.last_login || "").toLocaleString()}
+                          {user?.last_login ? new Date(user.last_login).toLocaleString() : "Never logged in"}
                         </p>
                       </Col>
                       <Col md={6}>
@@ -300,15 +311,19 @@ export function AdminUserDetails() {
                   <CardHeader className="pb-0 border-0">
                     <h3>Actions</h3>
                   </CardHeader>
-                  <CardBody className="pt-0">
-                    {/* <Button color="yellow" className="me-2">
-                      Impersonate (Coming soon)
-                    </Button> */}
-                    {/* {user.email} */}
+                  <CardBody className="pt-0 d-flex gap-2">
+                    {user?.email !== currentUser.email && !user?.is_superuser && (
+                      <Button color="yellow" onClick={HandleImpersonateUser}>
+                        Impersonate
+                      </Button>
+                    )}
                     {user?.email !== currentUser.email && (
                       <Button color="danger" onClick={HandleDeleteUser}>
                         Delete
                       </Button>
+                    )}
+                    {user?.email === currentUser.email && (
+                      <p>No actions available for this user</p>
                     )}
                   </CardBody>
                 </Card>
