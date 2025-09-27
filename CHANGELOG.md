@@ -3,9 +3,15 @@ All changes will be reported in this file
 
 # [Unreleased]
 
+### Added 
+
+- Added react redux
+
 ### Fixed
 
 - UI/UX improvements
+
+### Updated
 - Refactoring of admin interface
 
 # [v0.0.46] - 2025-08-30
