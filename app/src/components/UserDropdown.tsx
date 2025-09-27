@@ -5,23 +5,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { Col, Row } from "reactstrap";
 import DefaultAvatar from "../assets/images/default-avatar.png";
 import sha256 from "crypto-js/sha256";
-import { Logout, RetrieveCurrentUserDetails, RetrieveInstanceSettings } from "../api/common";
+import { Logout, RetrieveInstanceSettings } from "../api/common";
 import { InstanceSettings } from "../types/settings";
-import { User } from "../types/user";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
 
 export function UserDropdown() {
     const navigate = useNavigate();
     const [settings, setSettings] = useState<InstanceSettings | null>(null);
-    const [user, setUser] = useState<User | null>(null);
-
-    const WhoAmI = useCallback(async () => {
-        const user = await RetrieveCurrentUserDetails();
-        if (user) {
-            setUser(user);
-        } else {
-            navigate(`/login`);
-        }
-    }, [navigate]);
+    const user = useSelector((state:RootState) => state.user);
 
     const HandleLogout = (e: any) => {
         e.preventDefault();
@@ -39,10 +31,6 @@ export function UserDropdown() {
     useEffect(() => {
         FetchSettings();
     }, [FetchSettings]);
-
-    useEffect(() => {
-        WhoAmI();
-    }, [WhoAmI]);
 
     return (
         <React.Fragment>

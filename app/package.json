@@ -15,7 +15,7 @@
     "@mui/material": "^6.4.11",
     "@mui/styled-engine-sc": "^6.4.6",
     "@mui/x-tree-view": "^8.3.0",
-    "@reduxjs/toolkit": "^2.6.0",
+    "@reduxjs/toolkit": "^2.9.0",
     "@tabler/core": "^1.1.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",

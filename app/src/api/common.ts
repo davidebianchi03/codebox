@@ -1,10 +1,10 @@
 import axios from "axios";
-import { User } from "../types/user";
+import { CurrentUser, User } from "../types/user";
 import { InstanceSettings } from "../types/settings";
 
-export async function RetrieveCurrentUserDetails(): Promise<User | undefined> {
+export async function RetrieveCurrentUserDetails(): Promise<CurrentUser | undefined> {
     try {
-        const response = await axios.get<User>(`/api/v1/auth/user-details`);
+        const response = await axios.get<CurrentUser>(`/api/v1/auth/user-details`);
         return response.data;
     } catch {
         return undefined;

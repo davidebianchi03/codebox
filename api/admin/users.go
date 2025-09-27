@@ -19,7 +19,7 @@ import (
 // @Tags Admin
 // @Accept json
 // @Produce json
-// @Success 200 {object} []serializers.UserSerializer
+// @Success 200 {object} []serializers.AdminUserSerializer
 // @Router /api/v1/admin/users [get]
 func HandleAdminListUsers(c *gin.Context) {
 	limit := c.Query("limit")
@@ -46,7 +46,7 @@ func HandleAdminListUsers(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, serializers.LoadMultipleUserSerializer(*users))
+	c.JSON(http.StatusOK, serializers.LoadMultipleAdminUserSerializer(*users))
 }
 
 // HandleAdminRetrieveUser godoc
@@ -56,7 +56,7 @@ func HandleAdminListUsers(c *gin.Context) {
 // @Tags Admin
 // @Accept json
 // @Produce json
-// @Success 200 {object} serializers.UserSerializer
+// @Success 200 {object} serializers.AdminUserSerializer
 // @Router /api/v1/admin/users/{email} [get]
 func HandleAdminRetrieveUser(c *gin.Context) {
 	email, _ := c.Params.Get("email")
@@ -72,7 +72,7 @@ func HandleAdminRetrieveUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, serializers.LoadUserSerializer(user))
+	c.JSON(http.StatusOK, serializers.LoadAdminUserSerializer(user))
 }
 
 type AdminCreateUserRequestBody struct {
@@ -92,7 +92,7 @@ type AdminCreateUserRequestBody struct {
 // @Accept json
 // @Produce json
 // @Param request body AdminCreateUserRequestBody true "User info"
-// @Success 200 {object} serializers.UserSerializer
+// @Success 200 {object} serializers.AdminUserSerializer
 // @Router /api/v1/admin/users [post]
 func HandleAdminCreateUser(c *gin.Context) {
 	var reqBody AdminCreateUserRequestBody
@@ -134,7 +134,7 @@ func HandleAdminCreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, serializers.LoadUserSerializer(u))
+	c.JSON(http.StatusCreated, serializers.LoadAdminUserSerializer(u))
 }
 
 type AdminUpdateUserRequestBody struct {
@@ -152,7 +152,7 @@ type AdminUpdateUserRequestBody struct {
 // @Accept json
 // @Produce json
 // @Param request body AdminUpdateUserRequestBody true "User info"
-// @Success 200 {object} serializers.UserSerializer
+// @Success 200 {object} serializers.AdminUserSerializer
 // @Router /api/v1/admin/users/{email} [put]
 func HandleAdminUpdateUser(c *gin.Context) {
 	currentUser, _ := utils.GetUserFromContext(c)
@@ -192,7 +192,7 @@ func HandleAdminUpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, serializers.LoadUserSerializer(user))
+	c.JSON(http.StatusOK, serializers.LoadAdminUserSerializer(user))
 }
 
 // HandleAdminDeleteUser godoc

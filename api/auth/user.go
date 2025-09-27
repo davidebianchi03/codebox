@@ -39,7 +39,7 @@ func HandleRetriveUserDetails(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, serializers.LoadUserSerializer(&user))
+	ctx.JSON(http.StatusOK, serializers.LoadCurrentUserSerializer(&user, false))
 }
 
 // PUT or PATCH /api/v1/auth/user-details
@@ -75,7 +75,7 @@ func HandleUpdateUserDetails(ctx *gin.Context) {
 
 	dbconn.DB.Save(&user)
 
-	ctx.JSON(http.StatusOK, serializers.LoadUserSerializer(&user))
+	ctx.JSON(http.StatusOK, serializers.LoadCurrentUserSerializer(&user, false))
 }
 
 // GET /api/v1/auth/user-ssh-public-key

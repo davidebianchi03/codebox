@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, Table } from "reactstrap";
-import { User } from "../../types/user";
-import { AdminListUsers } from "../../api/admin";
+import { AdminUser } from "../../types/user";
+import { AdminListUsers } from "../../api/users";
 import { Link } from "react-router-dom";
 
 export function UsersListTable() {
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<AdminUser[]>([]);
 
     const FetchUsers = useCallback(async () => {
         const u = await AdminListUsers(5);

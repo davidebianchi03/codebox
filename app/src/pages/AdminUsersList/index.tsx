@@ -4,22 +4,20 @@ import {
   Card,
   Col,
   Container,
-  Input,
   Row,
-  Table,
 } from "reactstrap";
 import { CreateUserModal } from "./CreateUserModal";
 import { ToastContainer } from "react-toastify";
-import { User } from "../../types/user";
+import { AdminUser } from "../../types/user";
 import { Link, useNavigate } from "react-router-dom";
-import { AdminListUsers } from "../../api/admin";
+import { AdminListUsers } from "../../api/users";
 import DataTable from "../../components/DataTable";
 import { TimeSince } from "../../common/time";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function AdminUsersList() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [showCreateUserModal, setShowCreateUserModal] =
     useState<boolean>(false);
 
@@ -62,7 +60,7 @@ export function AdminUsersList() {
                     label: "Email",
                     key: "email",
                     sortable: true,
-                    render: (_, user: User) => (
+                    render: (_, user: AdminUser) => (
                       <Link to={`/admin/users/${user.email}`}>
                         <b>{user.email}</b>
                       </Link>
@@ -82,7 +80,7 @@ export function AdminUsersList() {
                     label: "Admin",
                     key: "is_superuser",
                     sortable: true,
-                    render: (_, user: User) =>
+                    render: (_, user: AdminUser) =>
                       <React.Fragment>
                         <span className={`ps-3 ${user.is_superuser ? "text-success" : "text-danger"}`}>
                           {user.is_superuser ?
@@ -97,7 +95,7 @@ export function AdminUsersList() {
                     key: "is_template_manager",
                     sortable: true,
 
-                    render: (_, user: User) =>
+                    render: (_, user: AdminUser) =>
                       <React.Fragment>
                         <span
                           className={`${user.is_template_manager ? "text-success" : "text-danger"}`}
@@ -114,7 +112,7 @@ export function AdminUsersList() {
                     label: "Last login",
                     key: "last_login",
                     sortable: true,
-                    render: (_, user: User) =>
+                    render: (_, user: AdminUser) =>
                       user.last_login
                         ? TimeSince(new Date(user.last_login))
                         : "Never",

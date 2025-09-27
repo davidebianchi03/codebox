@@ -7,17 +7,16 @@ import { TemplateDetailsVersions } from "./TemplateDetailsVersions";
 import { TemplateDetailsHeader } from "./TemplateDetailsHeader";
 import { TemplateDetailsSummary } from "./TemplateDetailsSummary";
 import { TemplateDetailsWorkspaces } from "./TemplateDetailsWorkspaces";
-import { User } from "../../types/user";
-import { RetrieveCurrentUserDetails } from "../../api/common";
 import { APIRetrieveTemplateById } from "../../api/templates";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 export function TemplateDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [template, setTemplate] = useState<WorkspaceTemplate>();
     const [selectedTab, setSelectedTab] = useState<number>(0);
-
-    const [user, setUser] = useState<User | null>(null);
+    const user = useSelector((state:RootState) => state.user);
 
     const fetchTemplate = useCallback(async () => {
         if (id) {
@@ -33,17 +32,10 @@ export function TemplateDetailsPage() {
         }
     }, [id, navigate]);
 
-    const WhoAmI = useCallback(async () => {
-        const user = await RetrieveCurrentUserDetails();
-        if (user) {
-            setUser(user);
-        }
-    }, []);
 
     useEffect(() => {
         fetchTemplate();
-        WhoAmI();
-    }, [WhoAmI, fetchTemplate]);
+    }, [fetchTemplate]);
 
     return (
         <React.Fragment>

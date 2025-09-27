@@ -1,18 +1,17 @@
-import { withRouter } from "../common/router";
 import { Navbar } from "./Navbar";
 import { Container } from "reactstrap";
 import React from "react";
-import { SuperUserSidebar } from "./SuperUserSidebar";
+import { Sidebar, SidebarItem } from "./Sidebar";
 
-type Props = {
-  children: any;
-  showNavbar?: boolean;
+type SidebarLayoutProps = {
+  children: React.ReactNode;
+  sidebarItems: SidebarItem[];
 };
 
-function AuthRequired({ children, showNavbar = true }: Props) {
+export function SidebarLayout({ children, sidebarItems }: SidebarLayoutProps) {
   return (
     <React.Fragment>
-      <SuperUserSidebar />
+      <Sidebar sidebarItems={sidebarItems} />
       <div className="page-wrapper">
         <div className="superuser-navbar">
           <Navbar showLogo={false} />
@@ -24,5 +23,3 @@ function AuthRequired({ children, showNavbar = true }: Props) {
     </React.Fragment>
   );
 }
-
-export default withRouter(AuthRequired);

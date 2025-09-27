@@ -1,10 +1,8 @@
-import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
+import { Link, matchPath, useLocation } from "react-router-dom";
 import CodeboxLogo from "../assets/images/codebox-logo-white.png";
-import { BackhoeIcon, HomeIcon, LicenseIcon, PackagesIcon, PasswordUserIcon, UserIcon } from "../icons/Tabler";
-import { Navbar } from "./Navbar";
-import { UserDropdown } from "./UserDropdown";
+import { UserDropdown } from "../components/UserDropdown";
 
-interface SidebarItem {
+export interface SidebarItem {
     title: string;
     icon?: JSX.Element;
     type: "link" | "header";
@@ -12,60 +10,11 @@ interface SidebarItem {
     activeOnLinks?: string[];
 }
 
-const SidebarItems: SidebarItem[] = [
-    {
-        title: "Overview",
-        type: "header"
-    },
-    {
-        title: "Dashboard",
-        icon: <HomeIcon />,
-        type: "link", link:
-            "/admin"
-    },
-    {
-        title: "Users",
-        icon: <UserIcon />,
-        type: "link",
-        link: "/admin/users",
-        activeOnLinks: ["/admin/users", "/admin/users/:userEmail"]
-    },
-    // { title: "Groups", icon: <GroupIcon />, type: "link", link: "/admin/groups" },
-    {
-        title: "Runners",
-        icon: <BackhoeIcon />, type: "link", link: "/admin/runners",
-        activeOnLinks: ["/admin/runners", "/admin/runners/:id"]
-    },
-    {
-        title: "System",
-        type: "header"
-    },
-    {
-        title: "Authentication",
-        icon: <PasswordUserIcon />,
-        type: "link",
-        link: "/admin/auth"
-    },
-    {
-        title: "Credits",
-        type: "header"
-    },
-    {
-        title: "License",
-        icon: <LicenseIcon />,
-        type: "link",
-        link: "/admin/license"
-    },
-    {
-        title: "Third party packages",
-        icon: <PackagesIcon />,
-        type: "link",
-        link: "/admin/3rd-packages"
-    },
-];
+interface SidebarProps {
+    sidebarItems: SidebarItem[];
+}
 
-
-export const SuperUserSidebar = () => {
+export const Sidebar = ({ sidebarItems }: SidebarProps) => {
     const location = useLocation();
 
     return (
@@ -93,7 +42,7 @@ export const SuperUserSidebar = () => {
                 <div className="navbar-collapse collapse" id="sidebar-menu">
                     <ul className="navbar-nav pt-lg-3">
                         {
-                            SidebarItems.map((item, index) => {
+                            sidebarItems.map((item, index) => {
                                 if (item.type === "header") {
                                     return (
                                         <li className="menu-title" key={index}>

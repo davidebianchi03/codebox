@@ -15,18 +15,19 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { User } from "../../types/user";
 import { AdminChangePasswordModal } from "./AdminChangePasswordModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
-import { RetrieveCurrentUserDetails } from "../../api/common";
-import { AdminDeleteUser, AdminRetrieveUserByEmail, AdminUpdateUser } from "../../api/admin";
+import { AdminDeleteUser, AdminRetrieveUserByEmail, AdminUpdateUser } from "../../api/users";
 import React from "react";
 import Swal from "sweetalert2";
+import { AdminUser } from "../../types/user";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 export function AdminUserDetails() {
-  const [user, setUser] = useState<User>();
-  const [currentUser, setCurrentUser] = useState<User>();
+  const [user, setUser] = useState<AdminUser>();
+  const currentUser = useSelector((state: RootState) => state.user);
   const [showChangePasswordModal, setShowChangePasswordModal] =
     useState<boolean>(false);
 
@@ -84,17 +85,9 @@ export function AdminUserDetails() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email, navigate]);
 
-  const WhoAmI = useCallback(async () => {
-    const user = await RetrieveCurrentUserDetails();
-    if (user) {
-      setCurrentUser(user);
-    }
-  }, []);
-
   useEffect(() => {
     FetchUser();
-    WhoAmI();
-  }, [FetchUser, WhoAmI]);
+  }, [FetchUser]);
 
   const HandleDeleteUser = useCallback(async () => {
     if (user) {
@@ -139,7 +132,7 @@ export function AdminUserDetails() {
         }
       }
     }
-  }, [user]);
+  }, [navigate, user]);
 
   return (
     <React.Fragment>
@@ -160,7 +153,7 @@ export function AdminUserDetails() {
             <Card body className="pt-4">
               <div className="d-flex align-items-center">
                 <div>
-                  <img src="" />
+                  {/* <img src="" /> */}
                 </div>
                 <div>
                   <h2 className="mb-2">{user?.first_name} {user?.last_name}</h2>
@@ -312,9 +305,11 @@ export function AdminUserDetails() {
                       Impersonate (Coming soon)
                     </Button> */}
                     {/* {user.email} */}
-                    <Button color="danger" onClick={HandleDeleteUser}>
-                      Delete
-                    </Button>
+                    {user?.email !== currentUser.email && (
+                      <Button color="danger" onClick={HandleDeleteUser}>
+                        Delete
+                      </Button>
+                    )}
                   </CardBody>
                 </Card>
               </Col>

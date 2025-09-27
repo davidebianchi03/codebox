@@ -1,19 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, Col, Container, Row, Table } from "reactstrap";
+import { Card, Col, Container, Row } from "reactstrap";
 import { toast } from "react-toastify";
 import { AdminRetrieveStats } from "../../api/admin";
 import { AdminStats } from "../../types/admin";
 import { LoginsInLast7Days } from "./LoginsInLast7Days";
-import { User } from "../../types/user";
-import { RetrieveCurrentUserDetails } from "../../api/common";
 import { TimeSince } from "../../common/time";
 import { UsersListTable } from "./UsersListTable";
 import { RunnersListTable } from "./RunnersListTable";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 
 export function AdminDashboard() {
     const [stats, setStats] = useState<AdminStats>();
-    const [user, setUser] = useState<User>();
+    const user = useSelector((state:RootState) => state.user);
 
     const FetchAdminStats = useCallback(
         async () => {
@@ -27,22 +27,9 @@ export function AdminDashboard() {
         [],
     );
 
-    const FetchUserDetails = useCallback(
-        async () => {
-            const data = await RetrieveCurrentUserDetails();
-            if (data === undefined) {
-                toast.error("Failed to fetch user details");
-                return;
-            }
-            setUser(data);
-        },
-        [],
-    );
-
     useEffect(() => {
         FetchAdminStats();
-        FetchUserDetails();
-    }, [FetchAdminStats, FetchUserDetails]);
+    }, [FetchAdminStats]);
 
     return (
         <React.Fragment>

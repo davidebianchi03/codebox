@@ -1,10 +1,6 @@
 import CodeboxLogo from "../assets/images/codebox-logo-white.png";
-import { Link, useNavigate } from "react-router-dom";
-import { InstanceSettings } from "../types/settings";
-import { useCallback, useEffect, useState } from "react";
-import { User } from "../types/user";
-import { Logout, RetrieveInstanceSettings } from "../api/common";
-import { UserDropdown } from "./UserDropdown";
+import { Link } from "react-router-dom";
+import { UserDropdown } from "../components/UserDropdown";
 
 interface Props {
   showLogo?: boolean;
