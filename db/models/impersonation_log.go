@@ -11,7 +11,7 @@ type ImpersonationLog struct {
 	ID                      uint       `gorm:"primarykey"`
 	TokenID                 *uint      `gorm:"column:token_id;"`
 	Token                   *Token     `gorm:"constraint:OnDelete:SET NULL;"`
-	ImpersonatorID          uint       `gorm:"column:impersonated_user_id;not null;"`
+	ImpersonatorID          uint       `gorm:"column:impersonator_id;not null;"`
 	Impersonator            User       `gorm:"constraint:OnDelete:CASCADE;"`
 	ImpersonatorIPAddress   string     `gorm:"column:impersonator_ip_address;not null;"`
 	ImpersonatedUserID      uint       `gorm:"column:impersonated_user_id;not null;"`
@@ -45,6 +45,30 @@ func CreateImpersonationLog(
 	}
 
 	return &l, nil
+}
+
+/*
+List impersonation logs for a user
+*/
+func ListImpersonationLogsByImpersonatedUser(user User) ([]ImpersonationLog, error) {
+	var logs []ImpersonationLog
+
+	r := dbconn.DB.
+		Preload("Impersonator").
+		Preload("ImpersonatedUser").
+		Preload("Token").
+		Find(
+			&logs,
+			map[string]interface{}{
+				"impersonated_user_id": user.ID,
+			},
+		)
+
+	if r.Error != nil {
+		return nil, r.Error
+	}
+
+	return logs, nil
 }
 
 /*

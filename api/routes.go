@@ -310,6 +310,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"users/:email/impersonate",
 				permissions.AdminRequiredRoute(admin.HandleAdminImpersonateUser),
 			)
+			adminApis.GET(
+				"users/:email/impersonation-logs",
+				permissions.AdminRequiredRoute(admin.HandleAdminListImpersonationLogsByUser),
+			)
 		}
 	}
 

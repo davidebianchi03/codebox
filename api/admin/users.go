@@ -345,3 +345,38 @@ func HandleAdminImpersonateUser(c *gin.Context) {
 		"detail": "impersonation started",
 	})
 }
+
+// HandleAdminListImpersonationLogsByUser godoc
+// @Summary API for admins to list impersonation logs for a user
+// @Schemes
+// @Description  API for admins to list impersonation logs for a user
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/admin/users/{email}/impersonation-logs [get]
+func HandleAdminListImpersonationLogsByUser(c *gin.Context) {
+	email, _ := c.Params.Get("email")
+
+	user, err := models.RetrieveUserByEmail(email)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if user == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "user not found")
+		return
+	}
+
+	logs, err := models.ListImpersonationLogsByImpersonatedUser(*user)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadMultipleImpersonationLogSerializer(logs),
+	)
+}

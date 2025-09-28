@@ -24,12 +24,13 @@ import Swal from "sweetalert2";
 import { AdminUser } from "../../types/user";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import { ImpersonationLogsModal } from "./ImpersonationLogsModal";
 
 export function AdminUserDetails() {
   const [user, setUser] = useState<AdminUser>();
   const currentUser = useSelector((state: RootState) => state.user);
-  const [showChangePasswordModal, setShowChangePasswordModal] =
-    useState<boolean>(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState<boolean>(false);
+  const [showImpersonationLogsModal, setShowImpersonationLogsModal] = useState<boolean>(false);
 
   const { email } = useParams();
   const navigate = useNavigate();
@@ -134,9 +135,9 @@ export function AdminUserDetails() {
     }
   }, [navigate, user]);
 
-  const HandleImpersonateUser = useCallback(async() => {
-    if(user) {
-      if(await AdminImpersonateUser(user.email)) {
+  const HandleImpersonateUser = useCallback(async () => {
+    if (user) {
+      if (await AdminImpersonateUser(user.email)) {
         // force the reload of the page
         window.location.href = "/";
       } else {
@@ -313,9 +314,14 @@ export function AdminUserDetails() {
                   </CardHeader>
                   <CardBody className="pt-0 d-flex gap-2">
                     {user?.email !== currentUser.email && !user?.is_superuser && (
-                      <Button color="yellow" onClick={HandleImpersonateUser}>
-                        Impersonate
-                      </Button>
+                      <React.Fragment>
+                        <Button color="yellow" onClick={HandleImpersonateUser}>
+                          Impersonate
+                        </Button>
+                        <Button color="accent" onClick={() => setShowImpersonationLogsModal(true)}>
+                          View Impersonation logs
+                        </Button>
+                      </React.Fragment>
                     )}
                     {user?.email !== currentUser.email && (
                       <Button color="danger" onClick={HandleDeleteUser}>
@@ -335,11 +341,18 @@ export function AdminUserDetails() {
           toastClassName={"bg-dark"}
         />
         {user && (
-          <AdminChangePasswordModal
-            isOpen={showChangePasswordModal}
-            onClose={() => setShowChangePasswordModal(false)}
-            user={user}
-          />
+          <React.Fragment>
+            <AdminChangePasswordModal
+              isOpen={showChangePasswordModal}
+              onClose={() => setShowChangePasswordModal(false)}
+              user={user}
+            />
+            <ImpersonationLogsModal
+              isOpen={showImpersonationLogsModal}
+              onClose={() => setShowImpersonationLogsModal(false)}
+              user={user}
+            />
+          </React.Fragment>
         )}
       </Container>
     </React.Fragment>
