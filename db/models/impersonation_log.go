@@ -46,3 +46,33 @@ func CreateImpersonationLog(
 
 	return &l, nil
 }
+
+/*
+RetrieveLatestImpersonationLogByToken
+Retrieve the latest impersonation log related to a token
+*/
+func RetrieveLatestImpersonationLogByToken(t Token) (*ImpersonationLog, error) {
+	var l *ImpersonationLog
+
+	r := dbconn.DB.Last(
+		&l,
+		map[string]interface{}{
+			"token_id": t.ID,
+		},
+	)
+
+	if r.Error != nil {
+		return nil, r.Error
+	}
+
+	return l, nil
+}
+
+/*
+UpdateImpersonationLog
+This method updates the values for a row in the db
+*/
+func UpdateImpersonationLog(log *ImpersonationLog) error {
+	r := dbconn.DB.Save(&log)
+	return r.Error
+}

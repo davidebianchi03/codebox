@@ -17,7 +17,7 @@ type Token struct {
 	ExpirationDate     *time.Time `gorm:"column:expiration_date;"`
 	UserID             uint       `gorm:"column:user_id;"`
 	User               User       `gorm:"constraint:OnDelete:CASCADE;"`
-	ImpersonatedUserID uint       `gorm:"column:impersonated_user_id;"`
+	ImpersonatedUserID *uint      `gorm:"column:impersonated_user_id;"`
 	ImpersonatedUser   *User      `gorm:"constraint:OnDelete:CASCADE;"`
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
@@ -40,6 +40,9 @@ func generateJWTToken(userId uint, expiration time.Time) (string, error) {
 	return tokenString, nil
 }
 
+/*
+CreateToken create a token for a user
+*/
 func CreateToken(user User, duration time.Duration) (Token, error) {
 	tokenExpiration := time.Now().Add(duration)
 
@@ -67,6 +70,14 @@ Update a token
 */
 func UpdateToken(token Token) error {
 	r := dbconn.DB.Save(&token)
+	return r.Error
+}
+
+/*
+Delete a token
+*/
+func DeleteToken(token *Token) error {
+	r := dbconn.DB.Unscoped().Delete(&token)
 	return r.Error
 }
 

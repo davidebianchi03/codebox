@@ -113,3 +113,12 @@ export async function AdminImpersonateUser(userEmail:string): Promise<boolean> {
         return false;
     }
 }
+
+export async function StopImpersonation(): Promise<boolean> {
+    try {
+        await axios.post(`/api/v1/stop-impersonation`);
+        return true;
+    } catch {
+        return false;
+    }
+}

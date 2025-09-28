@@ -322,7 +322,7 @@ func HandleAdminImpersonateUser(c *gin.Context) {
 		return
 	}
 
-	token.ImpersonatedUserID = user.ID
+	token.ImpersonatedUserID = &user.ID
 	token.ImpersonatedUser = user
 
 	if err := models.UpdateToken(token); err != nil {
@@ -343,35 +343,5 @@ func HandleAdminImpersonateUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"detail": "impersonation started",
-	})
-}
-
-// HandleStopImpersonation godoc
-// @Summary API to stop the impersonation of a user
-// @Schemes
-// @Description API to stop the impersonation of a user
-// @Tags Admin
-// @Accept json
-// @Produce json
-// @Success 200
-// @Router /api/v1/admin/users/{email}/stop-impersonation [post]
-func HandleStopImpersonation(c *gin.Context) {
-	token, err := utils.GetTokenFromContext(c)
-	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
-		return
-	}
-
-	if token.ImpersonatedUser == nil {
-		utils.ErrorResponse(
-			c,
-			http.StatusBadRequest,
-			"no user is being impersonated in this session",
-		)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"detail": "impersonation has been stopped",
 	})
 }

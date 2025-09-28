@@ -2,13 +2,15 @@ import { faBorderTopLeft, faGears, faRightFromBracket, faUser, faUserSecret } fr
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Col, Row } from "reactstrap";
+import { Button, Col, Row } from "reactstrap";
 import DefaultAvatar from "../assets/images/default-avatar.png";
 import sha256 from "crypto-js/sha256";
 import { Logout, RetrieveInstanceSettings } from "../api/common";
 import { InstanceSettings } from "../types/settings";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { StopImpersonation } from "../api/users";
+import { toast } from "react-toastify";
 
 export function UserDropdown() {
     const navigate = useNavigate();
@@ -28,6 +30,17 @@ export function UserDropdown() {
         }
     }, []);
 
+    const HandleStopImpersonation = useCallback(async() => {
+        if(user.impersonated) {
+            if(await StopImpersonation()) {
+                // trigger a complete reload of the page
+                window.location.href = `/admin/users/${user.email}`
+            } else {
+                toast.error(`Failed to stop to impersonate ${user.email}`);
+            }
+        } 
+    }, [user.email, user.impersonated]);
+
     useEffect(() => {
         FetchSettings();
     }, [FetchSettings]);
@@ -36,9 +49,13 @@ export function UserDropdown() {
         <React.Fragment>
             <div className="d-flex">
                 {user.impersonated && (
-                    <div className="mx-1 px-2 text-warning btn btn-outline-warning">
+                    <Button 
+                        className="mx-1 px-2 text-warning btn btn-outline-warning"
+                        onClick={HandleStopImpersonation}
+                        title="Stop impersonating"
+                    >
                         <FontAwesomeIcon icon={faUserSecret} />
-                    </div>
+                    </Button>
                 )}
                 <div className="nav-item dropdown">
                     <span

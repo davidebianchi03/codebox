@@ -253,6 +253,8 @@ func V1ApiRoutes(router *gin.Engine) {
 			cli.HandleDownloadCLI,
 		)
 
+		v1.POST("stop-impersonation", permissions.AuthenticationRequiredRoute(auth.HandleStopImpersonation))
+
 		// admin routes
 		adminApis := v1.Group("/admin")
 		{

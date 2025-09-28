@@ -195,12 +195,27 @@ func HandleSignup(ctx *gin.Context) {
 func HandleLogout(ctx *gin.Context) {
 	token, err := utils.GetTokenFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"detail": err.Error(),
-		})
+		utils.ErrorResponse(ctx, http.StatusUnauthorized, err.Error())
+		return
 	}
 
-	dbconn.DB.Unscoped().Delete(&token)
+	if token.ImpersonatedUser != nil {
+		// stop impersonation log
+		log, err := models.RetrieveLatestImpersonationLogByToken(token)
+		if err != nil {
+			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+			return
+		}
+
+		now := time.Now()
+		log.ImpersonationFinishedAt = &now
+		if err := models.UpdateImpersonationLog(log); err != nil {
+			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+			return
+		}
+	}
+
+	models.DeleteToken(&token)
 
 	// clear cookies
 	SetAuthCookie(ctx, "", 0)
