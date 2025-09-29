@@ -1,8 +1,7 @@
 package admin
 
 import (
-	"fmt"
-	"math/rand"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -16,38 +15,14 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
-func RandStringBytesRmndr(n int) string {
-	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-#!_=+"
-	const (
-		letterIdxBits = 6                    // 6 bits to represent a letter index
-		letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-		letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-	)
-	b := make([]byte, n)
-	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
-	for i, cache, remain := n-1, rand.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = rand.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
-	}
-
-	return string(b)
-}
-
 // AdminRunners godoc
-// @Summary Admin Runners
+// @Summary List all available runners
 // @Schemes
-// @Description Admin Runners
+// @Description List all available runners
 // @Tags Admin
 // @Accept json
 // @Produce json
-// @Success 200 {object} serializers.AdminRunnersSerializer
+// @Success 200 {object} serializers.AdminRunnersSerializer[]
 // @Router /api/v1/admin/runners [get]
 func HandleAdminListRunners(c *gin.Context) {
 	limit := c.Query("limit")
@@ -76,60 +51,74 @@ func HandleAdminListRunners(c *gin.Context) {
 	c.JSON(http.StatusOK, serializers.LoadMultipleAdminRunnerSerializer(runners))
 }
 
+// HandleAdminRetrieveRunners godoc
+// @Summary Retrive a runner by its id
+// @Schemes
+// @Description Retrive a runner by its id
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.AdminRunnersSerializer
+// @Router /api/v1/admin/runners/:id [get]
 func HandleAdminRetrieveRunners(c *gin.Context) {
 	runnerId, _ := c.Params.Get("runnerId")
 
-	var runner models.Runner
-	r := dbconn.DB.Find(&runner, map[string]interface{}{
-		"id": runnerId,
-	})
-	if r.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	id, err := strconv.Atoi(runnerId)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
 		return
 	}
 
-	if runner.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "runner not found",
-		})
+	runner, err := models.RetrieveRunnerByID(uint(id))
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	c.JSON(http.StatusOK, runner)
+	if runner == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+		return
+	}
+
+	c.JSON(http.StatusOK, serializers.LoadAdminRunnerSerializer(runner))
 }
 
-func HandleAdminCreateRunner(c *gin.Context) {
-	type RequestBody struct {
-		Name         string `json:"name" binding:"required"`
-		Type         string `json:"type" binding:"required"`
-		UsePublicUrl bool   `json:"use_public_url"`
-		PublicUrl    string `json:"public_url"`
-	}
+type HandleAdminCreateRunnerRequestBody struct {
+	Name         string `json:"name" binding:"required"`
+	Type         string `json:"type" binding:"required"`
+	UsePublicUrl bool   `json:"use_public_url"`
+	PublicUrl    string `json:"public_url"`
+}
 
-	var parsedBody RequestBody
+// HandleAdminCreateRunner godoc
+// @Summary Create a runner
+// @Schemes
+// @Description Create a runner
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 201
+// @Param request body HandleAdminCreateRunnerRequestBody true "Runner details"
+// @Router /api/v1/admin/runners [post]
+func HandleAdminCreateRunner(c *gin.Context) {
+	// parse and validate request body
+	var parsedBody HandleAdminCreateRunnerRequestBody
 	err := c.ShouldBindBodyWithJSON(&parsedBody)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
-		})
+		log.Println(err)
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var exists bool
-	err = dbconn.DB.Model(models.Runner{}).Select("count(*) > 0").Where("name = ?", parsedBody.Name).Find(&exists).Error
+	runner, err := models.RetrieveRunnerByName(parsedBody.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		log.Println(err)
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	if exists {
-		c.JSON(http.StatusConflict, gin.H{
-			"detail": "another runner with the same name already exists",
-		})
+	if runner != nil {
+		utils.ErrorResponse(c, http.StatusConflict, "another runner with the same name already exists")
 		return
 	}
 
@@ -141,50 +130,43 @@ func HandleAdminCreateRunner(c *gin.Context) {
 	}
 
 	if !runnerTypeFound {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "runner type not found",
-		})
+		utils.ErrorResponse(c, http.StatusConflict, "runner type not found")
 		return
 	}
 
 	if parsedBody.UsePublicUrl {
 		if parsedBody.PublicUrl == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"detail": "'public_url' is required",
-			})
+			utils.ErrorResponse(c, http.StatusConflict, "'public_url' is required")
 			return
 		}
 
-		err = dbconn.DB.Model(models.Runner{}).Select("count(*) > 0").Where("public_url = ?", parsedBody.PublicUrl).Find(&exists).Error
+		exists, err := models.DoesRunnerExistWithUrl(parsedBody.PublicUrl)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"detail": "internal server error",
-			})
+			log.Println(err)
+			utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
 		if exists {
-			c.JSON(http.StatusConflict, gin.H{
-				"detail": "another runner with the same public url already exists",
-			})
+			utils.ErrorResponse(
+				c,
+				http.StatusConflict,
+				"another runner with the same public url already exists",
+			)
 			return
 		}
 	}
 
-	token := fmt.Sprintf("cbrt-%s", RandStringBytesRmndr(30))
-
-	runner := models.Runner{
-		Name:         parsedBody.Name,
-		Type:         parsedBody.Type,
-		Token:        token,
-		UsePublicUrl: parsedBody.UsePublicUrl,
-		PublicUrl:    parsedBody.PublicUrl,
-	}
-
-	if err = dbconn.DB.Create(&runner).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	// create the runner
+	runner, err = models.CreateRunner(
+		parsedBody.Name,
+		parsedBody.Type,
+		parsedBody.UsePublicUrl,
+		parsedBody.PublicUrl,
+	)
+	if err != nil {
+		log.Println(err)
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
@@ -192,7 +174,7 @@ func HandleAdminCreateRunner(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":    runner.ID,
-		"token": token,
+		"token": runner.Token,
 	})
 }
 

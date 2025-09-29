@@ -15,19 +15,20 @@ import (
 )
 
 type User struct {
-	ID                uint           `gorm:"primarykey" json:"-"`
-	Email             string         `gorm:"column:email; size:255; unique; not null;" json:"email"`
-	Password          string         `gorm:"column:password; not null;" json:"-"`
-	FirstName         string         `gorm:"column:first_name; size:255;" json:"first_name"`
-	LastName          string         `gorm:"column:last_name; size:255;" json:"last_name"`
-	Groups            []Group        `gorm:"many2many:user_groups;" json:"groups"`
-	SshPrivateKey     string         `gorm:"column:ssh_private_key; not null;" json:"-"`
-	SshPublicKey      string         `gorm:"column:ssh_public_key; not null;" json:"-"`
-	IsSuperuser       bool           `gorm:"column:is_superuser; column:is_superuser; default:false" json:"is_superuser"`
-	IsTemplateManager bool           `gorm:"column:is_template_manager; default:false" json:"is_template_manager"`
-	CreatedAt         time.Time      `json:"-"`
-	UpdatedAt         time.Time      `json:"-"`
-	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                 uint           `gorm:"primarykey" json:"-"`
+	Email              string         `gorm:"column:email; size:255; unique; not null;" json:"email"`
+	Password           string         `gorm:"column:password; not null;" json:"-"`
+	FirstName          string         `gorm:"column:first_name; size:255;" json:"first_name"`
+	LastName           string         `gorm:"column:last_name; size:255;" json:"last_name"`
+	Groups             []Group        `gorm:"many2many:user_groups;" json:"groups"`
+	SshPrivateKey      string         `gorm:"column:ssh_private_key; not null;" json:"-"`
+	SshPublicKey       string         `gorm:"column:ssh_public_key; not null;" json:"-"`
+	IsSuperuser        bool           `gorm:"column:is_superuser; column:is_superuser; default:false" json:"is_superuser"`
+	IsTemplateManager  bool           `gorm:"column:is_template_manager; default:false" json:"is_template_manager"`
+	DeletionInProgress bool           `gorm:"column:deletion_in_progress;default:false;not null;"`
+	CreatedAt          time.Time      `json:"-"`
+	UpdatedAt          time.Time      `json:"-"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func generateSshKeys() (string, string, error) {
