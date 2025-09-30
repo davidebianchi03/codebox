@@ -16,7 +16,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
-import { AdminListRunners, AdminRetrieveRunnerById, AdminUpdateRunner, ListRunnerTypes } from "../../api/runner";
+import { AdminDeleteRunner, AdminListRunners, AdminRetrieveRunnerById, AdminUpdateRunner, ListRunnerTypes } from "../../api/runner";
 
 export function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
@@ -112,10 +112,20 @@ export function AdminRunnerDetails() {
       if (r) {
         setRunner(r);
       } else {
-        navigate("/");
+        navigate("/admin/runners");
       }
     }
   }, [id, navigate]);
+
+  const HandleDeleteRunner = useCallback(async () => {
+    if (id) {
+      if (await AdminDeleteRunner(parseInt(id))) {
+        navigate("/admin/runners");
+      } else {
+        toast.error("Failed to delete the runner")
+      }
+    }
+  }, [id]);
 
   useEffect(() => {
     FetchRunner();
@@ -237,6 +247,16 @@ export function AdminRunnerDetails() {
                   {runner?.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"}
                 </div>
                 <div className="d-flex justify-content-end mt-4">
+                  <Button
+                    color="danger"
+                    className="me-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      HandleDeleteRunner();
+                    }}
+                  >
+                    Delete
+                  </Button>
                   <Button
                     color="accent"
                     className="me-2"

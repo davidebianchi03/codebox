@@ -270,13 +270,17 @@ func V1ApiRoutes(router *gin.Engine) {
 				"runners/:runnerId",
 				permissions.AdminRequiredRoute(admin.HandleAdminRetrieveRunners),
 			)
+			adminApis.POST(
+				"runners",
+				permissions.AdminRequiredRoute(admin.HandleAdminCreateRunner),
+			)
 			adminApis.PUT(
 				"runners/:runnerId",
 				permissions.AdminRequiredRoute(admin.HandleAdminUpdateRunner),
 			)
-			adminApis.POST(
-				"runners",
-				permissions.AdminRequiredRoute(admin.HandleAdminCreateRunner),
+			adminApis.DELETE(
+				"runners/:runnerId",
+				permissions.AdminRequiredRoute(admin.HandleAdminDeleteRunner),
 			)
 			adminApis.GET(
 				"users",

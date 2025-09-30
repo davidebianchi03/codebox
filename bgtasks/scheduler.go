@@ -45,6 +45,7 @@ func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInsta
 	// runners jobs
 	pool.Job("ping_runners", (*Context).PingRunnersTask)
 	pool.PeriodicallyEnqueue("0 */2 * * * *", "ping_runners") // every 2 minutes (0 */2 * * * *)
+	pool.Job("delete_runner", (*Context).DeleteRunnerTask)
 
 	// user jobs
 	pool.Job("delete_user", (*Context).DeleteUserTask)

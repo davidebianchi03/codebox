@@ -90,3 +90,16 @@ export async function AdminUpdateRunner(
         return undefined;
     }
 }
+
+export async function AdminDeleteRunner(
+    runnerId: number
+): Promise<boolean> {
+    try {
+        await axios.delete(
+            `/api/v1/admin/runners/${runnerId}`,
+        );
+        return true;
+    } catch {
+        return false;
+    }
+}

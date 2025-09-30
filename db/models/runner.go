@@ -177,3 +177,33 @@ Update a runner
 func UpdateRunner(r Runner) error {
 	return dbconn.DB.Save(&r).Error
 }
+
+/*
+Retrieve workspaces that are using this runner
+*/
+func ListWorkspacesByRunner(r Runner) ([]Workspace, error) {
+	var w []Workspace
+	err := dbconn.DB.
+		Preload("Runner").
+		Preload("User").
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		Where("runner_id = ?", r.ID).
+		Find(&w).Error
+
+	if err != nil {
+		return []Workspace{}, err
+	}
+
+	return w, nil
+}
+
+/*
+Delete a runner
+*/
+func DeleteRunner(r Runner) error {
+	return dbconn.DB.
+		Unscoped().
+		Delete(&r).
+		Error
+}

@@ -232,3 +232,45 @@ func HandleAdminUpdateRunner(c *gin.Context) {
 
 	c.JSON(http.StatusOK, serializers.LoadAdminRunnerSerializer(runner))
 }
+
+// HandleAdminDeleteRunner godoc
+// @Summary Delete a runner
+// @Schemes
+// @Description Delete a runner
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /api/v1/admin/runners/:id [delete]
+func HandleAdminDeleteRunner(c *gin.Context) {
+	runnerId, _ := c.Params.Get("runnerId")
+
+	id, err := strconv.Atoi(runnerId)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+	}
+
+	runner, err := models.RetrieveRunnerByID(uint(id))
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if runner == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+		return
+	}
+
+	bgtasks.BgTasksEnqueuer.Enqueue("delete_runner", work.Q{"runner_id": runner.ID})
+
+	// runner.DeletionInProgress = true
+	if err := models.UpdateRunner(*runner); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	c.JSON(
+		http.StatusNoContent,
+		gin.H{"detail": "runner has been deleted"},
+	)
+}
