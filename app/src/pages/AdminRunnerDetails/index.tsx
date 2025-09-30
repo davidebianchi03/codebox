@@ -9,18 +9,17 @@ import {
   Label,
   Row,
 } from "reactstrap";
-import { Runner, RunnerType } from "../../types/runner";
+import { Runner, RunnerAdmin, RunnerType } from "../../types/runner";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
-import { ListRunnerTypes } from "../../api/runner";
-import { AdminListRunners, AdminRetrieveRunnerById, AdminUpdateRunner } from "../../api/admin";
+import { AdminListRunners, AdminRetrieveRunnerById, AdminUpdateRunner, ListRunnerTypes } from "../../api/runner";
 
 export function AdminRunnerDetails() {
-  const [runner, setRunner] = useState<Runner>();
+  const [runner, setRunner] = useState<RunnerAdmin>();
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
 
   const { id } = useParams();

@@ -11,7 +11,6 @@ import (
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/config"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -178,40 +177,46 @@ func HandleAdminCreateRunner(c *gin.Context) {
 	})
 }
 
+type AdminUpdateRunnerRequestBody struct {
+	Name         string `json:"name" binding:"required"`
+	Type         string `json:"type" binding:"required"`
+	UsePublicUrl *bool  `json:"use_public_url" binding:"required"`
+	PublicUrl    string `json:"public_url" binding:"required"`
+}
+
+// HandleAdminCreateRunner godoc
+// @Summary Create a runner
+// @Schemes
+// @Description Create a runner
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.AdminRunnersSerializer
+// @Param request body AdminUpdateRunnerRequestBody true "Runner details"
+// @Router /api/v1/admin/runners/:id [put]
 func HandleAdminUpdateRunner(c *gin.Context) {
 	runnerId, _ := c.Params.Get("runnerId")
 
-	var runner models.Runner
-	r := dbconn.DB.Find(&runner, map[string]interface{}{
-		"id": runnerId,
-	})
-	if r.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
-		return
-	}
-
-	if runner.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"detail": "runner not found",
-		})
-		return
-	}
-
-	type RequestBody struct {
-		Name         string `json:"name" binding:"required"`
-		Type         string `json:"type" binding:"required"`
-		UsePublicUrl *bool  `json:"use_public_url" binding:"required"`
-		PublicUrl    string `json:"public_url" binding:"required"`
-	}
-
-	var reqBody RequestBody
-	err := c.ShouldBindBodyWithJSON(&reqBody)
+	id, err := strconv.Atoi(runnerId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "missing or invalid field",
-		})
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+	}
+
+	runner, err := models.RetrieveRunnerByID(uint(id))
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if runner == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+		return
+	}
+
+	var reqBody AdminUpdateRunnerRequestBody
+	err = c.ShouldBindBodyWithJSON(&reqBody)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "missing or invalid field")
 		return
 	}
 
@@ -219,7 +224,11 @@ func HandleAdminUpdateRunner(c *gin.Context) {
 	runner.Type = reqBody.Type
 	runner.UsePublicUrl = *reqBody.UsePublicUrl
 	runner.PublicUrl = reqBody.PublicUrl
-	dbconn.DB.Save(&runner)
 
-	c.JSON(http.StatusOK, runner)
+	if err := models.UpdateRunner(*runner); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	c.JSON(http.StatusOK, serializers.LoadAdminRunnerSerializer(runner))
 }

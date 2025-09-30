@@ -10,19 +10,18 @@ import {
   Row,
   Table,
 } from "reactstrap";
-import { Runner, RunnerType } from "../../types/runner";
+import { Runner, RunnerAdmin, RunnerType } from "../../types/runner";
 import { CreateRunnerModal } from "./CreateRunnerModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
-import { ListRunnerTypes } from "../../api/runner";
-import { AdminListRunners } from "../../api/admin";
+import { AdminListRunners, ListRunnerTypes } from "../../api/runner";
 import DataTable from "../../components/DataTable";
 import React from "react";
 
 export function AdminRunners() {
-  const [runners, setRunners] = useState<Runner[]>([]);
+  const [runners, setRunners] = useState<RunnerAdmin[]>([]);
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
   const [showCreateRunnerModal, setCreateRunnerModal] =
     useState<boolean>(false);
@@ -136,7 +135,7 @@ export function AdminRunners() {
                 {
                   label: "Name",
                   key: "name",
-                  render: (_, runner: Runner) => (
+                  render: (_, runner: RunnerAdmin) => (
                     <Link to={`/admin/runners/${runner.id}`}>
                       <b>{runner.name}</b>
                     </Link>
@@ -149,14 +148,14 @@ export function AdminRunners() {
                 {
                   label: "Last contact",
                   key: "last_contact",
-                  render: (_, runner: Runner) => (
+                  render: (_, runner: RunnerAdmin) => (
                     runner.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"
                   ),
                 },
                 {
                   label: "Status",
                   key: "_",
-                  render: (_, runner: Runner) => (
+                  render: (_, runner: RunnerAdmin) => (
                     <React.Fragment>
                       {new Date(runner.last_contact) > new Date(Date.now() - 5 * 60 * 1000)
                         ? (

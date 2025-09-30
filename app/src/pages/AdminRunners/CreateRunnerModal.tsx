@@ -12,8 +12,7 @@ import {
 import * as Yup from "yup";
 import { Runner, RunnerType } from "../../types/runner";
 import { toast } from "react-toastify";
-import { ListRunnerTypes } from "../../api/runner";
-import { AdminCreateRunner, AdminListRunners } from "../../api/admin";
+import { AdminCreateRunner, AdminListRunners, ListRunnerTypes } from "../../api/runner";
 
 interface Props {
   isOpen: boolean;

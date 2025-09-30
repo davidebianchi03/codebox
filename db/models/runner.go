@@ -170,3 +170,10 @@ func CreateRunner(
 
 	return &runner, nil
 }
+
+/*
+Update a runner
+*/
+func UpdateRunner(r Runner) error {
+	return dbconn.DB.Save(&r).Error
+}

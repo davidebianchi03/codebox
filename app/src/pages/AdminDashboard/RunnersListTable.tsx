@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, Table } from "reactstrap";
-import { Runner } from "../../types/runner";
-import { AdminListRunners } from "../../api/admin";
+import { RunnerAdmin } from "../../types/runner";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import { AdminListRunners } from "../../api/runner";
 
 export function RunnersListTable() {
-    const [runners, setRunners] = useState<Runner[]>([]);
+    const [runners, setRunners] = useState<RunnerAdmin[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     const fetchRunners = useCallback(async () => {

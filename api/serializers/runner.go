@@ -35,10 +35,12 @@ func LoadMultipleRunnerSerializer(runners []models.Runner) []RunnerSerializer {
 
 // AdminRunnersSerializer is used for admin-specific runner information
 type AdminRunnersSerializer struct {
-	ID          uint       `json:"id"`
-	Name        string     `json:"name"`
-	Type        string     `json:"type"`
-	LastContact *time.Time `json:"last_contact"`
+	ID           uint       `json:"id"`
+	Name         string     `json:"name"`
+	Type         string     `json:"type"`
+	LastContact  *time.Time `json:"last_contact"`
+	UsePublicUrl bool       `json:"use_public_url"`
+	PublicUrl    string     `json:"public_url"`
 }
 
 func LoadAdminRunnerSerializer(runner *models.Runner) *AdminRunnersSerializer {
@@ -46,10 +48,12 @@ func LoadAdminRunnerSerializer(runner *models.Runner) *AdminRunnersSerializer {
 		return nil
 	}
 	return &AdminRunnersSerializer{
-		ID:          runner.ID,
-		Name:        runner.Name,
-		Type:        runner.Type,
-		LastContact: runner.LastContact,
+		ID:           runner.ID,
+		Name:         runner.Name,
+		Type:         runner.Type,
+		LastContact:  runner.LastContact,
+		UsePublicUrl: runner.UsePublicUrl,
+		PublicUrl:    runner.PublicUrl,
 	}
 }
 

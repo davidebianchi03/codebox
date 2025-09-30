@@ -4,6 +4,12 @@ export interface Runner {
     id: number;
     name: string;
     type: string;
+}
+
+export interface RunnerAdmin {
+    id: number;
+    name: string;
+    type: string;
     use_public_url: boolean;
     public_url: string;
     last_contact: string;
