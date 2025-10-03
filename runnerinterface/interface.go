@@ -26,6 +26,7 @@ func (ri *RunnerInterface) getRunnerBaseUrl() string {
 		return ri.Runner.PublicUrl
 	}
 
+	//TODO: raise exception if runner port is 0 (runner not connected)
 	return fmt.Sprintf("http://127.0.0.1:%d", ri.Runner.Port)
 }
 

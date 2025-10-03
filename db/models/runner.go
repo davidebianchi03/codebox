@@ -154,8 +154,6 @@ func CreateRunner(
 		}
 	}
 
-	fmt.Println("token: " + token)
-
 	runner := Runner{
 		Name:         runnerName,
 		Type:         runnerType,

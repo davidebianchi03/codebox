@@ -4,6 +4,7 @@ export interface Runner {
     id: number;
     name: string;
     type: string;
+    last_contact: string;
 }
 
 export interface RunnerAdmin {

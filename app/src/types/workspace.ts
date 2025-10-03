@@ -15,7 +15,7 @@ export interface Workspace {
     user: User
     status: string
     type: string
-    runner: Runner
+    runner: Runner | null
     config_source: string
     template_version: WorkspaceTemplateVersion
     git_source: GitSource|null

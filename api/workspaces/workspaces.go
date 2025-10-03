@@ -381,6 +381,11 @@ func HandleStartWorkspace(ctx *gin.Context) {
 		return
 	}
 
+	if workspace.Runner == nil {
+		utils.ErrorResponse(ctx, http.StatusFailedDependency, "no runner selected")
+		return
+	}
+
 	if workspace.Status == models.WorkspaceStatusStarting || workspace.Status == models.WorkspaceStatusRunning {
 		ctx.JSON(http.StatusConflict, gin.H{
 			"detail": "workspace is already running",
@@ -420,6 +425,7 @@ type UpdateWorkspaceRequestBody struct {
 	GitRefName           *string   `json:"git_ref_name"`
 	ConfigSourcePath     *string   `json:"config_source_path"`
 	EnvironmentVariables *[]string `json:"environment_variables"`
+	RunnerId             *uint     `json:"runner_id"`
 }
 
 // HandleUpdateWorkspace godoc
@@ -509,9 +515,60 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"detail": "internal server error",
+			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+			return
+		}
+	}
+
+	if reqBody.RunnerId != nil {
+		runner, err := models.RetrieveRunnerByID(*reqBody.RunnerId)
+		if err != nil {
+			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+			return
+		}
+
+		if runner == nil {
+			utils.ErrorResponse(ctx, http.StatusBadRequest, "runner not found")
+			return
+		}
+
+		rt := config.RetrieveRunnerTypeByID(runner.Type)
+		if rt == nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"detail": "runner matching runner_id and type not found",
 			})
+			return
+		}
+
+		// check if the runner supports the requested workspace type
+		supported := false
+		for _, supportedType := range rt.SupportedTypes {
+			if supportedType.ID == workspace.Type {
+				supported = true
+				break
+			}
+		}
+
+		if !supported {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"detail": "runner does not support the requested workspace type",
+			})
+			return
+		}
+
+		workspace, err = models.UpdateWorkspace(
+			workspace,
+			workspace.Name,
+			workspace.Status,
+			runner,
+			workspace.ConfigSource,
+			workspace.TemplateVersion,
+			workspace.GitSource,
+			workspace.EnvironmentVariables,
+		)
+
+		if err != nil {
+			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
 			return
 		}
 	}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Workspace } from "../../types/workspace";
@@ -16,19 +16,22 @@ import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
 import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace, APIUpdateWorkspaceConfig } from "../../api/workspace";
 import { APIRetrieveTemplateById, APIRetrieveTemplateLatestVersion } from "../../api/templates";
 import { WorkspaceTemplate } from "../../types/templates";
+import { WorkspaceSelectRunnerModal } from "./WorkspaceSelectRunnerModal";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const autoStartWorkspace = useRef<boolean>(false);
   const [workspace, setWorkspace] = useState<Workspace>();
   const [workspaceTemplate, setWorkspaceTemplate] = useState<WorkspaceTemplate | null>(null);
   const [fetchInterval, setFetchInterval] = useState(10000);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [canUpdateConfigFiles, setCanUpdateConfigFiles] = useState<boolean>(false);
+  const [showSelectRunnerModal, setShowSelectRunnerModal] = useState<boolean>(false);
 
   const FetchWorkspace = useCallback(async () => {
     if (id) {
-      const w = await APIRetrieveWorkspaceById(parseInt(id))
+      const w = await APIRetrieveWorkspaceById(parseInt(id));
       if (w) {
         setWorkspace(w);
       } else if (w === null) {
@@ -43,10 +46,22 @@ export default function WorkspaceDetails() {
 
   const HandleStartWorkspace = useCallback(async () => {
     if (id) {
-      if (await APIStartWorkspace(parseInt(id))) {
-        FetchWorkspace();
+      const workspace = await APIRetrieveWorkspaceById(parseInt(id));
+      if (workspace) {
+        if (workspace.runner == null) {
+          autoStartWorkspace.current = true;
+          setShowSelectRunnerModal(true);
+        } else {
+          if (await APIStartWorkspace(parseInt(id))) {
+            FetchWorkspace();
+          } else {
+            toast.error(`Failed to start workspace, try again later`);
+          }
+        }
       } else {
-        toast.error(`Failed to start workspace, try again later`);
+        toast.error(
+          `Failed to fetch workspace details, try again later`
+        );
       }
     }
   }, [FetchWorkspace, id]);
@@ -133,24 +148,28 @@ export default function WorkspaceDetails() {
 
   const CheckNewTemplateVersionAvailable = useCallback(async () => {
     if (workspace) {
-      const latestTemplateVersion = await APIRetrieveTemplateLatestVersion(
-        workspace?.template_version.template_id
-      );
-      if (latestTemplateVersion) {
-        setCanUpdateConfigFiles(latestTemplateVersion.id !== workspace?.template_version.id);
-      } else {
-        setCanUpdateConfigFiles(false);
+      if (workspace.template_version) {
+        const latestTemplateVersion = await APIRetrieveTemplateLatestVersion(
+          workspace?.template_version.template_id
+        );
+        if (latestTemplateVersion) {
+          setCanUpdateConfigFiles(latestTemplateVersion.id !== workspace?.template_version.id);
+        } else {
+          setCanUpdateConfigFiles(false);
+        }
       }
     }
   }, [workspace]);
 
   const FetchWorkspaceTemplate = useCallback(async () => {
-    if (workspace?.template_version.template_id) {
-      const template = await APIRetrieveTemplateById(workspace.template_version.template_id);
-      if (template) {
-        setWorkspaceTemplate(template);
-      } else {
-        setWorkspaceTemplate(null);
+    if (workspace?.template_version) {
+      if (workspace?.template_version.template_id) {
+        const template = await APIRetrieveTemplateById(workspace.template_version.template_id);
+        if (template) {
+          setWorkspaceTemplate(template);
+        } else {
+          setWorkspaceTemplate(null);
+        }
       }
     }
   }, [workspace]);
@@ -173,6 +192,17 @@ export default function WorkspaceDetails() {
       CheckNewTemplateVersionAvailable();
     }
   }, [CheckNewTemplateVersionAvailable, workspace]);
+
+  const HandleSelectRunnerModalClosed = useCallback(async (updated: boolean) => {
+    setShowSelectRunnerModal(false);
+    if (updated) {
+      await FetchWorkspace();
+      if (autoStartWorkspace.current) {
+        autoStartWorkspace.current = false;
+        HandleStartWorkspace();
+      }
+    }
+  }, [FetchWorkspace, HandleStartWorkspace]);
 
   useEffect(() => {
     FetchWorkspace();
@@ -314,6 +344,11 @@ export default function WorkspaceDetails() {
               setShowSettingsModal(false);
               FetchWorkspace();
             }}
+            workspace={workspace}
+          />
+          <WorkspaceSelectRunnerModal
+            isOpen={showSelectRunnerModal}
+            onClose={HandleSelectRunnerModalClosed}
             workspace={workspace}
           />
         </>
