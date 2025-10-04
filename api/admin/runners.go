@@ -261,9 +261,14 @@ func HandleAdminDeleteRunner(c *gin.Context) {
 		return
 	}
 
+	if runner.DeletionInProgress {
+		utils.ErrorResponse(c, http.StatusConflict, "this runner is already about to be deleted")
+		return
+	}
+
 	bgtasks.BgTasksEnqueuer.Enqueue("delete_runner", work.Q{"runner_id": runner.ID})
 
-	// runner.DeletionInProgress = true
+	runner.DeletionInProgress = true
 	if err := models.UpdateRunner(*runner); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return

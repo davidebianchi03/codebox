@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  Badge,
   Button,
   Card,
   CardBody,
@@ -8,21 +9,20 @@ import {
   Input,
   Label,
   Row,
-  Table,
+  Spinner,
 } from "reactstrap";
-import { Runner, RunnerAdmin, RunnerType } from "../../types/runner";
+import { RunnerAdmin } from "../../types/runner";
 import { CreateRunnerModal } from "./CreateRunnerModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
-import { AdminListRunners, ListRunnerTypes } from "../../api/runner";
+import { AdminListRunners } from "../../api/runner";
 import DataTable from "../../components/DataTable";
 import React from "react";
 
 export function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
-  const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
   const [showCreateRunnerModal, setCreateRunnerModal] =
     useState<boolean>(false);
   const [runnerToken, setRunnerToken] = useState<string>("");
@@ -34,18 +34,9 @@ export function AdminRunners() {
       setRunners(r);
     }
   }, []);
-
-  const FetchRunnerTypes = useCallback(async () => {
-    const rt = await ListRunnerTypes();
-    if (rt) {
-      setRunnerTypes(rt);
-    }
-  }, []);
-
   useEffect(() => {
     FetchRunners();
-    FetchRunnerTypes();
-  }, [FetchRunners, FetchRunnerTypes]);
+  }, [FetchRunners]);
 
   return (
     <Container>
@@ -136,8 +127,16 @@ export function AdminRunners() {
                   label: "Name",
                   key: "name",
                   render: (_, runner: RunnerAdmin) => (
-                    <Link to={`/admin/runners/${runner.id}`}>
+                    <Link to={`/admin/runners/${runner.id}`} className="d-flex gap-2 align-items-center">
                       <b>{runner.name}</b>
+                      {runner.deletion_in_progress && (
+                        <React.Fragment>
+                          <Badge color="orange" className="text-white">
+                            Deletion in progress
+                            <Spinner size="sm" />
+                          </Badge>
+                        </React.Fragment>
+                      )}
                     </Link>
                   ),
                 },

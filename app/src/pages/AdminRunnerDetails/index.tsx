@@ -8,19 +8,28 @@ import {
   Input,
   Label,
   Row,
+  Spinner,
 } from "reactstrap";
-import { Runner, RunnerAdmin, RunnerType } from "../../types/runner";
+import { RunnerAdmin, RunnerType } from "../../types/runner";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
-import { AdminDeleteRunner, AdminListRunners, AdminRetrieveRunnerById, AdminUpdateRunner, ListRunnerTypes } from "../../api/runner";
+import {
+  AdminDeleteRunner,
+  AdminListRunners,
+  AdminRetrieveRunnerById,
+  AdminUpdateRunner,
+  ListRunnerTypes
+} from "../../api/runner";
+import { ConfirmDeleteRunnerModal } from "./ConfirmDeleteRunnerModal";
 
 export function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<boolean>(false);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -117,7 +126,7 @@ export function AdminRunnerDetails() {
     }
   }, [id, navigate]);
 
-  const HandleDeleteRunner = useCallback(async () => {
+  const DeleteRunner = useCallback(async () => {
     if (id) {
       if (await AdminDeleteRunner(parseInt(id))) {
         navigate("/admin/runners");
@@ -125,7 +134,7 @@ export function AdminRunnerDetails() {
         toast.error("Failed to delete the runner")
       }
     }
-  }, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
     FetchRunner();
@@ -173,6 +182,7 @@ export function AdminRunnerDetails() {
                     value={validation.values.runnerName}
                     onChange={validation.handleChange}
                     invalid={!!validation.errors.runnerName}
+                    disabled={runner?.deletion_in_progress}
                   />
                   <FormFeedback>{validation.errors.runnerName}</FormFeedback>
                 </div>
@@ -184,6 +194,7 @@ export function AdminRunnerDetails() {
                       }`}
                     onChange={validation.handleChange}
                     value={validation.values.runnerType}
+                    disabled={runner?.deletion_in_progress}
                   >
                     <option value={""}>Select runner type</option>
                     {runnerTypes.map((t) => (
@@ -211,6 +222,7 @@ export function AdminRunnerDetails() {
                         validation.handleChange(e);
                       }}
                       checked={validation.values.usePublicUrl}
+                      disabled={runner?.deletion_in_progress}
                     />
                     <span className="form-check-label">Use public url</span>
                   </label>
@@ -223,7 +235,7 @@ export function AdminRunnerDetails() {
                     onChange={validation.handleChange}
                     value={validation.values.publicUrl}
                     invalid={validation.errors.publicUrl ? true : false}
-                    disabled={!validation.values.usePublicUrl}
+                    disabled={!validation.values.usePublicUrl || runner?.deletion_in_progress}
                   />
                   <FormFeedback>{validation.errors.publicUrl}</FormFeedback>
                 </div>
@@ -246,35 +258,57 @@ export function AdminRunnerDetails() {
                   <Label>Last contact</Label>
                   {runner?.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"}
                 </div>
-                <div className="d-flex justify-content-end mt-4">
-                  <Button
-                    color="danger"
-                    className="me-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      HandleDeleteRunner();
-                    }}
-                  >
-                    Delete
-                  </Button>
-                  <Button
-                    color="accent"
-                    className="me-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      FetchRunner();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" color="primary">
-                    Save
-                  </Button>
-                </div>
+                {runner?.deletion_in_progress ? (
+                  <React.Fragment>
+                    <div className="d-flex justify-content-end mt-4">
+                      <div className="btn btn-orange text-white">
+                        Deletion in progress
+                        <Spinner size="sm" className="ms-2" />
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <div className="d-flex justify-content-end mt-4">
+                      <Button
+                        color="danger"
+                        className="me-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowConfirmDeleteModal(true);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                      <Button
+                        color="accent"
+                        className="me-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          FetchRunner();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" color="primary">
+                        Save
+                      </Button>
+                    </div>
+                  </React.Fragment>
+                )}
               </form>
             </Card>
           </Col>
         </Row>
+        <ConfirmDeleteRunnerModal
+          isOpen={showConfirmDeleteModal}
+          onClose={(deleteConfirmed) => {
+            setShowConfirmDeleteModal(false);
+            if (deleteConfirmed) {
+              DeleteRunner();
+            }
+          }}
+        />
         <ToastContainer
           toastClassName={"bg-dark"}
         />
