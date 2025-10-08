@@ -10,6 +10,7 @@ import {
   Input,
   Label,
   Row,
+  Spinner,
 } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
@@ -197,6 +198,7 @@ export function AdminUserDetails() {
                       onChange={validation.handleChange}
                       value={validation.values.firstName}
                       invalid={validation.errors.firstName ? true : false}
+                      disabled={user?.deletion_in_progress}
                     />
                     <FormFeedback>{validation.errors.firstName}</FormFeedback>
                   </div>
@@ -208,6 +210,7 @@ export function AdminUserDetails() {
                       onChange={validation.handleChange}
                       value={validation.values.lastName}
                       invalid={validation.errors.lastName ? true : false}
+                      disabled={user?.deletion_in_progress}
                     />
                     <FormFeedback>{validation.errors.lastName}</FormFeedback>
                   </div>
@@ -226,7 +229,7 @@ export function AdminUserDetails() {
                             validation.handleChange(e);
                           }}
                           checked={validation.values.isAdmin}
-                          disabled={user?.email === currentUser?.email}
+                          disabled={user?.email === currentUser?.email || user?.deletion_in_progress}
                         />
                         <span className="form-check-label">Admin</span>
                       </label>
@@ -239,27 +242,29 @@ export function AdminUserDetails() {
                           name="isTemplateManager"
                           onClick={validation.handleChange}
                           checked={validation.values.isTemplateManager || validation.values.isAdmin}
-                          disabled={validation.values.isAdmin}
+                          disabled={validation.values.isAdmin || user?.deletion_in_progress}
                         />
                         <span className="form-check-label">Template Manager</span>
                       </label>
                     </div>
                   </div>
-                  <div className="d-flex justify-content-end">
-                    <Button
-                      color="accent"
-                      className="me-2"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        FetchUser();
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" color="primary">
-                      Save
-                    </Button>
-                  </div>
+                  {!user?.deletion_in_progress && (
+                    <div className="d-flex justify-content-end">
+                      <Button
+                        color="accent"
+                        className="me-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          FetchUser();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" color="primary">
+                        Save
+                      </Button>
+                    </div>
+                  )}
                 </form>
               </CardBody>
             </Card>
@@ -290,49 +295,62 @@ export function AdminUserDetails() {
                         </p>
                       </Col>
                     </Row>
-                    <Button
-                      type="submit"
-                      color="orange"
-                      className="me-2 mt-4"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setShowChangePasswordModal(true);
-                        return false;
-                      }}
-                    >
-                      Change password
-                    </Button>
+                    {!user?.deletion_in_progress && (
+                      <Button
+                        type="submit"
+                        color="orange"
+                        className="me-2 mt-4"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowChangePasswordModal(true);
+                          return false;
+                        }}
+                      >
+                        Change password
+                      </Button>
+                    )}
                   </CardBody>
                 </Card>
               </Col>
             </Row>
             <Row className="mt-4">
               <Col md={12}>
-                <Card>
-                  <CardHeader className="pb-0 border-0">
-                    <h3>Actions</h3>
-                  </CardHeader>
-                  <CardBody className="pt-0 d-flex gap-2">
-                    {user?.email !== currentUser.email && !user?.is_superuser && (
-                      <React.Fragment>
-                        <Button color="yellow" onClick={HandleImpersonateUser}>
-                          Impersonate
+                {user?.deletion_in_progress ? (
+                  <Card body className="pt-0 pb-4">
+                    <div className="d-flex justify-content-start mt-4">
+                      <div className="btn btn-orange text-white">
+                        Deletion in progress
+                        <Spinner size="sm" className="ms-2" />
+                      </div>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardHeader className="pb-0 border-0">
+                      <h3>Actions</h3>
+                    </CardHeader>
+                    <CardBody className="pt-0 d-flex gap-2">
+                      {user?.email !== currentUser.email && !user?.is_superuser && (
+                        <React.Fragment>
+                          <Button color="yellow" onClick={HandleImpersonateUser}>
+                            Impersonate
+                          </Button>
+                          <Button color="accent" onClick={() => setShowImpersonationLogsModal(true)}>
+                            View Impersonation logs
+                          </Button>
+                        </React.Fragment>
+                      )}
+                      {user?.email !== currentUser.email && (
+                        <Button color="danger" onClick={HandleDeleteUser}>
+                          Delete
                         </Button>
-                        <Button color="accent" onClick={() => setShowImpersonationLogsModal(true)}>
-                          View Impersonation logs
-                        </Button>
-                      </React.Fragment>
-                    )}
-                    {user?.email !== currentUser.email && (
-                      <Button color="danger" onClick={HandleDeleteUser}>
-                        Delete
-                      </Button>
-                    )}
-                    {user?.email === currentUser.email && (
-                      <p>No actions available for this user</p>
-                    )}
-                  </CardBody>
-                </Card>
+                      )}
+                      {user?.email === currentUser.email && (
+                        <p>No actions available for this user</p>
+                      )}
+                    </CardBody>
+                  </Card>
+                )}
               </Col>
             </Row>
           </Col>

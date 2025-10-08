@@ -106,22 +106,3 @@ func GetLoginCountPerDayInLast7Days() ([]int64, error) {
 
 	return counts, nil
 }
-
-/*
-GetLastLoginTimeForUser retrieves the last login time for a specific user.
-If the user has never logged in, it returns nil without an error.
-*/
-func GetLastLoginTimeForUser(user *User) (*time.Time, error) {
-	var token Token
-	err := dbconn.DB.Where("user_id = ?", user.ID).
-		Order("created_at DESC").
-		First(&token).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil // No login records found
-		}
-		return nil, err
-	}
-
-	return &token.CreatedAt, nil
-}

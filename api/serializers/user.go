@@ -82,13 +82,14 @@ func LoadMultipleUserSerializer(users []models.User) []UserSerializer {
 
 // admin
 type AdminUserSerializer struct {
-	Email             string  `json:"email"`
-	FirstName         string  `json:"first_name"`
-	LastName          string  `json:"last_name"`
-	IsSuperUser       bool    `json:"is_superuser"`
-	IsTemplateManager bool    `json:"is_template_manager"`
-	LastLogin         *string `json:"last_login"`
-	CreatedAt         string  `json:"created_at"`
+	Email              string  `json:"email"`
+	FirstName          string  `json:"first_name"`
+	LastName           string  `json:"last_name"`
+	IsSuperUser        bool    `json:"is_superuser"`
+	IsTemplateManager  bool    `json:"is_template_manager"`
+	DeletionInProgress bool    `json:"deletion_in_progress"`
+	LastLogin          *string `json:"last_login"`
+	CreatedAt          string  `json:"created_at"`
 }
 
 func LoadAdminUserSerializer(user *models.User) *AdminUserSerializer {
@@ -106,13 +107,14 @@ func LoadAdminUserSerializer(user *models.User) *AdminUserSerializer {
 	}
 
 	return &AdminUserSerializer{
-		Email:             user.Email,
-		FirstName:         user.FirstName,
-		LastName:          user.LastName,
-		IsSuperUser:       user.IsSuperuser,
-		IsTemplateManager: user.IsTemplateManager,
-		LastLogin:         lastLoginPtr,
-		CreatedAt:         user.CreatedAt.Format(time.RFC3339),
+		Email:              user.Email,
+		FirstName:          user.FirstName,
+		LastName:           user.LastName,
+		IsSuperUser:        user.IsSuperuser,
+		IsTemplateManager:  user.IsTemplateManager,
+		LastLogin:          lastLoginPtr,
+		CreatedAt:          user.CreatedAt.Format(time.RFC3339),
+		DeletionInProgress: user.DeletionInProgress,
 	}
 }
 

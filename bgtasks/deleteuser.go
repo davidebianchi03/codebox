@@ -22,6 +22,8 @@ func (jobContext *Context) DeleteUserTask(job *work.Job) error {
 	// delete all the workspaces
 	workspaces, err := models.ListUserWorkspaces(*user)
 	if err != nil {
+		user.DeletionInProgress = false
+		models.UpdateUser(user)
 		// TODO: log error
 		return err
 	}
@@ -29,12 +31,16 @@ func (jobContext *Context) DeleteUserTask(job *work.Job) error {
 	for _, w := range workspaces {
 		err := removeWorkspace(w, true)
 		if err != nil {
+			user.DeletionInProgress = false
+			models.UpdateUser(user)
 			// TODO: log error
 		}
 	}
 
 	// delete the user
 	if err := models.DeleteUser(user); err != nil {
+		user.DeletionInProgress = false
+		models.UpdateUser(user)
 		// TODO: log error
 		return err
 	}

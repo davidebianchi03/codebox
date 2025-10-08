@@ -17,6 +17,7 @@ export interface AdminUser {
     is_template_manager: boolean;
     last_login: string | null;
     created_at: string;
+    deletion_in_progress: boolean;
 }
 
 export interface User {

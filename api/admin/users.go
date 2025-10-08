@@ -223,6 +223,9 @@ func HandleAdminDeleteUser(c *gin.Context) {
 		utils.ErrorResponse(c, 400, "you cannot delete yourself")
 	}
 
+	user.DeletionInProgress = true
+	models.UpdateUser(user)
+
 	bgtasks.BgTasksEnqueuer.Enqueue("delete_user", work.Q{"user_email": user.Email})
 
 	c.JSON(http.StatusNoContent, gin.H{

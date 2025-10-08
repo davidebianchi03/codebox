@@ -9,8 +9,6 @@ import DataTable from "../../components/DataTable";
 import { AdminListImpersonationLogs } from "../../api/admin";
 import { toast } from "react-toastify";
 import { AdminUser } from "../../types/user";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   isOpen: boolean;
@@ -69,23 +67,12 @@ export function ImpersonationLogsModal({ isOpen, onClose, user }: Props) {
               {
                 label: "Finished On",
                 key: "impersonation_finished_at",
-                render: (value) => value ? new Date(value).toLocaleString() : "N/A"
-              },
-              {
-                label: "Session Expired",
-                key: "session_expired",
-                render: (value) => (
-                  value ? (
-                    <span className="text-success" style={{ marginLeft: 45 }}>
-                      <FontAwesomeIcon icon={faCircleCheck} />
-                    </span>
-                  ) : (
-                    <span className="text-danger" style={{ marginLeft: 45 }}>
-                      <FontAwesomeIcon icon={faCircleXmark} />
-                    </span>
-                  )
+                render: (value, row) => (
+                  row.session_expired ?
+                    "Session Expired" :
+                    (value ? new Date(value).toLocaleString() : "N/A")
                 )
-              },
+              }
             ]}
             data={impersonationLogs}
             initialPageSize={10}

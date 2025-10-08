@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  Badge,
   Button,
   Card,
   Col,
   Container,
   Row,
+  Spinner,
 } from "reactstrap";
 import { CreateUserModal } from "./CreateUserModal";
 import { ToastContainer } from "react-toastify";
@@ -61,8 +63,16 @@ export function AdminUsersList() {
                     key: "email",
                     sortable: true,
                     render: (_, user: AdminUser) => (
-                      <Link to={`/admin/users/${user.email}`}>
+                      <Link to={`/admin/users/${user.email}`} className="d-flex gap-2 align-items-center">
                         <b>{user.email}</b>
+                        {user.deletion_in_progress && (
+                          <React.Fragment>
+                            <Badge color="orange" className="text-white">
+                              Deletion in progress
+                              <Spinner size="sm" />
+                            </Badge>
+                          </React.Fragment>
+                        )}
                       </Link>
                     ),
                   },
