@@ -1,9 +1,29 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLinux, faWindows } from '@fortawesome/free-brands-svg-icons'
-import React from "react";
-import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
+import React, { useCallback, useEffect, useState } from "react";
+import { Badge, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
+import { CLIBuild } from "../../types/cli";
+import { ListCLIBuilds } from "../../api/cli";
+import { toast } from "react-toastify";
+
 
 export function CLIDownloadPage() {
+
+    const [cliBuilds, setCliBuilds] = useState<CLIBuild[]>([]);
+
+    const fetchCliBuilds = useCallback(async () => {
+        const builds = await ListCLIBuilds();
+        if (builds) {
+            setCliBuilds(builds);
+        } else {
+            toast.error("Failed to fetch CLI builds");
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchCliBuilds();
+    }, [fetchCliBuilds]);
+
     return (
         <React.Fragment>
             <div className="col mt-4">
@@ -22,11 +42,33 @@ export function CLIDownloadPage() {
                         <CardHeader>
                             <h2 className="mb-0">
                                 <span className="pe-2">Windows</span>
-                                <FontAwesomeIcon icon={faWindows} />
+                                <FontAwesomeIcon icon={faWindows as any} />
                             </h2>
                         </CardHeader>
                         <CardBody>
-
+                            <Table responsive className="mb-0">
+                                <tbody>
+                                    {cliBuilds.filter(b => b.os === "windows").map(build => (
+                                        <tr key={build.id}>
+                                            <td>
+                                                <p className="mb-2">
+                                                    <a href={`${import.meta.env.VITE_SERVER_URL}/api/v1/cli/${build.id}/download`} target="_blank" rel="noopener noreferrer">
+                                                        {build.name}
+                                                    </a>
+                                                </p>
+                                                <p className="d-flex gap-2 mb-0">
+                                                    <Badge color="primary" className="text-white">
+                                                        {build.architecture}
+                                                    </Badge>
+                                                    <Badge color="primary" className="text-white">
+                                                        {build.type}
+                                                    </Badge>
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
                         </CardBody>
                     </Card>
                 </Col>
@@ -35,11 +77,33 @@ export function CLIDownloadPage() {
                         <CardHeader>
                             <h2 className="mb-0">
                                 <span className="pe-2">Linux</span>
-                                <FontAwesomeIcon icon={faLinux} />
+                                <FontAwesomeIcon icon={faLinux as any} />
                             </h2>
                         </CardHeader>
                         <CardBody>
-
+                            <Table responsive className="mb-0">
+                                <tbody>
+                                    {cliBuilds.filter(b => b.os === "linux").map(build => (
+                                        <tr key={build.id}>
+                                            <td>
+                                                <p className="mb-2">
+                                                    <a href={`${import.meta.env.VITE_SERVER_URL}/api/v1/cli/${build.id}/download`} target="_blank" rel="noopener noreferrer">
+                                                        {build.name}
+                                                    </a>
+                                                </p>
+                                                <p className="d-flex gap-2 mb-0">
+                                                    <Badge color="primary" className="text-white">
+                                                        {build.architecture}
+                                                    </Badge>
+                                                    <Badge color="primary" className="text-white">
+                                                        {build.type}
+                                                    </Badge>
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
                         </CardBody>
                     </Card>
                 </Col>
