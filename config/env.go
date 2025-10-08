@@ -29,6 +29,7 @@ type EnvVars struct {
 	UseSubDomains           bool   `env:"CODEBOX_USE_SUBDOMAINS" envDefault:"true"`
 	AuthCookieName          string `env:"CODEBOX_AUTH_COOKIE_NAME" envDefault:"codebox_auth_token"`
 	SubdomainAuthCookieName string `env:"CODEBOX_SUBDOMAIN_AUTH_COOKIE_NAME" envDefault:"subdomain_codebox_auth_token"`
+	CliBinariesPath         string `env:"CODEBOX_CLI_BINARIES_PATH" envDefault:"./cli"`
 }
 
 var Environment *EnvVars

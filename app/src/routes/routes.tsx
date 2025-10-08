@@ -3,6 +3,7 @@ import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
 import { AdminRunners } from "../pages/AdminRunners";
 import { AdminUserDetails } from "../pages/AdminUserDetails";
 import { AdminUsersList } from "../pages/AdminUsersList";
+import { CLIDownloadPage } from "../pages/CLIDownload";
 import CliLogin from "../pages/CliLogin";
 import CreateWorkspace from "../pages/CreateWorkspace";
 import { CreditsPage } from "../pages/Credits";
@@ -64,6 +65,10 @@ export const AuthProtectedRoutes: Route[] = [
   {
     path: "/credits",
     element: <CreditsPage />,
+  },
+  {
+    path: "/cli",
+    element: <CLIDownloadPage />,
   },
 ];
 

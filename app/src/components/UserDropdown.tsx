@@ -1,4 +1,4 @@
-import { faBorderTopLeft, faGears, faRightFromBracket, faUser, faUserSecret } from "@fortawesome/free-solid-svg-icons";
+import { faBorderTopLeft, faGears, faRightFromBracket, faTerminal, faUser, faUserSecret } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -30,15 +30,15 @@ export function UserDropdown() {
         }
     }, []);
 
-    const HandleStopImpersonation = useCallback(async() => {
-        if(user.impersonated) {
-            if(await StopImpersonation()) {
+    const HandleStopImpersonation = useCallback(async () => {
+        if (user.impersonated) {
+            if (await StopImpersonation()) {
                 // trigger a complete reload of the page
                 window.location.href = `/admin/users/${user.email}`
             } else {
                 toast.error(`Failed to stop to impersonate ${user.email}`);
             }
-        } 
+        }
     }, [user.email, user.impersonated]);
 
     useEffect(() => {
@@ -49,7 +49,7 @@ export function UserDropdown() {
         <React.Fragment>
             <div className="d-flex">
                 {user.impersonated && (
-                    <Button 
+                    <Button
                         className="mx-1 px-2 text-warning btn btn-outline-warning"
                         onClick={HandleStopImpersonation}
                         title="Stop impersonating"
@@ -111,6 +111,16 @@ export function UserDropdown() {
                                 </Col>
                                 <Col md={8} className="ps-0">
                                     Templates
+                                </Col>
+                            </Row>
+                        </Link>
+                        <Link to="/cli" className="dropdown-item">
+                            <Row>
+                                <Col md={4}>
+                                    <FontAwesomeIcon icon={faTerminal} />
+                                </Col>
+                                <Col md={8}>
+                                    CLI
                                 </Col>
                             </Row>
                         </Link>

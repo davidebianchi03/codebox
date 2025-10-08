@@ -19,6 +19,131 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/admin/runners": {
+            "get": {
+                "description": "List all available runners",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List all available runners",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.AdminRunnersSerializer"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a runner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Create a runner",
+                "parameters": [
+                    {
+                        "description": "Runner details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.HandleAdminCreateRunnerRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/runners/:id": {
+            "get": {
+                "description": "Retrive a runner by its id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Retrive a runner by its id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.AdminRunnersSerializer"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Create a runner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Create a runner",
+                "parameters": [
+                    {
+                        "description": "Runner details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.AdminUpdateRunnerRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.AdminRunnersSerializer"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a runner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Delete a runner",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/api/v1/admin/stats": {
             "get": {
                 "description": "Admin Stats",
@@ -61,7 +186,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/serializers.UserSerializer"
+                                "$ref": "#/definitions/serializers.AdminUserSerializer"
                             }
                         }
                     }
@@ -94,7 +219,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/serializers.UserSerializer"
+                            "$ref": "#/definitions/serializers.AdminUserSerializer"
                         }
                     }
                 }
@@ -117,8 +242,129 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/serializers.UserSerializer"
+                            "$ref": "#/definitions/serializers.AdminUserSerializer"
                         }
+                    }
+                }
+            },
+            "put": {
+                "description": "Admin update user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin update user",
+                "parameters": [
+                    {
+                        "description": "User info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.AdminUpdateUserRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.AdminUserSerializer"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Admin delete user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin delete user",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/users/{email}/impersonate": {
+            "post": {
+                "description": "API for admins to impersonate a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "API for admins to impersonate a user",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/users/{email}/impersonation-logs": {
+            "get": {
+                "description": "API for admins to list impersonation logs for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "API for admins to list impersonation logs for a user",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/users/{email}/set-password": {
+            "post": {
+                "description": "Admin update user password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin update user password",
+                "parameters": [
+                    {
+                        "description": "User info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.AdminSetUserPasswordRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -207,6 +453,98 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/serializers.UserSerializer"
                         }
+                    }
+                }
+            }
+        },
+        "/api/v1/cli": {
+            "get": {
+                "description": "List cli",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CLI"
+                ],
+                "summary": "List cli",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cli.CLIBuild"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cli/:id": {
+            "get": {
+                "description": "Retrieve cli by its id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CLI"
+                ],
+                "summary": "Retrieve cli by its id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cli.CLIBuild"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cli/:id/download": {
+            "get": {
+                "description": "Download cli",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CLI"
+                ],
+                "summary": "Download cli",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/stop-impersonation": {
+            "post": {
+                "description": "API to stop the impersonation of a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "API to stop the impersonation of a user",
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -1013,6 +1351,78 @@ const docTemplate = `{
                 }
             }
         },
+        "admin.AdminSetUserPasswordRequestBody": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "admin.AdminUpdateRunnerRequestBody": {
+            "type": "object",
+            "required": [
+                "name",
+                "public_url",
+                "type",
+                "use_public_url"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "public_url": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "use_public_url": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "admin.AdminUpdateUserRequestBody": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "is_superuser": {
+                    "type": "boolean"
+                },
+                "is_template_manager": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "admin.HandleAdminCreateRunnerRequestBody": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "public_url": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "use_public_url": {
+                    "type": "boolean"
+                }
+            }
+        },
         "auth.LoginRequestBody": {
             "type": "object",
             "required": [
@@ -1050,6 +1460,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "cli.CLIBuild": {
+            "type": "object",
+            "properties": {
+                "architecture": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "os": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -1092,6 +1522,9 @@ const docTemplate = `{
         "models.Runner": {
             "type": "object",
             "properties": {
+                "deletionInProgress": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -1118,6 +1551,9 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "properties": {
+                "deletionInProgress": {
+                    "type": "boolean"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -1232,6 +1668,32 @@ const docTemplate = `{
                 }
             }
         },
+        "serializers.AdminRunnersSerializer": {
+            "type": "object",
+            "properties": {
+                "deletion_in_progress": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_contact": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "public_url": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "use_public_url": {
+                    "type": "boolean"
+                }
+            }
+        },
         "serializers.AdminStatsSerializer": {
             "type": "object",
             "properties": {
@@ -1249,6 +1711,32 @@ const docTemplate = `{
                 },
                 "total_users": {
                     "type": "integer"
+                }
+            }
+        },
+        "serializers.AdminUserSerializer": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "is_superuser": {
+                    "type": "boolean"
+                },
+                "is_template_manager": {
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
                 }
             }
         },
@@ -1297,17 +1785,8 @@ const docTemplate = `{
         "serializers.UserSerializer": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "first_name": {
                     "type": "string"
-                },
-                "is_superuser": {
-                    "type": "boolean"
-                },
-                "is_template_manager": {
-                    "type": "boolean"
                 },
                 "last_login": {
                     "type": "string"

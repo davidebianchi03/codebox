@@ -248,8 +248,10 @@ func V1ApiRoutes(router *gin.Engine) {
 		)
 
 		// download cli
+		v1.GET("/cli", cli.HandleListCLI)
+		v1.GET("/cli/:id", cli.HandleRetrieveCLI)
 		v1.GET(
-			"/download-cli",
+			"/cli/:id/download",
 			cli.HandleDownloadCLI,
 		)
 
