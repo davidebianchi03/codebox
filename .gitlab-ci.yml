@@ -28,9 +28,11 @@ unittest:
     - ./scripts/migrate-test-db.sh
     - echo "Running tests..."
     - go test -v ./... -coverprofile=coverage.out
-    - go install github.com/mattn/goveralls@latest
-    - goveralls -coverprofile=coverage.out -service=gitlab-ci
-  when: on_success
+    - go tool cover -func=coverage.out | grep total | awk '{print $3}'
+  artifacts:
+    paths:
+      - coverage.out
+  coverage: '/total:\s+\(.*\)\s+([0-9\.]+)%/'
   # rules:
   #   - if: $CI_COMMIT_TAG
 
