@@ -38,19 +38,8 @@
             "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}/app"
         },
-        // {
-        //     "name": "Go: Run *_Debug tests",
-        //     "type": "go",
-        //     "request": "launch",
-        //     "mode": "test",
-        //     "program": "${workspaceFolder}/main.go",
-        //     "args": [
-        //         "-tags=debug",
-        //         "./..."
-        //     ]
-        // }
         {
-            "name": "Go: Run *_Debug tests",
+            "name": "Go: Run tests in this file",
             "type": "go",
             "request": "launch",
             "mode": "test",
