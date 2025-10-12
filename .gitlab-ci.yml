@@ -6,7 +6,7 @@ stages:
 
 unittest:
   stage: tests
-  image: golang:1.24.1
+  image: dadebia/codebox-base-docker:latest
   tags:
     - docker-linux
   services:
