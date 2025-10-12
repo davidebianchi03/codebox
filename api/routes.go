@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/url"
+	"path"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -29,7 +30,7 @@ func SetupRouter() *gin.Engine {
 
 	r := gin.Default()
 	V1ApiRoutes(r)
-	r.LoadHTMLGlob("html/templates/*")
+	r.LoadHTMLGlob(path.Join(config.Environment.BaseDir, "html", "templates", "*"))
 	return r
 }
 
