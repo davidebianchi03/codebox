@@ -19,8 +19,8 @@ unittest:
     MYSQL_PASSWORD: password
   script:
     - cp .gitlab-ci/codebox.test.env codebox.env
-    - CODEBOX_BASE_DIR=$(pwd)
-    - CODEBOX_ENV_FILE="${CODEBOX_BASE_DIR}/codebox.env"
+    - export CODEBOX_BASE_DIR=$(pwd)
+    - export CODEBOX_ENV_FILE="${CODEBOX_BASE_DIR}/codebox.env"
     - go mod tidy
     - go test -v ./... -coverprofile=coverage.out
     - go install github.com/mattn/goveralls@latest
