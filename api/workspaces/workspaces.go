@@ -262,7 +262,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 	workspace.AppendLogs("Creating workspace...")
 	bgtasks.BgTasksEnqueuer.Enqueue("start_workspace", work.Q{"workspace_id": workspace.ID})
 
-	c.JSON(http.StatusCreated, workspace)
+	c.JSON(http.StatusCreated, serializers.LoadWorkspaceSerializer(workspace))
 }
 
 // HandleStopWorkspace godoc
@@ -272,7 +272,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 // @Tags Workspaces
 // @Accept json
 // @Produce json
-// @Success 200 {object} serializers.WorkspaceSerializer
+// @Success 200
 // @Router /api/v1/workspace/:id/stop [post]
 func HandleStopWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
@@ -425,7 +425,6 @@ type UpdateWorkspaceRequestBody struct {
 	GitRefName           string   `json:"git_ref_name"`
 	ConfigSourcePath     string   `json:"config_source_path"`
 	EnvironmentVariables []string `json:"environment_variables"`
-	RunnerId             *uint    `json:"runner_id"`
 }
 
 // HandleUpdateWorkspace godoc
@@ -484,6 +483,23 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		return
 	}
 
+	// update environment variables and/or git source
+	workspace, err = models.UpdateWorkspace(
+		workspace,
+		workspace.Name,
+		workspace.Status,
+		workspace.Runner,
+		workspace.ConfigSource,
+		workspace.TemplateVersion,
+		workspace.GitSource,
+		reqBody.EnvironmentVariables,
+	)
+
+	if err != nil {
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		gitSource, err := models.UpdateGitWorkspaceSource(
 			workspace.GitSource,
@@ -502,78 +518,7 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 		workspace.GitSource = gitSource
 	}
 
-	if reqBody.EnvironmentVariables != nil {
-		workspace, err = models.UpdateWorkspace(
-			workspace,
-			workspace.Name,
-			workspace.Status,
-			workspace.Runner,
-			workspace.ConfigSource,
-			workspace.TemplateVersion,
-			workspace.GitSource,
-			reqBody.EnvironmentVariables,
-		)
-
-		if err != nil {
-			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
-			return
-		}
-	}
-
-	if reqBody.RunnerId != nil {
-		runner, err := models.RetrieveRunnerByID(*reqBody.RunnerId)
-		if err != nil {
-			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
-			return
-		}
-
-		if runner == nil {
-			utils.ErrorResponse(ctx, http.StatusBadRequest, "runner not found")
-			return
-		}
-
-		rt := config.RetrieveRunnerTypeByID(runner.Type)
-		if rt == nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"detail": "runner matching runner_id and type not found",
-			})
-			return
-		}
-
-		// check if the runner supports the requested workspace type
-		supported := false
-		for _, supportedType := range rt.SupportedTypes {
-			if supportedType.ID == workspace.Type {
-				supported = true
-				break
-			}
-		}
-
-		if !supported {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"detail": "runner does not support the requested workspace type",
-			})
-			return
-		}
-
-		workspace, err = models.UpdateWorkspace(
-			workspace,
-			workspace.Name,
-			workspace.Status,
-			runner,
-			workspace.ConfigSource,
-			workspace.TemplateVersion,
-			workspace.GitSource,
-			workspace.EnvironmentVariables,
-		)
-
-		if err != nil {
-			utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
-			return
-		}
-	}
-
-	ctx.JSON(http.StatusOK, workspace)
+	ctx.JSON(http.StatusOK, serializers.LoadWorkspaceSerializer(workspace))
 }
 
 // HandleDeleteWorkspace godoc
@@ -729,4 +674,124 @@ func HandleUpdateWorkspaceConfiguration(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"details": "starting workspace",
 	})
+}
+
+type SetRunnerForWorkspaceBody struct {
+	RunnerId uint `json:"runner_id"`
+}
+
+// HandleSetRunnerForWorkspace godoc
+// @Summary Set the runner for a workspace
+// @Schemes
+// @Description Set the runner for a workspace
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param request body SetRunnerForWorkspaceBody true
+// @Success 200 {object} serializers.WorkspaceSerializer
+// @Router /api/v1/workspace/:workspaceId/set-runner [post]
+func HandleSetRunnerForWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if workspace == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	var reqBody SetRunnerForWorkspaceBody
+	if err := ctx.ShouldBindBodyWithJSON(&reqBody); err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"detail": "missing or invalid request argument",
+		})
+		return
+	}
+
+	runner, err := models.RetrieveRunnerByID(reqBody.RunnerId)
+	if err != nil {
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if runner == nil {
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "runner not found")
+		return
+	}
+
+	if workspace.Runner != nil {
+		if runner.ID != *workspace.RunnerID {
+			utils.ErrorResponse(ctx, http.StatusBadRequest, "cannot change runner of an existing workspace")
+			return
+		}
+	}
+
+	rt := config.RetrieveRunnerTypeByID(runner.Type)
+	if rt == nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"detail": "runner matching runner_id and type not found",
+		})
+		return
+	}
+
+	// check if the runner supports the requested workspace type
+	supported := false
+	for _, supportedType := range rt.SupportedTypes {
+		if supportedType.ID == workspace.Type {
+			supported = true
+			break
+		}
+	}
+
+	if !supported {
+		utils.ErrorResponse(
+			ctx,
+			http.StatusBadRequest,
+			"runner does not support the requested workspace type",
+		)
+		return
+	}
+
+	workspace, err = models.UpdateWorkspace(
+		workspace,
+		workspace.Name,
+		workspace.Status,
+		runner,
+		workspace.ConfigSource,
+		workspace.TemplateVersion,
+		workspace.GitSource,
+		workspace.EnvironmentVariables,
+	)
+
+	if err != nil {
+		utils.ErrorResponse(
+			ctx,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, serializers.LoadWorkspaceSerializer(workspace))
 }

@@ -1,6 +1,7 @@
 package workspaces_test
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -76,6 +77,12 @@ func TestCreateWorkspaceFromGitSource(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 		data, _ = serializers.MultipleWorkspaceSerializersFromJSON(w.Body.String())
 		assert.Equal(t, 1, len(data))
+		assert.Equal(t, data[0].Name, "Test Workspace")
+		assert.Equal(t, data[0].Type, "docker_compose")
+		assert.Equal(t, data[0].Status, models.WorkspaceStatusStarting)
+		assert.Equal(t, data[0].Runner.ID, runners[0].ID)
+		assert.Equal(t, data[0].ConfigSource, models.WorkspaceConfigSourceGit)
+		assert.Equal(t, data[0].GitSource.RepositoryURL, "https://github.com/davidebianchi03/codebox.git")
 	})
 }
 
@@ -152,6 +159,12 @@ func TestCreateWorkspaceFromTemplateSource(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 		data, _ = serializers.MultipleWorkspaceSerializersFromJSON(w.Body.String())
 		assert.Equal(t, 1, len(data))
+		assert.Equal(t, 1, len(data))
+		assert.Equal(t, data[0].Name, "Test Workspace")
+		assert.Equal(t, data[0].Type, "docker_compose")
+		assert.Equal(t, data[0].Status, models.WorkspaceStatusStarting)
+		assert.Equal(t, data[0].Runner.ID, runners[0].ID)
+		assert.Equal(t, data[0].ConfigSource, models.WorkspaceConfigSourceTemplate)
 	})
 }
 
@@ -266,3 +279,162 @@ func TestCreateWorkspaceErrors(t *testing.T) {
 		}
 	})
 }
+
+/*
+Try to create a workspace without authentication
+*/
+func TestCreateWorkspaceWithoutAuthentication(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := api.SetupRouter()
+
+		runners, err := models.ListRunners(1, 0)
+		if err != nil || len(runners) == 0 {
+			t.Errorf("Failed to retrieve test runner: '%s'\n", err)
+			t.FailNow()
+		}
+
+		reqBody := workspaces.CreateWorkspaceRequestBody{
+			Name:                 "Test Workspace",
+			Type:                 "docker_compose",
+			RunnerID:             runners[0].ID,
+			ConfigSource:         models.WorkspaceConfigSourceGit,
+			GitRepoUrl:           "https://github.com/davidebianchi03/codebox.git",
+			GitRefName:           "main",
+			ConfigSourceFilePath: "/path/to/config",
+			EnvironmentVariables: []string{"VAR1=value1", "VAR2=value2"},
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/workspace",
+			"POST",
+			reqBody,
+		)
+		// Note: no authentication
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+}
+
+/*
+Try to update a workspace, both when is is running and when it is stopped
+*/
+func TestUpdateWorkspace(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := api.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil || user == nil {
+			t.Fatalf("Failed to retrieve test user: '%s'", err)
+		}
+
+		runners, err := models.ListRunners(1, 0)
+		if err != nil || len(runners) == 0 {
+			t.Errorf("Failed to retrieve test runner: '%s'\n", err)
+			t.FailNow()
+		}
+
+		// create a new workspace
+		reqBody := workspaces.CreateWorkspaceRequestBody{
+			Name:                 "Test Workspace",
+			Type:                 "docker_compose",
+			RunnerID:             runners[0].ID,
+			ConfigSource:         models.WorkspaceConfigSourceGit,
+			GitRepoUrl:           "https://github.com/davidebianchi03/codebox.git",
+			GitRefName:           "main",
+			ConfigSourceFilePath: "/path/to/config",
+			EnvironmentVariables: []string{"VAR1=value1"},
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/workspace",
+			"POST",
+			reqBody,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		// parse the created workspace
+		createdWorkspace, err := serializers.WorkspaceSerializerFromJSON(w.Body.String())
+		if err != nil {
+			t.Fatalf("Failed to parse created workspace: '%s'", err)
+		}
+
+		// update the workspace while it is running
+		updateReqBody := workspaces.UpdateWorkspaceRequestBody{
+			EnvironmentVariables: []string{"VAR1=newvalue", "VAR3=value3"},
+		}
+
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			fmt.Sprintf("/api/v1/workspace/%d", createdWorkspace.ID),
+			"PUT",
+			updateReqBody,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotAcceptable, w.Code)
+
+		// mark the workspace as stopped
+		workspace, err := models.RetrieveWorkspaceByUserAndId(*user, createdWorkspace.ID)
+		if err != nil || workspace == nil {
+			t.Fatalf("Failed to retrieve workspace: '%s'", err)
+		}
+
+		if _, err := models.UpdateWorkspace(
+			workspace,
+			workspace.Name,
+			models.WorkspaceStatusStopped,
+			workspace.Runner,
+			workspace.ConfigSource,
+			workspace.TemplateVersion,
+			workspace.GitSource,
+			workspace.EnvironmentVariables,
+		); err != nil {
+			t.Fatalf("Failed to stop workspace: '%s'", err)
+		}
+
+		// try to update the workspace again
+		updateReqBody = workspaces.UpdateWorkspaceRequestBody{
+			GitRepoUrl:           "https://git.example.com/new/repo.git",
+			EnvironmentVariables: []string{"VAR1=newvalue", "VAR3=value3"},
+		}
+
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			fmt.Sprintf("/api/v1/workspace/%d", createdWorkspace.ID),
+			"PUT",
+			updateReqBody,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// check that the workspace was updated
+		workspace, err = models.RetrieveWorkspaceByUserAndId(*user, createdWorkspace.ID)
+		if err != nil || workspace == nil {
+			t.Fatalf("Failed to retrieve updated workspace: '%s'", err)
+		}
+
+		assert.Equal(t, workspace.GitSource.RepositoryURL, "https://git.example.com/new/repo.git")
+		assert.Equal(t, len(workspace.EnvironmentVariables), 2)
+	})
+}
+
+/*
+TODO:
+- Try to start a workspace
+- Try to stop a workspace
+- Try to start a workspace that has no runner assigned
+- Try to start/stop a workspace that is already started/stopped
+- Try to start/stop a workspace that does not exist
+- Try to start/stop a workspace owned by another user
+- Try to update a workspace config
+- Try to update a workspace config of a workspace that has no runner assigned
+*/

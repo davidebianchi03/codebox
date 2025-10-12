@@ -172,6 +172,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId/update-config",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspaceConfiguration),
 			)
+			workspaceApis.POST(
+				"/:workspaceId/set-runner",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleSetRunnerForWorkspace),
+			)
 		}
 		v1.GET("/workspace-types", permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes))
 
