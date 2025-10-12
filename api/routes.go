@@ -115,10 +115,6 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspace),
 			)
-			workspaceApis.PATCH(
-				"/:workspaceId",
-				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspace),
-			)
 			workspaceApis.DELETE(
 				"/:workspaceId",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleDeleteWorkspace),

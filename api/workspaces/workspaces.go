@@ -121,7 +121,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 	err := c.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
+			"detail": "missing or invalid parameter",
 		})
 		return
 	}
@@ -421,11 +421,11 @@ func HandleStartWorkspace(ctx *gin.Context) {
 }
 
 type UpdateWorkspaceRequestBody struct {
-	GitRepoUrl           *string   `json:"git_repo_url"`
-	GitRefName           *string   `json:"git_ref_name"`
-	ConfigSourcePath     *string   `json:"config_source_path"`
-	EnvironmentVariables *[]string `json:"environment_variables"`
-	RunnerId             *uint     `json:"runner_id"`
+	GitRepoUrl           string   `json:"git_repo_url"`
+	GitRefName           string   `json:"git_ref_name"`
+	ConfigSourcePath     string   `json:"config_source_path"`
+	EnvironmentVariables []string `json:"environment_variables"`
+	RunnerId             *uint    `json:"runner_id"`
 }
 
 // HandleUpdateWorkspace godoc
@@ -487,9 +487,9 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		gitSource, err := models.UpdateGitWorkspaceSource(
 			workspace.GitSource,
-			*reqBody.GitRepoUrl,
-			*reqBody.GitRefName,
-			*reqBody.ConfigSourcePath,
+			reqBody.GitRepoUrl,
+			reqBody.GitRefName,
+			reqBody.ConfigSourcePath,
 		)
 
 		if err != nil {
@@ -511,7 +511,7 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 			workspace.ConfigSource,
 			workspace.TemplateVersion,
 			workspace.GitSource,
-			*reqBody.EnvironmentVariables,
+			reqBody.EnvironmentVariables,
 		)
 
 		if err != nil {

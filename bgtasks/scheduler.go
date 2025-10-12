@@ -8,8 +8,12 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+type EnqueuerInterface interface {
+	Enqueue(jobName string, args map[string]interface{}) (*work.Job, error)
+}
+
 var (
-	BgTasksEnqueuer *work.Enqueuer
+	BgTasksEnqueuer EnqueuerInterface
 )
 
 func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInstanceId string) error {

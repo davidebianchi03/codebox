@@ -135,7 +135,7 @@ export function WorkspaceSelectRunnerModal({ isOpen, onClose, workspace }: Props
                 type="submit"
                 disabled={saving}
               >
-                {saving && <Spinner size="sm" />}
+                {saving && <Spinner size="sm" className="me-2" />}
                 Save
               </Button>
             </div>
