@@ -386,7 +386,7 @@ func HandleStartWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	if workspace.Status == models.WorkspaceStatusStarting || workspace.Status == models.WorkspaceStatusRunning {
+	if workspace.Status != models.WorkspaceStatusStopped {
 		ctx.JSON(http.StatusConflict, gin.H{
 			"detail": "workspace is already running",
 		})
