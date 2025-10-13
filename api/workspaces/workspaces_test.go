@@ -427,6 +427,12 @@ func TestUpdateWorkspace(t *testing.T) {
 	})
 }
 
+// Helper struct for start/stop workspace tests
+type WorkspaceStatusTestCase struct {
+	WorkspaceStatus string
+	ExpectedCode    int
+}
+
 /*
 Try to start a workspace
 */
@@ -474,7 +480,100 @@ func TestStartWorkspace(t *testing.T) {
 			t.Fatalf("Failed to parse created workspace: '%s'", err)
 		}
 
-		// mark the workspace as stopped
+		testCases := []WorkspaceStatusTestCase{
+			{models.WorkspaceStatusStarting, http.StatusConflict},
+			{models.WorkspaceStatusRunning, http.StatusConflict},
+			{models.WorkspaceStatusStopping, http.StatusConflict},
+			{models.WorkspaceStatusStopped, http.StatusOK},
+			{models.WorkspaceStatusError, http.StatusConflict},
+			{models.WorkspaceStatusDeleting, http.StatusConflict},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.WorkspaceStatus, func(t *testing.T) {
+				// set the status of the workspace
+				workspace, err := models.RetrieveWorkspaceByUserAndId(*user, createdWorkspace.ID)
+				if err != nil || workspace == nil {
+					t.Fatalf("Failed to retrieve workspace: '%s'", err)
+				}
+
+				if _, err := models.UpdateWorkspace(
+					workspace,
+					workspace.Name,
+					tc.WorkspaceStatus,
+					workspace.Runner,
+					workspace.ConfigSource,
+					workspace.TemplateVersion,
+					workspace.GitSource,
+					workspace.EnvironmentVariables,
+				); err != nil {
+					t.Fatalf("Failed to stop workspace: '%s'", err)
+				}
+
+				// try to start the workspace
+				w = httptest.NewRecorder()
+				req = testutils.CreateRequestWithJSONBody(
+					t,
+					fmt.Sprintf("/api/v1/workspace/%d/start", createdWorkspace.ID),
+					"POST",
+					nil,
+				)
+				testutils.AuthenticateHttpRequest(t, req, *user)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, tc.ExpectedCode, w.Code)
+			})
+		}
+	})
+}
+
+/*
+Try to start a workspace that has no runner assigned
+*/
+func TestStartWorkspaceNoRunner(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := api.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil || user == nil {
+			t.Fatalf("Failed to retrieve test user: '%s'", err)
+		}
+
+		runners, err := models.ListRunners(1, 0)
+		if err != nil || len(runners) == 0 {
+			t.Errorf("Failed to retrieve test runner: '%s'\n", err)
+			t.FailNow()
+		}
+
+		// create a new workspace
+		reqBody := workspaces.CreateWorkspaceRequestBody{
+			Name:                 "Test Workspace",
+			Type:                 "docker_compose",
+			RunnerID:             runners[0].ID,
+			ConfigSource:         models.WorkspaceConfigSourceGit,
+			GitRepoUrl:           "https://github.com/davidebianchi03/codebox.git",
+			GitRefName:           "main",
+			ConfigSourceFilePath: "/path/to/config",
+			EnvironmentVariables: []string{"VAR1=value1"},
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/workspace",
+			"POST",
+			reqBody,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		// parse the created workspace
+		createdWorkspace, err := serializers.WorkspaceSerializerFromJSON(w.Body.String())
+		if err != nil {
+			t.Fatalf("Failed to parse created workspace: '%s'", err)
+		}
+
+		// set the status of the workspace and remove the runner
 		workspace, err := models.RetrieveWorkspaceByUserAndId(*user, createdWorkspace.ID)
 		if err != nil || workspace == nil {
 			t.Fatalf("Failed to retrieve workspace: '%s'", err)
@@ -484,7 +583,7 @@ func TestStartWorkspace(t *testing.T) {
 			workspace,
 			workspace.Name,
 			models.WorkspaceStatusStopped,
-			workspace.Runner,
+			nil,
 			workspace.ConfigSource,
 			workspace.TemplateVersion,
 			workspace.GitSource,
@@ -493,7 +592,7 @@ func TestStartWorkspace(t *testing.T) {
 			t.Fatalf("Failed to stop workspace: '%s'", err)
 		}
 
-		// try to start the workspace
+		// try to start the workspace with no runner assigned
 		w = httptest.NewRecorder()
 		req = testutils.CreateRequestWithJSONBody(
 			t,
@@ -503,35 +602,14 @@ func TestStartWorkspace(t *testing.T) {
 		)
 		testutils.AuthenticateHttpRequest(t, req, *user)
 		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, http.StatusFailedDependency, w.Code)
 
-		// try again to start the workspace (should fail because it is already starting)
-		w = httptest.NewRecorder()
-		req = testutils.CreateRequestWithJSONBody(
-			t,
-			fmt.Sprintf("/api/v1/workspace/%d/start", createdWorkspace.ID),
-			"POST",
-			nil,
-		)
-		testutils.AuthenticateHttpRequest(t, req, *user)
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusConflict, w.Code)
-
-		// mark the workspace as running
-		if _, err := models.UpdateWorkspace(
-			workspace,
-			workspace.Name,
-			models.WorkspaceStatusRunning,
-			workspace.Runner,
-			workspace.ConfigSource,
-			workspace.TemplateVersion,
-			workspace.GitSource,
-			workspace.EnvironmentVariables,
-		); err != nil {
-			t.Fatalf("Failed to stop workspace: '%s'", err)
+		// try to start the workspace with another user
+		user2, err := models.RetrieveUserByEmail("user2@user.com")
+		if err != nil || user == nil {
+			t.Fatalf("Failed to retrieve test user: '%s'", err)
 		}
 
-		// try again to start the workspace (should fail because it is already running)
 		w = httptest.NewRecorder()
 		req = testutils.CreateRequestWithJSONBody(
 			t,
@@ -539,98 +617,171 @@ func TestStartWorkspace(t *testing.T) {
 			"POST",
 			nil,
 		)
+		testutils.AuthenticateHttpRequest(t, req, *user2)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		// try to start the workspace without authentication
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			fmt.Sprintf("/api/v1/workspace/%d/start", createdWorkspace.ID),
+			"POST",
+			nil,
+		)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		// try to start a workspace that does not exist
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/workspace/104/start",
+			"POST",
+			nil,
+		)
 		testutils.AuthenticateHttpRequest(t, req, *user)
 		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+}
 
-		// mark the workspace as stopping
-		if _, err := models.UpdateWorkspace(
-			workspace,
-			workspace.Name,
-			models.WorkspaceStatusStopping,
-			workspace.Runner,
-			workspace.ConfigSource,
-			workspace.TemplateVersion,
-			workspace.GitSource,
-			workspace.EnvironmentVariables,
-		); err != nil {
-			t.Fatalf("Failed to stop workspace: '%s'", err)
+/*
+Try to stop a workspace
+*/
+func TestStopWorkspace(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := api.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil || user == nil {
+			t.Fatalf("Failed to retrieve test user: '%s'", err)
 		}
 
-		// try again to start the workspace (should fail because it is stopping)
-		w = httptest.NewRecorder()
-		req = testutils.CreateRequestWithJSONBody(
-			t,
-			fmt.Sprintf("/api/v1/workspace/%d/start", createdWorkspace.ID),
-			"POST",
-			nil,
-		)
-		testutils.AuthenticateHttpRequest(t, req, *user)
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusConflict, w.Code)
-
-		// mark the workspace as stopping
-		if _, err := models.UpdateWorkspace(
-			workspace,
-			workspace.Name,
-			models.WorkspaceStatusDeleting,
-			workspace.Runner,
-			workspace.ConfigSource,
-			workspace.TemplateVersion,
-			workspace.GitSource,
-			workspace.EnvironmentVariables,
-		); err != nil {
-			t.Fatalf("Failed to stop workspace: '%s'", err)
+		runners, err := models.ListRunners(1, 0)
+		if err != nil || len(runners) == 0 {
+			t.Errorf("Failed to retrieve test runner: '%s'\n", err)
+			t.FailNow()
 		}
 
-		// try again to start the workspace (should fail because it is deleting)
-		w = httptest.NewRecorder()
-		req = testutils.CreateRequestWithJSONBody(
-			t,
-			fmt.Sprintf("/api/v1/workspace/%d/start", createdWorkspace.ID),
-			"POST",
-			nil,
-		)
-		testutils.AuthenticateHttpRequest(t, req, *user)
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusConflict, w.Code)
-
-		// mark the workspace as stopping
-		if _, err := models.UpdateWorkspace(
-			workspace,
-			workspace.Name,
-			models.WorkspaceStatusError,
-			workspace.Runner,
-			workspace.ConfigSource,
-			workspace.TemplateVersion,
-			workspace.GitSource,
-			workspace.EnvironmentVariables,
-		); err != nil {
-			t.Fatalf("Failed to stop workspace: '%s'", err)
+		// create a new workspace
+		reqBody := workspaces.CreateWorkspaceRequestBody{
+			Name:                 "Test Workspace",
+			Type:                 "docker_compose",
+			RunnerID:             runners[0].ID,
+			ConfigSource:         models.WorkspaceConfigSourceGit,
+			GitRepoUrl:           "https://github.com/davidebianchi03/codebox.git",
+			GitRefName:           "main",
+			ConfigSourceFilePath: "/path/to/config",
+			EnvironmentVariables: []string{"VAR1=value1"},
 		}
 
-		// try again to start the workspace (should fail)
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/workspace",
+			"POST",
+			reqBody,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		// parse the created workspace
+		createdWorkspace, err := serializers.WorkspaceSerializerFromJSON(w.Body.String())
+		if err != nil {
+			t.Fatalf("Failed to parse created workspace: '%s'", err)
+		}
+
+		testCases := []WorkspaceStatusTestCase{
+			{models.WorkspaceStatusStarting, http.StatusConflict},
+			{models.WorkspaceStatusRunning, http.StatusOK},
+			{models.WorkspaceStatusStopping, http.StatusConflict},
+			{models.WorkspaceStatusStopped, http.StatusConflict},
+			{models.WorkspaceStatusError, http.StatusOK},
+			{models.WorkspaceStatusDeleting, http.StatusConflict},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.WorkspaceStatus, func(t *testing.T) {
+				// set the status of the workspace
+				workspace, err := models.RetrieveWorkspaceByUserAndId(*user, createdWorkspace.ID)
+				if err != nil || workspace == nil {
+					t.Fatalf("Failed to retrieve workspace: '%s'", err)
+				}
+
+				if _, err := models.UpdateWorkspace(
+					workspace,
+					workspace.Name,
+					tc.WorkspaceStatus,
+					workspace.Runner,
+					workspace.ConfigSource,
+					workspace.TemplateVersion,
+					workspace.GitSource,
+					workspace.EnvironmentVariables,
+				); err != nil {
+					t.Fatalf("Failed to stop workspace: '%s'", err)
+				}
+
+				// try to start the workspace
+				w = httptest.NewRecorder()
+				req = testutils.CreateRequestWithJSONBody(
+					t,
+					fmt.Sprintf("/api/v1/workspace/%d/stop", createdWorkspace.ID),
+					"POST",
+					nil,
+				)
+				testutils.AuthenticateHttpRequest(t, req, *user)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, tc.ExpectedCode, w.Code)
+			})
+		}
+
+		// try to stop the workspace with another user
+		user2, err := models.RetrieveUserByEmail("user2@user.com")
+		if err != nil || user == nil {
+			t.Fatalf("Failed to retrieve test user: '%s'", err)
+		}
+
 		w = httptest.NewRecorder()
 		req = testutils.CreateRequestWithJSONBody(
 			t,
-			fmt.Sprintf("/api/v1/workspace/%d/start", createdWorkspace.ID),
+			fmt.Sprintf("/api/v1/workspace/%d/stop", createdWorkspace.ID),
+			"POST",
+			nil,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user2)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		// try to stop the workspace without authentication
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			fmt.Sprintf("/api/v1/workspace/%d/stop", createdWorkspace.ID),
+			"POST",
+			nil,
+		)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		// try to stop a workspace that does not exist
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/workspace/104/stop",
 			"POST",
 			nil,
 		)
 		testutils.AuthenticateHttpRequest(t, req, *user)
 		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 }
 
 /*
 TODO:
-- Try to start a workspace
-- Try to stop a workspace
-- Try to start a workspace that has no runner assigned
-- Try to start/stop a workspace that is already started/stopped
-- Try to start/stop a workspace that does not exist
-- Try to start/stop a workspace owned by another user
 - Try to update a workspace config
 - Try to update a workspace config of a workspace that has no runner assigned
+- Test api to set runner
 */

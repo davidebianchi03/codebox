@@ -28,6 +28,18 @@ func SetupDBForTests() error {
 		return err
 	}
 
+	// create another regular user
+	if _, err := models.CreateUser(
+		"user2@user.com",
+		"User2",
+		"User",
+		"password",
+		false,
+		false,
+	); err != nil {
+		return err
+	}
+
 	// create a runner for docker based workspaces
 	if _, err := models.CreateRunner(
 		"docker-runner",

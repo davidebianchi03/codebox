@@ -4,7 +4,7 @@ stages:
   - build_sources
   - build_and_publish_docker_image
 
-unittest:
+unit_tests:
   stage: tests
   image: dadebia/codebox-base-docker:latest
   tags:

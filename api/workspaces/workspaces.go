@@ -268,7 +268,7 @@ func HandleCreateWorkspace(c *gin.Context) {
 // HandleStopWorkspace godoc
 // @Summary Stop a workspace
 // @Schemes
-// @Description Stop a workspace
+// @Description Stop a workspace, only running workspaces can be stopped
 // @Tags Workspaces
 // @Accept json
 // @Produce json
@@ -277,39 +277,29 @@ func HandleCreateWorkspace(c *gin.Context) {
 func HandleStopWorkspace(ctx *gin.Context) {
 	user, err := utils.GetUserFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+		utils.ErrorResponse(ctx, http.StatusNotFound, "workspace not found")
 		return
 	}
 
 	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if workspace == nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+		utils.ErrorResponse(ctx, http.StatusNotFound, "workspace not found")
 		return
 	}
 
-	if workspace.Status == models.WorkspaceStatusStopping || workspace.Status == models.WorkspaceStatusStopped {
-		ctx.JSON(http.StatusConflict, gin.H{
-			"detail": "workspace is already stopped",
-		})
+	if workspace.Status != models.WorkspaceStatusRunning && workspace.Status != models.WorkspaceStatusError {
+		utils.ErrorResponse(ctx, http.StatusConflict, "workspace is not running")
 		return
 	}
 
@@ -325,9 +315,7 @@ func HandleStopWorkspace(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
@@ -343,7 +331,7 @@ func HandleStopWorkspace(ctx *gin.Context) {
 // HandleStartWorkspace godoc
 // @Summary Start a workspace
 // @Schemes
-// @Description Start a workspace
+// @Description Start a workspace, only stopped workspaces can be started
 // @Tags Workspaces
 // @Accept json
 // @Produce json

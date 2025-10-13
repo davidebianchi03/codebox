@@ -46,9 +46,13 @@ func TeardownTestEnvironment(t *testing.T) error {
 	return nil
 }
 
-/*
-Helper function that wraps a test function with setup and teardown of the test environment
-*/
+// Helper function that wraps a test function with
+// setup and teardown of the test environment
+// The setup is done before calling the test function, it initializes the db and
+// clears its contents
+// The teardown is done after the test function returns, it clears the db contents
+// and closes the db connection
+// If setup or teardown fail, the test will fail immediately
 func WithSetupAndTearDownTestEnvironment(t *testing.T, testFunc func(t *testing.T)) {
 	if err := SetupTestEnvironment(t); err != nil {
 		t.FailNow()
