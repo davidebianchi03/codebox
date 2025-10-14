@@ -550,6 +550,14 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 		return
 	}
 
+	if workspace.Status == models.WorkspaceStatusDeleting ||
+		workspace.Status == models.WorkspaceStatusStarting ||
+		workspace.Status == models.WorkspaceStatusStopping {
+		// workspace can be deleted if it is stopped, running or in error state
+		utils.ErrorResponse(ctx, http.StatusNotAcceptable, "workspace cannot be deleted in its current state")
+		return
+	}
+
 	skipErrors := false
 	if strings.ToLower(ctx.Request.URL.Query().Get("skip_errors")) == "true" {
 		skipErrors = true
