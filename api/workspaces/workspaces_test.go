@@ -850,7 +850,7 @@ func TestUpdateConfigOfAWorkspace(t *testing.T) {
 					workspace.GitSource,
 					workspace.EnvironmentVariables,
 				); err != nil {
-					t.Fatalf("Failed to stop workspace: '%s'", err)
+					t.Fatalf("Failed to update workspace: '%s'", err)
 				}
 
 				// try to start the workspace
@@ -894,6 +894,36 @@ func TestUpdateConfigOfAWorkspace(t *testing.T) {
 		)
 		router.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		// try to update the config of a workspace that has no runner assigned
+		workspace, err := models.RetrieveWorkspaceByUserAndId(*user, createdWorkspace.ID)
+		if err != nil || workspace == nil {
+			t.Fatalf("Failed to retrieve workspace: '%s'", err)
+		}
+
+		if _, err := models.UpdateWorkspace(
+			workspace,
+			workspace.Name,
+			workspace.Status,
+			nil,
+			workspace.ConfigSource,
+			workspace.TemplateVersion,
+			workspace.GitSource,
+			workspace.EnvironmentVariables,
+		); err != nil {
+			t.Fatalf("Failed to update workspace: '%s'", err)
+		}
+
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			fmt.Sprintf("/api/v1/workspace/%d/update-config", createdWorkspace.ID),
+			"POST",
+			nil,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotAcceptable, w.Code)
 
 		// try to update the config of a workspace that does not exist
 		w = httptest.NewRecorder()
@@ -1072,7 +1102,6 @@ func TestDeleteWorkspace(t *testing.T) {
 
 /*
 TODO:
-- Try to update a workspace config (both git and template)
 - Add API to restart a workspace (only running workspaces can be restarted)
 - Try to update a workspace config of a workspace that has no runner assigned
 - Test api to set runner
