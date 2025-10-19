@@ -1101,6 +1101,43 @@ func TestDeleteWorkspace(t *testing.T) {
 		testutils.AuthenticateHttpRequest(t, req, *user)
 		router.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		// try to delete a workspace that has no runner assigned
+		workspace, err := models.RetrieveWorkspaceByUserAndId(*user, createdWorkspace.ID)
+		if err != nil {
+			t.Fatalf("failed to retrieve workspace %s", err)
+			return
+		}
+
+		if workspace == nil {
+			t.Fatal("workspace not found")
+			return
+		}
+
+		if _, err := models.UpdateWorkspace(
+			workspace,
+			workspace.Name,
+			models.WorkspaceStatusRunning,
+			nil,
+			workspace.ConfigSource,
+			workspace.TemplateVersion,
+			workspace.GitSource,
+			workspace.EnvironmentVariables,
+		); err != nil {
+			t.Fatalf("failed to unassign workspace runner %s", err)
+			return
+		}
+
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			fmt.Sprintf("/api/v1/workspace/%d", workspace.ID),
+			"DELETE",
+			nil,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
 	})
 }
 

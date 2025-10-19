@@ -544,9 +544,7 @@ func HandleDeleteWorkspace(ctx *gin.Context) {
 	}
 
 	if workspace == nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"detail": "workspace not found",
-		})
+		utils.ErrorResponse(ctx, http.StatusNotFound, "workspace not found")
 		return
 	}
 

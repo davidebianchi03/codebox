@@ -14,7 +14,7 @@ import { Workspace } from "../../types/workspace";
 import { toast, ToastContainer } from "react-toastify";
 import { Runner } from "../../types/runner";
 import { ListRunners } from "../../api/runner";
-import { APIUpdateWorkspace } from "../../api/workspace";
+import { APISetWorkspaceRunner } from "../../api/workspace";
 
 interface Props {
   isOpen: boolean;
@@ -46,12 +46,8 @@ export function WorkspaceSelectRunnerModal({ isOpen, onClose, workspace }: Props
       setError("");
       setSaving(true);
       // TODO: check that the runner is compatible
-      if (!(await APIUpdateWorkspace(
+      if (!(await APISetWorkspaceRunner(
         workspace.id,
-        workspace.git_source?.repository_url || "",
-        workspace.git_source?.ref_name || "",
-        workspace.config_source_file_path,
-        workspace.environment_variables,
         selectedRunner.id,
       ))) {
         toast.error("Failed to update the workspace");

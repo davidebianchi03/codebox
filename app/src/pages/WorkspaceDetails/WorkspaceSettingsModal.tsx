@@ -47,7 +47,6 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
         values.gitRefName,
         values.configSourcePath,
         values.environmentVariables !== "" ? values.environmentVariables.split("\n") : [],
-        workspace.runner? workspace.runner.id : null,
       );
 
       if (r) {
