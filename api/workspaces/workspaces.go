@@ -681,7 +681,7 @@ type SetRunnerForWorkspaceBody struct {
 // @Tags Workspaces
 // @Accept json
 // @Produce json
-// @Param request body SetRunnerForWorkspaceBody true
+// @Param request body SetRunnerForWorkspaceBody true "Request body"
 // @Success 200 {object} serializers.WorkspaceSerializer
 // @Router /api/v1/workspace/:workspaceId/set-runner [post]
 func HandleSetRunnerForWorkspace(ctx *gin.Context) {
