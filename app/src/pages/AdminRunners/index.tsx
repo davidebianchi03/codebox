@@ -1,27 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  Badge,
   Button,
   Card,
   CardBody,
   Col,
+  Container,
   Input,
   Label,
   Row,
-  Table,
+  Spinner,
 } from "reactstrap";
-import { Runner, RunnerType } from "../../types/runner";
+import { RunnerAdmin } from "../../types/runner";
 import { CreateRunnerModal } from "./CreateRunnerModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
-import { ListRunnerTypes } from "../../api/runner";
-import { AdminListRunners } from "../../api/admin";
+import { AdminListRunners } from "../../api/runner";
+import DataTable from "../../components/DataTable";
+import React from "react";
 
 export function AdminRunners() {
-  const [runners, setRunners] = useState<Runner[]>([]);
-  const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
-  const [searchText, setSearchText] = useState<string>("");
+  const [runners, setRunners] = useState<RunnerAdmin[]>([]);
   const [showCreateRunnerModal, setCreateRunnerModal] =
     useState<boolean>(false);
   const [runnerToken, setRunnerToken] = useState<string>("");
@@ -33,22 +34,17 @@ export function AdminRunners() {
       setRunners(r);
     }
   }, []);
-
-  const FetchRunnerTypes = useCallback(async () => {
-    const rt = await ListRunnerTypes();
-    if (rt) {
-      setRunnerTypes(rt);
-    }
-  }, []);
-
   useEffect(() => {
     FetchRunners();
-    FetchRunnerTypes();
-  }, [FetchRunners, FetchRunnerTypes]);
+  }, [FetchRunners]);
 
   return (
-    <>
+    <Container>
       <div className="row g-2 align-items-center mb-4">
+        <div className="col">
+          <h2 className="mb-0 mt-2">Runners</h2>
+          <p className="text-muted">List of all runners</p>
+        </div>
         <div className="col-auto ms-auto d-print-none">
           <Button color="primary" onClick={() => setCreateRunnerModal(true)}>
             Add new runner
@@ -124,83 +120,61 @@ export function AdminRunners() {
       )}
       <Row className="mt-4">
         <Col md={12}>
-          <Input
-            placeholder="Filter runners"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Table striped className="mt-4" responsive>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Supported workspace types</th>
-                <th>Last contact</th>
-                <th>Version</th>
-              </tr>
-            </thead>
-            <tbody>
-              {runners.length === 0 ? (
-                <tr>
-                  <td colSpan={5}>There are no registered runners</td>
-                </tr>
-              ) : (
-                runners.map((runner) => {
-                  var runnerType = runnerTypes.find(
-                    (type) => type.id === runner.type
-                  );
-
-                  if (runner.name.indexOf(searchText) >= 0) {
-                    return (
-                      <tr key={runner.id}>
-                        <td>
-                          <Link to={`/admin/runners/${runner.id}`}>{runner.id}</Link>
-                        </td>
-                        <td>{runner.name}</td>
-                        <td
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={runnerType?.description}
-                        >
-                          {runnerType?.name || "N/A"}
-                        </td>
-                        <td>
-                          {runnerType
-                            ? runnerType.supported_types?.map((t, i) => {
-                              if (runnerType) {
-                                if (
-                                  i <
-                                  runnerType?.supported_types.length - 1
-                                ) {
-                                  return t.name + ", ";
-                                }
-                              }
-                              return t.name;
-                            })
-                            : ""}
-                        </td>
-                        <td className={`${(new Date().getTime() - new Date(runner.last_contact).getTime()) > (5 * 60 * 1000) ? "text-warning" : ""
-                          }`}>
-                          {new Date(runner.last_contact).getFullYear() <
-                            2000
-                            ? "N/A"
-                            : new Date(
-                              runner.last_contact
-                            ).toLocaleString()}
-                        </td>
-                        <td>
-                          {runner.version.length > 0 ? runner.version : "N/A"}
-                        </td>
-                      </tr>
-                    );
-                  } else {
-                    return null;
-                  }
-                })
-              )}
-            </tbody>
-          </Table>
+          <Card body>
+            <DataTable
+              columns={[
+                {
+                  label: "Name",
+                  key: "name",
+                  render: (_, runner: RunnerAdmin) => (
+                    <Link to={`/admin/runners/${runner.id}`} className="d-flex gap-2 align-items-center">
+                      <b>{runner.name}</b>
+                      {runner.deletion_in_progress && (
+                        <React.Fragment>
+                          <Badge color="orange" className="text-white">
+                            Deletion in progress
+                            <Spinner size="sm" />
+                          </Badge>
+                        </React.Fragment>
+                      )}
+                    </Link>
+                  ),
+                },
+                {
+                  label: "Type",
+                  key: "type",
+                },
+                {
+                  label: "Last contact",
+                  key: "last_contact",
+                  render: (_, runner: RunnerAdmin) => (
+                    runner.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"
+                  ),
+                },
+                {
+                  label: "Status",
+                  key: "_",
+                  render: (_, runner: RunnerAdmin) => (
+                    <React.Fragment>
+                      {new Date(runner.last_contact) > new Date(Date.now() - 5 * 60 * 1000)
+                        ? (
+                          <React.Fragment>
+                            <span className="text-success pe-1">●</span>
+                            Online
+                          </React.Fragment>
+                        ) : (
+                          <React.Fragment>
+                            <span className="text-danger pe-1">●</span>
+                            Offline
+                          </React.Fragment>
+                        )}
+                    </React.Fragment>
+                  ),
+                },
+              ]}
+              data={runners}
+            />
+          </Card>
         </Col>
       </Row>
       <CreateRunnerModal
@@ -220,6 +194,6 @@ export function AdminRunners() {
       <ToastContainer
         toastClassName={"bg-dark"}
       />
-    </>
+    </Container>
   );
 }

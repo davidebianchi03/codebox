@@ -75,6 +75,7 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
         isOpen={isOpen}
         toggle={handleCloseModal}
         modalClassName="modal-blur"
+        size="xl"
       >
         <ModalHeader toggle={handleCloseModal}>Settings</ModalHeader>
         <ModalBody>

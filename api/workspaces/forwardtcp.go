@@ -17,7 +17,7 @@ func HandleForwardTcp(ctx *gin.Context) {
 
 	workspace := container.Workspace
 
-	runner, err := models.RetrieveRunnerByID(workspace.RunnerID)
+	runner, err := models.RetrieveRunnerByID(*workspace.RunnerID)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
 		return

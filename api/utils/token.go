@@ -67,7 +67,7 @@ func GetTokenFromContext(ctx *gin.Context) (models.Token, error) {
 	}
 
 	var token models.Token
-	result := dbconn.DB.Where("token=?", t).Preload("User").First(&token)
+	result := dbconn.DB.Where("token=?", t).Preload("User").Preload("ImpersonatedUser").First(&token)
 	if result.Error != nil {
 		return models.Token{}, fmt.Errorf("missing or invalid authorization token")
 	}

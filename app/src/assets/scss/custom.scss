@@ -9,3 +9,19 @@ $dark: #0a192c;
 // Import the rest of Bootstrap
 @import "@tabler/core/scss/tabler.scss";
 
+.menu-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-top: 0.7rem;
+    margin-bottom: 0.5rem;
+    padding-left: 0.7rem;
+    color: var(--tblr-secondary-rgb);
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+@media screen and (max-width: 992px) {
+    .superuser-navbar {
+        display: none;
+    }
+}

@@ -10,14 +10,14 @@ import {
   ModalHeader,
 } from "reactstrap";
 import * as Yup from "yup";
-import { User } from "../../types/user";
+import { AdminUser } from "../../types/user";
 import { toast } from "react-toastify";
-import { AdminSetUserPassword } from "../../api/admin";
+import { AdminSetUserPassword } from "../../api/users";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  user: User;
+  user: AdminUser;
 }
 
 export function AdminChangePasswordModal({ isOpen, onClose, user }: Props) {

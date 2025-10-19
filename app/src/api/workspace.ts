@@ -61,7 +61,7 @@ export async function APIUpdateWorkspace(
     environment_variables: string[],
 ): Promise<Workspace | undefined> {
     try {
-        const r = await axios.patch<Workspace>(`/api/v1/workspace/${workspaceId}`, {
+        const r = await axios.put<Workspace>(`/api/v1/workspace/${workspaceId}`, {
             git_repo_url: git_repo_url,
             git_ref_name: git_ref_name,
             config_source_path: config_source_path,
@@ -105,6 +105,20 @@ export async function APIStopWorkspace(workspaceId: number): Promise<boolean> {
 export async function APIUpdateWorkspaceConfig(workspaceId: number): Promise<boolean> {
     try {
         await axios.post<Workspace>(`/api/v1/workspace/${workspaceId}/update-config`);
+        return true
+    } catch {
+        return false;
+    }
+}
+
+export async function APISetWorkspaceRunner(workspaceId: number, runnerId:number): Promise<boolean> {
+    try {
+        await axios.post<Workspace>(
+            `/api/v1/workspace/${workspaceId}/set-runner`,
+            {
+                runner_id: runnerId,
+            },
+        );
         return true
     } catch {
         return false;

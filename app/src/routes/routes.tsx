@@ -3,8 +3,10 @@ import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
 import { AdminRunners } from "../pages/AdminRunners";
 import { AdminUserDetails } from "../pages/AdminUserDetails";
 import { AdminUsersList } from "../pages/AdminUsersList";
+import { CLIDownloadPage } from "../pages/CLIDownload";
 import CliLogin from "../pages/CliLogin";
 import CreateWorkspace from "../pages/CreateWorkspace";
+import { CreditsPage } from "../pages/Credits";
 import HomePage from "../pages/Home";
 import LoginPage from "../pages/Login";
 import Profile from "../pages/Profile";
@@ -58,7 +60,15 @@ export const AuthProtectedRoutes: Route[] = [
   },
   {
     path: "/templates/:templateId/versions/:versionId/editor",
-    element: <TemplateVersionEditor />, // TODO: protect view
+    element: <TemplateVersionEditor />, // TODO: protect view, pnly template managers and admin can view this page
+  },
+  {
+    path: "/credits",
+    element: <CreditsPage />,
+  },
+  {
+    path: "/cli",
+    element: <CLIDownloadPage />,
   },
 ];
 

@@ -9,7 +9,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
-func (jobContext *Context) PingAgents(job *work.Job) error {
+func (jobContext *Context) PingAgentsTask(job *work.Job) error {
 	var containers []models.WorkspaceContainer
 	if err := dbconn.DB.Preload("Workspace.Runner").Find(&containers).Error; err != nil {
 		return err

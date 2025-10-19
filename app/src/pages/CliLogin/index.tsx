@@ -26,7 +26,7 @@ export default function CliLogin() {
     <React.Fragment>
       {token.length > 0 && (
         <div className="page page-center">
-          <Container className="w-100 d-flex justify-content-center">
+          <Container className="w-100 h-100 d-flex justify-content-center align-items-center">
             <div className="mb-5">
               <div className="section-header">
                 <span className="d-flex align-items-center w-100 justify-content-center">

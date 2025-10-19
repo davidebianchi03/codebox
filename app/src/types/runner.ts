@@ -4,10 +4,18 @@ export interface Runner {
     id: number;
     name: string;
     type: string;
+    last_contact: string;
+}
+
+export interface RunnerAdmin {
+    id: number;
+    name: string;
+    type: string;
     use_public_url: boolean;
     public_url: string;
     last_contact: string;
-    version: string
+    version: string;
+    deletion_in_progress: boolean;
 }
 
 export interface RunnerWithToken extends Runner {

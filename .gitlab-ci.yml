@@ -1,7 +1,40 @@
 stages:
+  - tests
   - pages
   - build_sources
   - build_and_publish_docker_image
+
+unit_tests:
+  stage: tests
+  image: dadebia/codebox-base-docker:latest
+  tags:
+    - docker-linux
+  services:
+    - name: mysql:8.0.41
+      alias: mysql
+  variables:
+    MYSQL_ROOT_PASSWORD: password
+    MYSQL_DATABASE: codebox-test
+    MYSQL_USER: codebox
+    MYSQL_PASSWORD: password
+  script:
+    - cp .gitlab-ci/codebox.test.env codebox.env
+    - go mod tidy
+    - export CODEBOX_BASE_DIR=$(pwd)
+    - export CODEBOX_ENV_FILE="${CODEBOX_BASE_DIR}/codebox.env"
+    - echo "CODEBOX_BASE_DIR is set to ${CODEBOX_BASE_DIR}"
+    - echo "CODEBOX_ENV_FILE is set to ${CODEBOX_ENV_FILE}"
+    - echo "Migrating test db..."
+    - ./scripts/migrate-test-db.sh
+    - echo "Running tests..."
+    - go test -v ./... -coverprofile=coverage.out
+    - go tool cover -func=coverage.out | grep total | awk '{print $3}'
+  artifacts:
+    paths:
+      - coverage.out
+  coverage: '/total:\s+\(.*\)\s+([0-9\.]+)%/'
+  # rules:
+  #   - if: $CI_COMMIT_TAG
 
 pages:
   stage: pages
@@ -41,41 +74,14 @@ download_cli:
   image: ubuntu:22.04
   tags:
     - docker-linux
-  variables:
-    CLI_REPO_ID: 68940749
-  parallel:
-    matrix:
-      - GOARCH: amd64
-        GOOS: 
-          - linux
-          - windows
   before_script:
     - apt update
     - apt install -y jq curl
   script:
-    - CLI_PACKAGE_NAME=codebox-cli-${GOOS}
-    - CLI_FILENAME=codebox-cli-${GOARCH}-${GOOS}
-    - if [ "$GOOS" = "windows" ]; then CLI_FILENAME="${CLI_FILENAME}.exe"; fi
-
-    - mkdir -p bin
-    - cd bin
-
-    - |
-      LATEST_CLI_VERSION=$(curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
-        --silent \
-        --location \
-        "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages?package_name=${CLI_PACKAGE_NAME}&package_type=generic&order_by=created_at&sort=desc" | jq -r '.[0].version' \
-      )
-
-    - |
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-           --location \
-           --output codebox-cli-${GOOS}-${GOARCH} \
-           "${CI_API_V4_URL}/projects/${CLI_REPO_ID}/packages/generic/${CLI_PACKAGE_NAME}/${LATEST_CLI_VERSION}/${CLI_FILENAME}"
-           
+    - ./scripts/download-cli.sh
   artifacts:
     paths:
-      - bin/
+      - bin/cli
     expire_in: 1 hour
   when: on_success
   rules:

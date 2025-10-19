@@ -10,12 +10,13 @@ import {
 } from "reactstrap";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { User } from "../../types/user";
-import { AdminCreateUser, AdminRetrieveUserByEmail } from "../../api/admin";
+import { AdminUser } from "../../types/user";
+import { AdminCreateUser, AdminRetrieveUserByEmail } from "../../api/users";
+import { useCallback } from "react";
 
 interface Props {
   isOpen: boolean;
-  onClose: (user: User | null) => void;
+  onClose: (user: AdminUser | null) => void;
 }
 
 export function CreateUserModal({ isOpen, onClose }: Props) {
@@ -99,10 +100,10 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
     },
   });
 
-  const HandleCloseModal = (user: User | null) => {
+  const HandleCloseModal = useCallback((user: AdminUser | null) => {
     validation.resetForm();
     onClose(user);
-  };
+  }, [onClose, validation]);
 
   return (
     <Modal

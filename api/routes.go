@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/url"
+	"path"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -29,7 +30,7 @@ func SetupRouter() *gin.Engine {
 
 	r := gin.Default()
 	V1ApiRoutes(r)
-	r.LoadHTMLGlob("html/templates/*")
+	r.LoadHTMLGlob(path.Join(config.Environment.BaseDir, "html", "templates", "*"))
 	return r
 }
 
@@ -115,10 +116,6 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspace),
 			)
-			workspaceApis.PATCH(
-				"/:workspaceId",
-				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspace),
-			)
 			workspaceApis.DELETE(
 				"/:workspaceId",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleDeleteWorkspace),
@@ -174,6 +171,10 @@ func V1ApiRoutes(router *gin.Engine) {
 			workspaceApis.POST(
 				"/:workspaceId/update-config",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspaceConfiguration),
+			)
+			workspaceApis.POST(
+				"/:workspaceId/set-runner",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleSetRunnerForWorkspace),
 			)
 		}
 		v1.GET("/workspace-types", permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes))
@@ -248,14 +249,22 @@ func V1ApiRoutes(router *gin.Engine) {
 		)
 
 		// download cli
+		v1.GET("/cli", cli.HandleListCLI)
+		v1.GET("/cli/:id", cli.HandleRetrieveCLI)
 		v1.GET(
-			"/download-cli",
+			"/cli/:id/download",
 			cli.HandleDownloadCLI,
 		)
+
+		v1.POST("stop-impersonation", permissions.AuthenticationRequiredRoute(auth.HandleStopImpersonation))
 
 		// admin routes
 		adminApis := v1.Group("/admin")
 		{
+			adminApis.GET(
+				"stats",
+				permissions.AdminRequiredRoute(admin.HandleAdminStats),
+			)
 			adminApis.GET(
 				"runners",
 				permissions.AdminRequiredRoute(admin.HandleAdminListRunners),
@@ -264,13 +273,17 @@ func V1ApiRoutes(router *gin.Engine) {
 				"runners/:runnerId",
 				permissions.AdminRequiredRoute(admin.HandleAdminRetrieveRunners),
 			)
+			adminApis.POST(
+				"runners",
+				permissions.AdminRequiredRoute(admin.HandleAdminCreateRunner),
+			)
 			adminApis.PUT(
 				"runners/:runnerId",
 				permissions.AdminRequiredRoute(admin.HandleAdminUpdateRunner),
 			)
-			adminApis.POST(
-				"runners",
-				permissions.AdminRequiredRoute(admin.HandleAdminCreateRunner),
+			adminApis.DELETE(
+				"runners/:runnerId",
+				permissions.AdminRequiredRoute(admin.HandleAdminDeleteRunner),
 			)
 			adminApis.GET(
 				"users",
@@ -288,9 +301,9 @@ func V1ApiRoutes(router *gin.Engine) {
 				"users/:email",
 				permissions.AdminRequiredRoute(admin.HandleAdminUpdateUser),
 			)
-			adminApis.PATCH(
+			adminApis.DELETE(
 				"users/:email",
-				permissions.AdminRequiredRoute(admin.HandleAdminUpdateUser),
+				permissions.AdminRequiredRoute(admin.HandleAdminDeleteUser),
 			)
 			adminApis.POST(
 				"users/:email/set-password",
@@ -299,6 +312,14 @@ func V1ApiRoutes(router *gin.Engine) {
 			adminApis.GET(
 				"workspaces",
 				permissions.AdminRequiredRoute(admin.AdminListWorkspaces),
+			)
+			adminApis.POST(
+				"users/:email/impersonate",
+				permissions.AdminRequiredRoute(admin.HandleAdminImpersonateUser),
+			)
+			adminApis.GET(
+				"users/:email/impersonation-logs",
+				permissions.AdminRequiredRoute(admin.HandleAdminListImpersonationLogsByUser),
 			)
 		}
 	}

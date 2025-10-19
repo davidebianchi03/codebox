@@ -11,45 +11,41 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
-func (jobContext *Context) StopWorkspace(job *work.Job) error {
-	workspaceId := job.ArgInt64("workspace_id")
-
-	var workspace *models.Workspace
-	result := dbconn.DB.Preload("Runner").First(&workspace, map[string]interface{}{"ID": workspaceId})
-	if result.Error != nil {
-		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
-	}
-
-	if workspace == nil {
-		return errors.New("workspace not found")
-	}
+func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 	defer dbconn.DB.Save(&workspace)
 
 	ri := runnerinterface.RunnerInterface{
 		Runner: workspace.Runner,
 	}
 
+	stopping := true
 	if err := ri.StopWorkpace(workspace); err != nil {
-		workspace.AppendLogs(fmt.Sprintf("failed to stop workspace, %s", err.Error()))
-		workspace.Status = models.WorkspaceStatusError
-		return errors.New("failed to stop workspace")
+		stopping = false
+		if !skipErrors {
+			workspace.AppendLogs(fmt.Sprintf("failed to stop workspace, %s", err.Error()))
+			workspace.Status = models.WorkspaceStatusError
+			return errors.New("failed to stop workspace")
+		}
 	}
 
 	// fetch workspace details and logs
-	starting := true
 	logsIndex := 0
-	for starting {
+	for stopping {
 		details, err := ri.GetDetails(workspace)
 		if err != nil {
-			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
-			workspace.Status = models.WorkspaceStatusError
-			return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
+			if !skipErrors {
+				workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
+				workspace.Status = models.WorkspaceStatusError
+				return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
+			} else {
+				break
+			}
 		}
 
 		if details.Status == models.WorkspaceStatusStopping {
-			starting = true
+			stopping = true
 		} else {
-			starting = false
+			stopping = false
 		}
 
 		logs, err := ri.GetLogs(workspace)
@@ -65,9 +61,11 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 
 	details, err := ri.GetDetails(workspace)
 	if err != nil {
-		workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
-		workspace.Status = models.WorkspaceStatusError
-		return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
+		if !skipErrors {
+			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
+			workspace.Status = models.WorkspaceStatusError
+			return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
+		}
 	}
 
 	workspace.Status = details.Status
@@ -84,4 +82,20 @@ func (jobContext *Context) StopWorkspace(job *work.Job) error {
 	}
 
 	return nil
+}
+
+func (jobContext *Context) StopWorkspaceTask(job *work.Job) error {
+	workspaceId := job.ArgInt64("workspace_id")
+
+	var workspace *models.Workspace
+	result := dbconn.DB.Preload("Runner").First(&workspace, map[string]interface{}{"ID": workspaceId})
+	if result.Error != nil {
+		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
+	}
+
+	if workspace == nil {
+		return errors.New("workspace not found")
+	}
+
+	return StopWorkspace(workspace, false)
 }

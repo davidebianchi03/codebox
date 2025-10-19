@@ -18,6 +18,7 @@ type EnvVars struct {
 	DBHost                  string `env:"CODEBOX_DB_HOST" envDefault:"localhost"`
 	DBPort                  int    `env:"CODEBOX_DB_PORT" envDefault:"3306"`
 	DBName                  string `env:"CODEBOX_DB_NAME" envDefault:"codebox"`
+	DBTestName              string `env:"CODEBOX_TEST_DB_NAME" envDefault:"codebox-test"`
 	DBUser                  string `env:"CODEBOX_DB_USER" envDefault:"codebox"`
 	DBPassword              string `env:"CODEBOX_DB_PASSWORD" envDefault:"password"`
 	ServerPort              int    `env:"CODEBOX_SERVER_PORT" envDefault:"8080"`
@@ -29,12 +30,17 @@ type EnvVars struct {
 	UseSubDomains           bool   `env:"CODEBOX_USE_SUBDOMAINS" envDefault:"true"`
 	AuthCookieName          string `env:"CODEBOX_AUTH_COOKIE_NAME" envDefault:"codebox_auth_token"`
 	SubdomainAuthCookieName string `env:"CODEBOX_SUBDOMAIN_AUTH_COOKIE_NAME" envDefault:"subdomain_codebox_auth_token"`
+	CliBinariesPath         string `env:"CODEBOX_CLI_BINARIES_PATH" envDefault:"./cli"`
+	BaseDir                 string `env:"CODEBOX_BASE_DIR" envDefault:""`
 }
 
 var Environment *EnvVars
 
 func InitCodeBoxEnv() error {
-	codeboxEnvFilename := "codebox.env"
+	codeboxEnvFilename := os.Getenv("CODEBOX_ENV_FILE")
+	if codeboxEnvFilename == "" {
+		codeboxEnvFilename = "codebox.env"
+	}
 	err := godotenv.Load(codeboxEnvFilename)
 	if err != nil {
 		return fmt.Errorf("failed to load environement variables from %s", codeboxEnvFilename)

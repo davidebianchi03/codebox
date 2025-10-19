@@ -11,16 +11,17 @@ import {
   Row,
 } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
-import { User } from "../../types/user";
 import { WorkspaceTemplate } from "../../types/templates";
 import { WorkspaceType } from "../../types/workspace";
 import { Link } from "react-router-dom";
 import { CreateTemplateModal } from "./createTemplateModal";
-import { RetrieveCurrentUserDetails } from "../../api/common";
 import { APIListWorkspacesTypes } from "../../api/workspace";
 import { APIListTemplates } from "../../api/templates";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 export default function TemplatesList() {
+  const user = useSelector((state:RootState) => state.user);
   const [templates, setTemplates] = useState<WorkspaceTemplate[]>();
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
   const [showCreateTemplateModal, setShowCreateTemplateModal] = useState<boolean>(false);
@@ -49,19 +50,6 @@ export default function TemplatesList() {
     fetchTemplates();
     fetchWorkspaceTypes();
   }, [fetchTemplates, fetchWorkspaceTypes]);
-
-  const [user, setUser] = useState<User | null>(null);
-
-  const WhoAmI = useCallback(async () => {
-    const user = await RetrieveCurrentUserDetails();
-    if (user) {
-      setUser(user);
-    }
-  }, []);
-
-  useEffect(() => {
-    WhoAmI();
-  }, [WhoAmI]);
 
   return (
     <Container className="mt-4 mb-4">

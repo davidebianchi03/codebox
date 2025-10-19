@@ -2,15 +2,20 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "@tabler/core/dist/css/tabler.min.css";
 import "./assets/scss/custom.scss";
 import "bootstrap/dist/js/bootstrap.js";
-import AuthRequired from "./components/AuthRequired";
+import AuthRequired from "./auth/AuthRequired";
 import NotFound from "./pages/NotFound";
-import SuperUserRequired from "./components/SuperUserRequired";
+import SuperUserRequired from "./auth/SuperUserRequired";
 import {
   AuthProtectedRoutes,
   PublicRoutes,
   SuperUserRoutes,
 } from "./routes/routes";
 import axios from "axios";
+import { NavbarLayout } from "./layouts/NavbarLayout";
+import { SidebarLayout } from "./layouts/SidebarLayout";
+import { SuperUserSidebarItems } from "./layouts/SidebarItems";
+import React from "react";
+import { EmptyLayout } from "./layouts/EmptyLayout";
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
@@ -27,7 +32,21 @@ export default function App() {
             key={i}
             path={r.path}
             element={
-              <AuthRequired showNavbar={r.showNavbar}>{r.element}</AuthRequired>
+              <AuthRequired showNavbar={r.showNavbar}>
+                {r.showNavbar === true || r.showNavbar === undefined ? (
+                  <React.Fragment>
+                    <NavbarLayout>
+                      {r.element}
+                    </NavbarLayout>
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <EmptyLayout>
+                      {r.element}
+                    </EmptyLayout>
+                  </React.Fragment>
+                )}
+              </AuthRequired>
             }
           />
         ))}
@@ -38,7 +57,9 @@ export default function App() {
               path={r.path}
               element={
                 <SuperUserRequired showNavbar={r.showNavbar}>
-                  {r.element}
+                  <SidebarLayout sidebarItems={SuperUserSidebarItems}>
+                    {r.element}
+                  </SidebarLayout>
                 </SuperUserRequired>
               }
             />

@@ -15,19 +15,20 @@ import (
 )
 
 type User struct {
-	ID                uint           `gorm:"primarykey" json:"-"`
-	Email             string         `gorm:"column:email; size:255; unique; not null;" json:"email"`
-	Password          string         `gorm:"column:password; not null;" json:"-"`
-	FirstName         string         `gorm:"column:first_name; size:255;" json:"first_name"`
-	LastName          string         `gorm:"column:last_name; size:255;" json:"last_name"`
-	Groups            []Group        `gorm:"many2many:user_groups;" json:"groups"`
-	SshPrivateKey     string         `gorm:"column:ssh_private_key; not null;" json:"-"`
-	SshPublicKey      string         `gorm:"column:ssh_public_key; not null;" json:"-"`
-	IsSuperuser       bool           `gorm:"column:is_superuser; column:is_superuser; default:false" json:"is_superuser"`
-	IsTemplateManager bool           `gorm:"column:is_template_manager; default:false" json:"is_template_manager"`
-	CreatedAt         time.Time      `json:"-"`
-	UpdatedAt         time.Time      `json:"-"`
-	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                 uint           `gorm:"primarykey" json:"-"`
+	Email              string         `gorm:"column:email; size:255; unique; not null;" json:"email"`
+	Password           string         `gorm:"column:password; not null;" json:"-"`
+	FirstName          string         `gorm:"column:first_name; size:255;" json:"first_name"`
+	LastName           string         `gorm:"column:last_name; size:255;" json:"last_name"`
+	Groups             []Group        `gorm:"many2many:user_groups;" json:"groups"`
+	SshPrivateKey      string         `gorm:"column:ssh_private_key; not null;" json:"-"`
+	SshPublicKey       string         `gorm:"column:ssh_public_key; not null;" json:"-"`
+	IsSuperuser        bool           `gorm:"column:is_superuser; column:is_superuser; default:false" json:"is_superuser"`
+	IsTemplateManager  bool           `gorm:"column:is_template_manager; default:false" json:"is_template_manager"`
+	DeletionInProgress bool           `gorm:"column:deletion_in_progress;default:false;not null;"`
+	CreatedAt          time.Time      `json:"-"`
+	UpdatedAt          time.Time      `json:"-"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func generateSshKeys() (string, string, error) {
@@ -44,8 +45,8 @@ func generateSshKeys() (string, string, error) {
 
 	// Run ssh-keygen command to generate keys
 	cmd := exec.Command("ssh-keygen", "-t", "rsa", "-b", "2048", "-f", privateKeyPath, "-N", "", "-C", "")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
 
 	err = cmd.Run()
 	if err != nil {
@@ -85,6 +86,23 @@ func (u *User) CheckPassword(password string) bool {
 	return err == nil
 }
 
+/*
+GetLastLogin retrieves the last login time of the user by checking
+the most recent token creation time.
+If the user has never logged in, it returns nil.
+*/
+func (u *User) GetLastLogin() (*time.Time, error) {
+	var token Token
+	result := dbconn.DB.Where("user_id = ?", u.ID).Order("created_at DESC").First(&token)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil // No login records found
+		}
+		return nil, result.Error // Some other error occurred
+	}
+	return &token.CreatedAt, nil
+}
+
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
 	return string(bytes), err
@@ -105,8 +123,19 @@ func ValidatePassword(password string) error {
 	return nil
 }
 
-func CreateUser(email, firstName, lastName, password string, isSuperUser, isTemplateManager bool) (user *User, err error) {
-	password, err = HashPassword(password)
+/*
+CreateUser creates a new user in the database with the provided details.
+The password is hashed before storing it in the database.
+*/
+func CreateUser(
+	email string,
+	firstName string,
+	lastName string,
+	password string,
+	isSuperUser bool,
+	isTemplateManager bool,
+) (*User, error) {
+	password, err := HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
@@ -126,9 +155,26 @@ func CreateUser(email, firstName, lastName, password string, isSuperUser, isTemp
 		return nil, r.Error
 	}
 
-	return user, nil
+	return &newUser, nil
 }
 
+/*
+ListUsers retrieves all users from the database ordered by -CreatedAt.
+Limit specifies the maximum number of users to retrieve.
+If limit is -1 all users are retrieved.
+*/
+func ListUsers(limit int) (users *[]User, err error) {
+	users = &[]User{}
+	result := dbconn.DB.Order("created_at DESC").Limit(limit).Find(users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return users, nil
+}
+
+/*
+RetrieveUserByEmail retrieves a user by their email address.
+*/
 func RetrieveUserByEmail(email string) (user *User, err error) {
 	result := dbconn.DB.Where("email=?", email).Find(&user)
 	if result.Error != nil {
@@ -141,6 +187,25 @@ func RetrieveUserByEmail(email string) (user *User, err error) {
 	return nil, nil
 }
 
+/*
+UpdateUser updates the user's details in the database.
+*/
+func UpdateUser(user *User) error {
+	result := dbconn.DB.Save(user)
+	return result.Error
+}
+
+/*
+DeleteUser deletes the given user
+*/
+func DeleteUser(user *User) error {
+	result := dbconn.DB.Unscoped().Delete(user)
+	return result.Error
+}
+
+/*
+CountAllUsers counts the total number of users in the database.
+*/
 func CountAllUsers() (count int64, err error) {
 	if err = dbconn.DB.Model(User{}).Count(&count).Error; err != nil {
 		return 0, err

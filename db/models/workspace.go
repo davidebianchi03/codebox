@@ -33,7 +33,7 @@ type Workspace struct {
 	User                 *User                     `gorm:"constraint:OnDelete:CASCADE;" json:"user"`
 	Status               string                    `gorm:"column:status; size:30; not null;" json:"status"`
 	Type                 string                    `gorm:"column:type; size:255; not null;" json:"type"`
-	RunnerID             uint                      `gorm:"column:runner_id;" json:"-"`
+	RunnerID             *uint                     `gorm:"column:runner_id;" json:"-"`
 	Runner               *Runner                   `gorm:"constraint:OnDelete:CASCADE;" json:"runner"`
 	ConfigSource         string                    `gorm:"column:config_source; size:20; not null;" json:"config_source"` // template/git
 	TemplateVersionID    *uint                     `gorm:"column:template_version_id;" json:"-"`
@@ -213,7 +213,7 @@ func CreateWorkspace(
 		User:                 user,
 		Status:               WorkspaceStatusStarting,
 		Type:                 workspaceType,
-		RunnerID:             runner.ID,
+		RunnerID:             &runner.ID,
 		Runner:               runner,
 		ConfigSource:         configSource,
 		TemplateVersionID:    templateVersionID,
@@ -246,7 +246,11 @@ func UpdateWorkspace(
 
 	workspace.Name = name
 	workspace.Status = status
-	workspace.RunnerID = runner.ID
+	if runner == nil {
+		workspace.RunnerID = nil
+	} else {
+		workspace.RunnerID = &runner.ID
+	}
 	workspace.Runner = runner
 	workspace.ConfigSource = configSource
 	if templateVersion != nil {
@@ -268,4 +272,17 @@ func UpdateWorkspace(
 	}
 
 	return workspace, nil
+}
+
+/*
+CountAllOnlineWorkspaces counts the number of workspaces that are currently running.
+*/
+func CountAllOnlineWorkspaces() (int64, error) {
+	var count int64
+	if err := dbconn.DB.Model(&Workspace{}).
+		Where("status = ?", WorkspaceStatusRunning).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

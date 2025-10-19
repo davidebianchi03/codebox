@@ -1,7 +1,10 @@
 package connection
 
 import (
+	"flag"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"gitlab.com/codebox4073715/codebox/config"
@@ -19,8 +22,15 @@ var (
 // Connection will be stored in DB var and will be
 // accessible from any point of the code
 func ConnectDB() error {
+	dbName := config.Environment.DBName
+
+	// if we are running tests, use the test db name
+	if flag.Lookup("test.v") != nil || strings.HasSuffix(os.Args[0], ".test") {
+		dbName = config.Environment.DBTestName
+	}
+
 	if config.Environment.DBDriver == "sqlite3" {
-		db, err := gorm.Open(sqlite.Open(config.Environment.DBName), &gorm.Config{})
+		db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 		if err != nil {
 			return fmt.Errorf("failed to connect to database: %w", err)
 		}
@@ -32,7 +42,7 @@ func ConnectDB() error {
 			config.Environment.DBPassword,
 			config.Environment.DBHost,
 			config.Environment.DBPort,
-			config.Environment.DBName,
+			dbName,
 		)
 
 		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -45,4 +55,13 @@ func ConnectDB() error {
 		return errors.New("unsupported db engine")
 	}
 	return nil
+}
+
+// Close connection with db
+func CloseDB() error {
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
 }

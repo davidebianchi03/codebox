@@ -19,3 +19,4 @@ docs/build
 public/
 swagger.json
 swagger.yaml
+coverage.out

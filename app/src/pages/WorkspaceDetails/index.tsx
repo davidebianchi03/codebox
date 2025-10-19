@@ -16,6 +16,7 @@ import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
 import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace, APIUpdateWorkspaceConfig } from "../../api/workspace";
 import { APIRetrieveTemplateById, APIRetrieveTemplateLatestVersion } from "../../api/templates";
 import { WorkspaceTemplate } from "../../types/templates";
+import { WorkspaceSelectRunnerModal } from "./WorkspaceSelectRunnerModal";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
@@ -25,10 +26,12 @@ export default function WorkspaceDetails() {
   const [fetchInterval, setFetchInterval] = useState(10000);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [canUpdateConfigFiles, setCanUpdateConfigFiles] = useState<boolean>(false);
+  const [showSelectRunnerModal, setShowSelectRunnerModal] = useState<boolean>(false);
+  const [selectRunnerPostAction, setSelectRunnerPostAction] = useState<"start" | "update_config" | null>(null);
 
   const FetchWorkspace = useCallback(async () => {
     if (id) {
-      const w = await APIRetrieveWorkspaceById(parseInt(id))
+      const w = await APIRetrieveWorkspaceById(parseInt(id));
       if (w) {
         setWorkspace(w);
       } else if (w === null) {
@@ -43,10 +46,22 @@ export default function WorkspaceDetails() {
 
   const HandleStartWorkspace = useCallback(async () => {
     if (id) {
-      if (await APIStartWorkspace(parseInt(id))) {
-        FetchWorkspace();
+      const workspace = await APIRetrieveWorkspaceById(parseInt(id));
+      if (workspace) {
+        if (workspace.runner == null) {
+          setSelectRunnerPostAction("start");
+          setShowSelectRunnerModal(true);
+        } else {
+          if (await APIStartWorkspace(parseInt(id))) {
+            FetchWorkspace();
+          } else {
+            toast.error(`Failed to start workspace, try again later`);
+          }
+        }
       } else {
-        toast.error(`Failed to start workspace, try again later`);
+        toast.error(
+          `Failed to fetch workspace details, try again later`
+        );
       }
     }
   }, [FetchWorkspace, id]);
@@ -97,60 +112,79 @@ export default function WorkspaceDetails() {
     }
   }, [FetchWorkspace, id]);
 
-  const HandleUpdateConfigFiles = useCallback(async () => {
+  const HandleUpdateConfigFiles = useCallback(async (interactive: boolean = false) => {
     if (id) {
-      if (
-        (
-          await Swal.fire({
-            title: "Update configuration files",
-            text: `
+      const workspace = await APIRetrieveWorkspaceById(parseInt(id));
+      if (workspace) {
+        if (workspace.runner == null) {
+          setSelectRunnerPostAction("update_config");
+          setShowSelectRunnerModal(true);
+        } else {
+          let actionConfirmed = true;
+          if (interactive) {
+            actionConfirmed = (
+              await Swal.fire({
+                title: "Update configuration files",
+                text: `
               Updating configuration files to the latest version may cause data loss. 
               Are you sure you want to proceed?
             `,
-            icon: "warning",
-            showCancelButton: true,
-            reverseButtons: true,
-            cancelButtonText: "Cancel",
-            confirmButtonText: "Update",
-            customClass: {
-              popup: "bg-dark text-light",
-              cancelButton: "btn btn-accent",
-              confirmButton: "btn btn-primary",
-            },
-          })
-        ).isConfirmed
-      ) {
-        if (await APIUpdateWorkspaceConfig(parseInt(id))) {
-          FetchWorkspace();
-        } else {
-          toast.error(
-            `Failed to update workspace configuration, try again later`
-          );
+                icon: "warning",
+                showCancelButton: true,
+                reverseButtons: true,
+                cancelButtonText: "Cancel",
+                confirmButtonText: "Update",
+                customClass: {
+                  popup: "bg-dark text-light",
+                  cancelButton: "btn btn-accent",
+                  confirmButton: "btn btn-primary",
+                },
+              })
+            ).isConfirmed
+          }
+
+          if (actionConfirmed) {
+            if (await APIUpdateWorkspaceConfig(parseInt(id))) {
+              FetchWorkspace();
+            } else {
+              toast.error(
+                `Failed to update workspace configuration, try again later`
+              );
+            }
+          }
         }
+      } else {
+        toast.error(
+          `Failed to fetch workspace details, try again later`
+        );
       }
     }
   }, [FetchWorkspace, id]);
 
   const CheckNewTemplateVersionAvailable = useCallback(async () => {
     if (workspace) {
-      const latestTemplateVersion = await APIRetrieveTemplateLatestVersion(
-        workspace?.template_version.template_id
-      );
-      if (latestTemplateVersion) {
-        setCanUpdateConfigFiles(latestTemplateVersion.id !== workspace?.template_version.id);
-      } else {
-        setCanUpdateConfigFiles(false);
+      if (workspace.template_version) {
+        const latestTemplateVersion = await APIRetrieveTemplateLatestVersion(
+          workspace?.template_version.template_id
+        );
+        if (latestTemplateVersion) {
+          setCanUpdateConfigFiles(latestTemplateVersion.id !== workspace?.template_version.id);
+        } else {
+          setCanUpdateConfigFiles(false);
+        }
       }
     }
   }, [workspace]);
 
   const FetchWorkspaceTemplate = useCallback(async () => {
-    if (workspace?.template_version.template_id) {
-      const template = await APIRetrieveTemplateById(workspace.template_version.template_id);
-      if (template) {
-        setWorkspaceTemplate(template);
-      } else {
-        setWorkspaceTemplate(null);
+    if (workspace?.template_version) {
+      if (workspace?.template_version.template_id) {
+        const template = await APIRetrieveTemplateById(workspace.template_version.template_id);
+        if (template) {
+          setWorkspaceTemplate(template);
+        } else {
+          setWorkspaceTemplate(null);
+        }
       }
     }
   }, [workspace]);
@@ -173,6 +207,18 @@ export default function WorkspaceDetails() {
       CheckNewTemplateVersionAvailable();
     }
   }, [CheckNewTemplateVersionAvailable, workspace]);
+
+  const HandleSelectRunnerModalClosed = useCallback(async (updated: boolean) => {
+    setShowSelectRunnerModal(false);
+    if (updated) {
+      await FetchWorkspace();
+      if (selectRunnerPostAction === "start") {
+        HandleStartWorkspace();
+      } else if (selectRunnerPostAction === "update_config") {
+        HandleUpdateConfigFiles(false);
+      }
+    }
+  }, [FetchWorkspace, HandleStartWorkspace, HandleUpdateConfigFiles, selectRunnerPostAction]);
 
   useEffect(() => {
     FetchWorkspace();
@@ -220,7 +266,7 @@ export default function WorkspaceDetails() {
                   <Button
                     color="accent"
                     className="me-1"
-                    onClick={HandleUpdateConfigFiles}
+                    onClick={() => HandleUpdateConfigFiles(true)}
                   >
                     <FontAwesomeIcon icon={faCloudArrowUp} />
                     <span className="ms-2">
@@ -314,6 +360,11 @@ export default function WorkspaceDetails() {
               setShowSettingsModal(false);
               FetchWorkspace();
             }}
+            workspace={workspace}
+          />
+          <WorkspaceSelectRunnerModal
+            isOpen={showSelectRunnerModal}
+            onClose={HandleSelectRunnerModalClosed}
             workspace={workspace}
           />
         </>

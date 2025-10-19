@@ -1,7 +1,27 @@
+export interface CurrentUser {
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_superuser: boolean;
+    is_template_manager: boolean;
+    last_login: string | null;
+    created_at: string;
+    impersonated: boolean;
+}
+
+export interface AdminUser {
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_superuser: boolean;
+    is_template_manager: boolean;
+    last_login: string | null;
+    created_at: string;
+    deletion_in_progress: boolean;
+}
+
 export interface User {
-    email: string
-    first_name: string
-    last_name: string
-    is_superuser: boolean
-    is_template_manager: boolean
+    first_name: string;
+    last_name: string;
+    last_login: string | null;
 }
