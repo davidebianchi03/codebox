@@ -33,8 +33,10 @@ unit_tests:
     paths:
       - coverage.out
   coverage: '/total:\s+\(.*\)\s+([0-9\.]+)%/'
-  # rules:
-  #   - if: $CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never 
+    - when: always  
 
 pages:
   stage: pages
