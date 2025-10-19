@@ -21,7 +21,7 @@ import (
 // @Tags Admin
 // @Accept json
 // @Produce json
-// @Success 200 {object} serializers.AdminRunnersSerializer[]
+// @Success 200 {object} []serializers.AdminRunnersSerializer
 // @Router /api/v1/admin/runners [get]
 func HandleAdminListRunners(c *gin.Context) {
 	limit := c.Query("limit")
