@@ -43,6 +43,14 @@ var CliBuilds = []CLIBuild{
 		Type:         "binaries",
 		File:         "codebox-cli-linux-arm64",
 	},
+	CLIBuild{
+		Id:           "codebox-cli-darwin-arm64",
+		Name:         "Codebox CLI Darwin Binary (arm64)",
+		Os:           "darwin",
+		Architecture: "arm64",
+		Type:         "binaries",
+		File:         "codebox-cli-darwin-arm64",
+	},
 	// architecture: amd64
 	CLIBuild{
 		Id:           "codebox-cli-setup-amd64",
@@ -75,6 +83,14 @@ var CliBuilds = []CLIBuild{
 		Architecture: "amd64",
 		Type:         "binaries",
 		File:         "codebox-cli-linux-amd64",
+	},
+	CLIBuild{
+		Id:           "codebox-cli-darwin-amd64",
+		Name:         "Codebox CLI Darwin Binary (amd64)",
+		Os:           "darwin",
+		Architecture: "amd64",
+		Type:         "binaries",
+		File:         "codebox-cli-darwin-amd64",
 	},
 	// architecture: arm
 	CLIBuild{

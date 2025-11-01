@@ -68,7 +68,12 @@ declare -a ARCH=("amd64" "386" "arm" "arm64")
 for a in "${ARCH[@]}"; do
     echo "Processing architecture $a"
 
-    declare -a FILES=("codebox-cli-linux-${a}" "codebox-cli-${a}.deb" "codebox-cli-windows-${a}.exe" "codebox-cli-setup-${a}.exe")
+    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "arm64" ]; then
+      declare -a FILES=("codebox-cli-linux-${a}" "codebox-cli-${a}.deb" "codebox-cli-windows-${a}.exe" "codebox-cli-setup-${a}.exe" "codebox-cli-darwin-${a}")
+    else
+      declare -a FILES=("codebox-cli-linux-${a}" "codebox-cli-${a}.deb" "codebox-cli-windows-${a}.exe" "codebox-cli-setup-${a}.exe")
+    fi
+
     for f in "${FILES[@]}"; do
       echo "Downloading $f"
       download_latest_package codebox-cli "${f}" "${f}"
