@@ -2,7 +2,7 @@ package admin
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/codebox4073715/codebox/api/serializers"
+	"gitlab.com/codebox4073715/codebox/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )

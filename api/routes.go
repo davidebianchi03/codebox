@@ -8,15 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gitlab.com/codebox4073715/codebox/api/admin"
-	"gitlab.com/codebox4073715/codebox/api/auth"
-	"gitlab.com/codebox4073715/codebox/api/cli"
 	"gitlab.com/codebox4073715/codebox/api/middleware"
 	"gitlab.com/codebox4073715/codebox/api/permissions"
-	"gitlab.com/codebox4073715/codebox/api/runners"
-	"gitlab.com/codebox4073715/codebox/api/settings"
-	"gitlab.com/codebox4073715/codebox/api/templates"
-	"gitlab.com/codebox4073715/codebox/api/workspaces"
+	"gitlab.com/codebox4073715/codebox/api/users/admin"
+	"gitlab.com/codebox4073715/codebox/api/users/auth"
+	"gitlab.com/codebox4073715/codebox/api/users/cli"
+	"gitlab.com/codebox4073715/codebox/api/users/runners"
+	"gitlab.com/codebox4073715/codebox/api/users/settings"
+	"gitlab.com/codebox4073715/codebox/api/users/templates"
+	"gitlab.com/codebox4073715/codebox/api/users/workspaces"
 	"gitlab.com/codebox4073715/codebox/config"
 	docs "gitlab.com/codebox4073715/codebox/docs"
 )
@@ -236,6 +236,10 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			runnersApis.GET("", permissions.AuthenticationRequiredRoute(runners.HandleListRunners))
 			runnersApis.Any(":runnerId/connect", runners.HandleRunnerConnect)
+			runnersApis.Any(
+				":runnerId/workspaces/:workspaceId/container/:containerName/forward-tcp/:portNumber/git-ssh",
+				runners.HandleRunnerGitSSH,
+			)
 		}
 		v1.GET(
 			"/runner-types",
@@ -308,10 +312,6 @@ func V1ApiRoutes(router *gin.Engine) {
 			adminApis.POST(
 				"users/:email/set-password",
 				permissions.AdminRequiredRoute(admin.HandleAdminSetUserPassword),
-			)
-			adminApis.GET(
-				"workspaces",
-				permissions.AdminRequiredRoute(admin.AdminListWorkspaces),
 			)
 			adminApis.POST(
 				"users/:email/impersonate",

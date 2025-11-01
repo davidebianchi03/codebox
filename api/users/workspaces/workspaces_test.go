@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/codebox4073715/codebox/api"
-	"gitlab.com/codebox4073715/codebox/api/serializers"
-	"gitlab.com/codebox4073715/codebox/api/workspaces"
+	"gitlab.com/codebox4073715/codebox/api/users/serializers"
+	"gitlab.com/codebox4073715/codebox/api/users/workspaces"
 	"gitlab.com/codebox4073715/codebox/testutils"
 
 	"gitlab.com/codebox4073715/codebox/db/models"
