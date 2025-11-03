@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"syscall"
 
-	"gitlab.com/codebox4073715/codebox/api"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/router"
 	"golang.org/x/term"
 )
 
@@ -74,7 +74,7 @@ func main() {
 			return
 		}
 
-		r := api.SetupRouter()
+		r := router.SetupRouter()
 		log.Printf("listening at 0.0.0.0:%d\n", config.Environment.ServerPort)
 		r.Run(fmt.Sprintf(":%s", strconv.Itoa(config.Environment.ServerPort)))
 		os.Exit(0)

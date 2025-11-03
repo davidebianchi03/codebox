@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>{{ .page_title }}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #1e1e1e;
+    }
+    #terminal {
+      height: 100vh;
+      width: 100vw;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal"></div>
+
+  <script src="https://unpkg.com/xterm/lib/xterm.js"></script>
+  <script src="https://unpkg.com/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
+
+  <script>
+    (function () {
+      const term = new Terminal({
+        cursorBlink: true,
+        fontFamily: 'monospace',
+        theme: { background: '#1e1e1e' }
+      });
+      const fitAddon = new FitAddon.FitAddon();
+      term.loadAddon(fitAddon);
+
+      const container = document.getElementById('terminal');
+      term.open(container);
+
+      const proto = (location.protocol === 'https:') ? 'wss://' : 'ws://';
+      const ws = new WebSocket(proto + location.host + '{{ .terminal_api }}');
+      // const ws = new WebSocket('{{ .terminal_api }}');
+      ws.binaryType = 'arraybuffer';
+
+      function sendResize() {
+        fitAddon.fit();
+        const cols = term.cols;
+        const rows = term.rows;
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "resize", cols, rows }));
+        }
+      }
+
+      ws.onmessage = (ev) => {
+        const data = ev.data;
+        if (data instanceof ArrayBuffer) {
+          const text = new TextDecoder().decode(new Uint8Array(data));
+          term.write(text);
+        } else {
+          term.write(data);
+        }
+      };
+
+      ws.onopen = () => {
+        sendResize();
+        term.focus();
+      };
+
+      ws.onclose = () => term.write('\r\n*** Disconnected ***\r\n');
+
+      term.onData(data => ws.send(data));
+
+      window.addEventListener('resize', () => {
+        sendResize();
+      });
+
+      setTimeout(sendResize, 300);
+    })();
+  </script>
+</body>
+</html>

@@ -3,13 +3,11 @@ package api
 import (
 	"fmt"
 	"net/url"
-	"path"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gitlab.com/codebox4073715/codebox/api/middleware"
-	"gitlab.com/codebox4073715/codebox/api/permissions"
 	runnerapis "gitlab.com/codebox4073715/codebox/api/runner"
 	"gitlab.com/codebox4073715/codebox/api/users/admin"
 	"gitlab.com/codebox4073715/codebox/api/users/auth"
@@ -20,20 +18,8 @@ import (
 	"gitlab.com/codebox4073715/codebox/api/users/workspaces"
 	"gitlab.com/codebox4073715/codebox/config"
 	docs "gitlab.com/codebox4073715/codebox/docs"
+	"gitlab.com/codebox4073715/codebox/permissions"
 )
-
-func SetupRouter() *gin.Engine {
-	if config.Environment.DebugEnabled {
-		gin.SetMode(gin.DebugMode)
-	} else {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	r := gin.Default()
-	V1ApiRoutes(r)
-	r.LoadHTMLGlob(path.Join(config.Environment.BaseDir, "html", "templates", "*"))
-	return r
-}
 
 func V1ApiRoutes(router *gin.Engine) {
 	// middlewares
@@ -164,6 +150,10 @@ func V1ApiRoutes(router *gin.Engine) {
 			workspaceApis.Any(
 				"/:workspaceId/container/:containerName/forward-ssh",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleForwardSsh),
+			)
+			workspaceApis.Any(
+				"/:workspaceId/container/:containerName/terminal",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleTerminal),
 			)
 			workspaceApis.POST(
 				"/:workspaceId/update-config",
