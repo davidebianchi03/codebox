@@ -210,4 +210,11 @@ export const ThirdPartyPackages: ThirdPartyPackage[] = [
         description: "",
         url: "https://github.com/gin-gonic/gin"
     },
+    {
+        name: "xterm.js",
+        author: "xterm.js",
+        license: "MIT",
+        description: "",
+        url: "https://github.com/xtermjs/xterm.js"
+    },
 ]

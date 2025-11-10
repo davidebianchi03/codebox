@@ -115,7 +115,8 @@ export function TemplateVersionEditor() {
                 <React.Fragment>
                     <div style={{
                         background: "#1f1f1f",
-                        height: "calc(100vh -  62.3125px)"
+                        // height: "calc(100vh -  62.3125px)"
+                        height: "100vh"
                     }}
                         className="d-flex align-items-start w-100"
                     >

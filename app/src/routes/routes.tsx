@@ -61,6 +61,7 @@ export const AuthProtectedRoutes: Route[] = [
   {
     path: "/templates/:templateId/versions/:versionId/editor",
     element: <TemplateVersionEditor />, // TODO: protect view, pnly template managers and admin can view this page
+    showNavbar: false,
   },
   {
     path: "/credits",

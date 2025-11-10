@@ -214,9 +214,9 @@ export default function WorkspaceContainers({
                             <img src={TerminalIcon} alt="terminal" width={25} className="me-3" />
                             <div className="d-flex justify-content-between align-items-center w-100 me-2">
                               <div className="d-flex align-items-center">
-                                <h4 className="mb-0">Console</h4>
+                                <h4 className="mb-0">Terminal</h4>
                                 <span className="text-muted ms-5">
-                                  Open console
+                                  Open terminal
                                 </span>
                               </div>
                               <span className="text-muted">

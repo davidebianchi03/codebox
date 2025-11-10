@@ -47,7 +47,7 @@ export async function APICreateTemplate(
 ): Promise<WorkspaceTemplate | undefined> {
     try {
         const r = await axios.post<WorkspaceTemplate>(
-            `/api/v1/templates/`,
+            `/api/v1/templates`,
             {
                 name: name,
                 type: type,
