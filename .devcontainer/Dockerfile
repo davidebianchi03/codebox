@@ -99,14 +99,14 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
 # Prepare VSCode server directory and set permissions
 # Create a symbolic link to persist VSCode server data
 RUN mkdir -p $HOME/.vscode-server && \
-    mkdir -p /vscode-server && \
+    sudo mkdir -p /vscode-server && \
     ln -s /vscode-server $HOME/.vscode-server && \
     sudo chown -R vscode:vscode $HOME/.vscode-server && \
     sudo chown -R vscode:vscode /vscode-server
 
 # Create a symbolic link to persist Go bin data
 RUN mkdir -p $HOME/go && \
-    mkdir -p /go-home && \
+    sudo mkdir -p /go-home && \
     ln -s /go-home $HOME/go && \
     sudo chown -R vscode:vscode $HOME/go && \
     sudo chown -R vscode:vscode /go-home
