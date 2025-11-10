@@ -104,6 +104,13 @@ RUN mkdir -p $HOME/.vscode-server && \
     sudo chown -R vscode:vscode $HOME/.vscode-server && \
     sudo chown -R vscode:vscode /vscode-server
 
+# Create a symbolic link to persist Go bin data
+RUN mkdir -p $HOME/go && \
+    mkdir -p /go-home && \
+    ln -s /go-home $HOME/go && \
+    sudo chown -R vscode:vscode $HOME/go && \
+    sudo chown -R vscode:vscode /go-home
+
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
