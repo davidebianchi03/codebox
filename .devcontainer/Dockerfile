@@ -96,6 +96,14 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install github.com/swaggo/swag/cmd/swag@latest && \
     sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
 
+# Prepare VSCode server directory and set permissions
+# Create a symbolic link to persist VSCode server data
+RUN mkdir -p $HOME/.vscode-server && \
+    mkdir -p /vscode-server && \
+    ln -s /vscode-server $HOME/.vscode-server && \
+    sudo chown -R vscode:vscode $HOME/.vscode-server && \
+    sudo chown -R vscode:vscode /vscode-server
+
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
