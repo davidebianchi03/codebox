@@ -91,11 +91,6 @@ ENV PATH=$PATH:/home/node/.npm-global/bin
 
 RUN npm install -g @devcontainers/cli
 
-# Install dlv and set permissions
-RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
-    go install github.com/swaggo/swag/cmd/swag@latest && \
-    sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
-
 # Prepare VSCode server directory and set permissions
 # Create a symbolic link to persist VSCode server data
 RUN sudo mkdir -p /vscode-server && \
@@ -105,7 +100,12 @@ RUN sudo mkdir -p /vscode-server && \
 # Create a symbolic link to persist Go bin data
 RUN sudo mkdir -p /go-home && \
     sudo chown -R vscode:vscode /go-home && \
-    ln -sf /go-home/ /home/vscode/go
+    ln -sf /go-home/ /home/vscode/go/bin
+
+# Install dlv and swagger set permissions
+RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
+    go install github.com/swaggo/swag/cmd/swag@latest && \
+    sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
