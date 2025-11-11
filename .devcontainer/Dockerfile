@@ -98,14 +98,15 @@ RUN sudo mkdir -p /vscode-server && \
     ln -sf /vscode-server/ /home/vscode/.vscode-server
 
 # Create a symbolic link to persist Go bin data
-# RUN sudo mkdir -p /go-home && \
-#     sudo chown -R vscode:vscode /go-home && \
-#     ln -sf /go-home/ /home/vscode/go/bin
+RUN sudo mkdir -p /gobin && \
+    sudo chown -R vscode:vscode /gobin && \
+    mkdir -p /home/vscode/go && \
+    ln -sf /gobin/ /home/vscode/go/bin
 
-# # Install dlv and swagger set permissions
-# RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
-#     go install github.com/swaggo/swag/cmd/swag@latest && \
-#     sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
+# Install dlv and swagger set permissions
+RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
+    go install github.com/swaggo/swag/cmd/swag@latest && \
+    sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8

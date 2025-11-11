@@ -41,10 +41,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - vscode_server:/vscode-server
-      - go_home:/go-home
+      - gobin:/gobin
     restart: always
 
 volumes:
   codeboxdb:
   vscode_server:
-  go_home:
+  gobin:
