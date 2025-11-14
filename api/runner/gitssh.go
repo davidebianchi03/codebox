@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -204,6 +205,7 @@ func HandleRunnerGitSSH(c *gin.Context) {
 		return
 	}
 
+	time.Sleep(500 * time.Millisecond) // add a little delay before closing connections
 	session.Wait()
 	wsConn.Close()
 	session.Close()

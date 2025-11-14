@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { Workspace } from "../../types/workspace";
 import { Button, Col, Container, Row } from "reactstrap";
 import WorkspaceLogs from "./WorkspaceLogs";
@@ -287,7 +287,7 @@ export default function WorkspaceDetails() {
             <button
               className={`btn btn-${GetWorkspaceStatusColor(
                 workspace?.status
-              )} dropdown-toggle`}
+              )} ${(workspace?.status === "stopped" || workspace?.status === "running" || workspace?.status === "error") ? "dropdown-toggle" : ""}`}
               type="button"
               data-bs-toggle="dropdown"
               aria-haspopup="true"
@@ -295,44 +295,46 @@ export default function WorkspaceDetails() {
             >
               {GetBeautyNameForStatus(workspace?.status)}
             </button>
-            <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <span
-                className="dropdown-item"
-                onClick={() => {
-                  if (
-                    workspace?.status === "running" ||
-                    workspace?.status === "error"
-                  ) {
-                    HandleStopWorkspace();
-                  } else {
-                    HandleStartWorkspace();
-                  }
-                }}
-              >
-                {workspace?.status === "running" ||
-                  workspace?.status === "error"
-                  ? "Stop workspace"
-                  : "Start workspace"}
-              </span>
-              <span
-                className="dropdown-item"
-                onClick={() => {
-                  HandleDeleteWorkspace(false);
-                }}
-              >
-                Delete workspace
-              </span>
-              {workspace?.status === "error" && (
+            {(workspace?.status === "stopped" || workspace?.status === "running" || workspace?.status === "error") && (
+              <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
                 <span
                   className="dropdown-item"
                   onClick={() => {
-                    HandleDeleteWorkspace(true);
+                    if (
+                      workspace?.status === "running" ||
+                      workspace?.status === "error"
+                    ) {
+                      HandleStopWorkspace();
+                    } else {
+                      HandleStartWorkspace();
+                    }
                   }}
                 >
-                  Force delete workspace
+                  {workspace?.status === "running" ||
+                    workspace?.status === "error"
+                    ? "Stop workspace"
+                    : "Start workspace"}
                 </span>
-              )}
-            </div>
+                <span
+                  className="dropdown-item"
+                  onClick={() => {
+                    HandleDeleteWorkspace(false);
+                  }}
+                >
+                  Delete workspace
+                </span>
+                {workspace?.status === "error" && (
+                  <span
+                    className="dropdown-item"
+                    onClick={() => {
+                      HandleDeleteWorkspace(true);
+                    }}
+                  >
+                    Force delete workspace
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -369,6 +371,9 @@ export default function WorkspaceDetails() {
           />
         </>
       )}
+      <ToastContainer
+        toastClassName={"bg-dark"}
+      />
     </Container>
   );
 }
