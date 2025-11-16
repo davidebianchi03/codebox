@@ -6,10 +6,6 @@ import { Button, Col, Container, Row } from "reactstrap";
 import WorkspaceLogs from "./WorkspaceLogs";
 import WorkspaceContainers from "./WorkspaceContainers";
 import Swal from "sweetalert2";
-import {
-  GetBeautyNameForStatus,
-  GetWorkspaceStatusColor,
-} from "../../common/workspace";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCloudArrowUp, faGear } from "@fortawesome/free-solid-svg-icons";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
@@ -17,6 +13,7 @@ import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APISto
 import { APIRetrieveTemplateById, APIRetrieveTemplateLatestVersion } from "../../api/templates";
 import { WorkspaceTemplate } from "../../types/templates";
 import { WorkspaceSelectRunnerModal } from "./WorkspaceSelectRunnerModal";
+import { WorkspaceStatusDropdown } from "./WorkspaceStatusDropdown";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
@@ -27,7 +24,6 @@ export default function WorkspaceDetails() {
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [canUpdateConfigFiles, setCanUpdateConfigFiles] = useState<boolean>(false);
   const [showSelectRunnerModal, setShowSelectRunnerModal] = useState<boolean>(false);
-  const [selectRunnerPostAction, setSelectRunnerPostAction] = useState<"start" | "update_config" | null>(null);
 
   const FetchWorkspace = useCallback(async () => {
     if (id) {
@@ -44,80 +40,11 @@ export default function WorkspaceDetails() {
     }
   }, [id, navigate]);
 
-  const HandleStartWorkspace = useCallback(async () => {
-    if (id) {
-      const workspace = await APIRetrieveWorkspaceById(parseInt(id));
-      if (workspace) {
-        if (workspace.runner == null) {
-          setSelectRunnerPostAction("start");
-          setShowSelectRunnerModal(true);
-        } else {
-          if (await APIStartWorkspace(parseInt(id))) {
-            FetchWorkspace();
-          } else {
-            toast.error(`Failed to start workspace, try again later`);
-          }
-        }
-      } else {
-        toast.error(
-          `Failed to fetch workspace details, try again later`
-        );
-      }
-    }
-  }, [FetchWorkspace, id]);
-
-  const HandleStopWorkspace = useCallback(async () => {
-    if (id) {
-      if (await APIStopWorkspace(parseInt(id))) {
-        FetchWorkspace();
-      } else {
-        toast.error(`Failed to stop workspace, try again later`);
-      }
-    }
-  }, [FetchWorkspace, id]);
-
-  const HandleDeleteWorkspace = useCallback(async (force: boolean) => {
-    if (id) {
-      if (
-        (
-          await Swal.fire({
-            title: "Delete workspace",
-            icon: "warning",
-            text: `
-              Are you sure that you want to delete this workspace?
-              ${force && (`
-                Force-deleting a workspace may result in orphaned containers if runner errors, 
-                including connection issues or container removal failures, are encountered
-              `)}
-            `,
-            showCancelButton: true,
-            reverseButtons: true,
-            confirmButtonText: "Delete",
-            customClass: {
-              popup: "bg-dark text-light",
-              cancelButton: "btn btn-accent",
-              confirmButton: "btn btn-warning",
-            },
-          })
-        ).isConfirmed
-      ) {
-        if (await APIDeleteWorkspace(parseInt(id), force)) {
-          FetchWorkspace();
-        } else {
-          toast.error(
-            `Failed to delete workspace, try again later`
-          );
-        }
-      }
-    }
-  }, [FetchWorkspace, id]);
-
   const HandleUpdateConfigFiles = useCallback(async (interactive: boolean = false) => {
     if (id) {
       const workspace = await APIRetrieveWorkspaceById(parseInt(id));
       if (workspace) {
         if (workspace.runner == null) {
-          setSelectRunnerPostAction("update_config");
           setShowSelectRunnerModal(true);
         } else {
           let actionConfirmed = true;
@@ -208,18 +135,6 @@ export default function WorkspaceDetails() {
     }
   }, [CheckNewTemplateVersionAvailable, workspace]);
 
-  const HandleSelectRunnerModalClosed = useCallback(async (updated: boolean) => {
-    setShowSelectRunnerModal(false);
-    if (updated) {
-      await FetchWorkspace();
-      if (selectRunnerPostAction === "start") {
-        HandleStartWorkspace();
-      } else if (selectRunnerPostAction === "update_config") {
-        HandleUpdateConfigFiles(false);
-      }
-    }
-  }, [FetchWorkspace, HandleStartWorkspace, HandleUpdateConfigFiles, selectRunnerPostAction]);
-
   useEffect(() => {
     FetchWorkspace();
     const interval = setInterval(FetchWorkspace, fetchInterval);
@@ -284,56 +199,11 @@ export default function WorkspaceDetails() {
                 </Button>
               </React.Fragment>
             )}
-            <button
-              className={`btn btn-${GetWorkspaceStatusColor(
-                workspace?.status
-              )} ${(workspace?.status === "stopped" || workspace?.status === "running" || workspace?.status === "error") ? "dropdown-toggle" : ""}`}
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              {GetBeautyNameForStatus(workspace?.status)}
-            </button>
-            {(workspace?.status === "stopped" || workspace?.status === "running" || workspace?.status === "error") && (
-              <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <span
-                  className="dropdown-item"
-                  onClick={() => {
-                    if (
-                      workspace?.status === "running" ||
-                      workspace?.status === "error"
-                    ) {
-                      HandleStopWorkspace();
-                    } else {
-                      HandleStartWorkspace();
-                    }
-                  }}
-                >
-                  {workspace?.status === "running" ||
-                    workspace?.status === "error"
-                    ? "Stop workspace"
-                    : "Start workspace"}
-                </span>
-                <span
-                  className="dropdown-item"
-                  onClick={() => {
-                    HandleDeleteWorkspace(false);
-                  }}
-                >
-                  Delete workspace
-                </span>
-                {workspace?.status === "error" && (
-                  <span
-                    className="dropdown-item"
-                    onClick={() => {
-                      HandleDeleteWorkspace(true);
-                    }}
-                  >
-                    Force delete workspace
-                  </span>
-                )}
-              </div>
+            {workspace && (
+              <WorkspaceStatusDropdown
+                workspace={workspace}
+                onStatusChange={FetchWorkspace}
+              />
             )}
           </div>
         </div>
@@ -366,7 +236,13 @@ export default function WorkspaceDetails() {
           />
           <WorkspaceSelectRunnerModal
             isOpen={showSelectRunnerModal}
-            onClose={HandleSelectRunnerModalClosed}
+            onClose={async (updated) => {
+              setShowSelectRunnerModal(false);
+              if (updated) {
+                await FetchWorkspace();
+                HandleUpdateConfigFiles(false);
+              }
+            }}
             workspace={workspace}
           />
         </>

@@ -126,17 +126,6 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		),
 	)
 
-	sshPrivateKeyFormPart, err := writer.CreateFormFile("ssh_private_key", "ssh_key")
-	if err != nil {
-		return err
-	}
-
-	sshPrivateKeyReader := bytes.NewReader([]byte(workspace.User.SshPrivateKey))
-	_, err = io.Copy(sshPrivateKeyFormPart, sshPrivateKeyReader)
-	if err != nil {
-		return err
-	}
-
 	err = writer.Close()
 	if err != nil {
 		return err
@@ -391,10 +380,11 @@ func (ri *RunnerInterface) ForwardTerminal(
 	req *http.Request,
 ) error {
 	url := fmt.Sprintf(
-		"%s/api/v1/workspace/%d/container/%s/terminal",
+		"%s/api/v1/workspace/%d/container/%s/terminal?username=%s",
 		ri.getRunnerBaseUrl(),
 		workspace.ID,
 		container.ContainerName,
+		container.ContainerUserName,
 	)
 
 	proxyHeaders := http.Header{}
