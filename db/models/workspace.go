@@ -146,6 +146,38 @@ func ListUserWorkspaces(user User) ([]Workspace, error) {
 }
 
 /*
+Retrieve a workspace by workspace id .
+If workspace does not exist return nil.
+*/
+func RetrieveWorkspaceById(id uint) (*Workspace, error) {
+	workspace := Workspace{}
+	r := dbconn.DB.
+		Preload("GitSource").
+		Preload("TemplateVersion").
+		Preload("Runner").
+		Preload("User").
+		Find(
+			&workspace,
+			map[string]interface{}{
+				"ID": id,
+			},
+		)
+
+	if r.Error != nil {
+		if r.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, r.Error
+	}
+
+	if r.RowsAffected == 1 {
+		return &workspace, nil
+	}
+
+	return nil, nil
+}
+
+/*
 Retrieve a workspace by workspace id and owner.
 If workspace does not exist return nil.
 */

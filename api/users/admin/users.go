@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/work"
-	"gitlab.com/codebox4073715/codebox/api/serializers"
+	"gitlab.com/codebox4073715/codebox/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/db/models"

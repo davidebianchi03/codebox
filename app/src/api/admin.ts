@@ -13,15 +13,6 @@ export async function AdminRetrieveStats() : Promise<AdminStats | undefined> {
     }
 }
 
-export async function AdminListWorkspaces(): Promise<Workspace[] | undefined> {
-    try {
-        const r = await axios.get<Workspace[]>(`/api/v1/admin/workspaces`);
-        return r.data;
-    } catch {
-        return undefined;
-    }
-}
-
 
 export async function AdminListImpersonationLogs(
     userEmail:string

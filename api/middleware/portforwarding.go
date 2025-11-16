@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	apierrors "gitlab.com/codebox4073715/codebox/api/errors"
-	"gitlab.com/codebox4073715/codebox/api/workspaces"
+	"gitlab.com/codebox4073715/codebox/api/users/workspaces"
 	"gitlab.com/codebox4073715/codebox/config"
 )
 

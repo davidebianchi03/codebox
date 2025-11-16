@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/codebox4073715/codebox/api"
-	"gitlab.com/codebox4073715/codebox/api/serializers"
-	"gitlab.com/codebox4073715/codebox/api/workspaces"
+	"gitlab.com/codebox4073715/codebox/api/users/serializers"
+	"gitlab.com/codebox4073715/codebox/api/users/workspaces"
+	"gitlab.com/codebox4073715/codebox/router"
 	"gitlab.com/codebox4073715/codebox/testutils"
 
 	"gitlab.com/codebox4073715/codebox/db/models"
@@ -20,7 +20,7 @@ Try to create a workspace from git source
 */
 func TestCreateWorkspaceFromGitSource(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -91,7 +91,7 @@ Try to create a workspace from git source
 */
 func TestCreateWorkspaceFromTemplateSource(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -173,7 +173,7 @@ Try to create a workspace with invalid parameters
 */
 func TestCreateWorkspaceErrors(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -285,7 +285,7 @@ Try to create a workspace without authentication
 */
 func TestCreateWorkspaceWithoutAuthentication(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		runners, err := models.ListRunners(1, 0)
 		if err != nil || len(runners) == 0 {
@@ -322,7 +322,7 @@ Try to update a workspace, both when is is running and when it is stopped
 */
 func TestUpdateWorkspace(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -438,7 +438,7 @@ Try to start a workspace
 */
 func TestStartWorkspace(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -531,7 +531,7 @@ Try to start a workspace that has no runner assigned
 */
 func TestStartWorkspaceNoRunner(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -651,7 +651,7 @@ Try to stop a workspace
 */
 func TestStopWorkspace(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -781,7 +781,7 @@ func TestStopWorkspace(t *testing.T) {
 
 func TestUpdateConfigOfAWorkspace(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -947,7 +947,7 @@ type DeleteWorkspaceTestCase struct {
 
 func TestDeleteWorkspace(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {
@@ -1146,7 +1146,7 @@ Test the API that sets the runner of a workspace
 */
 func TestSetWorkspaceRunner(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
-		router := api.SetupRouter()
+		router := router.SetupRouter()
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil || user == nil {

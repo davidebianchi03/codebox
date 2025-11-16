@@ -13,6 +13,7 @@ import {
 } from "../../types/workspace";
 import { useCallback, useEffect, useState } from "react";
 import VsCodeIcon from "../../assets/images/vscode.png";
+import TerminalIcon from "../../assets/images/terminal.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
 import { InstanceSettings } from "../../types/settings";
@@ -193,6 +194,29 @@ export default function WorkspaceContainers({
                                 <h4 className="mb-0">Visual Studio Code</h4>
                                 <span className="text-muted ms-5">
                                   Open container in visual studio code
+                                </span>
+                              </div>
+                              <span className="text-muted">
+                                <FontAwesomeIcon icon={faChevronRight} />
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: 5 }} className="my-1">
+                          <div
+                            className="d-flex alert rounded align-items-center px-2"
+                            style={{ cursor: "pointer", height: 50 }}
+                            onClick={() => {
+                              let url = `${import.meta.env.VITE_SERVER_URL}/views/workspace/${workspace.id}/container/${selectedContainer.container_name}/terminal`
+                              window.open(url, '_blank')?.focus();
+                            }}
+                          >
+                            <img src={TerminalIcon} alt="terminal" width={25} className="me-3" />
+                            <div className="d-flex justify-content-between align-items-center w-100 me-2">
+                              <div className="d-flex align-items-center">
+                                <h4 className="mb-0">Terminal</h4>
+                                <span className="text-muted ms-5">
+                                  Open terminal
                                 </span>
                               </div>
                               <span className="text-muted">

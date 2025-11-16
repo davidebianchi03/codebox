@@ -96,7 +96,7 @@ export function TemplateVersionSettingsModal({
                         {publish && (
                             <Row>
                                 <Col md={12}>
-                                    <Alert className="bg-warning">
+                                    <Alert className="border-accent">
                                         <h4 className="mb-0">
                                             You're ready to release an updated version of this template.
                                         </h4>

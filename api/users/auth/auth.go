@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/codebox4073715/codebox/api/serializers"
+	"gitlab.com/codebox4073715/codebox/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"

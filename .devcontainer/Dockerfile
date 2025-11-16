@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     python3-pip \
     python3-dev \
+    net-tools \
     && apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
@@ -90,7 +91,19 @@ ENV PATH=$PATH:/home/node/.npm-global/bin
 
 RUN npm install -g @devcontainers/cli
 
-# Install dlv and set permissions
+# Prepare VSCode server directory and set permissions
+# Create a symbolic link to persist VSCode server data
+RUN sudo mkdir -p /vscode-server && \
+    sudo chown -R vscode:vscode /vscode-server && \
+    ln -sf /vscode-server/ /home/vscode/.vscode-server
+
+# Create a symbolic link to persist Go bin data
+RUN sudo mkdir -p /gobin && \
+    sudo chown -R vscode:vscode /gobin && \
+    mkdir -p /home/vscode/go && \
+    ln -sf /gobin/ /home/vscode/go/bin
+
+# Install dlv and swagger set permissions
 RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install github.com/swaggo/swag/cmd/swag@latest && \
     sudo setcap cap_net_admin=+ep ${HOME}/go/bin/dlv

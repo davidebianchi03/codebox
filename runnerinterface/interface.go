@@ -126,17 +126,6 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		),
 	)
 
-	sshPrivateKeyFormPart, err := writer.CreateFormFile("ssh_private_key", "ssh_key")
-	if err != nil {
-		return err
-	}
-
-	sshPrivateKeyReader := bytes.NewReader([]byte(workspace.User.SshPrivateKey))
-	_, err = io.Copy(sshPrivateKeyFormPart, sshPrivateKeyReader)
-	if err != nil {
-		return err
-	}
-
 	err = writer.Close()
 	if err != nil {
 		return err
@@ -340,20 +329,16 @@ func (ri *RunnerInterface) ForwardHttp(
 	req *http.Request,
 ) error {
 	url := fmt.Sprintf(
-		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
+		"%s/api/v1/workspace/%d/container/%s/http-reverse-proxy?request_protocol=http&target_port=%d&target_path=%s&runner_token=%s",
 		ri.getRunnerBaseUrl(),
-		url.QueryEscape(path),
-		strconv.Itoa(int(workspace.ID)),
+		workspace.ID,
 		container.ContainerID,
+		port.PortNumber,
+		url.QueryEscape(path),
+		ri.Runner.Token,
 	)
 
 	proxyHeaders := http.Header{}
-	proxyHeaders.Set("X-CodeBox-Forward-Host", "127.0.0.1")
-	proxyHeaders.Set("X-CodeBox-Forward-Port", strconv.Itoa(int(port.PortNumber)))
-	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
-	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "http")
-	proxyHeaders.Set("X-Codebox-Runner-Token", ri.Runner.Token)
-
 	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
 	if err != nil {
 		return err
@@ -370,18 +355,13 @@ func (ri *RunnerInterface) ForwardSsh(
 	req *http.Request,
 ) error {
 	url := fmt.Sprintf(
-		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
+		"%s/api/v1/workspace/%d/container/%s/ssh-proxy",
 		ri.getRunnerBaseUrl(),
-		url.QueryEscape("/"),
-		strconv.Itoa(int(workspace.ID)),
-		container.ContainerID,
+		workspace.ID,
+		container.ContainerName,
 	)
 
 	proxyHeaders := http.Header{}
-	proxyHeaders.Set("X-CodeBox-Forward-Host", "127.0.0.1")
-	proxyHeaders.Set("X-CodeBox-Forward-Port", "2222")
-	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
-	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "tcp_over_websocket")
 	proxyHeaders.Set("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)
@@ -393,26 +373,21 @@ func (ri *RunnerInterface) ForwardSsh(
 	return nil
 }
 
-func (ri *RunnerInterface) ForwardTcpPort(
+func (ri *RunnerInterface) ForwardTerminal(
 	workspace *models.Workspace,
 	container *models.WorkspaceContainer,
 	rw http.ResponseWriter,
 	req *http.Request,
-	port uint,
 ) error {
 	url := fmt.Sprintf(
-		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
+		"%s/api/v1/workspace/%d/container/%s/terminal?username=%s",
 		ri.getRunnerBaseUrl(),
-		url.QueryEscape("/"),
-		strconv.Itoa(int(workspace.ID)),
-		container.ContainerID,
+		workspace.ID,
+		container.ContainerName,
+		container.ContainerUserName,
 	)
 
 	proxyHeaders := http.Header{}
-	proxyHeaders.Set("X-CodeBox-Forward-Host", "127.0.0.1")
-	proxyHeaders.Set("X-CodeBox-Forward-Port", strconv.Itoa(int(port)))
-	proxyHeaders.Set("X-CodeBox-Forward-Domain", "localhost")
-	proxyHeaders.Set("X-CodeBox-Forward-Scheme", "tcp_over_websocket")
 	proxyHeaders.Set("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	proxy, err := proxy.CreateReverseProxy(url, 30, 30, true, proxyHeaders)

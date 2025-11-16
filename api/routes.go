@@ -3,36 +3,23 @@ package api
 import (
 	"fmt"
 	"net/url"
-	"path"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gitlab.com/codebox4073715/codebox/api/admin"
-	"gitlab.com/codebox4073715/codebox/api/auth"
-	"gitlab.com/codebox4073715/codebox/api/cli"
 	"gitlab.com/codebox4073715/codebox/api/middleware"
-	"gitlab.com/codebox4073715/codebox/api/permissions"
-	"gitlab.com/codebox4073715/codebox/api/runners"
-	"gitlab.com/codebox4073715/codebox/api/settings"
-	"gitlab.com/codebox4073715/codebox/api/templates"
-	"gitlab.com/codebox4073715/codebox/api/workspaces"
+	runnerapis "gitlab.com/codebox4073715/codebox/api/runner"
+	"gitlab.com/codebox4073715/codebox/api/users/admin"
+	"gitlab.com/codebox4073715/codebox/api/users/auth"
+	"gitlab.com/codebox4073715/codebox/api/users/cli"
+	"gitlab.com/codebox4073715/codebox/api/users/runners"
+	"gitlab.com/codebox4073715/codebox/api/users/settings"
+	"gitlab.com/codebox4073715/codebox/api/users/templates"
+	"gitlab.com/codebox4073715/codebox/api/users/workspaces"
 	"gitlab.com/codebox4073715/codebox/config"
 	docs "gitlab.com/codebox4073715/codebox/docs"
+	"gitlab.com/codebox4073715/codebox/permissions"
 )
-
-func SetupRouter() *gin.Engine {
-	if config.Environment.DebugEnabled {
-		gin.SetMode(gin.DebugMode)
-	} else {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	r := gin.Default()
-	V1ApiRoutes(r)
-	r.LoadHTMLGlob(path.Join(config.Environment.BaseDir, "html", "templates", "*"))
-	return r
-}
 
 func V1ApiRoutes(router *gin.Engine) {
 	// middlewares
@@ -165,8 +152,8 @@ func V1ApiRoutes(router *gin.Engine) {
 				permissions.AuthenticationRequiredRoute(workspaces.HandleForwardSsh),
 			)
 			workspaceApis.Any(
-				"/:workspaceId/container/:containerName/forward-tcp/:portNumber",
-				permissions.AuthenticationRequiredRoute(workspaces.HandleForwardTcp),
+				"/:workspaceId/container/:containerName/terminal",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleTerminal),
 			)
 			workspaceApis.POST(
 				"/:workspaceId/update-config",
@@ -235,7 +222,6 @@ func V1ApiRoutes(router *gin.Engine) {
 		runnersApis := v1.Group("/runners")
 		{
 			runnersApis.GET("", permissions.AuthenticationRequiredRoute(runners.HandleListRunners))
-			runnersApis.Any(":runnerId/connect", runners.HandleRunnerConnect)
 		}
 		v1.GET(
 			"/runner-types",
@@ -309,10 +295,6 @@ func V1ApiRoutes(router *gin.Engine) {
 				"users/:email/set-password",
 				permissions.AdminRequiredRoute(admin.HandleAdminSetUserPassword),
 			)
-			adminApis.GET(
-				"workspaces",
-				permissions.AdminRequiredRoute(admin.AdminListWorkspaces),
-			)
 			adminApis.POST(
 				"users/:email/impersonate",
 				permissions.AdminRequiredRoute(admin.HandleAdminImpersonateUser),
@@ -322,6 +304,22 @@ func V1ApiRoutes(router *gin.Engine) {
 				permissions.AdminRequiredRoute(admin.HandleAdminListImpersonationLogsByUser),
 			)
 		}
+	}
+
+	runnerAPIGroup := router.Group("/runner-api/v1/")
+	{
+		runnerAPIGroup.POST(
+			"runners/:runnerId/request-port",
+			permissions.RunnerTokenAuthenticationRequired(runnerapis.HandleRunnerRequestPort),
+		)
+		runnerAPIGroup.Any(
+			"runners/:runnerId/connect",
+			permissions.RunnerTokenAuthenticationRequired(runnerapis.HandleRunnerConnect),
+		)
+		runnerAPIGroup.Any(
+			"runners/:runnerId/workspaces/:workspaceId/container/:containerName/git-ssh",
+			permissions.RunnerTokenAuthenticationRequired(runnerapis.HandleRunnerGitSSH),
+		)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
