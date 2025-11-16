@@ -287,11 +287,10 @@ func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
 
 func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool {
 	url := fmt.Sprintf(
-		"%s/api/v1/agent-forward/?path=%s&workspace_id=%s&container_id=%s",
+		"%s/api/v1/workspace/%d/container/%s/agent-version",
 		ri.getRunnerBaseUrl(),
-		url.QueryEscape("/"),
-		strconv.Itoa(int(container.WorkspaceID)),
-		container.ContainerID,
+		container.WorkspaceID,
+		container.ContainerName,
 	)
 
 	client := &http.Client{}
@@ -301,10 +300,6 @@ func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool 
 		return false
 	}
 
-	req.Header.Add("X-CodeBox-Forward-Scheme", "ping")
-	req.Header.Add("X-CodeBox-Forward-Host", "127.0.0.1")
-	req.Header.Add("X-CodeBox-Forward-Port", "2222")
-	req.Header.Add("X-CodeBox-Forward-Protocol", "http")
 	req.Header.Add("X-Codebox-Runner-Token", ri.Runner.Token)
 
 	res, err := client.Do(req)

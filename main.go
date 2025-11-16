@@ -68,7 +68,12 @@ func main() {
 
 	switch os.Args[1] {
 	case "runserver":
-		err = bgtasks.InitBgTasks(config.Environment.RedisHost, config.Environment.RedisPort, uint(config.Environment.TasksConcurrency), "")
+		err = bgtasks.InitBgTasks(
+			config.Environment.RedisHost,
+			config.Environment.RedisPort,
+			uint(config.Environment.TasksConcurrency),
+			"",
+		)
 		if err != nil {
 			log.Fatalln("cannot start background tasks")
 			return
