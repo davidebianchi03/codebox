@@ -2,7 +2,15 @@
 
 All changes will be reported in this file
 
-# [Unreleased]
+# [v0.0.48]
+
+### Added 
+
+- Security improvements
+- Web terminal for workspace containers
+- Support for custom git ssh command
+
+# [v0.0.47]
 
 ### Added 
 
