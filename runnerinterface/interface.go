@@ -327,10 +327,10 @@ func (ri *RunnerInterface) ForwardHttp(
 		"%s/api/v1/workspace/%d/container/%s/http-reverse-proxy?request_protocol=http&target_port=%d&target_path=%s&runner_token=%s",
 		ri.getRunnerBaseUrl(),
 		workspace.ID,
-		container.ContainerID,
+		container.ContainerName,
 		port.PortNumber,
 		url.QueryEscape(path),
-		ri.Runner.Token,
+		url.QueryEscape(ri.Runner.Token),
 	)
 
 	proxyHeaders := http.Header{}

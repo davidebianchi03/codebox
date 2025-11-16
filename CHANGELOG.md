@@ -2,12 +2,13 @@
 
 All changes will be reported in this file
 
-## [Unreleased]
+## [v0.0.49] - 2025-11-16
 
 ### Fixed
 
 - Fixed nginx configuration
 - Fixed ping of agents
+- Fixed forward of http requests to agents
 
 ## [v0.0.48] - 2025-11-16
 
