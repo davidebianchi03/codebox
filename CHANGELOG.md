@@ -2,15 +2,16 @@
 
 All changes will be reported in this file
 
-# [v0.0.48]
+# [v0.0.48] - 2025-11-16
 
 ### Added 
 
 - Security improvements
 - Web terminal for workspace containers
 - Support for custom git ssh command
+- Support for macOS
 
-# [v0.0.47]
+# [v0.0.47] - 2025-08-30
 
 ### Added 
 
