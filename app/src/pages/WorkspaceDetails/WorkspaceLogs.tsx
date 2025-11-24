@@ -1,6 +1,6 @@
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { Workspace } from "../../types/workspace";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { APIRetrieveWorkspaceLogs } from "../../api/workspace";
 
 interface Props {
@@ -18,7 +18,6 @@ export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
     if (l) {
       var scrollToBottom = l.length !== logs.length;
       setLogs(l);
-
       // if length of logs has changed scroll to the last row of logs
       if (scrollToBottom) {
         var logsContainer = logsContainerRef.current;
@@ -38,7 +37,7 @@ export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
   }, [FetchLogs, fetchInterval]);
 
   return (
-    <>
+    <React.Fragment>
       <Card>
         <CardHeader className="border-0">
           <h3 className="mb-0">Logs</h3>
@@ -72,6 +71,6 @@ export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
           </Row>
         </CardBody>
       </Card>
-    </>
+    </React.Fragment>
   );
 }

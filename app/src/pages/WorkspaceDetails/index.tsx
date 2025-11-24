@@ -9,7 +9,7 @@ import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCloudArrowUp, faGear } from "@fortawesome/free-solid-svg-icons";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
-import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace, APIUpdateWorkspaceConfig } from "../../api/workspace";
+import { APIRetrieveWorkspaceById, APIUpdateWorkspaceConfig } from "../../api/workspace";
 import { APIRetrieveTemplateById, APIRetrieveTemplateLatestVersion } from "../../api/templates";
 import { WorkspaceTemplate } from "../../types/templates";
 import { WorkspaceSelectRunnerModal } from "./WorkspaceSelectRunnerModal";

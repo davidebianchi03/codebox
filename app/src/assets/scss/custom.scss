@@ -25,3 +25,15 @@ $dark: #0a192c;
         display: none;
     }
 }
+
+.user-dropdown {
+    text-decoration: none !important;
+   
+    .dropdown-toggle:after {
+        display: none;
+    }
+
+    .btn-link:hover {
+        text-decoration: none !important;
+    }
+}

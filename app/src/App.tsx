@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "@tabler/core/dist/css/tabler.min.css";
 import "./assets/scss/custom.scss";
-import "bootstrap/dist/js/bootstrap.js";
 import AuthRequired from "./auth/AuthRequired";
 import NotFound from "./pages/NotFound";
 import SuperUserRequired from "./auth/SuperUserRequired";

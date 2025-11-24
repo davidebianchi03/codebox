@@ -18,6 +18,5 @@ Here is a list of the configuration parameters to use to customize a selfhosted 
 - `CODEBOX_REDIS_HOST`: `default: localhost` specifies the hostname or IP address of the Redis server.
 - `CODEBOX_REDIS_PORT` `default: 6379` specifies the port number on which the Redis server is listening for connections
 - `CODEBOX_DATA_PATH`: `default: ./data` the path where data is stored
-- `CODEBOX_USE_GRAVATAR`: `default: true` use gravatar for avatars
 - `CODEBOX_AUTH_COOKIE_NAME`: `default: codebox_auth_token` the name of the authentication cookie
 - `CODEBOX_SUBDOMAIN_AUTH_COOKIE_NAME` `default: subdomain_codebox_auth_token` the name of the authentication cookie use in subdomains

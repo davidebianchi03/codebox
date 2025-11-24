@@ -1,20 +1,16 @@
-import { faBorderTopLeft, faGears, faRightFromBracket, faTerminal, faUser, faUserSecret } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Col, Row } from "reactstrap";
-import DefaultAvatar from "../assets/images/default-avatar.png";
-import sha256 from "crypto-js/sha256";
-import { Logout, RetrieveInstanceSettings } from "../api/common";
-import { InstanceSettings } from "../types/settings";
+import { Logout } from "../api/common";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { StopImpersonation } from "../api/users";
 import { toast } from "react-toastify";
+import { Dropdown } from "react-bootstrap";
+import { ShieldCogIcon, TemplateIcon, TerminalIcon, UserIcon, LogoutIcon, GhostOffIcon } from "../icons/Tabler";
 
 export function UserDropdown() {
     const navigate = useNavigate();
-    const [settings, setSettings] = useState<InstanceSettings | null>(null);
     const user = useSelector((state: RootState) => state.user);
 
     const HandleLogout = (e: any) => {
@@ -22,13 +18,6 @@ export function UserDropdown() {
         Logout();
         navigate("/login");
     };
-
-    const FetchSettings = useCallback(async () => {
-        const s = await RetrieveInstanceSettings();
-        if (s) {
-            setSettings(s);
-        }
-    }, []);
 
     const HandleStopImpersonation = useCallback(async () => {
         if (user.impersonated) {
@@ -41,38 +30,32 @@ export function UserDropdown() {
         }
     }, [user.email, user.impersonated]);
 
-    useEffect(() => {
-        FetchSettings();
-    }, [FetchSettings]);
-
     return (
         <React.Fragment>
-            <div className="d-flex">
+            <div className="d-flex user-dropdown">
                 {user.impersonated && (
                     <Button
                         className="mx-1 px-2 text-warning btn btn-outline-warning"
                         onClick={HandleStopImpersonation}
                         title="Stop impersonating"
                     >
-                        <FontAwesomeIcon icon={faUserSecret} />
+                        <GhostOffIcon />
                     </Button>
                 )}
-                <div className="nav-item dropdown">
-                    <span
-                        className="nav-link d-flex lh-1 p-0 px-2"
-                        data-bs-toggle="dropdown"
-                        aria-label="Open user menu"
+                <Dropdown>
+                    <Dropdown.Toggle
+                        variant="link"
+                        className="d-flex lh-1 p-0 px-2 text-white"
                     >
-                        <img
-                            className="avatar avatar-sm"
-                            src={
-                                settings?.use_gravatar && user
-                                    ? `https://www.gravatar.com/avatar/${sha256(user?.email)}`
-                                    : DefaultAvatar
-                            }
-                            alt="avatar"
-                        />
-                        <div className="d-none d-xl-block ps-2">
+                        <div
+                            className="avatar avatar-sm bg-azure-lt text-white d-flex align-items-center justify-content-center"
+                            style={{ width: '35px', height: '35px' }}
+                        >
+                            {user?.first_name.length > 0 && user.first_name[0]}
+                            &nbsp;
+                            {user?.last_name.length > 0 && user.last_name[0]}
+                        </div>
+                        <div className="d-none d-xl-block ps-2 text-start">
                             <div>
                                 <b>
                                     {user?.first_name} {user?.last_name}
@@ -80,62 +63,62 @@ export function UserDropdown() {
                             </div>
                             <div className="mt-1 small text-secondary">{user?.email}</div>
                         </div>
-                    </span>
-                    <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                        <Link to="/profile" className="dropdown-item">
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <Dropdown.Item as={Link} to="/profile">
                             <Row>
                                 <Col md={4}>
-                                    <FontAwesomeIcon icon={faUser} />
+                                    <UserIcon />
                                 </Col>
                                 <Col md={8}>
                                     Profile
                                 </Col>
                             </Row>
-                        </Link>
+                        </Dropdown.Item>
                         {user?.is_superuser && (
-                            <Link to="/admin" className="dropdown-item">
+                            <Dropdown.Item as={Link} to="/admin">
                                 <Row>
                                     <Col md={4} className="pe-0">
-                                        <FontAwesomeIcon icon={faGears} />
+                                        <ShieldCogIcon />
                                     </Col>
                                     <Col md={8} className="ps-0">
                                         Admin Area
                                     </Col>
                                 </Row>
-                            </Link>
+                            </Dropdown.Item>
                         )}
-                        <Link to="/templates" className="dropdown-item">
+                        <Dropdown.Item as={Link} to="/templates">
                             <Row>
                                 <Col md={4} className="pe-0">
-                                    <FontAwesomeIcon icon={faBorderTopLeft} />
+                                    <TemplateIcon />
                                 </Col>
                                 <Col md={8} className="ps-0">
                                     Templates
                                 </Col>
                             </Row>
-                        </Link>
-                        <Link to="/cli" className="dropdown-item">
+                        </Dropdown.Item>
+                        <Dropdown.Item as={Link} to="/cli">
                             <Row>
-                                <Col md={4}>
-                                    <FontAwesomeIcon icon={faTerminal} />
+                                <Col md={6}>
+                                    <TerminalIcon />
                                 </Col>
-                                <Col md={8}>
+                                <Col md={6}>
                                     CLI
                                 </Col>
                             </Row>
-                        </Link>
-                        <Link to="/" className="dropdown-item" onClick={HandleLogout}>
+                        </Dropdown.Item>
+                        <Dropdown.Item as={Link} to="/" onClick={HandleLogout}>
                             <Row>
                                 <Col md={4}>
-                                    <FontAwesomeIcon icon={faRightFromBracket} />
+                                    <LogoutIcon />
                                 </Col>
                                 <Col md={8}>
                                     Logout
                                 </Col>
                             </Row>
-                        </Link>
-                    </div>
-                </div>
+                        </Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
             </div>
         </React.Fragment>
     )

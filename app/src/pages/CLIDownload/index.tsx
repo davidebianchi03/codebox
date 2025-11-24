@@ -5,6 +5,7 @@ import { Badge, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { CLIBuild } from "../../types/cli";
 import { ListCLIBuilds } from "../../api/cli";
 import { toast } from "react-toastify";
+import { WindowsIcon } from "../../icons/Tabler";
 
 
 export function CLIDownloadPage() {
@@ -40,9 +41,9 @@ export function CLIDownloadPage() {
                 <Col md={12}>
                     <Card>
                         <CardHeader>
-                            <h2 className="mb-0">
-                                <span className="pe-2">Windows</span>
-                                <FontAwesomeIcon icon={faWindows as any} />
+                            <h2 className="mb-0 d-flex align-items-center">
+                                <span className="pe-2 mb-1">Windows</span>
+                                <WindowsIcon />
                             </h2>
                         </CardHeader>
                         <CardBody>

@@ -1,21 +1,22 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Workspace } from "../../types/workspace";
 import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace } from "../../api/workspace";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { GetBeautyNameForStatus, GetWorkspaceStatusColor } from "../../common/workspace";
 import { WorkspaceSelectRunnerModal } from "./WorkspaceSelectRunnerModal";
+import { Button, Dropdown } from "react-bootstrap";
 
 interface WorkspaceStatusDropdownProps {
     workspace: Workspace;
     onStatusChange: () => void;
 }
 
-
 export function WorkspaceStatusDropdown({
     workspace,
     onStatusChange
 }: WorkspaceStatusDropdownProps) {
+    const [statusName, setStatusName] = useState<string>(GetBeautyNameForStatus(workspace.status));
     const [showSelectRunnerModal, setShowSelectRunnerModal] = useState<boolean>(false);
 
     const HandleStartWorkspace = useCallback(async () => {
@@ -80,32 +81,22 @@ export function WorkspaceStatusDropdown({
         }
     }, [onStatusChange, workspace]);
 
+    useEffect(() => {
+        setStatusName(GetBeautyNameForStatus(workspace.status));
+    }, [workspace.status]);
+
     return (
         <React.Fragment>
-            <button
-                className={`
-                    btn btn-${GetWorkspaceStatusColor(workspace.status)} 
-                    ${(
-                        workspace.status != "starting" &&
-                        workspace.status != "stopping" &&
-                        workspace.status != "deleting" &&
-                        "dropdown-toggle"
-                    )}`}
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-            >
-                {GetBeautyNameForStatus(workspace.status)}
-            </button>
-            {(
+            {
                 workspace.status != "starting" &&
-                workspace.status != "stopping" &&
-                workspace.status != "deleting" && (
-                    <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <span
-                            className="dropdown-item"
-                            onClick={() => {
+                    workspace.status != "stopping" &&
+                    workspace.status != "deleting" ? (
+                    <Dropdown>
+                        <Dropdown.Toggle variant={GetWorkspaceStatusColor(workspace.status)} id="dropdown-basic">
+                            {statusName}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={() => {
                                 if (
                                     workspace.status === "running" ||
                                     workspace.status === "error"
@@ -114,34 +105,31 @@ export function WorkspaceStatusDropdown({
                                 } else {
                                     HandleStartWorkspace();
                                 }
-                            }}
-                        >
-                            {workspace?.status === "running" ||
-                                workspace?.status === "error"
-                                ? "Stop workspace"
-                                : "Start workspace"}
-                        </span>
-                        <span
-                            className="dropdown-item"
-                            onClick={() => {
+                            }}>
+                                {workspace?.status === "running" ||
+                                    workspace?.status === "error"
+                                    ? "Stop workspace"
+                                    : "Start workspace"}
+                            </Dropdown.Item>
+                            <Dropdown.Item onClick={() => {
                                 HandleDeleteWorkspace(false);
-                            }}
-                        >
-                            Delete workspace
-                        </span>
-                        {workspace.status === "error" && (
-                            <span
-                                className="dropdown-item"
-                                onClick={() => {
+                            }}>
+                                Delete workspace
+                            </Dropdown.Item>
+                            {workspace.status === "error" && (
+                                <Dropdown.Item onClick={() => {
                                     HandleDeleteWorkspace(true);
-                                }}
-                            >
-                                Force delete workspace
-                            </span>
-                        )}
-                    </div>
-                )
-            )}
+                                }}>
+                                    Force delete workspace
+                                </Dropdown.Item>
+                            )}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                ) : (
+                    <Button variant={GetWorkspaceStatusColor(workspace.status)}>
+                        {statusName}
+                    </Button>
+                )}
             <WorkspaceSelectRunnerModal
                 isOpen={showSelectRunnerModal}
                 onClose={async (updated) => {

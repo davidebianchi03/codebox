@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Dropdown, DropdownMenu, DropdownToggle, Input, InputGroup } from "reactstrap";
 import { ContainerPort, Workspace, WorkspaceContainer } from "../../types/workspace";
 import { APIDeleteWorkspaceContainerPort, APIListWorkspaceContainerPorts } from "../../api/workspace";
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { EditExposedPortsAddPortModal } from "./EditExposedPortsAddPortModal";
+import { Button, Dropdown, Form, InputGroup,  } from "react-bootstrap";
 
 export interface ExposedPortsDropdownProps {
     workspace: Workspace;
@@ -58,15 +58,15 @@ export function ExposedPortsDropdown({
     return (
         <React.Fragment>
             <Dropdown
-                toggle={() => setIsOpen(!isOpen)}
-                isOpen={isOpen}
+                onToggle={() => setIsOpen(!isOpen)}
+                show={isOpen}
             >
-                <DropdownToggle
-                    color="accent"
+                <Dropdown.Toggle
+                    variant="accent"
                 >
                     Edit exposed ports
-                </DropdownToggle>
-                <DropdownMenu
+                </Dropdown.Toggle>
+                <Dropdown.Menu
                     style={{ width: 350 }}
                     className="p-3"
                 >
@@ -85,16 +85,16 @@ export function ExposedPortsDropdown({
                             {containerExposedPorts.filter((port) => port.public).map((port, index) => (
                                 <React.Fragment key={index}>
                                     <InputGroup className="py-1">
-                                        <Input
+                                        <Form.Control
                                             value={port.service_name}
                                             disabled
                                         />
-                                        <Input
+                                        <Form.Control
                                             value={port.port_number}
                                             readOnly
                                         />
                                         <Button
-                                            color="accent"
+                                            variant="accent"
                                             onClick={() => handleDeletePort(port)}
                                         >
                                             <FontAwesomeIcon icon={faTrash} />
@@ -118,16 +118,16 @@ export function ExposedPortsDropdown({
                             {containerExposedPorts.filter((port) => !port.public).map((port, index) => (
                                 <React.Fragment key={index}>
                                     <InputGroup className="py-1">
-                                        <Input
+                                        <Form.Control
                                             value={port.service_name}
                                             disabled
                                         />
-                                        <Input
+                                        <Form.Control
                                             value={port.port_number}
                                             readOnly
                                         />
                                         <Button
-                                            color="accent"
+                                            variant="accent"
                                             onClick={() => handleDeletePort(port)}
                                         >
                                             <FontAwesomeIcon icon={faTrash} />
@@ -139,12 +139,12 @@ export function ExposedPortsDropdown({
                     )}
                     <Button
                         className="w-100 mt-5"
-                        color="accent"
+                        variant="accent"
                         onClick={() => setShowAddPortModal(true)}
                     >
                         Expose a port
                     </Button>
-                </DropdownMenu>
+                </Dropdown.Menu>
             </Dropdown>
             <ToastContainer
                 toastClassName={"bg-dark"}

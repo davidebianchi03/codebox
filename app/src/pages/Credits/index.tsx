@@ -10,7 +10,8 @@ export function CreditsPage() {
             </div>
             <Row className="mt-3">
                 <p>
-                    This software is distributed under an open source license
+                    This software is distributed under an open source license, the source code is available &nbsp;
+                    <a href="https://gitlab.com/codebox4073715/codebox" target="_blank">here</a>.
                 </p>
             </Row>
             <Row className="mt-3">

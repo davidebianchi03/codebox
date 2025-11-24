@@ -26,7 +26,6 @@ type EnvVars struct {
 	RedisHost               string `env:"CODEBOX_REDIS_HOST" envDefault:"localhost"`
 	RedisPort               int    `env:"CODEBOX_REDIS_PORT" envDefault:"6379"`
 	UploadsPath             string `env:"CODEBOX_DATA_PATH" envDefault:"./data"`
-	UseGravatar             bool   `env:"CODEBOX_USE_GRAVATAR" envDefault:"true"`
 	UseSubDomains           bool   `env:"CODEBOX_USE_SUBDOMAINS" envDefault:"true"`
 	AuthCookieName          string `env:"CODEBOX_AUTH_COOKIE_NAME" envDefault:"codebox_auth_token"`
 	SubdomainAuthCookieName string `env:"CODEBOX_SUBDOMAIN_AUTH_COOKIE_NAME" envDefault:"subdomain_codebox_auth_token"`
