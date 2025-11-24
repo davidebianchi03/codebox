@@ -173,39 +173,41 @@ export default function WorkspaceDetails() {
             )}
           </p>
         </div>
-        <div className="col-auto ms-auto d-print-none">
-          <div className="dropdown">
-            {workspace?.status === "stopped" && (
-              <React.Fragment>
-                {canUpdateConfigFiles && (
-                  <Button
-                    color="accent"
-                    className="me-1"
-                    onClick={() => HandleUpdateConfigFiles(true)}
-                  >
-                    <FontAwesomeIcon icon={faCloudArrowUp} />
-                    <span className="ms-2">
-                      {workspace.config_source === "template" ? "Update template version" : "Update config files"}
-                    </span>
-                  </Button>
-                )}
+        <div className="col-auto ms-auto d-print-none d-flex align-items-center flex-wrap gap-2">
+          {workspace?.status === "stopped" && (
+            <React.Fragment>
+              {canUpdateConfigFiles && (
                 <Button
                   color="accent"
-                  className="me-3"
-                  onClick={() => setShowSettingsModal(true)}
+                  className="me-1"
+                  onClick={() => HandleUpdateConfigFiles(true)}
                 >
-                  <FontAwesomeIcon icon={faGear} />
-                  <span className="ms-2">Settings</span>
+                  <FontAwesomeIcon icon={faCloudArrowUp} />
+                  <span className="ms-2">
+                    {
+                      workspace.config_source === "template" ?
+                        "Update template version" :
+                        "Pull latest config"
+                    }
+                  </span>
                 </Button>
-              </React.Fragment>
-            )}
-            {workspace && (
-              <WorkspaceStatusDropdown
-                workspace={workspace}
-                onStatusChange={FetchWorkspace}
-              />
-            )}
-          </div>
+              )}
+              <Button
+                color="accent"
+                className="me-1"
+                onClick={() => setShowSettingsModal(true)}
+              >
+                <FontAwesomeIcon icon={faGear} />
+                <span className="ms-2">Settings</span>
+              </Button>
+            </React.Fragment>
+          )}
+          {workspace && (
+            <WorkspaceStatusDropdown
+              workspace={workspace}
+              onStatusChange={FetchWorkspace}
+            />
+          )}
         </div>
       </div>
       {workspace && (

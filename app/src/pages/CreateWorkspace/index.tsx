@@ -389,29 +389,31 @@ export default function CreateWorkspace() {
             </Col>
           </Row>
           <Row className="mt-3">
-            <Card>
-              <CardBody>
-                <FormGroup>
-                  <p>
-                    <Label className="mb-0">Environment</Label>
-                    <small className="text-muted">
-                      Define environment variables
-                    </small>
-                  </p>
-                  <EnvEditor
-                    value={validation.values.environment}
-                    onChange={(value) => {
-                      validation.setFieldValue("environment", value)
-                    }}
-                  />
-                  <FormFeedback>{validation.errors.environment}</FormFeedback>
-                </FormGroup>
-              </CardBody>
-            </Card>
+            <Col md={12}>
+              <Card>
+                <CardBody>
+                  <FormGroup>
+                    <p>
+                      <Label className="mb-0">Environment</Label>
+                      <small className="text-muted">
+                        Define environment variables
+                      </small>
+                    </p>
+                    <EnvEditor
+                      value={validation.values.environment}
+                      onChange={(value) => {
+                        validation.setFieldValue("environment", value)
+                      }}
+                    />
+                    <FormFeedback>{validation.errors.environment}</FormFeedback>
+                  </FormGroup>
+                </CardBody>
+              </Card>
+            </Col>
           </Row>
           <div className="d-flex justify-content-end mt-4">
             <Link to={"/"}
-              className="btn btn-accent me-1">
+              className="btn btn-accent me-2">
               Cancel
             </Link>
             <Button color="primary" type="submit">

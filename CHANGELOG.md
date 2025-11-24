@@ -2,6 +2,13 @@
 
 All changes will be reported in this file
 
+## [v0.0.50] - 2025-11-24
+
+### Fixed
+
+- UI improvements
+- Fixed name of downloaded CLI binaries
+
 ## [v0.0.49] - 2025-11-16
 
 ### Fixed

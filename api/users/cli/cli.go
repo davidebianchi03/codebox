@@ -70,8 +70,9 @@ func HandleDownloadCLI(c *gin.Context) {
 		return
 	}
 
-	c.File(path.Join(config.Environment.CliBinariesPath, build.File))
-	c.Header("Content-Disposition", "attachment; filename="+build.File)
-	c.Header("Content-Type", "application/gzip")
 	c.Status(http.StatusOK)
+	c.FileAttachment(
+		path.Join(config.Environment.CliBinariesPath, build.File),
+		build.File,
+	)
 }
