@@ -7,7 +7,7 @@ import WorkspaceLogs from "./WorkspaceLogs";
 import WorkspaceContainers from "./WorkspaceContainers";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCloudArrowUp, faGear } from "@fortawesome/free-solid-svg-icons";
+import { faCloudArrowDown, faGear } from "@fortawesome/free-solid-svg-icons";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
 import { APIRetrieveWorkspaceById, APIUpdateWorkspaceConfig } from "../../api/workspace";
 import { APIRetrieveTemplateById, APIRetrieveTemplateLatestVersion } from "../../api/templates";
@@ -182,7 +182,7 @@ export default function WorkspaceDetails() {
                   className="me-1"
                   onClick={() => HandleUpdateConfigFiles(true)}
                 >
-                  <FontAwesomeIcon icon={faCloudArrowUp} />
+                  <FontAwesomeIcon icon={faCloudArrowDown} />
                   <span className="ms-2">
                     {
                       workspace.config_source === "template" ?

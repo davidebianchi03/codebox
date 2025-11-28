@@ -20,3 +20,4 @@ public/
 swagger.json
 swagger.yaml
 coverage.out
+recommended_runner_version.txt

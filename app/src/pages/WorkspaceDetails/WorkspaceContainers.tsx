@@ -16,12 +16,12 @@ import VsCodeIcon from "../../assets/images/vscode.png";
 import TerminalIcon from "../../assets/images/terminal.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
-import { InstanceSettings } from "../../types/settings";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import { RetrieveInstanceSettings } from "../../api/common";
 import { APIListWorkspaceContainers, APIListWorkspaceContainerPorts, APIRetrieveWorkspaceContainer } from "../../api/workspace";
 import { ExposedPortsDropdown } from "./ExposedPortsDropdown";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 interface Props {
   workspace: Workspace;
@@ -38,7 +38,7 @@ export default function WorkspaceContainers({
   const [selectedContainerExposedPorts, setSelectedContainerExposedPorts] =
     useState<ContainerPort[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [settings, setSettings] = useState<InstanceSettings>();
+  const settings = useSelector((state: RootState) => state.settings);
 
   const FetchSelectedContainer = useCallback(
     async (containerName: string) => {
@@ -91,21 +91,14 @@ export default function WorkspaceContainers({
     FetchSelectedContainerPorts,
   ]);
 
-  const FetchSettings = useCallback(async () => {
-    const s = await RetrieveInstanceSettings();
-    if (s) {
-      setSettings(s);
-    }
-  }, []);
 
   useEffect(() => {
-    FetchSettings();
     FetchContainers();
     const interval = setInterval(FetchContainers, fetchInterval);
     return () => {
       clearInterval(interval);
     };
-  }, [FetchContainers, FetchSettings, fetchInterval]);
+  }, [FetchContainers, fetchInterval]);
 
   return (
     <>

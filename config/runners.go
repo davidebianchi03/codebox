@@ -1,5 +1,7 @@
 package config
 
+var RecommendedRunnerVersion = "latest"
+
 type RunnerChoice struct {
 	ID             string          `json:"id"`
 	Name           string          `json:"name"`

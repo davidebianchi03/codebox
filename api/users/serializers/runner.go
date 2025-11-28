@@ -42,6 +42,7 @@ type AdminRunnersSerializer struct {
 	UsePublicUrl       bool       `json:"use_public_url"`
 	PublicUrl          string     `json:"public_url"`
 	DeletionInProgress bool       `json:"deletion_in_progress"`
+	Version            string     `json:"version"`
 }
 
 func LoadAdminRunnerSerializer(runner *models.Runner) *AdminRunnersSerializer {
@@ -56,6 +57,7 @@ func LoadAdminRunnerSerializer(runner *models.Runner) *AdminRunnersSerializer {
 		UsePublicUrl:       runner.UsePublicUrl,
 		PublicUrl:          runner.PublicUrl,
 		DeletionInProgress: runner.DeletionInProgress,
+		Version:            runner.Version,
 	}
 }
 

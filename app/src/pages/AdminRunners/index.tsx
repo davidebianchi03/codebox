@@ -20,6 +20,8 @@ import { Link } from "react-router-dom";
 import { AdminListRunners } from "../../api/runner";
 import DataTable from "../../components/DataTable";
 import React from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 export function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
@@ -27,6 +29,7 @@ export function AdminRunners() {
     useState<boolean>(false);
   const [runnerToken, setRunnerToken] = useState<string>("");
   const [runnerId, setRunnerID] = useState<string>("");
+  const settings = useSelector((state: RootState) => state.settings);
 
   const FetchRunners = useCallback(async () => {
     const r = await AdminListRunners();
@@ -134,6 +137,13 @@ export function AdminRunners() {
                           <Badge color="orange" className="text-white">
                             Deletion in progress
                             <Spinner size="sm" />
+                          </Badge>
+                        </React.Fragment>
+                      )}
+                      {settings.recommended_runner_version !== runner.version && (
+                        <React.Fragment>
+                          <Badge color="warning" className="text-white">
+                            Version mismatch
                           </Badge>
                         </React.Fragment>
                       )}

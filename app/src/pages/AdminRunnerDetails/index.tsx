@@ -25,6 +25,8 @@ import {
   ListRunnerTypes
 } from "../../api/runner";
 import { ConfirmDeleteRunnerModal } from "./ConfirmDeleteRunnerModal";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 export function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
@@ -33,6 +35,8 @@ export function AdminRunnerDetails() {
 
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const settings = useSelector((state: RootState) => state.settings);
 
   const FetchRunnerTypes = useCallback(async () => {
     const rt = await ListRunnerTypes();
@@ -165,6 +169,26 @@ export function AdminRunnerDetails() {
           <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
           Back
         </Button>
+
+        {runner && (
+          <React.Fragment>
+            {settings.recommended_runner_version !== runner.version && (
+              <React.Fragment>
+                <Row className="mb-4">
+                  <Col>
+                    <Card body className="bg-warning">
+                      <div className="text-white">
+                        <b>Warning:</b> This runner is running version <b>{runner.version}</b>, 
+                        but the recommended version is <b>{settings.recommended_runner_version}</b>. 
+                        Please consider updating the runner to ensure compatibility and access to the latest features.
+                      </div>
+                    </Card>
+                  </Col>
+                </Row>
+              </React.Fragment>
+            )}
+          </React.Fragment>
+        )}
         <Row>
           <Col md={12}>
             <Card body>
