@@ -2,6 +2,16 @@
 
 All changes will be reported in this file
 
+## [v0.0.51] - 2025-11-28
+
+### Added
+
+- Check version of runners
+
+### Changed
+
+- Bump runner to v0.0.24
+
 ## [v0.0.50] - 2025-11-24
 
 ### Fixed
