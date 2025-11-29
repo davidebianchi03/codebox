@@ -20,24 +20,13 @@ import (
 func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
-	var workspace models.Workspace
-	r := dbconn.DB.Model(&models.Workspace{}).
-		Preload("User").
-		Preload("Runner").
-		Preload("GitSource").
-		Preload("GitSource.Sources").
-		Preload("TemplateVersion").
-		Preload("TemplateVersion.Sources").
-		First(&workspace, map[string]interface{}{
-			"ID": workspaceId,
-		})
-
-	if r.Error != nil {
-		return r.Error
+	workspace, err := models.RetrieveWorkspaceById(uint(workspaceId))
+	if err != nil {
+		return nil
 	}
 
-	if r.RowsAffected == 0 {
-		return errors.New("workspace not found")
+	if workspace == nil {
+		return nil
 	}
 	defer dbconn.DB.Save(&workspace)
 
@@ -65,12 +54,6 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 					return nil
 				}
 				defer os.RemoveAll(tempDirPath)
-
-				if err != nil {
-					workspace.AppendLogs(fmt.Sprintf("failed to retrieve configuration file path, %s", err.Error()))
-					workspace.Status = models.WorkspaceStatusError
-					return nil
-				}
 
 				if err = git.CloneRepo(
 					workspace.GitSource.RepositoryURL,
@@ -124,7 +107,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 		Runner: workspace.Runner,
 	}
 
-	if err := ri.StartWorkspace(&workspace); err != nil {
+	if err := ri.StartWorkspace(workspace); err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to start workspace, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError
 		return errors.New("failed to start workspace")
@@ -134,7 +117,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 	starting := true
 	logsIndex := 0
 	for starting {
-		details, err := ri.GetDetails(&workspace)
+		details, err := ri.GetDetails(workspace)
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
@@ -147,7 +130,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 			starting = false
 		}
 
-		logs, err := ri.GetLogs(&workspace)
+		logs, err := ri.GetLogs(workspace)
 		if err == nil {
 			if len(logs) > logsIndex {
 				logs = logs[logsIndex:]
@@ -158,7 +141,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	details, err := ri.GetDetails(&workspace)
+	details, err := ri.GetDetails(workspace)
 	if err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError
@@ -173,7 +156,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 		}
 
 		workspaceContainer := models.WorkspaceContainer{
-			Workspace:         workspace,
+			Workspace:         *workspace,
 			ContainerID:       c.ID,
 			ContainerName:     c.Name,
 			ContainerImage:    c.Image,

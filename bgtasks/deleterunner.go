@@ -1,8 +1,6 @@
 package bgtasks
 
 import (
-	"errors"
-
 	"github.com/gocraft/work"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
@@ -19,12 +17,12 @@ func (jobContext *Context) DeleteRunnerTask(job *work.Job) error {
 	runner, err := models.RetrieveRunnerByID(uint(runnerId))
 	if err != nil {
 		// TODO: log error
-		return err
+		return nil
 	}
 
 	if runner == nil {
 		// TODO: log error
-		return errors.New("runner not found")
+		return nil
 	}
 
 	workspaces, err := models.ListWorkspacesByRunner(*runner)
@@ -32,7 +30,7 @@ func (jobContext *Context) DeleteRunnerTask(job *work.Job) error {
 		runner.DeletionInProgress = false
 		models.UpdateRunner(*runner)
 		// TODO: log error
-		return err
+		return nil
 	}
 
 	// stop all workspaces and set runner as null
@@ -42,7 +40,7 @@ func (jobContext *Context) DeleteRunnerTask(job *work.Job) error {
 			runner.DeletionInProgress = false
 			models.UpdateRunner(*runner)
 			// TODO: log error
-			return err
+			return nil
 		}
 
 		_, err = models.UpdateWorkspace(
@@ -59,7 +57,7 @@ func (jobContext *Context) DeleteRunnerTask(job *work.Job) error {
 			runner.DeletionInProgress = false
 			models.UpdateRunner(*runner)
 			// TODO: log error
-			return err
+			return nil
 		}
 	}
 
@@ -67,7 +65,7 @@ func (jobContext *Context) DeleteRunnerTask(job *work.Job) error {
 		runner.DeletionInProgress = false
 		models.UpdateRunner(*runner)
 		// TODO: log error
-		return err
+		return nil
 	}
 
 	return nil

@@ -128,7 +128,9 @@ func ListUserWorkspaces(user User) ([]Workspace, error) {
 	workspaces := []Workspace{}
 	r := dbconn.DB.
 		Preload("GitSource").
+		Preload("GitSource.Sources").
 		Preload("TemplateVersion").
+		Preload("TemplateVersion.Sources").
 		Preload("Runner").
 		Preload("User").
 		Find(
@@ -153,7 +155,9 @@ func RetrieveWorkspaceById(id uint) (*Workspace, error) {
 	workspace := Workspace{}
 	r := dbconn.DB.
 		Preload("GitSource").
+		Preload("GitSource.Sources").
 		Preload("TemplateVersion").
+		Preload("TemplateVersion.Sources").
 		Preload("Runner").
 		Preload("User").
 		Find(
@@ -185,7 +189,9 @@ func RetrieveWorkspaceByUserAndId(user User, id uint) (*Workspace, error) {
 	workspace := Workspace{}
 	r := dbconn.DB.
 		Preload("GitSource").
+		Preload("GitSource.Sources").
 		Preload("TemplateVersion").
+		Preload("TemplateVersion.Sources").
 		Preload("Runner").
 		Preload("User").
 		Find(

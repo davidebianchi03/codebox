@@ -12,11 +12,24 @@ type EnqueuerInterface interface {
 	Enqueue(jobName string, args map[string]interface{}) (*work.Job, error)
 }
 
+type Context struct {
+	WorkspaceID uint
+}
+
 var (
 	BgTasksEnqueuer EnqueuerInterface
 )
 
-func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInstanceId string) error {
+/*
+Initialize bg tasks system,
+register all the tasks and start the worker pool
+*/
+func InitBgTasks(
+	redisHost string,
+	redisPort int,
+	concurrency uint,
+	codeboxInstanceId string,
+) error {
 	var redisPool = &redis.Pool{
 		MaxActive: 5,
 		MaxIdle:   5,
@@ -56,8 +69,4 @@ func InitBgTasks(redisHost string, redisPort int, concurrency uint, codeboxInsta
 
 	pool.Start()
 	return nil
-}
-
-type Context struct {
-	WorkspaceID uint
 }

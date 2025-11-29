@@ -1,6 +1,7 @@
 stages:
   - tests
   - pages
+  - download_dependencies
   - build_sources
   - build_and_publish_docker_image
 
@@ -72,7 +73,7 @@ pages:
 
 # Start of download_cli stage
 download_cli:
-  stage: build_sources
+  stage: download_dependencies
   image: dadebia/codebox-release-cli:latest
   tags:
     - docker-linux
@@ -88,7 +89,7 @@ download_cli:
 
 # Retrieve the recommended runner version
 retrieve_recommended_runner_version:
-  stage: build_sources
+  stage: download_dependencies
   image: dadebia/codebox-release-cli:latest
   tags:
     - docker-linux
@@ -108,6 +109,8 @@ build_server:
   image: golang:1.24.1
   tags:
     - docker-linux
+  dependencies:
+    - retrieve_recommended_runner_version
   variables:
     GOOS: linux
     GOARCH: amd64

@@ -1,7 +1,6 @@
 package bgtasks
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -14,25 +13,22 @@ import (
 	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
 
+/*
+Update workspace configuration files,
+this task fetches the latest configuration files from the git repository
+or updates the template version if the config source is template
+then restarts the workspace
+*/
 func (jobContext *Context) UpdateWorkspaceConfigFilesTask(job *work.Job) error {
 	workspaceId := job.ArgInt64("workspace_id")
 
-	var workspace *models.Workspace
-	result := dbconn.DB.Preload("Runner").
-		Preload("User").
-		Preload("Runner").
-		Preload("GitSource").
-		Preload("GitSource.Sources").
-		Preload("TemplateVersion").
-		Preload("TemplateVersion.Template").
-		First(&workspace, map[string]interface{}{"ID": workspaceId})
-
-	if result.Error != nil {
-		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
+	workspace, err := models.RetrieveWorkspaceById(uint(workspaceId))
+	if err != nil {
+		return nil
 	}
 
 	if workspace == nil {
-		return errors.New("workspace not found")
+		return nil
 	}
 
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
@@ -97,5 +93,6 @@ func (jobContext *Context) UpdateWorkspaceConfigFilesTask(job *work.Job) error {
 	dbconn.DB.Save(&workspace)
 	workspace.AppendLogs("Config files have been updated")
 
-	return jobContext.StartWorkspaceTask(job)
+	jobContext.StartWorkspaceTask(job)
+	return nil
 }

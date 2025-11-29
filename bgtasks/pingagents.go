@@ -9,10 +9,14 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
+/*
+Ping all workspaces agents to check if they are online
+*/
 func (jobContext *Context) PingAgentsTask(job *work.Job) error {
-	var containers []models.WorkspaceContainer
-	if err := dbconn.DB.Preload("Workspace.Runner").Find(&containers).Error; err != nil {
-		return err
+	containers, err := models.ListAllWorkspaceContainers()
+	if err != nil {
+		// TODO: log error
+		return nil
 	}
 
 	for _, container := range containers {

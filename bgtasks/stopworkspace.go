@@ -11,6 +11,30 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
+/*
+Stop a running workspace, this is the background task
+*/
+func (jobContext *Context) StopWorkspaceTask(job *work.Job) error {
+	workspaceId := job.ArgInt64("workspace_id")
+
+	workspace, err := models.RetrieveWorkspaceById(uint(workspaceId))
+	if err != nil {
+		return nil
+	}
+
+	if workspace == nil {
+		return nil
+	}
+	defer dbconn.DB.Save(&workspace)
+
+	StopWorkspace(workspace, false)
+	return nil
+}
+
+/*
+Stop a running workspace,
+this is a separate function so it can be called from multiple places
+*/
 func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 	defer dbconn.DB.Save(&workspace)
 
@@ -82,20 +106,4 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 	}
 
 	return nil
-}
-
-func (jobContext *Context) StopWorkspaceTask(job *work.Job) error {
-	workspaceId := job.ArgInt64("workspace_id")
-
-	var workspace *models.Workspace
-	result := dbconn.DB.Preload("Runner").First(&workspace, map[string]interface{}{"ID": workspaceId})
-	if result.Error != nil {
-		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
-	}
-
-	if workspace == nil {
-		return errors.New("workspace not found")
-	}
-
-	return StopWorkspace(workspace, false)
 }

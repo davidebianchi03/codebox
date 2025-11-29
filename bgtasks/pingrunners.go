@@ -9,10 +9,14 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
+/*
+Ping all runners to check if they are online and get their version
+*/
 func (jobContext *Context) PingRunnersTask(job *work.Job) error {
-	var runners []models.Runner
-	if err := dbconn.DB.Find(&runners).Error; err != nil {
-		return err
+	runners, err := models.ListRunners(-1, 0)
+	if err != nil {
+		// TODO: log error
+		return nil
 	}
 
 	for _, runner := range runners {

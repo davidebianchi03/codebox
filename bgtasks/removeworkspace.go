@@ -12,7 +12,34 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
-func removeWorkspace(workspace models.Workspace, skipErrors bool) error {
+/*
+Background task that deletes a workspace,
+this task deletes the workspace and all its associated data
+*/
+func (jobContext *Context) DeleteWorkspaceTask(job *work.Job) error {
+	workspaceId := job.ArgInt64("workspace_id")
+	skipErrors := job.ArgBool("skip_errors")
+
+	workspace, err := models.RetrieveWorkspaceById(uint(workspaceId))
+	if err != nil {
+		// TODO: log error
+		return nil
+	}
+
+	if workspace == nil {
+		// TODO: log workspace not found
+		return nil
+	}
+
+	RemoveWorkspace(*workspace, skipErrors)
+	return nil
+}
+
+/*
+Function that removes a workspace and all its associated data
+It's a separate function so it can be called from multiple places
+*/
+func RemoveWorkspace(workspace models.Workspace, skipErrors bool) error {
 	if workspace.Runner != nil {
 		ri := runnerinterface.RunnerInterface{
 			Runner: workspace.Runner,
@@ -99,21 +126,4 @@ func removeWorkspace(workspace models.Workspace, skipErrors bool) error {
 
 	dbconn.DB.Unscoped().Delete(&workspace)
 	return nil
-}
-
-func (jobContext *Context) DeleteWorkspaceTask(job *work.Job) error {
-	workspaceId := job.ArgInt64("workspace_id")
-	skipErrors := job.ArgBool("skip_errors")
-
-	var workspace models.Workspace
-	result := dbconn.DB.Preload("Runner").Preload("GitSource").First(&workspace, map[string]interface{}{"ID": workspaceId})
-	if result.Error != nil {
-		return fmt.Errorf("failed to retrieve workspace from db %s", result.Error)
-	}
-
-	if workspace.ID <= 0 {
-		return errors.New("workspace not found")
-	}
-
-	return removeWorkspace(workspace, skipErrors)
 }

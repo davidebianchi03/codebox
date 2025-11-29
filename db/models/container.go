@@ -24,6 +24,22 @@ type WorkspaceContainer struct {
 }
 
 /*
+ListAllWorkspaceContainers retrieves all workspace containers.
+*/
+func ListAllWorkspaceContainers() ([]WorkspaceContainer, error) {
+	var containers []WorkspaceContainer
+	result := dbconn.DB.
+		Preload("Workspace").
+		Preload("Workspace.Runner").
+		Find(&containers)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return containers, nil
+}
+
+/*
 ListWorkspaceContainersByWorkspace retrieves all containers for a given workspace.
 */
 func ListWorkspaceContainersByWorkspace(workspace Workspace) ([]WorkspaceContainer, error) {
