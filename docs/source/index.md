@@ -11,6 +11,7 @@ This software is still an alpha version
 :maxdepth: 2
 
 guide/intro
+guide/features
 ```
 
 ```{toctree}

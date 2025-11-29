@@ -62,3 +62,21 @@ docker compose up
 ```{note}
 You can also launch a codebox runner using Portainer by creating a new stack and copying the contents of the `docker-compose.yml` file.
 ```
+
+## Timeouts
+
+The Codebox runner has specific timeouts for its start, stop, and delete operations. These are implemented to prevent a workspace from becoming unrecoverable. The default values are:
+
+| Operation | Default Timeout |
+| --- | --- |
+| Start/Update | 1200 seconds |
+| Stop | 600 seconds |
+| Delete | 600 seconds |
+
+This values can be overridden using environment variables:
+
+| Env var | Description |
+| --- | --- |
+| `CODEBOX_WORKSPACE_START_TIMEOUT_SECONDS` | The timeout values (in seconds) for start and update tasks |
+| `CODEBOX_WORKSPACE_STOP_TIMEOUT_SECONDS` | The timeout values (in seconds) for stop task |
+| `CODEBOX_WORKSPACE_DELETE_TIMEOUT_SECONDS` | The timeout values (in seconds) for delete task |

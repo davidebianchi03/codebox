@@ -36,3 +36,6 @@ You can also launch your Codebox instance using Portainer by creating a new stac
 
 ## Proxy
 If you are exposing your Codebox instance through an HTTP proxy, such as Nginx or Apache, you will need to enable WebSocket connections.
+
+- [Enable websockets with nginx](https://nginx.org/en/docs/http/websocket.html)
+- [Enable websockets with apache](https://httpd.apache.org/docs/current/mod/mod_proxy_wstunnel.html)
