@@ -21,7 +21,12 @@ type WorkspaceContainerPort struct {
 
 func ListContainerPortsByWorkspaceContainer(container WorkspaceContainer) ([]WorkspaceContainerPort, error) {
 	var ports []WorkspaceContainerPort
-	result := dbconn.DB.Where("container_id = ?", container.ID).Find(&ports)
+	result := dbconn.DB.
+		Preload("Container").
+		Preload("Container.Workspace").
+		Where("container_id = ?", container.ID).
+		Find(&ports)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -33,7 +38,12 @@ func RetrieveContainerPortByServiceName(
 	serviceName string,
 ) (*WorkspaceContainerPort, error) {
 	var port WorkspaceContainerPort
-	result := dbconn.DB.Where("container_id = ? AND service_name = ?", container.ID, serviceName).First(&port)
+	result := dbconn.DB.
+		Preload("Container").
+		Preload("Container.Workspace").
+		Where("container_id = ? AND service_name = ?", container.ID, serviceName).
+		First(&port)
+
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil // No port found
@@ -48,7 +58,12 @@ func RetrieveContainerPortByPortNumber(
 	portNumber uint,
 ) (*WorkspaceContainerPort, error) {
 	var port WorkspaceContainerPort
-	result := dbconn.DB.Where("container_id = ? AND port_number = ?", container.ID, portNumber).First(&port)
+	result := dbconn.DB.
+		Preload("Container").
+		Preload("Container.Workspace").
+		Where("container_id = ? AND port_number = ?", container.ID, portNumber).
+		First(&port)
+
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil // No port found

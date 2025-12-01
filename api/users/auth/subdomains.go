@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	apierrors "gitlab.com/codebox4073715/codebox/api/errors"
 	"gitlab.com/codebox4073715/codebox/api/utils"
 	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	serverutils "gitlab.com/codebox4073715/codebox/utils"
 )
 
 func HandleSubdomainLoginAuthorize(ctx *gin.Context) {
@@ -35,13 +35,21 @@ func HandleSubdomainLoginAuthorize(ctx *gin.Context) {
 
 	token, err := utils.GetTokenFromContext(ctx)
 	if err != nil {
-		apierrors.RenderError(ctx, http.StatusInternalServerError, "Internal server error")
+		serverutils.RenderError(
+			ctx,
+			http.StatusInternalServerError,
+			"Internal server error",
+		)
 		return
 	}
 
 	authorizationCode, err := models.GenerateAuthorizationCode(token, time.Now().Add(2*time.Minute))
 	if err != nil {
-		apierrors.RenderError(ctx, http.StatusInternalServerError, "Internal server error")
+		serverutils.RenderError(
+			ctx,
+			http.StatusInternalServerError,
+			"Internal server error",
+		)
 		return
 	}
 
@@ -63,7 +71,7 @@ func HandleSubdomainLoginAuthorize(ctx *gin.Context) {
 func HandleSubdomainLoginCallback(ctx *gin.Context) {
 	code, ok := ctx.GetQuery("code")
 	if !ok {
-		apierrors.RenderError(
+		serverutils.RenderError(
 			ctx, http.StatusBadRequest, "missing or invalid authorization code",
 		)
 		return

@@ -13,8 +13,8 @@ export type AuthRequiredProps = {
 function AuthRequired({ children }: AuthRequiredProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();  
-  const currentUser = useSelector((state:RootState) => state.user);
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state: RootState) => state.user);
 
   const WhoAmI = useCallback(async () => {
     const u = await RetrieveCurrentUserDetails();

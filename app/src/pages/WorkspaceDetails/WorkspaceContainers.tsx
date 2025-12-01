@@ -11,17 +11,14 @@ import {
   Workspace,
   WorkspaceContainer,
 } from "../../types/workspace";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import VsCodeIcon from "../../assets/images/vscode.png";
 import TerminalIcon from "../../assets/images/terminal.png";
 import PublicPortIcon from "../../assets/images/earth.png";
 import PrivatePortIcon from "../../assets/images/padlock.png";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { APIListWorkspaceContainers, APIListWorkspaceContainerPorts, APIRetrieveWorkspaceContainer } from "../../api/workspace";
 import { ExposedPortsDropdown } from "./ExposedPortsDropdown";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
+import { WorkspaceContainerService } from "./WorkspaceContainerService";
 
 interface Props {
   workspace: Workspace;
@@ -38,7 +35,6 @@ export default function WorkspaceContainers({
   const [selectedContainerExposedPorts, setSelectedContainerExposedPorts] =
     useState<ContainerPort[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const settings = useSelector((state: RootState) => state.settings);
 
   const FetchSelectedContainer = useCallback(
     async (containerName: string) => {
@@ -168,97 +164,41 @@ export default function WorkspaceContainers({
                       )}
                     </h4>
                     {selectedContainer && (
-                      <>
-                        <div style={{ marginTop: 5 }} className="my-1">
-                          <div
-                            className="d-flex alert rounded align-items-center px-2"
-                            style={{ cursor: "pointer", height: 50 }}
-                            onClick={() => {
-                              window.location.href = (
-                                `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}` +
-                                `&container_name=${selectedContainer.container_name}` +
-                                `&server_hostname=${settings?.external_url.replaceAll("https://", "").replaceAll("http://", "")}`
-                              );
-                            }}
-                          >
-                            <img src={VsCodeIcon} alt="vscode" width={25} className="me-3" />
-                            <div className="d-flex justify-content-between align-items-center w-100 me-2">
-                              <div className="d-flex align-items-center">
-                                <h4 className="mb-0">Visual Studio Code</h4>
-                                <span className="text-muted ms-5">
-                                  Open container in visual studio code
-                                </span>
-                              </div>
-                              <span className="text-muted">
-                                <FontAwesomeIcon icon={faChevronRight} />
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div style={{ marginTop: 5 }} className="my-1">
-                          <div
-                            className="d-flex alert rounded align-items-center px-2"
-                            style={{ cursor: "pointer", height: 50 }}
-                            onClick={() => {
-                              let url = `${import.meta.env.VITE_SERVER_URL}/views/workspace/${workspace.id}/container/${selectedContainer.container_name}/terminal`
-                              window.open(url, '_blank')?.focus();
-                            }}
-                          >
-                            <img src={TerminalIcon} alt="terminal" width={25} className="me-3" />
-                            <div className="d-flex justify-content-between align-items-center w-100 me-2">
-                              <div className="d-flex align-items-center">
-                                <h4 className="mb-0">Terminal</h4>
-                                <span className="text-muted ms-5">
-                                  Open terminal
-                                </span>
-                              </div>
-                              <span className="text-muted">
-                                <FontAwesomeIcon icon={faChevronRight} />
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
+                      <React.Fragment>
+                        <WorkspaceContainerService
+                          icon={VsCodeIcon}
+                          title="Visual Studio Code"
+                          description="Open container in visual studio code"
+                          url={
+                            `vscode://davidebianchi.codebox-remote/open?workspace_id=${workspace.id}` +
+                            `&container_name=${selectedContainer.container_name}` +
+                            `&server_hostname=${import.meta.env.VITE_SERVER_URL === "" ?
+                              window.location.host : new URL(import.meta.env.VITE_SERVER_URL).hostname}`
+                          }
+                        />
+                        <WorkspaceContainerService
+                          icon={TerminalIcon}
+                          title="Terminal"
+                          description="Open terminal"
+                          url={`${import.meta.env.VITE_SERVER_URL}/views/workspace/${workspace.id}/container/${selectedContainer.container_name}/terminal`}
+                        />
+                      </React.Fragment>
                     )}
                     <div>
                       {selectedContainerExposedPorts.length > 0 && (
                         <Row>
                           {selectedContainerExposedPorts.map((port) => (
                             <Col md={12} className="my-1">
-                              <div
-                                key={port.port_number}
-                                className="d-flex alert rounded align-items-center px-2"
-                                style={{ cursor: "pointer", height: 50 }}
-                                onClick={() => {
-                                  var portUrl = `http://${settings?.external_url}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
-                                  if (settings?.use_subdomains) {
-                                    portUrl = `http://codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings.wildcard_domain}`;
-                                  }
-                                  window.open(portUrl, "_blank")?.focus();
-                                }}
-                              >
-                                <img
-                                  src={
-                                    port.public
-                                      ? PublicPortIcon
-                                      : PrivatePortIcon
-                                  }
-                                  className="me-3"
-                                  alt=""
-                                  width={25}
-                                />
-                                <div className="d-flex justify-content-between align-items-center w-100 me-2">
-                                  <div className="d-flex align-items-center">
-                                    <h4 className="mb-0">{port.service_name}</h4>
-                                    <span className="text-muted ms-5">
-                                      Port: {port.port_number}
-                                    </span>
-                                  </div>
-                                  <span className="text-muted">
-                                    <FontAwesomeIcon icon={faChevronRight} />
-                                  </span>
-                                </div>
-                              </div>
+                              <WorkspaceContainerService
+                                icon={
+                                  port.public
+                                    ? PublicPortIcon
+                                    : PrivatePortIcon
+                                }
+                                title={port.service_name}
+                                description={`Port: ${port.port_number}`}
+                                url={port.port_url}
+                              />
                             </Col>
                           ))}
                         </Row>

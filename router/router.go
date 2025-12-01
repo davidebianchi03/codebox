@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api"
 	"gitlab.com/codebox4073715/codebox/config"
+	"gitlab.com/codebox4073715/codebox/middleware"
 	"gitlab.com/codebox4073715/codebox/views"
 )
 
@@ -17,7 +18,15 @@ func SetupRouter() *gin.Engine {
 	}
 
 	r := gin.Default()
+
+	// middlewares
+	r.Use(middleware.PortForwardingMiddleware)
+	r.Use(middleware.CORSMiddleware)
+
+	// apis
 	api.V1ApiRoutes(r)
+
+	// views
 	views.ViewsRoutes(r)
 	r.LoadHTMLGlob(path.Join(config.Environment.BaseDir, "html", "templates", "*"))
 	return r

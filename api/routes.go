@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gitlab.com/codebox4073715/codebox/api/middleware"
 	runnerapis "gitlab.com/codebox4073715/codebox/api/runner"
 	"gitlab.com/codebox4073715/codebox/api/users/admin"
 	"gitlab.com/codebox4073715/codebox/api/users/auth"
@@ -22,9 +21,6 @@ import (
 )
 
 func V1ApiRoutes(router *gin.Engine) {
-	// middlewares
-	router.Use(middleware.PortForwardingMiddleware)
-	router.Use(middleware.CORSMiddleware)
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
@@ -142,10 +138,6 @@ func V1ApiRoutes(router *gin.Engine) {
 			workspaceApis.DELETE(
 				"/:workspaceId/container/:containerName/port/:portNumber",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleDeleteContainerPortByWorkspaceContainer),
-			)
-			workspaceApis.Any(
-				"/:workspaceId/container/:containerName/forward-http/:portNumber",
-				workspaces.HandleForwardHttp,
 			)
 			workspaceApis.Any(
 				"/:workspaceId/container/:containerName/forward-ssh",

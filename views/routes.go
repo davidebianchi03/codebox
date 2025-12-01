@@ -12,5 +12,9 @@ func ViewsRoutes(router *gin.Engine) {
 			"/workspace/:workspaceId/container/:containerName/terminal",
 			permissions.AuthenticationRequiredRoute(HandleTerminalView),
 		)
+		viewsRoutes.Any(
+			"/port-forward/workspace/:workspaceId/container/:containerName/port/:portNumber",
+			HandlePortForwardView,
+		)
 	}
 }

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	apierrors "gitlab.com/codebox4073715/codebox/api/errors"
-	"gitlab.com/codebox4073715/codebox/api/users/workspaces"
 	"gitlab.com/codebox4073715/codebox/config"
+	"gitlab.com/codebox4073715/codebox/utils"
 )
 
 func PortForwardingMiddleware(ctx *gin.Context) {
@@ -21,41 +21,54 @@ func PortForwardingMiddleware(ctx *gin.Context) {
 	if strings.Contains(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardDomain)) {
 		subdomains := strings.Split(strings.ReplaceAll(requestDomain, fmt.Sprintf(".%s", config.Environment.WildcardDomain), ""), ".")
 		if len(subdomains) == 0 {
-			apierrors.RenderError(
-				ctx, http.StatusNotFound, "Not found",
-			)
+			utils.RenderError(ctx, http.StatusNotFound, "Not found")
+			ctx.Abort()
 			return
 		}
 
 		portSubdomain := subdomains[len(subdomains)-1]
 		if !strings.HasPrefix(portSubdomain, "codebox--") {
-			apierrors.RenderError(
-				ctx, http.StatusNotFound, "Not found",
-			)
+			utils.RenderError(ctx, http.StatusNotFound, "Not found")
+			ctx.Abort()
 			return
 		}
 
 		splittedSubDomain := strings.Split(portSubdomain, "--")
 
 		if len(splittedSubDomain) != 4 {
-			ctx.JSON(400, gin.H{
-				"detail": "invalid hostname",
-			})
+			utils.RenderError(ctx, http.StatusNotFound, "Not found")
 			ctx.Abort()
 			return
 		}
 
-		if ctx.Request.URL.Path == fmt.Sprintf("/api/v1/auth/subdomains/callback-%s", url.PathEscape(config.Environment.AuthCookieName)) {
+		if ctx.Request.URL.Path == fmt.Sprintf(
+			"/api/v1/auth/subdomains/callback-%s",
+			url.PathEscape(config.Environment.AuthCookieName),
+		) {
 			// TODO: check if workspace exists
 			ctx.Next()
 			return
 		}
 
-		workspaces.ForwardHttpPort(
+		workspaceId, err := strconv.Atoi(splittedSubDomain[1])
+		if err != nil || workspaceId <= 0 {
+			utils.RenderError(ctx, http.StatusNotFound, "Not found")
+			ctx.Abort()
+			return
+		}
+
+		portNumber, err := strconv.Atoi(splittedSubDomain[3])
+		if err != nil || portNumber <= 0 || portNumber >= 65536 {
+			utils.RenderError(ctx, http.StatusNotFound, "Not found")
+			ctx.Abort()
+			return
+		}
+
+		utils.ForwardHttpPort(
 			ctx,
-			splittedSubDomain[1],
+			uint(workspaceId),
 			splittedSubDomain[2],
-			splittedSubDomain[3],
+			uint(portNumber),
 			ctx.Request.URL.String(),
 		)
 
