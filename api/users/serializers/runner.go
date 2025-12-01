@@ -3,6 +3,7 @@ package serializers
 import (
 	"time"
 
+	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -67,4 +68,14 @@ func LoadMultipleAdminRunnerSerializer(runners []models.Runner) []AdminRunnersSe
 		serializers[i] = *LoadAdminRunnerSerializer(&runner)
 	}
 	return serializers
+}
+
+type RecommendedRunnerVersionSerializer struct {
+	Version string `json:"version"`
+}
+
+func GetRecommendedRunnerVersionSerializedResponse() VersionSerializer {
+	return VersionSerializer{
+		Version: config.RecommendedRunnerVersion,
+	}
 }

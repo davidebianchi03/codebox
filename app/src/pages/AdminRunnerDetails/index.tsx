@@ -20,28 +20,33 @@ import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
 import {
   AdminDeleteRunner,
   AdminListRunners,
+  AdminRetrieveRecommendedRunnerVersion,
   AdminRetrieveRunnerById,
   AdminUpdateRunner,
   ListRunnerTypes
 } from "../../api/runner";
 import { ConfirmDeleteRunnerModal } from "./ConfirmDeleteRunnerModal";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
 
 export function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<boolean>(false);
+  const [recommendedRunnerVersion, setRecommendedRunnerVersion] = useState<string>("");
 
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const settings = useSelector((state: RootState) => state.settings);
 
   const FetchRunnerTypes = useCallback(async () => {
     const rt = await ListRunnerTypes();
     if (rt) {
       setRunnerTypes(rt);
+    }
+  }, []);
+
+  const FetchRecommendedRunnerVersion = useCallback(async () => {
+    const r = await AdminRetrieveRecommendedRunnerVersion();
+    if (r) {
+      setRecommendedRunnerVersion(r);
     }
   }, []);
 
@@ -143,7 +148,8 @@ export function AdminRunnerDetails() {
   useEffect(() => {
     FetchRunner();
     FetchRunnerTypes();
-  }, [FetchRunner, FetchRunnerTypes]);
+    FetchRecommendedRunnerVersion();
+  }, [FetchRunner, FetchRunnerTypes, FetchRecommendedRunnerVersion]);
 
   useEffect(() => {
     validation.setValues({
@@ -172,14 +178,14 @@ export function AdminRunnerDetails() {
 
         {runner && (
           <React.Fragment>
-            {settings.recommended_runner_version !== runner.version && (
+            {recommendedRunnerVersion !== runner.version && (
               <React.Fragment>
                 <Row className="mb-4">
                   <Col>
                     <Card body className="bg-warning">
                       <div className="text-white">
                         <b>Warning:</b> This runner is running version <b>{runner.version}</b>, 
-                        but the recommended version is <b>{settings.recommended_runner_version}</b>. 
+                        but the recommended version is <b>{recommendedRunnerVersion}</b>. 
                         Please consider updating the runner to ensure compatibility and access to the latest features.
                       </div>
                     </Card>

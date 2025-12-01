@@ -17,11 +17,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
-import { AdminListRunners } from "../../api/runner";
+import { AdminListRunners, AdminRetrieveRecommendedRunnerVersion } from "../../api/runner";
 import DataTable from "../../components/DataTable";
 import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
 
 export function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
@@ -29,7 +27,7 @@ export function AdminRunners() {
     useState<boolean>(false);
   const [runnerToken, setRunnerToken] = useState<string>("");
   const [runnerId, setRunnerID] = useState<string>("");
-  const settings = useSelector((state: RootState) => state.settings);
+  const [recommendedRunnerVersion, setRecommendedRunnerVersion] = useState<string>("");
 
   const FetchRunners = useCallback(async () => {
     const r = await AdminListRunners();
@@ -37,9 +35,18 @@ export function AdminRunners() {
       setRunners(r);
     }
   }, []);
+
+  const FetchRecommendedRunnerVersion = useCallback(async () => {
+    const r = await AdminRetrieveRecommendedRunnerVersion();
+    if (r) {
+      setRecommendedRunnerVersion(r);
+    }
+  }, []);
+
   useEffect(() => {
     FetchRunners();
-  }, [FetchRunners]);
+    FetchRecommendedRunnerVersion();
+  }, [FetchRunners, FetchRecommendedRunnerVersion]);
 
   return (
     <Container>
@@ -140,9 +147,12 @@ export function AdminRunners() {
                           </Badge>
                         </React.Fragment>
                       )}
-                      {settings.recommended_runner_version !== runner.version && (
+                      {recommendedRunnerVersion !== runner.version && (
                         <React.Fragment>
-                          <Badge color="warning" className="text-white">
+                          <Badge
+                            color="warning"
+                            className="text-white"
+                          >
                             Version mismatch
                           </Badge>
                         </React.Fragment>

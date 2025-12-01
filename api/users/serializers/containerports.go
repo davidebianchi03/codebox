@@ -8,14 +8,6 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
-/*
-var portUrl = `http://${settings?.external_url}/api/v1/workspace/${workspace.id}/container/${selectedContainer?.container_name}/forward-http/${port.port_number}?path=%2F`;
-                                  if (settings?.use_subdomains) {
-                                    portUrl = `http://codebox--${workspace.id}--${selectedContainer?.container_name}--${port.port_number}.${settings.wildcard_domain}`;
-                                  }
-                                  window.open(portUrl, "_blank")?.focus();
-*/
-
 type WorkspaceContainerPort struct {
 	ServiceName string    `json:"service_name"`
 	PortNumber  uint      `json:"port_number"`

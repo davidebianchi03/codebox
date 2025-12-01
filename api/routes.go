@@ -11,6 +11,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/api/users/admin"
 	"gitlab.com/codebox4073715/codebox/api/users/auth"
 	"gitlab.com/codebox4073715/codebox/api/users/cli"
+	"gitlab.com/codebox4073715/codebox/api/users/common"
 	"gitlab.com/codebox4073715/codebox/api/users/runners"
 	"gitlab.com/codebox4073715/codebox/api/users/settings"
 	"gitlab.com/codebox4073715/codebox/api/users/templates"
@@ -27,6 +28,9 @@ func V1ApiRoutes(router *gin.Engine) {
 	// endpoints
 	v1 := router.Group("/api/v1")
 	{
+		// common
+		v1.GET("/version", common.HandleRetrieveServerVersion)
+
 		// auth related apis
 		authApis := v1.Group("/auth")
 		{
@@ -223,7 +227,7 @@ func V1ApiRoutes(router *gin.Engine) {
 		// instance settings related apis
 		v1.GET(
 			"/instance-settings",
-			permissions.AuthenticationRequiredRoute(settings.HandleRetrieveServerSettings),
+			permissions.AdminRequiredRoute(settings.HandleRetrieveServerSettings),
 		)
 
 		// download cli
@@ -262,6 +266,10 @@ func V1ApiRoutes(router *gin.Engine) {
 			adminApis.DELETE(
 				"runners/:runnerId",
 				permissions.AdminRequiredRoute(admin.HandleAdminDeleteRunner),
+			)
+			adminApis.GET(
+				"recommended-runner-version",
+				permissions.AdminRequiredRoute(admin.HandleRetrieveRecommendedRunnerVersion),
 			)
 			adminApis.GET(
 				"users",

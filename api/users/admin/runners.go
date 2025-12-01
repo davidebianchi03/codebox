@@ -279,3 +279,19 @@ func HandleAdminDeleteRunner(c *gin.Context) {
 		gin.H{"detail": "runner has been deleted"},
 	)
 }
+
+// HandleRetrieveRecommendedRunnerVersion godoc
+// @Summary Retrieve recommended runner version
+// @Schemes
+// @Description Retrieve the recommended version of runners, this api is available only to administrator
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializer.RecommendedRunnerVersionSerializer
+// @Router /api/v1/admin/recommended-runner-version [get]
+func HandleRetrieveRecommendedRunnerVersion(c *gin.Context) {
+	c.JSON(
+		http.StatusOK,
+		serializers.GetRecommendedRunnerVersionSerializedResponse(),
+	)
+}
