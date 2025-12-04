@@ -1,5 +1,5 @@
 import { SidebarItem } from "./Sidebar";
-import { BackhoeIcon, HomeIcon, UserIcon } from "../icons/Tabler";
+import { BackhoeIcon, HomeIcon, SettingsIcon, UserIcon } from "../icons/Tabler";
 
 export const SuperUserSidebarItems: SidebarItem[] = [
     {
@@ -24,16 +24,16 @@ export const SuperUserSidebarItems: SidebarItem[] = [
         icon: <BackhoeIcon />, type: "link", link: "/admin/runners",
         activeOnLinks: ["/admin/runners", "/admin/runners/:id"]
     },
-    // {
-    //     title: "System",
-    //     type: "header"
-    // },
-    // {
-    //     title: "Authentication",
-    //     icon: <PasswordUserIcon />,
-    //     type: "link",
-    //     link: "/admin/auth"
-    // },
+    {
+        title: "System",
+        type: "header"
+    },
+    {
+        title: "Settings",
+        icon: <SettingsIcon />,
+        type: "link",
+        link: "/admin/settings"
+    },
     // {
     //     title: "Credits",
     //     type: "header"

@@ -1,4 +1,5 @@
 import { AdminDashboard } from "../pages/AdminDashboard";
+import { AdminInstanceSettingsPage } from "../pages/AdminInstanceSettings";
 import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
 import { AdminRunners } from "../pages/AdminRunners";
 import { AdminUserDetails } from "../pages/AdminUserDetails";
@@ -93,5 +94,9 @@ export const SuperUserRoutes: Route[] = [
   {
     path: "/admin/runners/:id",
     element: <AdminRunnerDetails />,
+  },
+  {
+    path: "/admin/settings",
+    element: <AdminInstanceSettingsPage />,
   },
 ];
