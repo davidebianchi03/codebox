@@ -44,9 +44,31 @@ export async function Logout(): Promise<boolean> {
     }
 }
 
-export async function RetrieveInstanceSettings(): Promise<InstanceSettings | undefined> {
+export async function APIAdminRetrieveInstanceSettings(): Promise<InstanceSettings | undefined> {
     try {
-        const response = await axios.get<InstanceSettings>(`/api/v1/instance-settings`);
+        const response = await axios.get<InstanceSettings>(`/api/v1/admin/instance-settings`);
+        return response.data;
+    } catch {
+        return undefined;
+    }
+}
+
+export async function APIAdminUpdateInstanceSettings(
+    isSignupOpen: boolean,
+    isSignupRestricted: boolean,
+    allowedEmailsRegex: string,
+    blockedEmailsRegex: string,
+): Promise<InstanceSettings | undefined> {
+    try {
+        const response = await axios.put<InstanceSettings>(
+            `/api/v1/admin/instance-settings`,
+            {
+                is_signup_open: isSignupOpen,
+                is_signup_restricted: isSignupRestricted,
+                allowed_emails_regex: allowedEmailsRegex,
+                blocked_emails_regex: blockedEmailsRegex,
+            }
+        );
         return response.data;
     } catch {
         return undefined;

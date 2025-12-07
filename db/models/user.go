@@ -92,6 +92,10 @@ the most recent token creation time.
 If the user has never logged in, it returns nil.
 */
 func (u *User) GetLastLogin() (*time.Time, error) {
+	if u.ID <= 0 {
+		return nil, nil
+	}
+
 	var token Token
 	result := dbconn.DB.Where("user_id = ?", u.ID).Order("created_at DESC").First(&token)
 	if result.Error != nil {

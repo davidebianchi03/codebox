@@ -15,14 +15,14 @@ export async function APILogin(email: string, password: string, rememberMe: bool
 
 export async function APISignUp(email: string, password: string, firstName: string, lastName: string) {
     try {
-        const r = await axios.post<{ token: string }>(`/api/v1/auth/signup`, {
+        await axios.post(`/api/v1/auth/signup`, {
             email: email,
             password: password,
             first_name: firstName,
             last_name: lastName
         });
-        return r.data.token;
+        return true;
     } catch {
-        return undefined;
+        return false;
     }
 }

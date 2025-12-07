@@ -224,12 +224,6 @@ func V1ApiRoutes(router *gin.Engine) {
 			permissions.AuthenticationRequiredRoute(runners.HandleListRunnerTypes),
 		)
 
-		// instance settings related apis
-		v1.GET(
-			"/instance-settings",
-			permissions.AdminRequiredRoute(settings.HandleRetrieveServerSettings),
-		)
-
 		// download cli
 		v1.GET("/cli", cli.HandleListCLI)
 		v1.GET("/cli/:id", cli.HandleRetrieveCLI)
@@ -302,6 +296,15 @@ func V1ApiRoutes(router *gin.Engine) {
 			adminApis.GET(
 				"users/:email/impersonation-logs",
 				permissions.AdminRequiredRoute(admin.HandleAdminListImpersonationLogsByUser),
+			)
+			// instance settings related apis
+			adminApis.GET(
+				"/instance-settings",
+				permissions.AdminRequiredRoute(settings.HandleRetrieveServerSettings),
+			)
+			adminApis.PUT(
+				"/instance-settings",
+				permissions.AdminRequiredRoute(settings.HandleUpdateServerSettings),
 			)
 		}
 	}

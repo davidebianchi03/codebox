@@ -1,7 +1,6 @@
 export interface InstanceSettings {
-    version: string;
-    use_subdomains: boolean;
-    external_url: string;
-    wildcard_domain: string;
-    recommended_runner_version: string;
+    is_signup_open: boolean;
+    is_signup_restricted: boolean;
+    allowed_emails_regex: string;
+    blocked_emails_regex: string;
 }
