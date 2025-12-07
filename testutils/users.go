@@ -12,6 +12,7 @@ func SetupDBForTests() error {
 		"password",
 		true,
 		true,
+		true,
 	); err != nil {
 		return err
 	}
@@ -24,6 +25,7 @@ func SetupDBForTests() error {
 		"password",
 		false,
 		false,
+		true,
 	); err != nil {
 		return err
 	}
@@ -36,6 +38,7 @@ func SetupDBForTests() error {
 		"password",
 		false,
 		false,
+		true,
 	); err != nil {
 		return err
 	}

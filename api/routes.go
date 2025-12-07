@@ -82,6 +82,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/cli-login",
 				permissions.AuthenticationRequiredRoute(auth.HandleCliLogin),
 			)
+			authApis.GET(
+				"/is-signup-open",
+				auth.HandleIsSignUpOpen,
+			)
 		}
 
 		// workspace related apis

@@ -1,15 +1,40 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 
-export async function APILogin(email: string, password: string, rememberMe: boolean) {
+export enum APILoginCode {
+    SUCCESS,
+    EMAIL_NOT_VERIFIED,
+    ERROR,
+}
+
+export async function APILogin(
+    email: string,
+    password: string,
+    rememberMe: boolean
+): Promise<{ code: APILoginCode, token: string | null }> {
     try {
         const r = await axios.post<{ token: string }>(`/api/v1/auth/login`, {
             email: email,
             password: password,
             remember_me: rememberMe
         });
-        return r.data.token;
-    } catch {
-        return undefined;
+        return {
+            code: APILoginCode.SUCCESS,
+            token: r.data.token,
+        };
+    } catch (error) {
+        if (isAxiosError(error)) {
+            if (error.response?.status === 412) {
+                return {
+                    code: APILoginCode.EMAIL_NOT_VERIFIED,
+                    token: null,
+                };
+            }
+        }
+
+        return {
+            code: APILoginCode.ERROR,
+            token: null,
+        };
     }
 }
 

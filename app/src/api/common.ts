@@ -84,6 +84,15 @@ export async function RequestApiToken(): Promise<string | undefined> {
     }
 }
 
+export async function APISignUpOpen(): Promise<boolean> {
+    try {
+        const response = await axios.get<{ is_signup_open: boolean }>(`/api/v1/auth/is-signup-open`);
+        return response.data.is_signup_open;
+    } catch {
+        return false;
+    }
+}
+
 export async function APIInitialUserExists(): Promise<boolean> {
     try {
         const response = await axios.get<{ exists: boolean }>(`/api/v1/auth/initial-user-exists`);

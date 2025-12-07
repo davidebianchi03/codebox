@@ -2,12 +2,13 @@ package auth
 
 import (
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -17,6 +18,7 @@ type LoginRequestBody struct {
 	RememberMe bool   `json:"remember_me"`
 }
 
+// TODO: ratelimit
 // Login godoc
 // @Summary Login
 // @Schemes
@@ -27,12 +29,12 @@ type LoginRequestBody struct {
 // @Param request body LoginRequestBody true "Credentials"
 // @Success 200 {object} serializers.TokenSerializer
 // @Router /api/v1/auth/login [post]
-func HandleLogin(ctx *gin.Context) {
+func HandleLogin(c *gin.Context) {
 	var requestBody *LoginRequestBody
 
-	err := ctx.ShouldBindBodyWithJSON(&requestBody)
+	err := c.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": "missing or invalid field",
 		})
 		return
@@ -40,29 +42,38 @@ func HandleLogin(ctx *gin.Context) {
 
 	user, err := models.RetrieveUserByEmail(requestBody.Email)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
 	}
 
 	if user == nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": "invalid credentials",
 		})
 		return
 	}
 
 	if !user.CheckPassword(requestBody.Password) {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": "invalid credentials",
 		})
 		return
 	}
 
+	// check if user email has been verified
+	if !user.EmailVerified {
+		utils.ErrorResponse(
+			c,
+			http.StatusPreconditionFailed,
+			"the email address has not yet been verified",
+		)
+	}
+
 	token, err := models.CreateToken(*user, time.Duration(time.Hour*24*20))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "internal server error",
 		})
 		return
@@ -75,9 +86,9 @@ func HandleLogin(ctx *gin.Context) {
 		cookieDuration = 3600 * 24 * 20
 	}
 
-	SetAuthCookie(ctx, token.Token, cookieDuration)
+	SetAuthCookie(c, token.Token, cookieDuration)
 
-	ctx.JSON(http.StatusOK, serializers.LoadTokenSerializer(&token))
+	c.JSON(http.StatusOK, serializers.LoadTokenSerializer(&token))
 }
 
 type SignUpRequestBody struct {
@@ -98,66 +109,140 @@ type SignUpRequestBody struct {
 // @Param request body SignUpRequestBody true "Credentials"
 // @Success 200 {object} serializers.UserSerializer
 // @Router /api/v1/auth/signup [post]
-func HandleSignup(ctx *gin.Context) {
-	usersCount, err := models.CountAllUsers()
-
+func HandleSignup(c *gin.Context) {
+	// if user is already logged in return an error
+	_, err := utils.GetUserFromContext(c)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(
+			c,
+			http.StatusUnauthorized,
+			"logout before signing up",
+		)
 		return
 	}
 
-	if usersCount > 0 {
-		ctx.JSON(http.StatusNotAcceptable, gin.H{
-			"detail": "initial user already exists",
-		})
+	instanceSettings, err := models.GetInstanceSettings()
+
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	usersCount, err := models.CountAllUsers()
+
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	if usersCount > 0 && instanceSettings.IsSignUpOpen {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotAcceptable,
+			"cannot signup",
+		)
 		return
 	}
 
 	var requestBody *SignUpRequestBody
-	err = ctx.ShouldBindBodyWithJSON(&requestBody)
+	err = c.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
-		})
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			err.Error(),
+		)
+		return
+	}
+
+	canSignup := false
+
+	if usersCount > 0 {
+		// check if email matches an allowed pattern if signup is restricted
+		if instanceSettings.IsSignUpRestricted {
+			allowedEmailsRegex := strings.Split(instanceSettings.AllowedEmailRegex, "\n")
+			for _, re := range allowedEmailsRegex {
+				m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
+				if err != nil {
+					utils.ErrorResponse(
+						c,
+						http.StatusInternalServerError,
+						"internal server error",
+					)
+					return
+				}
+
+				if m {
+					canSignup = true
+				}
+			}
+		} else {
+			canSignup = true
+		}
+
+		// check if email matches a blackisted pattern
+		blackistedEmailsRegex := strings.Split(instanceSettings.BlockedEmailRegex, "\n")
+		for _, re := range blackistedEmailsRegex {
+			m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
+			if err != nil {
+				utils.ErrorResponse(
+					c,
+					http.StatusInternalServerError,
+					"internal server error",
+				)
+				return
+			}
+
+			if m {
+				canSignup = false
+			}
+		}
+	}
+
+	if !canSignup {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotAcceptable,
+			"cannot signup",
+		)
 		return
 	}
 
 	// validate password
 	if err := models.ValidatePassword(requestBody.Password); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"detail": err.Error(),
-		})
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			err.Error(),
+		)
 		return
 	}
 
 	// check if user with the same email already exists
-	users := []models.User{}
-	r := dbconn.DB.Find(&users, map[string]interface{}{
-		"email": requestBody.Email,
-	})
-
-	if r.Error != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	existingUser, err := models.RetrieveUserByEmail(requestBody.Email)
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
 		return
 	}
 
-	if len(users) > 0 {
-		ctx.JSON(http.StatusConflict, gin.H{
-			"detail": "another user with the same email already exists",
-		})
-		return
-	}
-
-	// check the number of existing users (first user is always an admin)
-	r = dbconn.DB.Find(&[]models.User{}, map[string]interface{}{}).Count(&usersCount)
-	if r.Error != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+	if existingUser != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusConflict,
+			"another user with the same email already exists",
+		)
 		return
 	}
 
@@ -168,16 +253,19 @@ func HandleSignup(ctx *gin.Context) {
 		requestBody.Password,
 		usersCount == 0,
 		usersCount == 0,
+		usersCount == 0,
 	)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
 		return
 	}
 
-	ctx.JSON(
+	c.JSON(
 		http.StatusCreated,
 		serializers.LoadCurrentUserSerializer(newUser, false),
 	)
@@ -223,4 +311,31 @@ func HandleLogout(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 	})
+}
+
+// HandleIsSignUpOpen godoc
+// @Summary Check if signup is open
+// @Schemes
+// @Description Check if signup is open
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.IsSignUpOpenSerializer
+// @Router /api/v1/auth/is-signup-open [get]
+func HandleIsSignUpOpen(c *gin.Context) {
+	instanceSettings, err := models.GetInstanceSettings()
+
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadIsSignUpOpenSerializer(instanceSettings.IsSignUpOpen),
+	)
 }

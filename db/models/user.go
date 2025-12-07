@@ -26,6 +26,7 @@ type User struct {
 	IsSuperuser        bool           `gorm:"column:is_superuser; column:is_superuser; default:false" json:"is_superuser"`
 	IsTemplateManager  bool           `gorm:"column:is_template_manager; default:false" json:"is_template_manager"`
 	DeletionInProgress bool           `gorm:"column:deletion_in_progress;default:false;not null;"`
+	EmailVerified      bool           `gorm:"column:email_verified;default:false;not null;"`
 	CreatedAt          time.Time      `json:"-"`
 	UpdatedAt          time.Time      `json:"-"`
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
@@ -138,6 +139,7 @@ func CreateUser(
 	password string,
 	isSuperUser bool,
 	isTemplateManager bool,
+	emailVerified bool,
 ) (*User, error) {
 	password, err := HashPassword(password)
 	if err != nil {
@@ -152,6 +154,7 @@ func CreateUser(
 		Password:          password,
 		IsSuperuser:       isSuperUser,
 		IsTemplateManager: isTemplateManager,
+		EmailVerified:     emailVerified,
 	}
 
 	r := dbconn.DB.Create(&newUser)
@@ -182,6 +185,9 @@ RetrieveUserByEmail retrieves a user by their email address.
 func RetrieveUserByEmail(email string) (user *User, err error) {
 	result := dbconn.DB.Where("email=?", email).Find(&user)
 	if result.Error != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 

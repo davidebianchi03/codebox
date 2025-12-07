@@ -29,3 +29,13 @@ func LoadMultipleTokenSerializer(tokens []models.Token) []TokenSerializer {
 	}
 	return serializers
 }
+
+type IsSignUpOpenSerializer struct {
+	IsSignUpOpen bool `json:"is_signup_open"`
+}
+
+func LoadIsSignUpOpenSerializer(isSignUpOpen bool) IsSignUpOpenSerializer {
+	return IsSignUpOpenSerializer{
+		IsSignUpOpen: isSignUpOpen,
+	}
+}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -12,15 +12,19 @@ import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
-import { APIInitialUserExists, RetrieveCurrentUserDetails } from "../../api/common";
+import { APIInitialUserExists, APISignUpOpen, RetrieveCurrentUserDetails } from "../../api/common";
 import { APISignUp } from "../../api/auth";
 
 export default function SignUpPage() {
 
   const navigate = useNavigate();
+  const [firstUserExists, setFirstUserExists] = useState<boolean>(false);
 
-  const CheckIfInitialUserExists = useCallback(async () => {
-    if (await APIInitialUserExists()) {
+  const CheckCanCreateNewUser = useCallback(async () => {
+    const initialUserExists = await APIInitialUserExists();
+    setFirstUserExists(initialUserExists);
+    const isSignupOpen = await APISignUpOpen();
+    if (initialUserExists && !isSignupOpen) {
       navigate("/");
     }
   }, [navigate]);
@@ -35,8 +39,8 @@ export default function SignUpPage() {
 
   useEffect(() => {
     IsAuthenticated();
-    CheckIfInitialUserExists();
-  }, [IsAuthenticated, CheckIfInitialUserExists]);
+    CheckCanCreateNewUser();
+  }, [IsAuthenticated, CheckCanCreateNewUser]);
 
   var validation = useFormik({
     initialValues: {
@@ -179,6 +183,9 @@ export default function SignUpPage() {
                   </Button>
                 </div>
               </form>
+              {firstUserExists && (<React.Fragment>
+
+              </React.Fragment>)}
             </CardBody>
           </Card>
           <div className="d-flex flex-column justify-content-between mt-2">

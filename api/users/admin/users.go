@@ -128,6 +128,7 @@ func HandleAdminCreateUser(c *gin.Context) {
 		reqBody.Password,
 		reqBody.IsSuperuser,
 		reqBody.IsTemplateManager,
+		true,
 	)
 	if err != nil {
 		utils.ErrorResponse(c, 500, "internal server error")
