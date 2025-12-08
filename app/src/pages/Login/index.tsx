@@ -150,8 +150,10 @@ export default function LoginPage() {
         <div className="d-flex flex-column justify-content-between mt-2">
           <p className="w-100 text-center mb-0">
             <small className="text-muted">
-              &copy;codebox {new Date().getFullYear()}
-            </small>
+                &copy;&nbsp;
+                <a href="https://gitlab.com/codebox4073715/codebox" target="_blank">Codebox</a> 
+                &nbsp;{new Date().getFullYear()}
+              </small>
           </p>
           <p className="w-100 text-center">
             <small className="text-muted">

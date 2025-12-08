@@ -112,7 +112,7 @@ type SignUpRequestBody struct {
 func HandleSignup(c *gin.Context) {
 	// if user is already logged in return an error
 	_, err := utils.GetUserFromContext(c)
-	if err != nil {
+	if err == nil {
 		utils.ErrorResponse(
 			c,
 			http.StatusUnauthorized,
@@ -143,7 +143,7 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
-	if usersCount > 0 && instanceSettings.IsSignUpOpen {
+	if usersCount > 0 && !instanceSettings.IsSignUpOpen {
 		utils.ErrorResponse(
 			c,
 			http.StatusNotAcceptable,
@@ -168,8 +168,34 @@ func HandleSignup(c *gin.Context) {
 	if usersCount > 0 {
 		// check if email matches an allowed pattern if signup is restricted
 		if instanceSettings.IsSignUpRestricted {
-			allowedEmailsRegex := strings.Split(instanceSettings.AllowedEmailRegex, "\n")
-			for _, re := range allowedEmailsRegex {
+			if len(strings.TrimSpace(instanceSettings.AllowedEmailRegex)) > 0 {
+				allowedEmailsRegex := strings.Split(instanceSettings.AllowedEmailRegex, "\n")
+				for _, re := range allowedEmailsRegex {
+					m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
+					if err != nil {
+						utils.ErrorResponse(
+							c,
+							http.StatusInternalServerError,
+							"internal server error",
+						)
+						return
+					}
+
+					if m {
+						canSignup = true
+					}
+				}
+			} else {
+				canSignup = true
+			}
+		} else {
+			canSignup = true
+		}
+
+		// check if email matches a blackisted pattern
+		if len(strings.TrimSpace(instanceSettings.BlockedEmailRegex)) > 0 {
+			blackistedEmailsRegex := strings.Split(instanceSettings.BlockedEmailRegex, "\n")
+			for _, re := range blackistedEmailsRegex {
 				m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
 				if err != nil {
 					utils.ErrorResponse(
@@ -181,28 +207,8 @@ func HandleSignup(c *gin.Context) {
 				}
 
 				if m {
-					canSignup = true
+					canSignup = false
 				}
-			}
-		} else {
-			canSignup = true
-		}
-
-		// check if email matches a blackisted pattern
-		blackistedEmailsRegex := strings.Split(instanceSettings.BlockedEmailRegex, "\n")
-		for _, re := range blackistedEmailsRegex {
-			m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
-			if err != nil {
-				utils.ErrorResponse(
-					c,
-					http.StatusInternalServerError,
-					"internal server error",
-				)
-				return
-			}
-
-			if m {
-				canSignup = false
 			}
 		}
 	}
