@@ -1,0 +1,109 @@
+{{ define "email_base" }}
+<!doctype html>
+<html lang="it">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ block "title" . }}{{ end }}</title>
+  <style>
+    /* Reset base */
+    body,
+    table,
+    td {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    img {
+      border: 0;
+      display: block;
+      line-height: 100%;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Mobile */
+    @media only screen and (max-width:600px) {
+      .container {
+        width: 100% !important;
+        padding: 16px !important;
+      }
+
+      .card {
+        padding: 20px !important;
+      }
+
+      .headline {
+        font-size: 20px !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="background-color:#081424; color:#cbd5e1; padding:24px; -webkit-text-size-adjust:100%;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center">
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+          style="width:600px; max-width:600px; margin:0 auto;">
+          <tr>
+            <td height="22"></td>
+          </tr>
+          <tr>
+            <td style="display:flex; justify-content:center; align-items:center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <img src="http://localhost:3000/src/assets/images/codebox-logo-white.png" width="150" alt="logo"
+                      style="display:block;">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td height="18"></td>
+          </tr>
+          <tr>
+            <td>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background: #0a192c; border-radius:10px; padding:32px;"
+                class="card">
+                <tr>
+                  <td align="center">
+                    <h1 class="headline"
+                      style="margin:0 0 16px; font-size:22px; color:#e2e8f0; font-weight:600; line-height:1.2;">
+                      {{ block "title" . }}{{ end }}
+                    </h1>
+                      {{ block "content" . }}{{ end }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td height="18"></td>
+          </tr>
+          <tr>
+            <td align="center" style="font-size:12px; color:#6b7280; padding:0 8px 34px;">
+              <p style="margin:0 0 6px;">
+                You've recived this email because of your account at <a
+                  href="{{.serverURL}}">{{.serverURL}}</a>
+              </p>
+              <p style="margin:0; color:#475569;">Copyright &copy; {{.year}} Codebox. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+
+</html>
+{{ end }}
