@@ -32,7 +32,31 @@ func RenderHtmlEmailTemplate(templateName string, data map[string]any) (string, 
 		return "", err
 	}
 
-	err = tmpl.ExecuteTemplate(buf, "email_base_html", data)
+	err = tmpl.ExecuteTemplate(buf, "email_base", data)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
+func RenderTextEmailTemplate(templateName string, data map[string]any) (string, error) {
+	data["year"] = time.Now().Year()
+	data["serverURL"] = config.Environment.ExternalUrl
+
+	tmpl, err := template.ParseGlob("html/emails/text/*.txt")
+	if err != nil {
+		return "", err
+	}
+
+	buf := bytes.NewBufferString("")
+
+	err = tmpl.ExecuteTemplate(io.Discard, templateName, data)
+	if err != nil {
+		return "", err
+	}
+
+	err = tmpl.ExecuteTemplate(buf, "email_base", data)
 	if err != nil {
 		return "", err
 	}

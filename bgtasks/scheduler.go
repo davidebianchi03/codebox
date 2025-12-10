@@ -67,6 +67,9 @@ func InitBgTasks(
 	// user jobs
 	pool.Job("delete_user", (*Context).DeleteUserTask)
 
+	// email jobs
+	pool.Job("send_email", (*Context).SendEmailTask)
+
 	pool.Start()
 	return nil
 }

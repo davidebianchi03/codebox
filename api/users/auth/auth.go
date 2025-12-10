@@ -9,7 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
+	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/emails"
 )
 
 type LoginRequestBody struct {
@@ -64,6 +66,19 @@ func HandleLogin(c *gin.Context) {
 
 	// check if user email has been verified
 	if !user.EmailVerified {
+		// create verification code
+
+		// send email verification token
+		verificationUrl := config.Environment.ExternalUrl + "/verify-email?code=pippo"
+		err := emails.SendEmailVerificationEmail(*user, verificationUrl)
+		if err != nil {
+			// TODO: log error
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "internal server error",
+			})
+			return
+		}
+
 		utils.ErrorResponse(
 			c,
 			http.StatusPreconditionFailed,
