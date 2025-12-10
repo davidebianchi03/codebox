@@ -8,6 +8,7 @@ import { CLIDownloadPage } from "../pages/CLIDownload";
 import CliLogin from "../pages/CliLogin";
 import CreateWorkspace from "../pages/CreateWorkspace";
 import { CreditsPage } from "../pages/Credits";
+import { EmailNotVerifiedPage } from "../pages/EmailNotVerified";
 import HomePage from "../pages/Home";
 import LoginPage from "../pages/Login";
 import Profile from "../pages/Profile";
@@ -15,6 +16,7 @@ import SignUpPage from "../pages/SignUp";
 import { TemplateDetailsPage } from "../pages/TemplateDetails";
 import TemplatesList from "../pages/TemplatesList";
 import { TemplateVersionEditor } from "../pages/TemplateVersionEditor";
+import { VerifyEmailPage } from "../pages/VerifyEmail";
 import WorkspaceDetails from "../pages/WorkspaceDetails";
 import { Route } from "./types";
 
@@ -26,6 +28,14 @@ export const PublicRoutes: Route[] = [
   {
     path: "signup",
     element: <SignUpPage />,
+  },
+  {
+    path: "email-not-verified",
+    element: <EmailNotVerifiedPage />,
+  },
+  {
+    path: "verify-email",
+    element: <VerifyEmailPage />,
   },
 ];
 
