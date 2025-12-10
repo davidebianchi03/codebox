@@ -86,6 +86,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/is-signup-open",
 				auth.HandleIsSignUpOpen,
 			)
+			authApis.GET(
+				"/verify-email-address",
+				auth.HandleVerifyEmailAddress,
+			)
 		}
 
 		// workspace related apis

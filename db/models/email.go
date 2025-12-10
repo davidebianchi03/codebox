@@ -22,13 +22,31 @@ type EmailVerificationCode struct {
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+func generateVerificationCode(user User) string {
+	hasher := sha1.New()
+	hasher.Write([]byte(strconv.Itoa(int(time.Now().UnixNano())) + user.Email))
+	code := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	return code
+}
+
 func CreateEmailVerificationCode(
 	expiration *time.Time,
 	user User,
 ) (*EmailVerificationCode, error) {
-	hasher := sha1.New()
-	hasher.Write([]byte(strconv.Itoa(int(time.Now().UnixNano())) + user.Email))
-	code := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	// generate a unique verification code
+	code := generateVerificationCode(user)
+	vc, err := RetrieveVerificationCodeByCode(code)
+	if err != nil {
+		return nil, err
+	}
+
+	for vc == nil {
+		code := generateVerificationCode(user)
+		vc, err = RetrieveVerificationCodeByCode(code)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	emailVerificationCode := &EmailVerificationCode{
 		Code:       code,
@@ -62,4 +80,24 @@ func RevokeAllTokensForUser(user User) error {
 	}
 
 	return nil
+}
+
+func RetrieveVerificationCodeByCode(code string) (*EmailVerificationCode, error) {
+	vc := EmailVerificationCode{}
+	r := dbconn.DB.Preload("User").First(
+		&vc,
+		map[string]interface{}{
+			"code": code,
+		},
+	)
+
+	if r.Error != nil {
+		if errors.Is(r.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, r.Error
+	}
+
+	return &vc, nil
 }
