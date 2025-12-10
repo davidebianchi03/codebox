@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -67,10 +68,28 @@ func HandleLogin(c *gin.Context) {
 	// check if user email has been verified
 	if !user.EmailVerified {
 		// create verification code
+		err := models.RevokeAllTokensForUser(*user)
+		if err != nil {
+			// TODO: log error
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "internal server error",
+			})
+			return
+		}
+
+		expirationDate := time.Now().Add(time.Hour * 24)
+		code, err := models.CreateEmailVerificationCode(&expirationDate, *user)
+		if err != nil {
+			// TODO: log error
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "internal server error",
+			})
+			return
+		}
 
 		// send email verification token
-		verificationUrl := config.Environment.ExternalUrl + "/verify-email?code=pippo"
-		err := emails.SendEmailVerificationEmail(*user, verificationUrl)
+		verificationUrl := config.Environment.ExternalUrl + "/verify-email?code=" + url.QueryEscape(code.Code)
+		err = emails.SendEmailVerificationEmail(*user, verificationUrl)
 		if err != nil {
 			// TODO: log error
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -84,6 +103,7 @@ func HandleLogin(c *gin.Context) {
 			http.StatusPreconditionFailed,
 			"the email address has not yet been verified",
 		)
+		return
 	}
 
 	token, err := models.CreateToken(*user, time.Duration(time.Hour*24*20))
