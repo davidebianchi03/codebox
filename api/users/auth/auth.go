@@ -142,7 +142,7 @@ type SignUpRequestBody struct {
 // @Accept json
 // @Produce json
 // @Param request body SignUpRequestBody true "Credentials"
-// @Success 200 {object} serializers.UserSerializer
+// @Success 200
 // @Router /api/v1/auth/signup [post]
 func HandleSignup(c *gin.Context) {
 	// if user is already logged in return an error
@@ -279,15 +279,17 @@ func HandleSignup(c *gin.Context) {
 	}
 
 	if existingUser != nil {
-		utils.ErrorResponse(
-			c,
-			http.StatusConflict,
-			"another user with the same email already exists",
+		// send email notifying about existing account
+		// but do not reveal that the account exists in the response
+		emails.SendUserAlreadyExistsEmail(requestBody.Email)
+		c.JSON(
+			http.StatusCreated,
+			gin.H{"detail": "account created successfully"},
 		)
 		return
 	}
 
-	newUser, err := models.CreateUser(
+	_, err = models.CreateUser(
 		requestBody.Email,
 		requestBody.FirstName,
 		requestBody.LastName,
@@ -308,7 +310,7 @@ func HandleSignup(c *gin.Context) {
 
 	c.JSON(
 		http.StatusCreated,
-		serializers.LoadCurrentUserSerializer(newUser, false),
+		gin.H{"detail": "account created successfully"},
 	)
 }
 

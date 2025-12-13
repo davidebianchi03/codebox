@@ -29,6 +29,10 @@ func generateVerificationCode(user User) string {
 	return code
 }
 
+/*
+CreteEmailVerificationCode creates a new email verification code for
+the given user with an optional expiration time.
+*/
 func CreateEmailVerificationCode(
 	expiration *time.Time,
 	user User,
@@ -40,7 +44,7 @@ func CreateEmailVerificationCode(
 		return nil, err
 	}
 
-	for vc == nil {
+	for vc != nil {
 		code := generateVerificationCode(user)
 		vc, err = RetrieveVerificationCodeByCode(code)
 		if err != nil {
@@ -63,6 +67,10 @@ func CreateEmailVerificationCode(
 	return emailVerificationCode, nil
 }
 
+/*
+RevokeAllTokensForUser revokes all email verification
+codes for the given user.
+*/
 func RevokeAllTokensForUser(user User) error {
 	r := dbconn.DB.Unscoped().Delete(
 		EmailVerificationCode{},
@@ -82,6 +90,10 @@ func RevokeAllTokensForUser(user User) error {
 	return nil
 }
 
+/*
+RetrieveVerificationCodeByCode retrieves an email verification code
+by its code.
+*/
 func RetrieveVerificationCodeByCode(code string) (*EmailVerificationCode, error) {
 	vc := EmailVerificationCode{}
 	r := dbconn.DB.Preload("User").First(

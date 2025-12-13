@@ -1,5 +1,3 @@
-{{ define "email_verify_address" }}{{ end }}
-
 {{ define "title" }}Verify your email address{{ end }}
 
 {{ define "content" }}

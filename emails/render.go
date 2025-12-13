@@ -3,7 +3,7 @@ package emails
 import (
 	"bytes"
 	"html/template"
-	"io"
+	"path"
 	"time"
 
 	"gitlab.com/codebox4073715/codebox/config"
@@ -20,44 +20,57 @@ func RenderHtmlEmailTemplate(templateName string, data map[string]any) (string, 
 	data["year"] = time.Now().Year()
 	data["serverURL"] = config.Environment.ExternalUrl
 
-	tmpl, err := template.ParseGlob("html/emails/html/*.html")
+	baseTemplatePath := path.Join(
+		config.Environment.TemplatesFolder,
+		"emails",
+		"html",
+	)
+
+	tmpl, err := template.ParseFiles(
+		path.Join(baseTemplatePath, "email_base.html"),
+		path.Join(baseTemplatePath, templateName),
+	)
 	if err != nil {
 		return "", err
 	}
 
 	buf := bytes.NewBufferString("")
 
-	err = tmpl.ExecuteTemplate(io.Discard, templateName, data)
-	if err != nil {
-		return "", err
-	}
-
-	err = tmpl.ExecuteTemplate(buf, "email_base", data)
-	if err != nil {
+	if err := tmpl.ExecuteTemplate(buf, "email_base", data); err != nil {
 		return "", err
 	}
 
 	return buf.String(), nil
 }
 
+/*
+RenderTextEmailTemplate: renders an text email template with the provided data.
+
+Parameters:
+- templateName: the name of the template to render (e.g., "email_verify_address").
+- data: a map containing the data to be injected into the template.
+*/
 func RenderTextEmailTemplate(templateName string, data map[string]any) (string, error) {
 	data["year"] = time.Now().Year()
 	data["serverURL"] = config.Environment.ExternalUrl
 
-	tmpl, err := template.ParseGlob("html/emails/text/*.txt")
+	baseTemplatePath := path.Join(
+		config.Environment.TemplatesFolder,
+		"emails",
+		"text",
+	)
+
+	tmpl, err := template.ParseFiles(
+		path.Join(baseTemplatePath, "email_base.txt"),
+		path.Join(baseTemplatePath, templateName),
+	)
 	if err != nil {
 		return "", err
 	}
 
 	buf := bytes.NewBufferString("")
 
-	err = tmpl.ExecuteTemplate(io.Discard, templateName, data)
-	if err != nil {
-		return "", err
-	}
-
-	err = tmpl.ExecuteTemplate(buf, "email_base", data)
-	if err != nil {
+	if err := tmpl.ExecuteTemplate(buf, "email_base", data); err != nil {
 		return "", err
 	}
 
