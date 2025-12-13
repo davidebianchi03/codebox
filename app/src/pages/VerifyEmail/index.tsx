@@ -1,13 +1,15 @@
 import React, { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Card, Col, Container, FormFeedback, FormGroup, Input, Label, Row } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { APIVerifyEmailAddress, APIVerifyEmailCode } from "../../api/auth";
 
 export function VerifyEmailPage() {
     const [searchParams] = useSearchParams();
-    
+    const navigate = useNavigate();
+
     const validation = useFormik({
         initialValues: {
             code: ""
@@ -17,8 +19,21 @@ export function VerifyEmailPage() {
         }),
         validateOnBlur: false,
         validateOnChange: false,
-        onSubmit: (values) => {
-            validation.setFieldError("code", "Invalid verification code");
+        onSubmit: async (values) => {
+            const result = await APIVerifyEmailAddress(values.code);
+            if (result === APIVerifyEmailCode.SUCCESS) {
+                navigate("/login");
+                return;
+            } else if (result === APIVerifyEmailCode.EMAIL_ALREADY_VERIFIED) {
+                navigate("/login");
+                return;
+            } else if (result === APIVerifyEmailCode.INVALID_CODE) {
+                validation.setFieldError("code", "Invalid verification code");
+                return;
+            } else {
+                validation.setFieldError("code", "An unknown error occurred. Please try again.");
+                return;
+            }
         }
     })
 
@@ -39,7 +54,7 @@ export function VerifyEmailPage() {
                             <img src={CodeboxLogo} alt="logo" width={185} />
                         </div>
                         <Row className="d-flex flex-column align-items-center mt-5">
-                            <Col md={8} style={{minWidth: 350}}>
+                            <Col md={8} style={{ minWidth: 350 }}>
                                 <Card body className="text-center">
                                     <h2>Verify your email address</h2>
                                     <p>

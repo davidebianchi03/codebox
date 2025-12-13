@@ -51,3 +51,28 @@ export async function APISignUp(email: string, password: string, firstName: stri
         return false;
     }
 }
+
+export enum APIVerifyEmailCode {
+    SUCCESS,
+    INVALID_CODE,
+    EMAIL_ALREADY_VERIFIED,
+    UNKNOWN_ERROR,
+}
+
+export async function APIVerifyEmailAddress(code: string): Promise<APIVerifyEmailCode> {
+    try {
+        await axios.post(`/api/v1/auth/verify-email-address`, {
+            code: code,
+        });
+        return APIVerifyEmailCode.SUCCESS;
+    } catch (error) {
+        if (isAxiosError(error)) {
+            if (error.response?.status === 406) {
+                return APIVerifyEmailCode.INVALID_CODE;
+            } else if (error.response?.status === 409) {
+                return APIVerifyEmailCode.EMAIL_ALREADY_VERIFIED;
+            }
+        }
+        return APIVerifyEmailCode.UNKNOWN_ERROR;
+    }
+}

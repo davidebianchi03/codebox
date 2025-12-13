@@ -86,7 +86,7 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/is-signup-open",
 				auth.HandleIsSignUpOpen,
 			)
-			authApis.GET(
+			authApis.POST(
 				"/verify-email-address",
 				auth.HandleVerifyEmailAddress,
 			)
