@@ -2,7 +2,7 @@
 
 All changes will be reported in this file
 
-## [v0.0.23] - 2025-12-14
+## [v0.0.53] - 2025-12-14
 
 ### Fix
 
