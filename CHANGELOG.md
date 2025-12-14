@@ -2,6 +2,12 @@
 
 All changes will be reported in this file
 
+## [v0.0.52] - 2025-12-14
+
+### Changed
+
+- Changed reverse proxy config
+
 ## [v0.0.51] - 2025-11-28
 
 ### Added
