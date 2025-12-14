@@ -21,3 +21,13 @@ func LoadInstanceSettingsSerializer(is *models.InstanceSettings) *InstanceSettin
 		BlockedEmailRegex:  is.BlockedEmailRegex,
 	}
 }
+
+type EmailServiceConfiguredSerializer struct {
+	IsConfigured bool `json:"is_configured"`
+}
+
+func LoadEmailServiceConfiguredSerializer(isConfigured bool) *EmailServiceConfiguredSerializer {
+	return &EmailServiceConfiguredSerializer{
+		IsConfigured: isConfigured,
+	}
+}

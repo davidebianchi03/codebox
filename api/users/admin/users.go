@@ -139,10 +139,11 @@ func HandleAdminCreateUser(c *gin.Context) {
 }
 
 type AdminUpdateUserRequestBody struct {
-	FirstName         string `json:"first_name"`
-	LastName          string `json:"last_name"`
-	IsSuperuser       bool   `json:"is_superuser"`
-	IsTemplateManager bool   `json:"is_template_manager"`
+	FirstName         string `json:"first_name" binding:"required"`
+	LastName          string `json:"last_name" binding:"required"`
+	IsSuperuser       *bool  `json:"is_superuser" binding:"required,boolean"`
+	IsTemplateManager *bool  `json:"is_template_manager" binding:"required,boolean"`
+	EmailVerified     *bool  `json:"email_verified" binding:"required,boolean"`
 }
 
 // HandleAdminUpdateUser godoc
@@ -160,7 +161,7 @@ func HandleAdminUpdateUser(c *gin.Context) {
 	email, _ := c.Params.Get("email")
 
 	var requestBody AdminUpdateUserRequestBody
-	if c.ShouldBindBodyWithJSON(&requestBody) != nil {
+	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
 		utils.ErrorResponse(c, 400, "invalid or missing argument")
 		return
 	}
@@ -176,15 +177,22 @@ func HandleAdminUpdateUser(c *gin.Context) {
 		return
 	}
 
+	if user.EmailVerified && !*requestBody.EmailVerified {
+		// prevent un-verifying email address
+		utils.ErrorResponse(c, 400, "cannot un-verify email address")
+		return
+	}
+
 	// update fields
 	user.FirstName = requestBody.FirstName
 	user.LastName = requestBody.LastName
-	user.IsSuperuser = requestBody.IsSuperuser
-	user.IsTemplateManager = requestBody.IsTemplateManager
+	user.IsSuperuser = *requestBody.IsSuperuser
+	user.IsTemplateManager = *requestBody.IsTemplateManager
+	user.EmailVerified = *requestBody.EmailVerified
 
 	// prevent admin from removing their own superuser status
 	// this could lock them out of the admin panel
-	if !requestBody.IsSuperuser && user.Email == currentUser.Email {
+	if !*requestBody.IsSuperuser && user.Email == currentUser.Email {
 		user.IsSuperuser = true
 	}
 

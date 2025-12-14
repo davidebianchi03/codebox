@@ -314,6 +314,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/instance-settings",
 				permissions.AdminRequiredRoute(settings.HandleUpdateServerSettings),
 			)
+			adminApis.GET(
+				"email-service-configured",
+				permissions.AdminRequiredRoute(common.HandleAdminEmailServiceConfigured),
+			)
 		}
 	}
 

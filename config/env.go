@@ -41,6 +41,9 @@ type EnvVars struct {
 
 var Environment *EnvVars
 
+/*
+Load configuration from environment variables or from a .env file
+*/
 func InitCodeBoxEnv() error {
 	codeboxEnvFilename := os.Getenv("CODEBOX_ENV_FILE")
 	if codeboxEnvFilename == "" {
@@ -63,4 +66,12 @@ func InitCodeBoxEnv() error {
 
 	Environment = &e
 	return nil
+}
+
+/*
+Get if the email service is configured
+*/
+func IsEmailConfigured() bool {
+	return Environment.EmailSMTPHost != "" && Environment.EmailSMTPPort != 0 &&
+		Environment.EmailSMTPUser != "" && Environment.EmailSMTPPassword != ""
 }

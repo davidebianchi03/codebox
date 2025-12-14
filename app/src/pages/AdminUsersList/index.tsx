@@ -119,6 +119,24 @@ export function AdminUsersList() {
                       </React.Fragment>,
                   },
                   {
+                    label: "Email verified",
+                    key: "email_verified",
+                    sortable: true,
+
+                    render: (_, user: AdminUser) =>
+                      <React.Fragment>
+                        <span
+                          className={`${user.email_verified ? "text-success" : "text-danger"}`}
+                          style={{ paddingLeft: "2.5rem" }}
+                        >
+                          {user.email_verified ?
+                            <FontAwesomeIcon icon={faCheckCircle} /> :
+                            <FontAwesomeIcon icon={faCircleXmark} />
+                          }
+                        </span>
+                      </React.Fragment>,
+                  },
+                  {
                     label: "Last login",
                     key: "last_login",
                     sortable: true,

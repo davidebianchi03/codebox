@@ -18,6 +18,7 @@ export interface AdminUser {
     last_login: string | null;
     created_at: string;
     deletion_in_progress: boolean;
+    email_verified: boolean;
 }
 
 export interface User {

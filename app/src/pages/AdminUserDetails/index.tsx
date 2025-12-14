@@ -42,6 +42,7 @@ export function AdminUserDetails() {
       lastName: "",
       isAdmin: false,
       isTemplateManager: false,
+      isEmailVerified: false,
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("This field is required"),
@@ -57,7 +58,8 @@ export function AdminUserDetails() {
             values.firstName,
             values.lastName,
             values.isAdmin,
-            values.isTemplateManager
+            values.isTemplateManager,
+            values.isEmailVerified
           )) !== undefined) {
           FetchUser();
           toast.success("User has been updated");
@@ -78,6 +80,7 @@ export function AdminUserDetails() {
           lastName: user.last_name || "",
           isAdmin: user.is_superuser,
           isTemplateManager: user.is_template_manager,
+          isEmailVerified: user.email_verified,
         });
         setUser(user);
       } else {
@@ -215,6 +218,24 @@ export function AdminUserDetails() {
                     <FormFeedback>{validation.errors.lastName}</FormFeedback>
                   </div>
                   <p>
+                    <b>Email</b>
+                  </p>
+                  <div className="d-flex align-items-center">
+                    <div className="mb-3">
+                      <label className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          name="isEmailVerified"
+                          checked={validation.values.isEmailVerified}
+                          onClick={validation.handleChange}
+                          disabled={user?.email_verified || user?.deletion_in_progress}
+                        />
+                        <span className="form-check-label">Email Verified</span>
+                      </label>
+                    </div>
+                  </div>
+                  <p>
                     <b>Roles</b>
                   </p>
                   <div className="d-flex align-items-center">
@@ -330,7 +351,7 @@ export function AdminUserDetails() {
                       <h3>Actions</h3>
                     </CardHeader>
                     <CardBody className="pt-0 d-flex gap-2">
-                      {user?.email !== currentUser.email && !user?.is_superuser && (
+                      {user?.email !== currentUser?.email && !user?.is_superuser && (
                         <React.Fragment>
                           <Button color="yellow" onClick={HandleImpersonateUser}>
                             Impersonate
@@ -340,12 +361,12 @@ export function AdminUserDetails() {
                           </Button>
                         </React.Fragment>
                       )}
-                      {user?.email !== currentUser.email && (
+                      {user?.email !== currentUser?.email && (
                         <Button color="danger" onClick={HandleDeleteUser}>
                           Delete
                         </Button>
                       )}
-                      {user?.email === currentUser.email && (
+                      {user?.email === currentUser?.email && (
                         <p>No actions available for this user</p>
                       )}
                     </CardBody>
