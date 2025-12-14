@@ -116,3 +116,12 @@ export async function APIChangePassword(currentPassword: string, newPassword: st
         return false;
     }
 }
+
+export async function APIAdminEmailServiceConfigured(): Promise<boolean> {
+    try {
+        const response = await axios.get<{ is_configured: boolean }>(`/api/v1/admin/email-service-configured`);
+        return response.data.is_configured;
+    } catch (error) {
+        return false;
+    }
+}

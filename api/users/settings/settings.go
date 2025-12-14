@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/api/utils"
+	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -33,10 +34,10 @@ func HandleRetrieveServerSettings(c *gin.Context) {
 }
 
 type HandleUpdateServerSettingsRequestBody struct {
-	IsSignUpOpen       bool   `json:"is_signup_open"`
-	IsSignUpRestricted bool   `json:"is_signup_restricted"`
-	AllowedEmailRegex  string `json:"allowed_emails_regex"`
-	BlockedEmailRegex  string `json:"blocked_emails_regex"`
+	IsSignUpOpen       *bool   `json:"is_signup_open" binding:"required"`
+	IsSignUpRestricted *bool   `json:"is_signup_restricted" binding:"required"`
+	AllowedEmailRegex  *string `json:"allowed_emails_regex" binding:"required"`
+	BlockedEmailRegex  *string `json:"blocked_emails_regex" binding:"required"`
 }
 
 // HandleUpdateServerSettings godoc
@@ -48,8 +49,20 @@ type HandleUpdateServerSettingsRequestBody struct {
 // @Produce json
 // @Param request body HandleUpdateServerSettingsRequestBody true "Instance settings"
 // @Success 200 {object} serializers.InstanceSettingsSerializer
+// @Failure 400 {object} utils.ErrorResponseBody "Bad request"
+// @Failure 406 {object} utils.ErrorResponseBody "Email server is not configured"
+// @Failure 500 {object} utils.ErrorResponseBody "Internal server error"
 // @Router /api/v1/admin/instance-settings [put]
 func HandleUpdateServerSettings(c *gin.Context) {
+	if !config.IsEmailConfigured() {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotAcceptable,
+			"email server is not configured, instance settings cannot be updated",
+		)
+		return
+	}
+
 	// parse and validate request body
 	var parsedBody HandleUpdateServerSettingsRequestBody
 	err := c.ShouldBindBodyWithJSON(&parsedBody)
@@ -68,10 +81,10 @@ func HandleUpdateServerSettings(c *gin.Context) {
 		return
 	}
 
-	is.IsSignUpOpen = parsedBody.IsSignUpOpen
-	is.IsSignUpRestricted = parsedBody.IsSignUpRestricted
-	is.AllowedEmailRegex = parsedBody.AllowedEmailRegex
-	is.BlockedEmailRegex = parsedBody.BlockedEmailRegex
+	is.IsSignUpOpen = *parsedBody.IsSignUpOpen
+	is.IsSignUpRestricted = *parsedBody.IsSignUpRestricted
+	is.AllowedEmailRegex = *parsedBody.AllowedEmailRegex
+	is.BlockedEmailRegex = *parsedBody.BlockedEmailRegex
 	is.UpdateInstanceSettings()
 
 	c.JSON(http.StatusOK, serializers.LoadInstanceSettingsSerializer(is))

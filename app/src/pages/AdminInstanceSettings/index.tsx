@@ -1,13 +1,14 @@
 import { useFormik } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardBody, Col, Container, Row } from "reactstrap";
-import { APIAdminRetrieveInstanceSettings, APIAdminUpdateInstanceSettings } from "../../api/common";
+import { APIAdminEmailServiceConfigured, APIAdminRetrieveInstanceSettings, APIAdminUpdateInstanceSettings } from "../../api/common";
 import { toast, ToastContainer } from "react-toastify";
 import { SignSignUpCard } from "./SignSignUpCard";
 import { SettingsFormPlaceholder } from "./SettingsFormPlaceholder";
 
 export function AdminInstanceSettingsPage() {
     const [loading, setLoading] = useState<boolean>(true);
+    const [emailServiceConfigured, setEmailServiceConfigured] = useState<boolean>(true);
 
     const validation = useFormik({
         initialValues: {
@@ -28,14 +29,14 @@ export function AdminInstanceSettingsPage() {
 
             if (r) {
                 toast.success("Settings have been updated");
-                fetchSettings();
+                fetchConfig();
             } else {
                 toast.error("An error occured, please try again later");
             }
         }
     })
 
-    const fetchSettings = useCallback(async () => {
+    const fetchConfig = useCallback(async () => {
         setLoading(true);
         const s = await APIAdminRetrieveInstanceSettings();
         if (s) {
@@ -48,12 +49,16 @@ export function AdminInstanceSettingsPage() {
         } else {
             toast.error("Failed to fetch settings, try again later");
         }
+        
+        const configured = await APIAdminEmailServiceConfigured();
+        setEmailServiceConfigured(configured);
+        
         setLoading(false);
     }, []);
 
     useEffect(() => {
-        fetchSettings();
-    }, [fetchSettings]);
+        fetchConfig();
+    }, [fetchConfig]);
 
     return (
         <React.Fragment>
@@ -71,21 +76,31 @@ export function AdminInstanceSettingsPage() {
                         <form onSubmit={validation.handleSubmit}>
                             <Row className="mt-4">
                                 <Col>
-                                    <SignSignUpCard validation={validation} />
-                                    <Card className="mt-3">
-                                        <CardBody className="d-flex justify-content-end">
-                                            <Button color="accent" className="me-2" onClick={(e) => {
-                                                e.preventDefault();
-                                                validation.resetForm();
-                                                fetchSettings();
-                                            }}>
-                                                Discard
-                                            </Button>
-                                            <Button color="primary" type="submit">
-                                                Save
-                                            </Button>
-                                        </CardBody>
-                                    </Card>
+                                    {emailServiceConfigured ? (
+                                        <React.Fragment>
+                                            <SignSignUpCard validation={validation} />
+                                            <Card className="mt-3">
+                                                <CardBody className="d-flex justify-content-end">
+                                                    <Button color="accent" className="me-2" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        validation.resetForm();
+                                                        fetchConfig();
+                                                    }}>
+                                                        Discard
+                                                    </Button>
+                                                    <Button color="primary" type="submit">
+                                                        Save
+                                                    </Button>
+                                                </CardBody>
+                                            </Card>
+                                        </React.Fragment>
+                                    ) : (
+                                        <React.Fragment>
+                                            <div className="alert alert-warning">
+                                                Email server is not configured. Configure email server to enable instance settings.
+                                            </div>
+                                        </React.Fragment>
+                                    )}
                                 </Col>
                             </Row>
                         </form>

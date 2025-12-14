@@ -11,13 +11,15 @@ import { TemplateSettingsModal } from "./TemplateSettingsModal";
 import { User } from "../../types/user";
 import { APIListWorkspacesTypes } from "../../api/workspace";
 import { APIDeleteTemplate, APIListTemplateVersionsByTemplate, APIListWorkspacesByTemplate, APIRetrieveTemplateById } from "../../api/templates";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 export interface TemplateDetailsProps {
-    template: WorkspaceTemplate
-    user: User
+    template: WorkspaceTemplate;
 }
 
-export function TemplateDetailsHeader({ template: initialTemplate, user }: TemplateDetailsProps) {
+export function TemplateDetailsHeader({ template: initialTemplate }: TemplateDetailsProps) {
+    const user = useSelector((state: RootState) => state.user);
     const [template, setTemplate] = useState<WorkspaceTemplate>(initialTemplate);
     const [showActionsDropdown, setShowActionsDropdown] = useState<boolean>(false);
     const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -167,7 +169,7 @@ export function TemplateDetailsHeader({ template: initialTemplate, user }: Templ
                     </p>
                 </div>
                 <div className="col d-flex justify-content-end">
-                    {(user.is_template_manager || user.is_superuser) && (
+                    {(user?.is_template_manager || user?.is_superuser) && (
                         <Dropdown isOpen={showActionsDropdown} toggle={() => setShowActionsDropdown(!showActionsDropdown)}>
                             <DropdownToggle color="accent">
                                 <FontAwesomeIcon icon={faEllipsisVertical} />
