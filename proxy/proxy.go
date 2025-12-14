@@ -25,8 +25,8 @@ func CreateReverseProxy(targetStr string, timeout time.Duration, keepAlive time.
 	// }
 
 	director := func(req *http.Request) {
-		req.URL.Scheme = target.Scheme
-		req.URL.Host = target.Host
+		// force custom endpoint
+		req.URL = target
 
 		req.Host = target.Host
 		if ip, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
