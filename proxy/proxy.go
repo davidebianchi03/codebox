@@ -10,19 +10,17 @@ import (
 	"time"
 )
 
-func CreateReverseProxy(targetStr string, timeout time.Duration, keepAlive time.Duration, skipSSLVerify bool, headers map[string][]string) (*httputil.ReverseProxy, error) {
+func CreateReverseProxy(
+	targetStr string,
+	timeout time.Duration,
+	keepAlive time.Duration,
+	skipSSLVerify bool,
+	headers map[string][]string,
+) (*httputil.ReverseProxy, error) {
 	target, err := url.Parse(targetStr)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse target, %s", err)
 	}
-	// director := func(req *http.Request) {
-	// 	req.URL = target
-	// 	for key, value := range headers {
-	// 		req.Header[key] = value
-	// 	}
-
-	// 	// TODO: set x forwarded headers
-	// }
 
 	director := func(req *http.Request) {
 		// force custom endpoint

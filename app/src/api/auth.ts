@@ -38,7 +38,18 @@ export async function APILogin(
     }
 }
 
-export async function APISignUp(email: string, password: string, firstName: string, lastName: string) {
+export enum APISignUpCode {
+    SUCCESS,
+    CANNOT_SIGNUP,
+    ERROR,
+}
+
+export async function APISignUp(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+) : Promise<APISignUpCode> {
     try {
         await axios.post(`/api/v1/auth/signup`, {
             email: email,
@@ -46,9 +57,14 @@ export async function APISignUp(email: string, password: string, firstName: stri
             first_name: firstName,
             last_name: lastName
         });
-        return true;
-    } catch {
-        return false;
+        return APISignUpCode.SUCCESS;
+    } catch (error) {
+        if (isAxiosError(error)) {
+            if (error.response?.status === 406) {
+                return APISignUpCode.CANNOT_SIGNUP;
+            }
+        }
+        return APISignUpCode.ERROR;
     }
 }
 

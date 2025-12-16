@@ -65,7 +65,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                             name="allowedEmailRegex"
                             value={validation.values.allowedEmailRegex}
                             onChange={validation.handleChange}
-                            disabled={validation.values.signUpRestricted || !validation.values.signUpOpen}
+                            disabled={!validation.values.signUpRestricted || !validation.values.signUpOpen}
                             placeholder="e.g. ^.*@example\.com$"
                         />
                         <p className="mb-0">

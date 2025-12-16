@@ -95,6 +95,7 @@ export default function LoginPage() {
                   type="text"
                   placeholder="email@example.com"
                   value={form.email}
+                  autoComplete="email"
                   onChange={(e) => updateField("email", e.target.value)}
                 />
               </div>
@@ -105,6 +106,7 @@ export default function LoginPage() {
                   type="password"
                   placeholder="password"
                   value={form.password}
+                  autoComplete="current-password"
                   onChange={(e) => updateField("password", e.target.value)}
                 />
               </div>

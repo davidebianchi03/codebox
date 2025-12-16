@@ -13,12 +13,13 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import { APIInitialUserExists, APISignUpOpen, RetrieveCurrentUserDetails } from "../../api/common";
-import { APISignUp } from "../../api/auth";
+import { APISignUp, APISignUpCode } from "../../api/auth";
 
 export default function SignUpPage() {
 
   const navigate = useNavigate();
   const [firstUserExists, setFirstUserExists] = useState<boolean>(false);
+  const [nonFieldError, setNonFieldError] = useState<string>("");
 
   const CheckCanCreateNewUser = useCallback(async () => {
     const initialUserExists = await APIInitialUserExists();
@@ -85,10 +86,17 @@ export default function SignUpPage() {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      if (await APISignUp(values.email, values.password, values.firstName, values.lastName)) {
+      const signUpResult = await APISignUp(values.email, values.password, values.firstName, values.lastName);
+      if (signUpResult === APISignUpCode.SUCCESS) {
+        setNonFieldError("");
         navigate("/login");
+      } else if (signUpResult === APISignUpCode.CANNOT_SIGNUP) {
+        setNonFieldError(`
+          Sign-up is disable or your account cannot be created at this time. 
+          Please contact the administrator for assistance.
+        `);
       } else {
-        toast.error(`An unexpected error occured, try again later.`);
+        setNonFieldError(`An unexpected error occured, try again later.`);
       }
     },
   });
@@ -105,6 +113,11 @@ export default function SignUpPage() {
           <Card className="card-md">
             <CardBody>
               <h2 className="h2 text-center mb-4">Sign-up</h2>
+              {nonFieldError && (
+                <div className="alert alert-danger bg-danger" role="alert">
+                  {nonFieldError}
+                </div>
+              )}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -160,6 +173,7 @@ export default function SignUpPage() {
                     type="password"
                     placeholder="password"
                     name="password"
+                    autoComplete="new-password"
                     value={validation.values.password}
                     onChange={validation.handleChange}
                     invalid={validation.errors.password !== undefined}
@@ -172,6 +186,7 @@ export default function SignUpPage() {
                     type="password"
                     placeholder="confirm password"
                     name="confirmPassword"
+                    autoComplete="new-password"
                     value={validation.values.confirmPassword}
                     onChange={validation.handleChange}
                     invalid={validation.errors.confirmPassword !== undefined}
