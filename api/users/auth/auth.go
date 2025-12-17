@@ -33,9 +33,19 @@ type LoginRequestBody struct {
 // @Success 200 {object} serializers.TokenSerializer
 // @Router /api/v1/auth/login [post]
 func HandleLogin(c *gin.Context) {
+	_, err := utils.GetUserFromContext(c)
+	if err == nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"already logged in",
+		)
+		return
+	}
+
 	var requestBody *LoginRequestBody
 
-	err := c.ShouldBindBodyWithJSON(&requestBody)
+	err = c.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"detail": "missing or invalid field",
