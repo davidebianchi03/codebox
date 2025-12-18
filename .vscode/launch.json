@@ -45,6 +45,6 @@
             "mode": "test",
             "program": "${fileDirname}",
             "cwd": "${workspaceFolder}",
-        }
+        },
     ]
 }
