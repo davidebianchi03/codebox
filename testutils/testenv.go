@@ -8,43 +8,43 @@ import (
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 )
 
-func SetupTestEnvironment(t *testing.T) error {
-	err := config.InitCodeBoxEnv()
-	if err != nil {
-		t.Errorf("Failed to load server configuration from environment: '%s'\n", err)
-		return err
-	}
+// func SetupTestEnvironment(t *testing.T) error {
+// 	// err := config.InitCodeBoxEnv()
+// 	// if err != nil {
+// 	// 	t.Errorf("Failed to load server configuration from environment: '%s'\n", err)
+// 	// 	return err
+// 	// }
 
-	// test della connessione con il database
-	err = dbconn.ConnectDB()
-	if err != nil {
-		t.Errorf("Cannot init connection with DB: '%s'\n", err)
-		return err
-	}
+// 	// // test della connessione con il database
+// 	// err = dbconn.ConnectDB()
+// 	// if err != nil {
+// 	// 	t.Errorf("Cannot init connection with DB: '%s'\n", err)
+// 	// 	return err
+// 	// }
 
-	// clear the contents of the database
-	if err := ClearDBTables(); err != nil {
-		t.Errorf("Cannot clear DB: '%s'\n", err)
-		return err
-	}
+// 	// // clear the contents of the database
+// 	// if err := ClearDBTables(); err != nil {
+// 	// 	t.Errorf("Cannot clear DB: '%s'\n", err)
+// 	// 	return err
+// 	// }
 
-	// mock bg tasks
-	mock := &MockEnqueuer{}
-	bgtasks.BgTasksEnqueuer = mock
+// 	// // mock bg tasks
+// 	// mock := &MockEnqueuer{}
+// 	// bgtasks.BgTasksEnqueuer = mock
 
-	return nil
-}
+// 	return nil
+// }
 
-func TeardownTestEnvironment(t *testing.T) error {
-	// clear the contents of the database
-	if err := ClearDBTables(); err != nil {
-		t.Errorf("Cannot clear DB: '%s'\n", err)
-		return err
-	}
-	dbconn.CloseDB()
+// func TeardownTestEnvironment(t *testing.T) error {
+// 	// clear the contents of the database
+// 	if err := ClearDBTables(); err != nil {
+// 		t.Errorf("Cannot clear DB: '%s'\n", err)
+// 		return err
+// 	}
+// 	dbconn.CloseDB()
 
-	return nil
-}
+// 	return nil
+// }
 
 // Helper function that wraps a test function with
 // setup and teardown of the test environment
@@ -54,19 +54,50 @@ func TeardownTestEnvironment(t *testing.T) error {
 // and closes the db connection
 // If setup or teardown fail, the test will fail immediately
 func WithSetupAndTearDownTestEnvironment(t *testing.T, testFunc func(t *testing.T)) {
-	if err := SetupTestEnvironment(t); err != nil {
+	// if err := SetupTestEnvironment(t); err != nil {
+	// 	t.FailNow()
+	// 	return
+	// }
+	err := config.InitCodeBoxEnv()
+	if err != nil {
+		t.Errorf("Failed to load server configuration from environment: '%s'\n", err)
 		t.FailNow()
+		return
 	}
+
+	err = dbconn.ConnectDB()
+	if err != nil {
+		t.Errorf("Cannot init connection with DB: '%s'\n", err)
+		t.FailNow()
+		return
+	}
+
+	if err := ClearDB(dbconn.DB); err != nil {
+		t.Errorf("Cannot clear DB: '%s'\n", err)
+		t.FailNow()
+		return
+	}
+
+	// transaction := dbconn.DB.Begin()
+	// if transaction.Error != nil {
+	// 	t.Errorf("Cannot start transaction: '%s'\n", transaction.Error)
+	// 	t.FailNow()
+	// 	return
+	// }
+
+	// t.Cleanup(func() {
+	// 	transaction.Rollback()
+	// })
 
 	if err := SetupDBForTests(); err != nil {
 		t.Errorf("Cannot setup DB for tests: '%s'\n", err)
 		t.FailNow()
+		return
 	}
 
-	defer func() {
-		// if err := TeardownTestEnvironment(t); err != nil {
-		// 	t.FailNow()
-		// }
-	}()
+	// mock bg tasks
+	mock := &MockEnqueuer{}
+	bgtasks.BgTasksEnqueuer = mock
+
 	testFunc(t)
 }
