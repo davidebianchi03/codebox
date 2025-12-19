@@ -18,6 +18,14 @@ unit_tests:
     MYSQL_DATABASE: codebox-test
     MYSQL_USER: codebox
     MYSQL_PASSWORD: password
+    GOPATH: "$CI_PROJECT_DIR/.go"
+    GOMODCACHE: "$GOPATH/pkg/mod"
+    GOCACHE: "$GOPATH/cache"
+  cache:
+    key: go-modules
+    paths:
+      - .go/pkg/mod
+      - .go/cache
   script:
     - cp .gitlab-ci/codebox.test.env codebox.env
     - go mod tidy
@@ -29,7 +37,7 @@ unit_tests:
     - echo "Migrating test db..."
     - ./scripts/migrate-test-db.sh
     - echo "Running tests..."
-    - go test -v -parallel 1 ./... -coverprofile=coverage.out
+    - go test -v -p 1 ./... -coverprofile=coverage.out
     - go tool cover -func=coverage.out | grep total | awk '{print $3}'
   artifacts:
     paths:
