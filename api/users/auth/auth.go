@@ -256,6 +256,8 @@ func HandleSignup(c *gin.Context) {
 				}
 			}
 		}
+	} else {
+		canSignup = true
 	}
 
 	if !canSignup {
