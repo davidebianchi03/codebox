@@ -1,5 +1,6 @@
 {
     "go.testEnvVars": {
-        "CODEBOX_ENV_FILE": "${workspaceFolder}/codebox.env"
+        "CODEBOX_ENV_FILE": "${workspaceFolder}/codebox.env",
+        "CODEBOX_TEMPLATES_FOLDER": "${workspaceFolder}/html"
     }
 }
