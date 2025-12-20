@@ -29,7 +29,7 @@ func SetupRouter() *gin.Engine {
 	// views
 	views.ViewsRoutes(r)
 	r.LoadHTMLGlob(
-		path.Join(config.Environment.BaseDir, config.Environment.TemplatesFolder, "templates", "*"),
+		path.Join(config.Environment.TemplatesFolder, "templates", "*"),
 	)
 	return r
 }

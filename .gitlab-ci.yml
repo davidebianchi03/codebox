@@ -30,10 +30,9 @@ unit_tests:
     - cp .gitlab-ci/codebox.test.env codebox.env
     - go mod tidy
     - export GIN_MODE=release
-    - export CODEBOX_BASE_DIR=$(pwd)
-    - export CODEBOX_ENV_FILE="${CODEBOX_BASE_DIR}/codebox.env"
-    - export CODEBOX_TEMPLATES_FOLDER="${CODEBOX_BASE_DIR}/html"
-    - echo "CODEBOX_BASE_DIR is set to ${CODEBOX_BASE_DIR}"
+    - export BASE_DIR=$(pwd)
+    - export CODEBOX_ENV_FILE="${BASE_DIR}/codebox.env"
+    - export CODEBOX_TEMPLATES_FOLDER="${BASE_DIR}/html"
     - echo "CODEBOX_ENV_FILE is set to ${CODEBOX_ENV_FILE}"
     - echo "CODEBOX_TEMPLATES_FOLDER is set to ${CODEBOX_TEMPLATES_FOLDER}"
     - echo "Migrating test db..."
