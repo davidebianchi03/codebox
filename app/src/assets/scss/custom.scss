@@ -28,7 +28,7 @@ $dark: #0a192c;
 
 .user-dropdown {
     text-decoration: none !important;
-   
+
     .dropdown-toggle:after {
         display: none;
     }
@@ -36,4 +36,24 @@ $dark: #0a192c;
     .btn-link:hover {
         text-decoration: none !important;
     }
+}
+
+.btn-icon-only {
+    padding: 0.375rem 0.5rem;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .icon {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+    }
+}
+
+.form-check-input-light:checked {
+    background-color: var(--tblr-light);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='16' height='16'%3e%3cpath fill='none' stroke='%230c1e34' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8.5l2.5 2.5l5.5 -5.5'/%3e%3c/svg%3e");
 }

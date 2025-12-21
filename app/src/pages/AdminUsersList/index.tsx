@@ -46,7 +46,7 @@ export function AdminUsersList() {
           </div>
           <div className="col-auto ms-auto d-print-none">
             <Button
-              color="primary"
+              color="light"
               onClick={() => setShowCreateUserModal(true)}
             >
               Create new user

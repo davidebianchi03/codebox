@@ -11,9 +11,10 @@ import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { APIInitialUserExists, APISignUpOpen, RetrieveCurrentUserDetails } from "../../api/common";
 import { APISignUp, APISignUpCode } from "../../api/auth";
+import { NonFieldError } from "../../components/NonFieldError";
 
 export default function SignUpPage() {
 
@@ -92,13 +93,13 @@ export default function SignUpPage() {
         navigate("/login");
       } else if (signUpResult === APISignUpCode.CANNOT_SIGNUP) {
         setNonFieldError(`
-          Sign-up is disable or your account cannot be created at this time. 
+          Sign-up is disabled or your account cannot be created at this time. 
           Please contact the administrator for assistance.
         `);
       } else {
         setNonFieldError(`An unexpected error occured, try again later.`);
       }
-    },
+    }
   });
 
   return (
@@ -114,9 +115,7 @@ export default function SignUpPage() {
             <CardBody>
               <h2 className="h2 text-center mb-4">Sign-up</h2>
               {nonFieldError && (
-                <div className="alert alert-danger bg-danger" role="alert">
-                  {nonFieldError}
-                </div>
+                <NonFieldError error={nonFieldError} />
               )}
               <form
                 onSubmit={(e) => {
@@ -196,7 +195,7 @@ export default function SignUpPage() {
                   </FormFeedback>
                 </div>
                 <div className="d-flex justify-content-between">
-                  <Button color="primary w-75 mx-auto" type="submit">
+                  <Button color="light" className="w-75 mx-auto" type="submit">
                     Sign up
                   </Button>
                 </div>
@@ -204,7 +203,7 @@ export default function SignUpPage() {
               {firstUserExists && (<React.Fragment>
                 <div className="hr-text">or</div>
                 <div className="text-center fs-5">
-                 Already have an account? <Link to="/login">Login</Link>
+                  Already have an account? <Link to="/login">Login</Link>
                 </div>
               </React.Fragment>)}
             </CardBody>
@@ -213,7 +212,7 @@ export default function SignUpPage() {
             <p className="w-100 text-center mb-0">
               <small className="text-muted">
                 &copy;&nbsp;
-                <a href="https://gitlab.com/codebox4073715/codebox" target="_blank">Codebox</a> 
+                <a href="https://gitlab.com/codebox4073715/codebox" target="_blank">Codebox</a>
                 &nbsp;{new Date().getFullYear()}
               </small>
             </p>

@@ -1,6 +1,6 @@
 import React from "react";
-import { Badge, Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ThirdPartyPackages } from "./thirdPartyPackages";
+import { Badge, Card, Col, Row } from "react-bootstrap";
 
 export function CreditsPage() {
     return (
@@ -11,16 +11,16 @@ export function CreditsPage() {
             <Row className="mt-3">
                 <p>
                     This software is distributed under an open source license, the source code is available &nbsp;
-                    <a href="https://gitlab.com/codebox4073715/codebox" target="_blank">here</a>.
+                    <a href="https://github.com/davidebianchi03/codebox" target="_blank">here</a>.
                 </p>
             </Row>
             <Row className="mt-3">
                 <Col>
                     <Card>
-                        <CardHeader className="border-0 pb-0">
+                        <Card.Header className="border-0 pb-0">
                             <h2>License (MIT)</h2>
-                        </CardHeader>
-                        <CardBody className="pt-0">
+                        </Card.Header>
+                        <Card.Body className="pt-0">
                             <p style={{ maxWidth: 500, background: "var(--tblr-tertiary-bg)" }} className="p-3 rounded">
                                 Copyright (c) {new Date().getFullYear()} Davide Bianchi
                                 <br />
@@ -33,17 +33,17 @@ export function CreditsPage() {
                                 <br />
                                 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                             </p>
-                        </CardBody>
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>
             <Row className="mt-3">
                 <Col>
                     <Card>
-                        <CardHeader className="border-0 pb-0">
+                        <Card.Header className="border-0 pb-0">
                             <h2>Third party packages</h2>
-                        </CardHeader>
-                        <CardBody className="pt-0">
+                        </Card.Header>
+                        <Card.Body className="pt-0">
                             <p>
                                 A special thanks to the open source community
                             </p>
@@ -63,14 +63,14 @@ export function CreditsPage() {
                                                     {p.description}
                                                 </p>
                                             )}
-                                            <Badge color="primary" className="text-white">
+                                            <Badge bg="light" className="text-dark">
                                                 {p.license}
                                             </Badge>
                                         </li>
                                     </React.Fragment>
                                 ))}
                             </ul>
-                        </CardBody>
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>

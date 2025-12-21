@@ -150,7 +150,7 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
               >
                 Cancel
               </Button>
-              <Button className="ms-1" color="primary">
+              <Button className="ms-1" color="light">
                 Submit
               </Button>
             </div>

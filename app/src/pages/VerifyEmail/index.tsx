@@ -74,7 +74,7 @@ export function VerifyEmailPage() {
                                                 {validation.errors.code}
                                             </FormFeedback>
                                         </FormGroup>
-                                        <Button type="submit" color="primary" className="w-100">
+                                        <Button type="submit" color="light" className="w-100">
                                             Submit
                                         </Button>
                                     </form>

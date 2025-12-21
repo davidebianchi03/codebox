@@ -174,7 +174,7 @@ export default function Profile() {
                   >
                     Cancel
                   </Button>
-                  <Button color="primary" className="ms-1" type="submit">
+                  <Button color="light" className="ms-1" type="submit">
                     Save Changes
                   </Button>
                 </div>
@@ -190,7 +190,7 @@ export default function Profile() {
               <div className="w-100 d-flex justify-content-between align-items-center">
                 <h3 className="mb-0">Change Password</h3>
                 <Button
-                  color="primary"
+                  color="light"
                   onClick={() => setShowChangePasswordModal(true)}
                 >
                   Change Password

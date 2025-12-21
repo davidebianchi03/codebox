@@ -167,7 +167,7 @@ export function CreateTemplateModal({ isOpen, onClose }: CreateTemplateModalProp
                             >
                                 Cancel
                             </Button>
-                            <Button color="primary" type="submit">
+                            <Button color="light" type="submit">
                                 Create
                             </Button>
                         </div>

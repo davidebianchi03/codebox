@@ -88,7 +88,7 @@ export function AdminInstanceSettingsPage() {
                                                     }}>
                                                         Discard
                                                     </Button>
-                                                    <Button color="primary" type="submit">
+                                                    <Button color="light" type="submit">
                                                         Save
                                                     </Button>
                                                 </CardBody>

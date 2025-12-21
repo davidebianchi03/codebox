@@ -196,7 +196,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
             >
               Cancel
             </Button>
-            <Button type="submit" color="primary">
+            <Button type="submit" color="light">
               Create
             </Button>
           </div>

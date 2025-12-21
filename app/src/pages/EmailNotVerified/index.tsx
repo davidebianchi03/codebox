@@ -20,7 +20,7 @@ export function EmailNotVerifiedPage() {
                                         Your email address has not yet been verified.
                                         Check your email for the verification link.
                                     </p>
-                                    <Link to="/login" className="btn btn-primary">
+                                    <Link to="/login" className="btn btn-light">
                                         Back to login
                                     </Link>
                                 </Card>

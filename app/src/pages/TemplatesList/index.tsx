@@ -78,7 +78,7 @@ export default function TemplatesList() {
           <div className="btn-list">
             {(user?.is_template_manager || user?.is_superuser) && (
               <Button
-                color="primary"
+                color="light"
                 onClick={() => setShowCreateTemplateModal(true)}
               >
                 Create template
@@ -170,7 +170,7 @@ export default function TemplatesList() {
                                   <small className="text-muted">{template.description}</small>
                                 </div>
                                 <div>
-                                  <Badge color="primary" className="text-white">
+                                  <Badge color="light" className="text-white">
                                     {(() => {
                                       var templateType = workspaceTypes.find((wt) => wt.id === template.type);
                                       return templateType ? templateType.name : template.type;

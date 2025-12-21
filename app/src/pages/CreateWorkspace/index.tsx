@@ -1,16 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  CardBody,
-  Col,
-  Container,
-  FormFeedback,
-  FormGroup,
-  Input,
-  Label,
-  Row,
-} from "reactstrap";
 import { WorkspaceType } from "../../types/workspace";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -22,6 +10,7 @@ import { ListRunners } from "../../api/runner";
 import { APICreateWorkspace, APIListWorkspacesTypes } from "../../api/workspace";
 import { APIListTemplates, APIRetrieveTemplateLatestVersion } from "../../api/templates";
 import { EnvEditor } from "../../components/EnvEditor";
+import { Card, Col, Container, FormGroup, Row, Form, Button } from "react-bootstrap";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
@@ -155,24 +144,23 @@ export default function CreateWorkspace() {
           <Row className="mt-3">
             <Col md={6}>
               <Card>
-                <CardBody>
+                <Card.Body>
                   <FormGroup>
-                    <Label>Workspace name</Label>
-                    <Input
+                    <Form.Label>Workspace name</Form.Label>
+                    <Form.Control
                       type="text"
                       placeholder="my awesome workspace"
                       name="workspaceName"
                       onChange={validation.handleChange}
                       value={validation.values.workspaceName}
-                      invalid={validation.errors.workspaceName !== undefined}
+                      isInvalid={validation.errors.workspaceName !== undefined}
                     />
-                    <FormFeedback>{validation.errors.workspaceName}</FormFeedback>
+                    <Form.Control.Feedback>{validation.errors.workspaceName}</Form.Control.Feedback>
                   </FormGroup>
                   <FormGroup>
-                    <Label>Workspace type</Label>
+                    <Form.Label>Workspace type</Form.Label>
                     <select
-                      className={`form-control ${validation.errors.workspaceType ? "is-invalid" : ""
-                        }`}
+                      className={`form-control ${validation.errors.workspaceType ? "is-invalid" : ""}`}
                       name="workspaceType"
                       onChange={(e) => {
                         var workspaceType = workspaceTypes.find(
@@ -206,10 +194,10 @@ export default function CreateWorkspace() {
                         </option>
                       ))}
                     </select>
-                    <FormFeedback>{validation.errors.workspaceType}</FormFeedback>
+                    <Form.Control.Feedback>{validation.errors.workspaceType}</Form.Control.Feedback>
                   </FormGroup>
                   <FormGroup>
-                    <Label>Runner</Label>
+                    <Form.Label>Runner</Form.Label>
                     <select
                       className={`form-control ${validation.errors.runner ? "is-invalid" : ""
                         }`}
@@ -259,16 +247,16 @@ export default function CreateWorkspace() {
                         return "";
                       })()}
                     </span>
-                    <FormFeedback>{validation.errors.runner}</FormFeedback>
+                    <Form.Control.Feedback>{validation.errors.runner}</Form.Control.Feedback>
                   </FormGroup>
-                </CardBody>
+                </Card.Body>
               </Card>
             </Col>
             <Col md={6}>
               <Card>
-                <CardBody>
+                <Card.Body>
                   <FormGroup>
-                    <Label>Config source</Label>
+                    <Form.Label>Config source</Form.Label>
                     <select
                       className={`form-control`}
                       name="configSource"
@@ -309,36 +297,36 @@ export default function CreateWorkspace() {
                     (validation.values.configSource === "git" ? (
                       <>
                         <FormGroup>
-                          <Label>Repository URL</Label>
-                          <Input
+                          <Form.Label>Repository URL</Form.Label>
+                          <Form.Control
                             name="gitRepositoryURL"
                             placeholder="git@example.com/my-awesome-project"
                             value={validation.values.gitRepositoryURL}
                             onChange={validation.handleChange}
-                            invalid={
+                            isInvalid={
                               validation.errors.gitRepositoryURL !== undefined
                             }
                           />
-                          <FormFeedback>
+                          <Form.Control.Feedback>
                             {validation.errors.gitRepositoryURL}
-                          </FormFeedback>
+                          </Form.Control.Feedback>
                         </FormGroup>
                         <FormGroup>
-                          <Label>Ref Name</Label>
-                          <Input
+                          <Form.Label>Ref Name</Form.Label>
+                          <Form.Control
                             name="gitRefName"
                             placeholder="refs/heads/main"
                             value={validation.values.gitRefName}
                             onChange={validation.handleChange}
-                            invalid={validation.errors.gitRefName !== undefined}
+                            isInvalid={validation.errors.gitRefName !== undefined}
                           />
-                          <FormFeedback>
+                          <Form.Control.Feedback>
                             {validation.errors.gitRefName}
-                          </FormFeedback>
+                          </Form.Control.Feedback>
                         </FormGroup>
                         <FormGroup>
-                          <Label>Config files path</Label>
-                          <Input
+                          <Form.Label>Config files path</Form.Label>
+                          <Form.Control
                             name="configFilesPath"
                             placeholder={
                               workspaceTypes.find(
@@ -347,25 +335,25 @@ export default function CreateWorkspace() {
                             }
                             value={validation.values.configFilesPath}
                             onChange={validation.handleChange}
-                            invalid={
+                            isInvalid={
                               validation.errors.configFilesPath !== undefined
                             }
                           />
-                          <FormFeedback>
+                          <Form.Control.Feedback>
                             {validation.errors.configFilesPath}
-                          </FormFeedback>
+                          </Form.Control.Feedback>
                         </FormGroup>
                       </>
                     ) : (
                       <>
                         <FormGroup>
-                          <Label>Template</Label>
-                          <Input
+                          <Form.Label>Template</Form.Label>
+                          <Form.Control
                             name="template"
                             type="select"
                             value={validation.values.template}
                             onChange={validation.handleChange}
-                            invalid={
+                            isInvalid={
                               validation.errors.template !== undefined
                             }
                           >
@@ -377,24 +365,24 @@ export default function CreateWorkspace() {
                                 <option key={index} value={template.id}>{template.name}</option>
                               ))
                             }
-                          </Input>
-                          <FormFeedback>
+                          </Form.Control>
+                          <Form.Control.Feedback>
                             {validation.errors.template}
-                          </FormFeedback>
+                          </Form.Control.Feedback>
                         </FormGroup>
                       </>
                     ))}
-                </CardBody>
+                </Card.Body>
               </Card>
             </Col>
           </Row>
           <Row className="mt-3">
             <Col md={12}>
               <Card>
-                <CardBody>
+                <Card.Body>
                   <FormGroup>
                     <p>
-                      <Label className="mb-0">Environment</Label>
+                      <Form.Label className="mb-0">Environment</Form.Label>
                       <small className="text-muted">
                         Define environment variables
                       </small>
@@ -405,9 +393,9 @@ export default function CreateWorkspace() {
                         validation.setFieldValue("environment", value)
                       }}
                     />
-                    <FormFeedback>{validation.errors.environment}</FormFeedback>
+                    <Form.Control.Feedback>{validation.errors.environment}</Form.Control.Feedback>
                   </FormGroup>
-                </CardBody>
+                </Card.Body>
               </Card>
             </Col>
           </Row>
@@ -416,7 +404,7 @@ export default function CreateWorkspace() {
               className="btn btn-accent me-2">
               Cancel
             </Link>
-            <Button color="primary" type="submit">
+            <Button variant="light" type="submit">
               Create workspace
             </Button>
           </div>

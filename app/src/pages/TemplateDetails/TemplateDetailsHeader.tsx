@@ -57,7 +57,7 @@ export function TemplateDetailsHeader({ template: initialTemplate }: TemplateDet
                     customClass: {
                         popup: "bg-dark text-light",
                         cancelButton: "btn btn-accent",
-                        confirmButton: "btn btn-primary",
+                        confirmButton: "btn btn-light",
                     },
                 })).isConfirmed) {
                     if (await APIDeleteTemplate(initialTemplate.id)) {
@@ -91,7 +91,7 @@ export function TemplateDetailsHeader({ template: initialTemplate }: TemplateDet
                     customClass: {
                         popup: "bg-dark text-light",
                         cancelButton: "btn btn-accent",
-                        confirmButton: "btn btn-primary",
+                        confirmButton: "btn btn-light",
                     },
                 });
             }

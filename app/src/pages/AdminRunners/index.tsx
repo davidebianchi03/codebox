@@ -56,7 +56,7 @@ export function AdminRunners() {
           <p className="text-muted">List of all runners</p>
         </div>
         <div className="col-auto ms-auto d-print-none">
-          <Button color="primary" onClick={() => setCreateRunnerModal(true)}>
+          <Button color="light" onClick={() => setCreateRunnerModal(true)}>
             Add new runner
           </Button>
         </div>

@@ -281,7 +281,7 @@ export function AdminUserDetails() {
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" color="primary">
+                      <Button type="submit" color="light">
                         Save
                       </Button>
                     </div>

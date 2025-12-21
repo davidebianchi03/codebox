@@ -19,6 +19,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                                 type="checkbox"
                                 id="signUpOpen"
                                 name="signUpOpen"
+                                className="form-check-input-light"
                                 checked={validation.values.signUpOpen}
                                 onChange={validation.handleChange}
                             />
@@ -40,6 +41,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                                 type="checkbox"
                                 id="signUpRestricted"
                                 name="signUpRestricted"
+                                className="form-check-input-light"
                                 checked={validation.values.signUpRestricted}
                                 onChange={validation.handleChange}
                                 disabled={!validation.values.signUpOpen}

@@ -1,26 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Badge,
-  Button,
-  Card,
-  CardBody,
-  Container,
-  Input,
-  Label,
-} from "reactstrap";
 import { Workspace, WorkspaceType } from "../../types/workspace";
-import {
-  GetBeautyNameForStatus,
-  GetWorkspaceStatusColor,
-} from "../../common/workspace";
 import { Link, useNavigate } from "react-router-dom";
 import { APIListWorkspaces, APIListWorkspacesTypes } from "../../api/workspace";
+import { WorkspaceItem } from "./WorkspaceItem";
+import { Button, Card, Container, Form } from "react-bootstrap";
 
 export default function HomePage() {
+  const navigate = useNavigate();
+
   const [searchText, setSearchText] = useState<string>("");
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
-  const navigate = useNavigate();
 
   const FetchWorkspaces = useCallback(async () => {
     const w = await APIListWorkspaces();
@@ -51,7 +41,7 @@ export default function HomePage() {
         <div className="col-auto ms-auto d-print-none">
           <div className="btn-list">
             <Button
-              color="primary"
+              variant="light"
               onClick={() => navigate("/create-workspace")}
             >
               Create workspace
@@ -60,17 +50,17 @@ export default function HomePage() {
         </div>
       </div>
       <Card className="my-5">
-        <CardBody>
-          <Label>Filter workspaces:</Label>
-          <Input
+        <Card.Body>
+          <Form.Label>Filter workspaces:</Form.Label>
+          <Form.Control
             placeholder="my awesome workspace"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
-        </CardBody>
+        </Card.Body>
       </Card>
       <Card className="my-1">
-        <CardBody>
+        <Card.Body>
           {workspaces.length &&
             workspaces.filter((w) => w.name.indexOf(searchText) >= 0).length >
             0 ? (
@@ -86,65 +76,9 @@ export default function HomePage() {
                 .map((workspace: Workspace) => (
                   <div key={workspace.id}>
                     {workspace.name.indexOf(searchText) >= 0 && (
-                      <>
-                        <div className="d-flex align-items-center justify-content-between">
-                          <div className="d-flex align-items-center">
-                            <div
-                              style={{
-                                width: 50,
-                                height: 50,
-                                fontSize: 20,
-                                opacity: 0.5,
-                                borderRadius: 4,
-                              }}
-                              className="bg-primary text-white d-flex align-items-center justify-content-center"
-                            >
-                              {workspace.name[0].toUpperCase()}
-                            </div>
-                            <div className="ms-4">
-                              <h3 className="mb-0">
-                                <Link to={`/workspaces/${workspace.id}`}>
-                                  {workspace.name}
-                                </Link>
-                              </h3>
-                              <small className="text-muted">
-                                {(() => {
-                                  var prettyType = "Unknown type";
-                                  var workspaceType = workspaceTypes.find(
-                                    (wt: WorkspaceType) =>
-                                      wt.id === workspace.type
-                                  );
-                                  if (workspaceType) {
-                                    prettyType = workspaceType.name;
-                                  }
-                                  return prettyType;
-                                })()}
-                              </small>
-                            </div>
-                          </div>
-                          <div className="d-flex flex-column align-items-end">
-                            <Badge
-                              color={GetWorkspaceStatusColor(workspace.status)}
-                              className="text-white mb-2"
-                              style={{ fontSize: 11 }}
-                            >
-                              {GetBeautyNameForStatus(workspace.status)}
-                            </Badge>
-                            <p
-                              className="mb-0 text-muted"
-                              style={{ fontSize: 12 }}
-                            >
-                              <small>
-                                Last activity{" "}
-                                {new Date(
-                                  workspace.updated_at
-                                ).toLocaleString()}
-                              </small>
-                            </p>
-                          </div>
-                        </div>
-                        <hr className="my-3" />
-                      </>
+                      <React.Fragment>
+                        <WorkspaceItem workspace={workspace} workspaceTypes={workspaceTypes} />
+                      </React.Fragment>
                     )}
                   </div>
                 ))}
@@ -173,7 +107,7 @@ export default function HomePage() {
               )}
             </p>
           )}
-        </CardBody>
+        </Card.Body>
       </Card>
     </Container>
   );

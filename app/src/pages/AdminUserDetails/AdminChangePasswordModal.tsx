@@ -127,7 +127,7 @@ export function AdminChangePasswordModal({ isOpen, onClose, user }: Props) {
               >
                 Cancel
               </Button>
-              <Button className="ms-1" color="primary">
+              <Button className="ms-1" color="light">
                 Submit
               </Button>
             </div>

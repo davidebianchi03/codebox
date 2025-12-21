@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  CardBody,
-  Container,
-  FormGroup,
-  Input,
-  Label,
-} from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { APIInitialUserExists, APISignUpOpen, RetrieveCurrentUserDetails } from "../../api/common";
 import { APILogin, APILoginCode } from "../../api/auth";
+import { NonFieldError } from "../../components/NonFieldError";
+import { FieldError } from "../../components/FieldError";
+import { Button, Card, Container, Form } from "react-bootstrap";
 
 export default function LoginPage() {
   const [form, setForm] = useState({
@@ -19,7 +13,11 @@ export default function LoginPage() {
     password: "",
     rememberMe: false,
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    nonFieldError: "",
+  });
   const [signupOpen, setSignupOpen] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -55,22 +53,49 @@ export default function LoginPage() {
     const { email, password, rememberMe } = form;
 
     if (!email || !password) {
-      setError("Missing email or password");
+      const errs = {
+        email: "",
+        password: "",
+        nonFieldError: "",
+      };
+
+      if (!email) {
+        errs.email = "Email is required";
+      }
+      if (!password) {
+        errs.password = "Password is required";
+      }
+
+      setErrors(errs);
       return;
     }
 
     const { code, token } = await APILogin(email, password, rememberMe);
     if (code === APILoginCode.SUCCESS) {
       if (token) {
-        setError("");
+        setErrors({
+          email: "",
+          password: "",
+          nonFieldError: "",
+        });
         navigate(searchParams.get("next") || "/");
       } else {
-        setError("Invalid credentials");
+
+        // clear errors
+        setErrors({
+          email: "",
+          password: "",
+          nonFieldError: "Wrong email or password",
+        });
       }
     } else if (code === APILoginCode.EMAIL_NOT_VERIFIED) {
       navigate("/email-not-verified");
     } else {
-      setError("Invalid credentials");
+      setErrors({
+        email: "",
+        password: "",
+        nonFieldError: "Wrong email or password",
+      });
     }
   };
 
@@ -84,56 +109,56 @@ export default function LoginPage() {
         </div>
 
         <Card className="card-md">
-          <CardBody>
+          <Card.Body>
             <h2 className="h2 text-center mb-4">Login to your account</h2>
 
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="form-label">Email</label>
-                <Input
+                <Form.Control
                   autoFocus
                   type="text"
                   placeholder="email@example.com"
                   value={form.email}
                   autoComplete="email"
                   onChange={(e) => updateField("email", e.target.value)}
+                  isInvalid={!!errors.email}
                 />
+                <FieldError error={errors.email} />
               </div>
 
               <div className="mb-2">
                 <label className="form-label">Password</label>
-                <Input
+                <Form.Control
                   type="password"
                   placeholder="password"
                   value={form.password}
                   autoComplete="current-password"
                   onChange={(e) => updateField("password", e.target.value)}
+                  isInvalid={!!errors.password}
                 />
+                <FieldError error={errors.password} />
               </div>
 
-              {error && (
-                <p
-                  className="alert border-0 d-flex justify-content-center"
-                  style={{ background: "rgba(var(--tblr-danger-rgb), 0.8)" }}
-                >
-                  {error}
-                </p>
+              {errors.nonFieldError && (
+                <NonFieldError error={errors.nonFieldError} />
               )}
 
-              <FormGroup className="d-flex align-items-center">
-                <Input
+              <Form.Group className="d-flex align-items-center">
+                <input
                   type="checkbox"
+                  className="form-check-input form-check-input-light"
                   id="remember_me"
                   checked={form.rememberMe}
                   onChange={(e) => updateField("rememberMe", e.target.checked)}
                 />
-                <Label for="remember_me" className="mt-2 ms-2">
+                <Form.Label for="remember_me" className="mt-2 ms-2" style={{ userSelect: "none" }}>
                   Remember me
-                </Label>
-              </FormGroup>
+                </Form.Label>
+              </Form.Group>
 
               <div className="d-flex justify-content-between">
-                <Button color="primary w-75 mx-auto" type="submit">
+                <Button variant="light" className="w-75 mx-auto mt-5" type="submit">
                   Login
                 </Button>
               </div>
@@ -146,16 +171,16 @@ export default function LoginPage() {
                 </div>
               </React.Fragment>
             )}
-          </CardBody>
+          </Card.Body>
         </Card>
 
         <div className="d-flex flex-column justify-content-between mt-2">
           <p className="w-100 text-center mb-0">
             <small className="text-muted">
-                &copy;&nbsp;
-                <a href="https://gitlab.com/codebox4073715/codebox" target="_blank">Codebox</a> 
-                &nbsp;{new Date().getFullYear()}
-              </small>
+              &copy;&nbsp;
+              <a href="https://gitlab.com/codebox4073715/codebox" target="_blank">Codebox</a>
+              &nbsp;{new Date().getFullYear()}
+            </small>
           </p>
           <p className="w-100 text-center">
             <small className="text-muted">

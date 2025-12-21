@@ -170,7 +170,7 @@ export function EditExposedPortsAddPortModal({
               >
                 Close
               </Button>
-              <Button color="primary" className="ms-1" type="submit">
+              <Button color="light" className="ms-1" type="submit">
                 Add port
               </Button>
             </div>

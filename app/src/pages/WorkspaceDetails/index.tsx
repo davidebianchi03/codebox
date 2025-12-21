@@ -64,7 +64,7 @@ export default function WorkspaceDetails() {
                 customClass: {
                   popup: "bg-dark text-light",
                   cancelButton: "btn btn-accent",
-                  confirmButton: "btn btn-primary",
+                  confirmButton: "btn btn-light",
                 },
               })
             ).isConfirmed
