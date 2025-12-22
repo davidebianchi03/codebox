@@ -30,6 +30,9 @@ export function VerifyEmailPage() {
             } else if (result === APIVerifyEmailCode.INVALID_CODE) {
                 validation.setFieldError("code", "Invalid verification code");
                 return;
+            } else if (result === APIVerifyEmailCode.USER_LOGGED_IN) {
+                validation.setFieldError("code", "You are already logged in. Please log out to verify a new email address.");
+                return;
             } else {
                 validation.setFieldError("code", "An unknown error occurred. Please try again.");
                 return;

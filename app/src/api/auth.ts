@@ -72,6 +72,7 @@ export enum APIVerifyEmailCode {
     SUCCESS,
     INVALID_CODE,
     EMAIL_ALREADY_VERIFIED,
+    USER_LOGGED_IN,
     UNKNOWN_ERROR,
 }
 
@@ -87,6 +88,8 @@ export async function APIVerifyEmailAddress(code: string): Promise<APIVerifyEmai
                 return APIVerifyEmailCode.INVALID_CODE;
             } else if (error.response?.status === 409) {
                 return APIVerifyEmailCode.EMAIL_ALREADY_VERIFIED;
+            } else if (error.response?.status === 412) {
+                return APIVerifyEmailCode.USER_LOGGED_IN;
             }
         }
         return APIVerifyEmailCode.UNKNOWN_ERROR;
