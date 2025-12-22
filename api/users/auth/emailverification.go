@@ -22,12 +22,25 @@ type VerifyEmailAddressRequestBody struct {
 // @Produce json
 // @Param request body VerifyEmailAddressRequestBody true "Verification code"
 // @Success 200
+// @Failure 400 "Missing or invalid field"
+// @Failure 412 "Logged in users cannot verify email"
 // @Failure 406 "Invalid verification code"
 // @Failure 409 "Email already verified"
+// @Failure 500 "Internal server error"
 // @Router /api/v1/auth/verify-email-address [post]
 func HandleVerifyEmailAddress(c *gin.Context) {
+	_, err := utils.GetUserFromContext(c)
+	if err == nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusPreconditionFailed,
+			"logged in users cannot verify email",
+		)
+		return
+	}
+
 	var reqBody VerifyEmailAddressRequestBody
-	err := c.ShouldBindBodyWithJSON(&reqBody)
+	err = c.ShouldBindBodyWithJSON(&reqBody)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "missing or invalid field")
 		return
