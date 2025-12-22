@@ -29,13 +29,16 @@ func CreateRequestWithJSONBody(t *testing.T, url, method string, body interface{
 		t.FailNow()
 	}
 
-	jsonBody, err := json.Marshal(body)
-	if err != nil {
-		t.Errorf("Failed to marshal request body: '%s'\n", err)
-		t.FailNow()
+	if body != nil {
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			t.Errorf("Failed to marshal request body: '%s'\n", err)
+			t.FailNow()
+		}
+
+		req.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
+		req.Header.Set("Content-Type", "application/json")
 	}
 
-	req.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
-	req.Header.Set("Content-Type", "application/json")
 	return req
 }
