@@ -14,7 +14,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/config"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
-	"gitlab.com/codebox4073715/codebox/router"
+	"gitlab.com/codebox4073715/codebox/httpserver"
 	"golang.org/x/term"
 )
 
@@ -79,7 +79,7 @@ func main() {
 			return
 		}
 
-		r := router.SetupRouter()
+		r := httpserver.SetupRouter()
 		log.Printf("listening at 0.0.0.0:%d\n", config.Environment.ServerPort)
 		r.Run(fmt.Sprintf(":%s", strconv.Itoa(config.Environment.ServerPort)))
 		os.Exit(0)
