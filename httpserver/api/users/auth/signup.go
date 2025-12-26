@@ -11,22 +11,26 @@ import (
 	"gitlab.com/codebox4073715/codebox/emails"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
+
+	httperrors "gitlab.com/codebox4073715/codebox/httpserver/errors"
 )
 
 // TODO: ratelimit
 // GET /api/v1/auth/initial-user-exists
 // retrieve if at least one user exists for the current instance of codebox
 // this api is used to redirect users to signup page to create the first user
-func HandleRetrieveInitialUserExists(ctx *gin.Context) {
+func HandleRetrieveInitialUserExists(c *gin.Context) {
 	var usersCount int64
 	if err := dbconn.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		httperrors.RenderError(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"exists": usersCount > 0,
 	})
 }
@@ -38,7 +42,6 @@ type SignUpRequestBody struct {
 	Password  string `json:"password"  binding:"required"`
 }
 
-// TODO: ratelimit
 // Signup godoc
 // @Summary Signup
 // @Schemes
@@ -48,6 +51,7 @@ type SignUpRequestBody struct {
 // @Produce json
 // @Param request body SignUpRequestBody true "Credentials"
 // @Success 200
+// @Failure 429 "Ratelimit exceeded"
 // @Router /api/v1/auth/signup [post]
 func HandleSignup(c *gin.Context) {
 	// if user is already logged in return an error

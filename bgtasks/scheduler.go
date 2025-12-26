@@ -2,10 +2,9 @@ package bgtasks
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/gocraft/work"
-	"github.com/gomodule/redigo/redis"
+	"gitlab.com/codebox4073715/codebox/cache"
 )
 
 type EnqueuerInterface interface {
@@ -25,22 +24,12 @@ Initialize bg tasks system,
 register all the tasks and start the worker pool
 */
 func InitBgTasks(
-	redisHost string,
-	redisPort int,
 	concurrency uint,
 	codeboxInstanceId string,
 ) error {
-	var redisPool = &redis.Pool{
-		MaxActive: 5,
-		MaxIdle:   5,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", fmt.Sprintf("%s:%s", redisHost, strconv.Itoa(redisPort)))
-		},
-	}
-
 	appNamespace := fmt.Sprintf("codebox%s", codeboxInstanceId)
 
+	redisPool := cache.GetRedisCachePool()
 	BgTasksEnqueuer = work.NewEnqueuer(appNamespace, redisPool)
 
 	// pool per i background tasks relativi ai workspace

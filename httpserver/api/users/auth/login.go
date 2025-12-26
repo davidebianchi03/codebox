@@ -19,7 +19,6 @@ type LoginRequestBody struct {
 	RememberMe bool   `json:"remember_me"`
 }
 
-// TODO: ratelimit
 // Login godoc
 // @Summary Login
 // @Schemes
@@ -29,6 +28,7 @@ type LoginRequestBody struct {
 // @Produce json
 // @Param request body LoginRequestBody true "Credentials"
 // @Success 200 {object} serializers.TokenSerializer
+// @Failure 429 "Ratelimit exceeded"
 // @Router /api/v1/auth/login [post]
 func HandleLogin(c *gin.Context) {
 	_, err := utils.GetUserFromContext(c)

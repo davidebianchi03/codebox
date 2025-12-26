@@ -36,19 +36,31 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			authApis.GET(
 				"/initial-user-exists",
-				auth.HandleRetrieveInitialUserExists,
+				permissions.IPRateLimitedRoute(
+					auth.HandleRetrieveInitialUserExists,
+					5,
+					10,
+				),
 			)
 			authApis.POST(
 				"/login",
-				auth.HandleLogin,
+				permissions.IPRateLimitedRoute(
+					auth.HandleLogin,
+					8,
+					60,
+				),
 			)
 			authApis.POST(
 				"/logout",
-				auth.HandleLogout,
+				permissions.AuthenticationRequiredRoute(auth.HandleLogout),
 			)
 			authApis.POST(
 				"/signup",
-				auth.HandleSignup,
+				permissions.IPRateLimitedRoute(
+					auth.HandleSignup,
+					5,
+					60,
+				),
 			)
 			authApis.GET(
 				"/user-details",

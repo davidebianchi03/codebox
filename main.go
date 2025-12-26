@@ -69,8 +69,6 @@ func main() {
 	switch os.Args[1] {
 	case "runserver":
 		err = bgtasks.InitBgTasks(
-			config.Environment.RedisHost,
-			config.Environment.RedisPort,
 			uint(config.Environment.TasksConcurrency),
 			"",
 		)
