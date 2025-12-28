@@ -13,6 +13,8 @@ unit_tests:
   services:
     - name: mysql:8.0.41
       alias: mysql
+    - name: redis:7.4.1
+      alias: redis
   variables:
     MYSQL_ROOT_PASSWORD: password
     MYSQL_DATABASE: codebox-test
