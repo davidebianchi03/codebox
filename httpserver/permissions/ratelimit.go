@@ -2,6 +2,7 @@ package permissions
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"time"
 
@@ -18,15 +19,10 @@ request creates a cache key with a time-based suffix and a TTL representing the
 rate-limit window.
 
 TTL Calculation Algorithm:
-  - Under normal conditions, each request key is created with a base TTL equal
-    to `periodSeconds`.
-  - When the number of requests exceeds `callsPerPeriod`, the TTL of newly
-    created keys is increased linearly based on the number of excess requests:
-    TTL = periodSeconds + (excessRequests * periodSeconds)
-  - If the request count exceeds five times the allowed limit, an additional
-    penalty is applied by multiplying the calculated TTL by 10.
-  - This escalating TTL acts as a progressive backoff mechanism, increasing
-    the cooldown period as abuse intensity increases.
+  - Each request key is created with a base TTL equal
+    to `periodSeconds` multiplied for the power of two the number of
+    violations in last 24hrs
+  - When the number of requests exceeds `callsPerPeriod`, a violation record is created
 */
 func IPRateLimitedRoute(
 	handler gin.HandlerFunc,
@@ -37,8 +33,10 @@ func IPRateLimitedRoute(
 		ipAddress := c.ClientIP()
 		requestPath := c.FullPath()
 
+		// TODO: ignore whitelisted ip addresses
+
 		baseKey := fmt.Sprintf(
-			"%s-%s",
+			"ratelimit-%s-%s",
 			ipAddress,
 			requestPath,
 		)
@@ -64,11 +62,62 @@ func IPRateLimitedRoute(
 
 			// increase TTL based on how much the limit is exceeded
 			excess := len(keys) - callsPerPeriod
-			keyTTL = defaultPeriodSeconds + (excess * defaultPeriodSeconds)
 
-			if len(keys) > 5*callsPerPeriod {
-				keyTTL *= 10
+			// count how many times the ratelimit has been previously hitted
+			violationsBaseKey := fmt.Sprintf(
+				"violation-%s-%s",
+				ipAddress,
+				requestPath,
+			)
+			violations, err := cache.GetKeysByPatternFromCache(fmt.Sprintf("%s*", violationsBaseKey))
+			if err != nil {
+				// TODO: log error
+				utils.ErrorResponse(
+					c,
+					http.StatusInternalServerError,
+					"unknown error",
+				)
+				return
 			}
+			violationsCount := len(violations)
+
+			if excess == 1 {
+				// record violation only once per burst,
+				// violations are recorded for 24 hours
+				err = cache.SetKeyToCache(
+					fmt.Sprintf(
+						"%s-%d",
+						violationsBaseKey,
+						int(time.Now().UnixMilli()),
+					),
+					[]byte(""),
+					24*60*60,
+				)
+
+				if err != nil {
+					// TODO: log error
+					utils.ErrorResponse(
+						c,
+						http.StatusInternalServerError,
+						"unknown error",
+					)
+					return
+				}
+
+				if violationsCount == 2 {
+					// this is the third violation (violations are enumerated before recording this one),
+					// notify it to the admins
+					// TODO: send an email to administrators if this setting is enabled
+				}
+			}
+
+			// calculate the key ttl multiplier using
+			// considering violations in last 24hrs
+			multiplier := int(math.Min(
+				math.Pow(2, float64(violationsCount)),
+				1024, // max value for mulitplier 2^1024 = ~17h
+			))
+			keyTTL *= multiplier
 		}
 
 		// set key
@@ -96,7 +145,7 @@ func IPRateLimitedRoute(
 			utils.ErrorResponse(
 				c,
 				http.StatusTooManyRequests,
-				"ratelimit exceeded, try again later",
+				"too many requests, try again later",
 			)
 		} else {
 			handler(c)

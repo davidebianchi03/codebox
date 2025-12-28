@@ -90,6 +90,12 @@ export default function LoginPage() {
       }
     } else if (code === APILoginCode.EMAIL_NOT_VERIFIED) {
       navigate("/email-not-verified");
+    } else if (code === APILoginCode.RATELIMIT) {
+      setErrors({
+        email: "",
+        password: "",
+        nonFieldError: "Too many requests, try again later",
+      });
     } else {
       setErrors({
         email: "",

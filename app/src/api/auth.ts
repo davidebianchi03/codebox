@@ -3,6 +3,7 @@ import axios, { isAxiosError } from "axios";
 export enum APILoginCode {
     SUCCESS,
     EMAIL_NOT_VERIFIED,
+    RATELIMIT,
     ERROR,
 }
 
@@ -26,6 +27,11 @@ export async function APILogin(
             if (error.response?.status === 412) {
                 return {
                     code: APILoginCode.EMAIL_NOT_VERIFIED,
+                    token: null,
+                };
+            } else if (error.response?.status === 429) {
+                return {
+                    code: APILoginCode.RATELIMIT,
                     token: null,
                 };
             }

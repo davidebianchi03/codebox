@@ -95,3 +95,16 @@ func GetKeysByPatternFromCache(pattern string) ([]string, error) {
 
 	return keys, nil
 }
+
+/*
+Remove a key from db
+*/
+func DeleteKeyFromCache(key string) error {
+	pool := GetRedisCachePool()
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("DEL", key)
+	return err
+}
