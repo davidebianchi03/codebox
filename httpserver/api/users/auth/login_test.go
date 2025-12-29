@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/codebox4073715/codebox/cache"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/httpserver"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/auth"
@@ -234,5 +235,53 @@ func TestLoginUnverifiedEmail(t *testing.T) {
 
 		assert.Equal(t, http.StatusPreconditionFailed, w.Code)
 		assert.Contains(t, w.Body.String(), "the email address has not yet been verified")
+	})
+}
+
+/*
+Test the ratelimit on the login endpoint
+There could be 8 requests per minute
+*/
+func TestLoginRatelimit(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		loginReqBody := auth.LoginRequestBody{
+			Email:    "user1@user.com",
+			Password: "wrong.password",
+		}
+
+		for range 8 {
+			w := httptest.NewRecorder()
+			req := testutils.CreateRequestWithJSONBody(
+				t,
+				"/api/v1/auth/login",
+				"POST",
+				loginReqBody,
+			)
+			router.ServeHTTP(w, req)
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.Contains(t, w.Body.String(), "invalid credentials")
+		}
+
+		// try again, the response code should be 429
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/login",
+			"POST",
+			loginReqBody,
+		)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusTooManyRequests, w.Code)
+		assert.Contains(t, w.Body.String(), "too many requests, try again later")
+
+		// check if violation has been recorded
+		keys, err := cache.GetKeysByPatternFromCache("violation-*")
+		if err != nil {
+			t.Error(err)
+		}
+
+		assert.Equal(t, 1, len(keys))
 	})
 }

@@ -13,7 +13,7 @@
 </div>
 
 > [!WARNING]  
-> This software is still an alpha version, it has many bugs.
+> This software is still an beta version, it has many bugs.
 
 **Codebox** is a service that allows developers to create remote workspaces. The structure of Codebox workspaces can be defined using standard spefications such as docker-compose, devcontainer, etc...
 

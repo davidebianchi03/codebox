@@ -57,7 +57,7 @@ func IPRateLimitedRoute(
 
 		keyTTL := defaultPeriodSeconds
 
-		if len(keys) > callsPerPeriod {
+		if len(keys) >= callsPerPeriod {
 			ratelimitExceeded = true
 
 			// increase TTL based on how much the limit is exceeded
@@ -81,7 +81,7 @@ func IPRateLimitedRoute(
 			}
 			violationsCount := len(violations)
 
-			if excess == 1 {
+			if excess == 0 {
 				// record violation only once per burst,
 				// violations are recorded for 24 hours
 				err = cache.SetKeyToCache(
