@@ -16,19 +16,22 @@ import (
 // and closes the db connection
 // If setup or teardown fail, the test will fail immediately
 func WithSetupAndTearDownTestEnvironment(t *testing.T, testFunc func(t *testing.T)) {
-	// if err := SetupTestEnvironment(t); err != nil {
-	// 	t.FailNow()
-	// 	return
-	// }
-	err := config.InitCodeBoxEnv()
-	if err != nil {
+	// load config
+	if err := config.InitCodeBoxEnv(); err != nil {
 		t.Errorf("Failed to load server configuration from environment: '%s'\n", err)
 		t.FailNow()
 		return
 	}
 
-	err = dbconn.ConnectDB()
-	if err != nil {
+	// clear cache
+	if err := ClearCache(); err != nil {
+		t.Errorf("Cannot clear cache for tests: '%s'\n", err)
+		t.FailNow()
+		return
+	}
+
+	// setup db
+	if err := dbconn.ConnectDB(); err != nil {
 		t.Errorf("Cannot init connection with DB: '%s'\n", err)
 		t.FailNow()
 		return
