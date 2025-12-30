@@ -25,13 +25,13 @@ func TestSignup(t *testing.T) {
 		}
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -76,13 +76,13 @@ func TestSignupExistingEmail(t *testing.T) {
 		}
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -190,13 +190,13 @@ func TestSignupRegistrationClosed(t *testing.T) {
 		}
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
 		}
 		s.IsSignUpOpen = false
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -241,7 +241,7 @@ func TestSignupRegistrationRestricted(t *testing.T) {
 		}
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
@@ -249,7 +249,7 @@ func TestSignupRegistrationRestricted(t *testing.T) {
 		s.IsSignUpOpen = true
 		s.IsSignUpRestricted = true
 		s.AllowedEmailRegex = `^.*@allowed-domain\.com$`
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -321,14 +321,14 @@ func TestSignupBlacklistedEmail(t *testing.T) {
 		}
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
 		}
 		s.IsSignUpOpen = true
 		s.BlockedEmailRegex = `^.*@blacklisted-domain\.com$`
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -395,13 +395,13 @@ func TestSignupInvalidEmail(t *testing.T) {
 		router := httpserver.SetupRouter()
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -434,13 +434,13 @@ func TestSignupInvalidPassword(t *testing.T) {
 		router := httpserver.SetupRouter()
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -473,13 +473,13 @@ func TestSignupMissingFields(t *testing.T) {
 		router := httpserver.SetupRouter()
 
 		// enable signup in config
-		s, err := models.GetInstanceSettings()
+		s, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 		if err != nil {
 			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.UpdateInstanceSettings(); err != nil {
+		if err := s.SaveSingletonModel(); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}

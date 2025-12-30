@@ -20,7 +20,7 @@ import (
 // @Success 200 {object} serializers.InstanceSettingsSerializer
 // @Router /api/v1/admin/instance-settings [get]
 func HandleRetrieveServerSettings(c *gin.Context) {
-	is, err := models.GetInstanceSettings()
+	is, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 	if err != nil {
 		utils.ErrorResponse(
 			c,
@@ -71,7 +71,7 @@ func HandleUpdateServerSettings(c *gin.Context) {
 		return
 	}
 
-	is, err := models.GetInstanceSettings()
+	is, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 	if err != nil {
 		utils.ErrorResponse(
 			c,
@@ -85,7 +85,7 @@ func HandleUpdateServerSettings(c *gin.Context) {
 	is.IsSignUpRestricted = *parsedBody.IsSignUpRestricted
 	is.AllowedEmailRegex = *parsedBody.AllowedEmailRegex
 	is.BlockedEmailRegex = *parsedBody.BlockedEmailRegex
-	is.UpdateInstanceSettings()
+	is.SaveSingletonModel()
 
 	c.JSON(http.StatusOK, serializers.LoadInstanceSettingsSerializer(is))
 }

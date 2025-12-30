@@ -65,7 +65,7 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
-	instanceSettings, err := models.GetInstanceSettings()
+	instanceSettings, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 
 	if err != nil {
 		utils.ErrorResponse(
@@ -235,7 +235,7 @@ func HandleSignup(c *gin.Context) {
 // @Success 200 {object} serializers.IsSignUpOpenSerializer
 // @Router /api/v1/auth/is-signup-open [get]
 func HandleIsSignUpOpen(c *gin.Context) {
-	instanceSettings, err := models.GetInstanceSettings()
+	instanceSettings, err := models.GetSingletonModelInstance[models.InstanceSettings]()
 
 	if err != nil {
 		utils.ErrorResponse(

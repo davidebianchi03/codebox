@@ -22,6 +22,9 @@ env "codebox" {
       diff = "{{ sql . \"  \" }}"
     }
   }
+  exclude  = [
+    "singleton_models"
+  ]
 }
 
 # curl -sSf https://atlasgo.sh | sh
