@@ -319,12 +319,12 @@ func V1ApiRoutes(router *gin.Engine) {
 			)
 			// instance settings related apis
 			adminApis.GET(
-				"/instance-settings",
-				permissions.AdminRequiredRoute(settings.HandleRetrieveServerSettings),
+				"/authentication-settings",
+				permissions.AdminRequiredRoute(settings.HandleRetrieveAuthenticationSettings),
 			)
 			adminApis.PUT(
-				"/instance-settings",
-				permissions.AdminRequiredRoute(settings.HandleUpdateServerSettings),
+				"/authentication-settings",
+				permissions.AdminRequiredRoute(settings.HandleUpdateAuthenticationSettings),
 			)
 			adminApis.GET(
 				"email-service-configured",

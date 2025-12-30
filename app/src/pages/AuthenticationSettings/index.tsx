@@ -1,12 +1,16 @@
 import { useFormik } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardBody, Col, Container, Row } from "reactstrap";
-import { APIAdminEmailServiceConfigured, APIAdminRetrieveInstanceSettings, APIAdminUpdateInstanceSettings } from "../../api/common";
+import {
+    APIAdminEmailServiceConfigured,
+    APIAdminRetrieveAuthenticationSettings,
+    APIAdminUpdateAuthenticationSettings
+} from "../../api/common";
 import { toast, ToastContainer } from "react-toastify";
 import { SignSignUpCard } from "./SignSignUpCard";
 import { SettingsFormPlaceholder } from "./SettingsFormPlaceholder";
 
-export function AdminInstanceSettingsPage() {
+export function AdminAuthenticationSettingsPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [emailServiceConfigured, setEmailServiceConfigured] = useState<boolean>(true);
 
@@ -20,7 +24,7 @@ export function AdminInstanceSettingsPage() {
         validateOnBlur: false,
         validateOnChange: false,
         onSubmit: async (values) => {
-            const r = await APIAdminUpdateInstanceSettings(
+            const r = await APIAdminUpdateAuthenticationSettings(
                 values.signUpOpen,
                 values.signUpRestricted,
                 values.allowedEmailRegex,
@@ -38,7 +42,7 @@ export function AdminInstanceSettingsPage() {
 
     const fetchConfig = useCallback(async () => {
         setLoading(true);
-        const s = await APIAdminRetrieveInstanceSettings();
+        const s = await APIAdminRetrieveAuthenticationSettings();
         if (s) {
             validation.setValues({
                 signUpOpen: s.is_signup_open,
@@ -49,10 +53,10 @@ export function AdminInstanceSettingsPage() {
         } else {
             toast.error("Failed to fetch settings, try again later");
         }
-        
+
         const configured = await APIAdminEmailServiceConfigured();
         setEmailServiceConfigured(configured);
-        
+
         setLoading(false);
     }, []);
 
@@ -64,8 +68,8 @@ export function AdminInstanceSettingsPage() {
         <React.Fragment>
             <Container>
                 <div>
-                    <h2 className="mb-1">Codebox Settings</h2>
-                    <span className="text-muted">Configure codebox</span>
+                    <h2 className="mb-1">Authentication Settings</h2>
+                    <span className="text-muted">Manage sign-up and login</span>
                 </div>
                 {loading ? (
                     <React.Fragment>

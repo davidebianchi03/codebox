@@ -1,6 +1,6 @@
 package models
 
-type InstanceSettings struct {
+type AuthenticationSettings struct {
 	*SingletonModel
 	IsSignUpOpen       bool   `gorm:"column:is_signup_open; default:false"`
 	IsSignUpRestricted bool   `gorm:"column:is_signup_restricted; default:false"`

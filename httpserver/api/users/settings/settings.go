@@ -10,17 +10,17 @@ import (
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
 )
 
-// HandleRetrieveServerSettings godoc
-// @Summary Retrieve instance settings
+// HandleRetrieveAuthenticationSettings godoc
+// @Summary Retrieve authentication settings
 // @Schemes
-// @Description Retrieve instance settings, this api is available only to administrators
+// @Description Retrieve authentication settings, this api is available only to administrators
 // @Tags Templates
 // @Accept json
 // @Produce json
-// @Success 200 {object} serializers.InstanceSettingsSerializer
-// @Router /api/v1/admin/instance-settings [get]
-func HandleRetrieveServerSettings(c *gin.Context) {
-	is, err := models.GetSingletonModelInstance[models.InstanceSettings]()
+// @Success 200 {object} serializers.AuthenticationSettingsSerializer
+// @Router /api/v1/admin/authentication-settings [get]
+func HandleRetrieveAuthenticationSettings(c *gin.Context) {
+	is, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
 	if err != nil {
 		utils.ErrorResponse(
 			c,
@@ -30,7 +30,7 @@ func HandleRetrieveServerSettings(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, serializers.LoadInstanceSettingsSerializer(is))
+	c.JSON(http.StatusOK, serializers.LoadAuthenticationSettingsSerializer(is))
 }
 
 type HandleUpdateServerSettingsRequestBody struct {
@@ -40,20 +40,20 @@ type HandleUpdateServerSettingsRequestBody struct {
 	BlockedEmailRegex  *string `json:"blocked_emails_regex" binding:"required"`
 }
 
-// HandleUpdateServerSettings godoc
-// @Summary Update instance settings
+// HandleUpdateAuthenticationSettings godoc
+// @Summary Update authentication settings
 // @Schemes
-// @Description Update instance settings, this api is available only to administrators
+// @Description Update authentication settings, this api is available only to administrators
 // @Tags Templates
 // @Accept json
 // @Produce json
-// @Param request body HandleUpdateServerSettingsRequestBody true "Instance settings"
-// @Success 200 {object} serializers.InstanceSettingsSerializer
+// @Param request body HandleUpdateServerSettingsRequestBody true "authentication settings"
+// @Success 200 {object} serializers.AuthenticationSettingsSerializer
 // @Failure 400 {object} utils.ErrorResponseBody "Bad request"
 // @Failure 406 {object} utils.ErrorResponseBody "Email server is not configured"
 // @Failure 500 {object} utils.ErrorResponseBody "Internal server error"
-// @Router /api/v1/admin/instance-settings [put]
-func HandleUpdateServerSettings(c *gin.Context) {
+// @Router /api/v1/admin/authentication-settings [put]
+func HandleUpdateAuthenticationSettings(c *gin.Context) {
 	if !config.IsEmailConfigured() {
 		utils.ErrorResponse(
 			c,
@@ -71,7 +71,7 @@ func HandleUpdateServerSettings(c *gin.Context) {
 		return
 	}
 
-	is, err := models.GetSingletonModelInstance[models.InstanceSettings]()
+	is, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
 	if err != nil {
 		utils.ErrorResponse(
 			c,
@@ -87,5 +87,5 @@ func HandleUpdateServerSettings(c *gin.Context) {
 	is.BlockedEmailRegex = *parsedBody.BlockedEmailRegex
 	is.SaveSingletonModel()
 
-	c.JSON(http.StatusOK, serializers.LoadInstanceSettingsSerializer(is))
+	c.JSON(http.StatusOK, serializers.LoadAuthenticationSettingsSerializer(is))
 }

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { CurrentUser, User } from "../types/user";
-import { InstanceSettings } from "../types/settings";
+import { AuthenticationSettings } from "../types/settings";
 
 export async function RetrieveCurrentUserDetails(): Promise<CurrentUser | undefined> {
     try {
@@ -44,24 +44,24 @@ export async function Logout(): Promise<boolean> {
     }
 }
 
-export async function APIAdminRetrieveInstanceSettings(): Promise<InstanceSettings | undefined> {
+export async function APIAdminRetrieveAuthenticationSettings(): Promise<AuthenticationSettings | undefined> {
     try {
-        const response = await axios.get<InstanceSettings>(`/api/v1/admin/instance-settings`);
+        const response = await axios.get<AuthenticationSettings>(`/api/v1/admin/authentication-settings`);
         return response.data;
     } catch {
         return undefined;
     }
 }
 
-export async function APIAdminUpdateInstanceSettings(
+export async function APIAdminUpdateAuthenticationSettings(
     isSignupOpen: boolean,
     isSignupRestricted: boolean,
     allowedEmailsRegex: string,
     blockedEmailsRegex: string,
-): Promise<InstanceSettings | undefined> {
+): Promise<AuthenticationSettings | undefined> {
     try {
-        const response = await axios.put<InstanceSettings>(
-            `/api/v1/admin/instance-settings`,
+        const response = await axios.put<AuthenticationSettings>(
+            `/api/v1/admin/authentication-settings`,
             {
                 is_signup_open: isSignupOpen,
                 is_signup_restricted: isSignupRestricted,

@@ -65,7 +65,7 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
-	instanceSettings, err := models.GetSingletonModelInstance[models.InstanceSettings]()
+	s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
 
 	if err != nil {
 		utils.ErrorResponse(
@@ -87,7 +87,7 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
-	if usersCount > 0 && !instanceSettings.IsSignUpOpen {
+	if usersCount > 0 && !s.IsSignUpOpen {
 		utils.ErrorResponse(
 			c,
 			http.StatusNotAcceptable,
@@ -111,9 +111,9 @@ func HandleSignup(c *gin.Context) {
 
 	if usersCount > 0 {
 		// check if email matches an allowed pattern if signup is restricted
-		if instanceSettings.IsSignUpRestricted {
-			if len(strings.TrimSpace(instanceSettings.AllowedEmailRegex)) > 0 {
-				allowedEmailsRegex := strings.Split(instanceSettings.AllowedEmailRegex, "\n")
+		if s.IsSignUpRestricted {
+			if len(strings.TrimSpace(s.AllowedEmailRegex)) > 0 {
+				allowedEmailsRegex := strings.Split(s.AllowedEmailRegex, "\n")
 				for _, re := range allowedEmailsRegex {
 					m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
 					if err != nil {
@@ -137,8 +137,8 @@ func HandleSignup(c *gin.Context) {
 		}
 
 		// check if email matches a blackisted pattern
-		if len(strings.TrimSpace(instanceSettings.BlockedEmailRegex)) > 0 {
-			blackistedEmailsRegex := strings.Split(instanceSettings.BlockedEmailRegex, "\n")
+		if len(strings.TrimSpace(s.BlockedEmailRegex)) > 0 {
+			blackistedEmailsRegex := strings.Split(s.BlockedEmailRegex, "\n")
 			for _, re := range blackistedEmailsRegex {
 				m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
 				if err != nil {
@@ -235,7 +235,7 @@ func HandleSignup(c *gin.Context) {
 // @Success 200 {object} serializers.IsSignUpOpenSerializer
 // @Router /api/v1/auth/is-signup-open [get]
 func HandleIsSignUpOpen(c *gin.Context) {
-	instanceSettings, err := models.GetSingletonModelInstance[models.InstanceSettings]()
+	s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
 
 	if err != nil {
 		utils.ErrorResponse(
@@ -248,6 +248,6 @@ func HandleIsSignUpOpen(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		serializers.LoadIsSignUpOpenSerializer(instanceSettings.IsSignUpOpen),
+		serializers.LoadIsSignUpOpenSerializer(s.IsSignUpOpen),
 	)
 }
