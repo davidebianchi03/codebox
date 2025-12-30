@@ -20,6 +20,8 @@ export function AdminAuthenticationSettingsPage() {
             signUpRestricted: false,
             allowedEmailRegex: "",
             blacklistedEmailRegex: "",
+            usersMustBeApproved: false,
+            autoApprovedUsersRegex: "",
         },
         validateOnBlur: false,
         validateOnChange: false,
@@ -29,6 +31,8 @@ export function AdminAuthenticationSettingsPage() {
                 values.signUpRestricted,
                 values.allowedEmailRegex,
                 values.blacklistedEmailRegex,
+                values.usersMustBeApproved,
+                values.autoApprovedUsersRegex,
             )
 
             if (r) {
@@ -49,6 +53,8 @@ export function AdminAuthenticationSettingsPage() {
                 signUpRestricted: s.is_signup_restricted,
                 allowedEmailRegex: s.allowed_emails_regex,
                 blacklistedEmailRegex: s.blocked_emails_regex,
+                usersMustBeApproved: s.users_must_be_approved,
+                autoApprovedUsersRegex: s.approved_by_default_emails_regex,
             })
         } else {
             toast.error("Failed to fetch settings, try again later");

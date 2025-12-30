@@ -19,6 +19,7 @@ export interface AdminUser {
     created_at: string;
     deletion_in_progress: boolean;
     email_verified: boolean;
+    approved: boolean;
 }
 
 export interface User {

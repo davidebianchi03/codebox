@@ -25,7 +25,7 @@ export const SuperUserSidebarItems: SidebarItem[] = [
         activeOnLinks: ["/admin/runners", "/admin/runners/:id"]
     },
     {
-        title: "System",
+        title: "Instance Settings",
         type: "header"
     },
     {

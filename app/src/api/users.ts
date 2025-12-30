@@ -60,7 +60,8 @@ export async function AdminUpdateUser(
     lastName: string,
     isAdmin: boolean,
     isTemplateManager: boolean,
-    isEmailVerified: boolean
+    isEmailVerified: boolean,
+    approved: boolean,
 ): Promise<AdminUser | undefined> {
     try {
         const r = await axios.put<AdminUser>(
@@ -71,6 +72,7 @@ export async function AdminUpdateUser(
                 is_superuser: isAdmin,
                 is_template_manager: isTemplateManager,
                 email_verified: isEmailVerified,
+                approved: approved,
             }
         );
         return r.data;

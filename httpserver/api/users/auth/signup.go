@@ -39,6 +39,24 @@ func HandleRetrieveInitialUserExists(c *gin.Context) {
 	)
 }
 
+/*
+Check if email is matching at least one of the given regex
+*/
+func IsEmailMatchingARegex(email string, regEx []string) bool {
+	for _, re := range regEx {
+		m, err := regexp.MatchString(strings.TrimSpace(re), email)
+		if err != nil {
+			return false
+		}
+
+		if m {
+			return true
+		}
+	}
+
+	return false
+}
+
 type SignUpRequestBody struct {
 	Email     string `json:"email" binding:"required,email"`
 	FirstName string `json:"first_name"  binding:"required"`
@@ -117,22 +135,10 @@ func HandleSignup(c *gin.Context) {
 		// check if email matches an allowed pattern if signup is restricted
 		if s.IsSignUpRestricted {
 			if len(strings.TrimSpace(s.AllowedEmailRegex)) > 0 {
-				allowedEmailsRegex := strings.Split(s.AllowedEmailRegex, "\n")
-				for _, re := range allowedEmailsRegex {
-					m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
-					if err != nil {
-						utils.ErrorResponse(
-							c,
-							http.StatusInternalServerError,
-							"internal server error",
-						)
-						return
-					}
-
-					if m {
-						canSignup = true
-					}
-				}
+				canSignup = IsEmailMatchingARegex(
+					requestBody.Email,
+					strings.Split(s.AllowedEmailRegex, "\n"),
+				)
 			} else {
 				canSignup = true
 			}
@@ -142,21 +148,12 @@ func HandleSignup(c *gin.Context) {
 
 		// check if email matches a blackisted pattern
 		if len(strings.TrimSpace(s.BlockedEmailRegex)) > 0 {
-			blackistedEmailsRegex := strings.Split(s.BlockedEmailRegex, "\n")
-			for _, re := range blackistedEmailsRegex {
-				m, err := regexp.MatchString(strings.TrimSpace(re), requestBody.Email)
-				if err != nil {
-					utils.ErrorResponse(
-						c,
-						http.StatusInternalServerError,
-						"internal server error",
-					)
-					return
-				}
-
-				if m {
-					canSignup = false
-				}
+			match := IsEmailMatchingARegex(
+				requestBody.Email,
+				strings.Split(s.BlockedEmailRegex, "\n"),
+			)
+			if match {
+				canSignup = false
 			}
 		}
 	} else {
@@ -204,6 +201,15 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
+	// check if user is approved automatically
+	autoApproved := false
+	if len(strings.TrimSpace(s.ApprovedByDefaultEmailRegex)) > 0 {
+		autoApproved = IsEmailMatchingARegex(
+			requestBody.Email,
+			strings.Split(s.ApprovedByDefaultEmailRegex, "\n"),
+		)
+	}
+
 	_, err = models.CreateUser(
 		requestBody.Email,
 		requestBody.FirstName,
@@ -212,6 +218,7 @@ func HandleSignup(c *gin.Context) {
 		usersCount == 0,
 		usersCount == 0,
 		usersCount == 0,
+		usersCount == 0 || autoApproved,
 	)
 
 	if err != nil {

@@ -129,6 +129,7 @@ func HandleAdminCreateUser(c *gin.Context) {
 		reqBody.IsSuperuser,
 		reqBody.IsTemplateManager,
 		true,
+		true, // if a user has been created by an admin it is automatically approved
 	)
 	if err != nil {
 		utils.ErrorResponse(c, 500, "internal server error")
@@ -144,6 +145,7 @@ type AdminUpdateUserRequestBody struct {
 	IsSuperuser       *bool  `json:"is_superuser" binding:"required,boolean"`
 	IsTemplateManager *bool  `json:"is_template_manager" binding:"required,boolean"`
 	EmailVerified     *bool  `json:"email_verified" binding:"required,boolean"`
+	Approved          *bool  `json:"approved" binding:"required,boolean"`
 }
 
 // HandleAdminUpdateUser godoc
@@ -183,18 +185,27 @@ func HandleAdminUpdateUser(c *gin.Context) {
 		return
 	}
 
+	// prevent admin from removing their own superuser status
+	// this could lock them out of the admin panel
+	if !*requestBody.IsSuperuser && user.Email == currentUser.Email {
+		utils.ErrorResponse(c, 400, "you cannot revoke admin powers to yourself")
+		return
+	}
+
+	// prevent a superusers to remove approval to their accounts
+	// this could lock them out of the admin panel
+	if !*requestBody.Approved && user.Email == currentUser.Email && user.Approved {
+		utils.ErrorResponse(c, 400, "you cannot remove approval to yourself")
+		return
+	}
+
 	// update fields
 	user.FirstName = requestBody.FirstName
 	user.LastName = requestBody.LastName
 	user.IsSuperuser = *requestBody.IsSuperuser
 	user.IsTemplateManager = *requestBody.IsTemplateManager
 	user.EmailVerified = *requestBody.EmailVerified
-
-	// prevent admin from removing their own superuser status
-	// this could lock them out of the admin panel
-	if !*requestBody.IsSuperuser && user.Email == currentUser.Email {
-		user.IsSuperuser = true
-	}
+	user.Approved = *requestBody.Approved
 
 	if err := models.UpdateUser(user); err != nil {
 		utils.ErrorResponse(c, 500, "internal server error")

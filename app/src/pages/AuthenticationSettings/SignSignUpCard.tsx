@@ -39,6 +39,50 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                         <div className="d-flex">
                             <Input
                                 type="checkbox"
+                                id="usersMustBeApproved"
+                                name="usersMustBeApproved"
+                                className="form-check-input-light"
+                                checked={validation.values.usersMustBeApproved}
+                                onChange={validation.handleChange}
+                                disabled={!validation.values.signUpOpen}
+                            />
+                            <Label for="usersMustBeApproved" className="ms-3">
+                                Users must be approved
+                            </Label>
+                        </div>
+                        <p className="mb-0">
+                            <small className="text-muted">
+                                If this settings is enabled new users cannot login until they are
+                                approved by an administrator.
+                            </small>
+                        </p>
+                    </FormGroup>
+                    <FormGroup>
+                        <Label for="autoApprovedUsersRegex">
+                            Auto Approved Email Regex
+                        </Label>
+                        <Input
+                            type="textarea"
+                            id="autoApprovedUsersRegex"
+                            name="autoApprovedUsersRegex"
+                            value={validation.values.autoApprovedUsersRegex}
+                            onChange={validation.handleChange}
+                            disabled={!validation.values.signUpOpen}
+                            placeholder="e.g. ^.*@example\.com$"
+                        />
+                        <p className="mb-0">
+                            <small className="text-muted">
+                                If new users require administrator approval,
+                                you can define a list of regular expressions 
+                                (regex) to automatically approve specific 
+                                email domains or addresses. Enter one regex per line.
+                            </small>
+                        </p>
+                    </FormGroup>
+                    <FormGroup>
+                        <div className="d-flex">
+                            <Input
+                                type="checkbox"
                                 id="signUpRestricted"
                                 name="signUpRestricted"
                                 className="form-check-input-light"

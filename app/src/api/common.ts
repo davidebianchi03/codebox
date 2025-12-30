@@ -58,6 +58,8 @@ export async function APIAdminUpdateAuthenticationSettings(
     isSignupRestricted: boolean,
     allowedEmailsRegex: string,
     blockedEmailsRegex: string,
+    usersMustBeApproved: boolean,
+    approvedByDefaultEmailsRegex: string,
 ): Promise<AuthenticationSettings | undefined> {
     try {
         const response = await axios.put<AuthenticationSettings>(
@@ -67,6 +69,8 @@ export async function APIAdminUpdateAuthenticationSettings(
                 is_signup_restricted: isSignupRestricted,
                 allowed_emails_regex: allowedEmailsRegex,
                 blocked_emails_regex: blockedEmailsRegex,
+                users_must_be_approved: usersMustBeApproved,
+                approved_by_default_emails_regex: approvedByDefaultEmailsRegex,
             }
         );
         return response.data;

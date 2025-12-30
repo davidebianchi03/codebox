@@ -34,10 +34,12 @@ func HandleRetrieveAuthenticationSettings(c *gin.Context) {
 }
 
 type HandleUpdateServerSettingsRequestBody struct {
-	IsSignUpOpen       *bool   `json:"is_signup_open" binding:"required"`
-	IsSignUpRestricted *bool   `json:"is_signup_restricted" binding:"required"`
-	AllowedEmailRegex  *string `json:"allowed_emails_regex" binding:"required"`
-	BlockedEmailRegex  *string `json:"blocked_emails_regex" binding:"required"`
+	IsSignUpOpen                *bool   `json:"is_signup_open" binding:"required"`
+	IsSignUpRestricted          *bool   `json:"is_signup_restricted" binding:"required"`
+	AllowedEmailRegex           *string `json:"allowed_emails_regex" binding:"required"`
+	BlockedEmailRegex           *string `json:"blocked_emails_regex" binding:"required"`
+	UsersMustBeApproved         *bool   `json:"users_must_be_approved" binding:"required"`
+	ApprovedByDefaultEmailRegex *string `json:"approved_by_default_emails_regex" binding:"required"`
 }
 
 // HandleUpdateAuthenticationSettings godoc
@@ -67,7 +69,7 @@ func HandleUpdateAuthenticationSettings(c *gin.Context) {
 	var parsedBody HandleUpdateServerSettingsRequestBody
 	err := c.ShouldBindBodyWithJSON(&parsedBody)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "missing or invalid field")
 		return
 	}
 
@@ -85,6 +87,8 @@ func HandleUpdateAuthenticationSettings(c *gin.Context) {
 	s.IsSignUpRestricted = *parsedBody.IsSignUpRestricted
 	s.AllowedEmailRegex = *parsedBody.AllowedEmailRegex
 	s.BlockedEmailRegex = *parsedBody.BlockedEmailRegex
+	s.UsersMustBeApproved = *parsedBody.UsersMustBeApproved
+	s.ApprovedByDefaultEmailRegex = *parsedBody.ApprovedByDefaultEmailRegex
 	models.SaveSingletonModel(s)
 
 	c.JSON(http.StatusOK, serializers.LoadAuthenticationSettingsSerializer(s))

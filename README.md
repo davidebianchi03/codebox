@@ -37,6 +37,11 @@ You have to export some environment variables before starting docker containers:
 
 A list of all the settings is available [here](https://codebox4073715.gitlab.io/codebox/guide/server/configuration.html).
 
+Now you can start the docker stack with command:
+```bash
+docker compose up
+```
+
 ## How does codebox work?
 
 With Codebox you can define the resources and the structure of a workspace using standard formats like Docker Compose or Devcontainers. Moreover it provides connection to the workspaces through an SSH connection and the possibility to expose to everyone or with restrictions HTTP services running inside the containers.
@@ -44,7 +49,7 @@ With Codebox you can define the resources and the structure of a workspace using
 Codebox consists in four main parts:
 
 ### 1. A central server with web UI
-This is where you can view, create and manage workspaces. The UI provides also an editor for workspace templates and admin tools to manage the server and the connected services.
+This is where you can view, create and manage workspaces. The UI provides also an editor for workspace templates and admin tools to manage the server and the connected services. The source code is available [here](https://gitlab.com/codebox4073715/codebox), it's also mirrored on github [here](https://github.com/davidebianchi03/codebox).
 
 ### 2. Runners that host and manage the workspaces
 Here’s where Codebox’s architecture becomes flexible. Workspaces are not managed directly from the server. Instead, you register runners, each capable of running different type of running one or more workspace types. This leads to several benefits including the fact that the workload can be divided between multiple machines.

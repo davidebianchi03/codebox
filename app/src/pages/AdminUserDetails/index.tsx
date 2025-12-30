@@ -43,6 +43,7 @@ export function AdminUserDetails() {
       isAdmin: false,
       isTemplateManager: false,
       isEmailVerified: false,
+      approved: false,
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("This field is required"),
@@ -59,7 +60,8 @@ export function AdminUserDetails() {
             values.lastName,
             values.isAdmin,
             values.isTemplateManager,
-            values.isEmailVerified
+            values.isEmailVerified,
+            values.approved,
           )) !== undefined) {
           FetchUser();
           toast.success("User has been updated");
@@ -81,6 +83,7 @@ export function AdminUserDetails() {
           isAdmin: user.is_superuser,
           isTemplateManager: user.is_template_manager,
           isEmailVerified: user.email_verified,
+          approved: user.approved,
         });
         setUser(user);
       } else {
@@ -194,6 +197,13 @@ export function AdminUserDetails() {
                   }}
                 >
                   <div className="mb-3">
+                    <Label>Email</Label>
+                    <Input
+                      value={user?.email}
+                      disabled={true}
+                    />
+                  </div>
+                  <div className="mb-3">
                     <Label>First Name</Label>
                     <Input
                       placeholder="John"
@@ -216,6 +226,21 @@ export function AdminUserDetails() {
                       disabled={user?.deletion_in_progress}
                     />
                     <FormFeedback>{validation.errors.lastName}</FormFeedback>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <div className="mb-3">
+                      <label className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          name="approved"
+                          checked={validation.values.approved}
+                          onClick={validation.handleChange}
+                          disabled={user?.is_superuser || user?.deletion_in_progress}
+                        />
+                        <span className="form-check-label">Approved</span>
+                      </label>
+                    </div>
                   </div>
                   <p>
                     <b>Email</b>

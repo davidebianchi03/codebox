@@ -89,6 +89,7 @@ type AdminUserSerializer struct {
 	IsTemplateManager  bool    `json:"is_template_manager"`
 	DeletionInProgress bool    `json:"deletion_in_progress"`
 	EmailVerified      bool    `json:"email_verified"`
+	Approved           bool    `json:"approved"`
 	LastLogin          *string `json:"last_login"`
 	CreatedAt          string  `json:"created_at"`
 }
@@ -114,6 +115,7 @@ func LoadAdminUserSerializer(user *models.User) *AdminUserSerializer {
 		IsSuperUser:        user.IsSuperuser,
 		IsTemplateManager:  user.IsTemplateManager,
 		EmailVerified:      user.EmailVerified,
+		Approved:           user.Approved,
 		LastLogin:          lastLoginPtr,
 		CreatedAt:          user.CreatedAt.Format(time.RFC3339),
 		DeletionInProgress: user.DeletionInProgress,

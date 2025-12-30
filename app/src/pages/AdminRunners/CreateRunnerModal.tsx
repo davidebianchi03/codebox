@@ -120,7 +120,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
           HandleCloseModal(null, null);
         }}
       >
-        Add new runner
+        Register a new runner
       </ModalHeader>
       <ModalBody>
         <form
