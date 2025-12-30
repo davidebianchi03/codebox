@@ -71,7 +71,7 @@ func HandleUpdateAuthenticationSettings(c *gin.Context) {
 		return
 	}
 
-	is, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
+	s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
 	if err != nil {
 		utils.ErrorResponse(
 			c,
@@ -81,11 +81,11 @@ func HandleUpdateAuthenticationSettings(c *gin.Context) {
 		return
 	}
 
-	is.IsSignUpOpen = *parsedBody.IsSignUpOpen
-	is.IsSignUpRestricted = *parsedBody.IsSignUpRestricted
-	is.AllowedEmailRegex = *parsedBody.AllowedEmailRegex
-	is.BlockedEmailRegex = *parsedBody.BlockedEmailRegex
-	is.SaveSingletonModel()
+	s.IsSignUpOpen = *parsedBody.IsSignUpOpen
+	s.IsSignUpRestricted = *parsedBody.IsSignUpRestricted
+	s.AllowedEmailRegex = *parsedBody.AllowedEmailRegex
+	s.BlockedEmailRegex = *parsedBody.BlockedEmailRegex
+	models.SaveSingletonModel(s)
 
-	c.JSON(http.StatusOK, serializers.LoadAuthenticationSettingsSerializer(is))
+	c.JSON(http.StatusOK, serializers.LoadAuthenticationSettingsSerializer(s))
 }

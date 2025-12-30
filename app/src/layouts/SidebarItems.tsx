@@ -34,20 +34,4 @@ export const SuperUserSidebarItems: SidebarItem[] = [
         type: "link",
         link: "/admin/authentication-settings"
     },
-    // {
-    //     title: "Credits",
-    //     type: "header"
-    // },
-    // {
-    //     title: "License",
-    //     icon: <LicenseIcon />,
-    //     type: "link",
-    //     link: "/admin/license"
-    // },
-    // {
-    //     title: "Third party packages",
-    //     icon: <PackagesIcon />,
-    //     type: "link",
-    //     link: "/admin/3rd-packages"
-    // },
 ];

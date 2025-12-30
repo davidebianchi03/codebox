@@ -31,7 +31,7 @@ func TestSignup(t *testing.T) {
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -82,7 +82,7 @@ func TestSignupExistingEmail(t *testing.T) {
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -196,7 +196,7 @@ func TestSignupRegistrationClosed(t *testing.T) {
 			return
 		}
 		s.IsSignUpOpen = false
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -249,7 +249,7 @@ func TestSignupRegistrationRestricted(t *testing.T) {
 		s.IsSignUpOpen = true
 		s.IsSignUpRestricted = true
 		s.AllowedEmailRegex = `^.*@allowed-domain\.com$`
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -328,7 +328,7 @@ func TestSignupBlacklistedEmail(t *testing.T) {
 		}
 		s.IsSignUpOpen = true
 		s.BlockedEmailRegex = `^.*@blacklisted-domain\.com$`
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -401,7 +401,7 @@ func TestSignupInvalidEmail(t *testing.T) {
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -440,7 +440,7 @@ func TestSignupInvalidPassword(t *testing.T) {
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}
@@ -479,7 +479,7 @@ func TestSignupMissingFields(t *testing.T) {
 			return
 		}
 		s.IsSignUpOpen = true
-		if err := s.SaveSingletonModel(); err != nil {
+		if err := models.SaveSingletonModel(s); err != nil {
 			t.Fatalf("Failed to update instance settings: '%s'", err)
 			return
 		}

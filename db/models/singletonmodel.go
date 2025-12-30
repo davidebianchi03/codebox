@@ -18,6 +18,14 @@ type SingletonModel struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
+func (s *SingletonModel) SetID(id uint) {
+	s.ID = id
+}
+
+func (s *SingletonModel) GetID() uint {
+	return s.ID
+}
+
 /*
 Get the instance of a singleton model
 */
@@ -33,13 +41,17 @@ func GetSingletonModelInstance[T any]() (*T, error) {
 	return &m, nil
 }
 
+type HasID interface {
+	SetID(uint)
+	GetID() uint
+}
+
 /*
 Save a singleton model, instances of a singleton model
 always have as id 1
 */
-func (s *SingletonModel) SaveSingletonModel() error {
-	s.ID = 1
-
+func SaveSingletonModel[T HasID](s T) error {
+	s.SetID(1)
 	if err := dbconn.DB.
 		Save(s).Error; err != nil {
 		return err
