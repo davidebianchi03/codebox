@@ -127,3 +127,17 @@ func LoadMultipleAdminUserSerializer(users []models.User) []AdminUserSerializer 
 	}
 	return serializers
 }
+
+/*
+Serializer used in the endpoint to check if at least
+one user exists
+*/
+type InitialUserExistsSerializer struct {
+	Exists bool `json:"exists"`
+}
+
+func LoadInitialUserExistsSerializer(exists bool) InitialUserExistsSerializer {
+	return InitialUserExistsSerializer{
+		Exists: exists,
+	}
+}

@@ -6,23 +6,26 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/emails"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
-
-	httperrors "gitlab.com/codebox4073715/codebox/httpserver/errors"
 )
 
-// TODO: ratelimit
-// GET /api/v1/auth/initial-user-exists
-// retrieve if at least one user exists for the current instance of codebox
-// this api is used to redirect users to signup page to create the first user
+// HandleRetrieveInitialUserExists godoc
+// @Summary Check if at lease one user exists
+// @Schemes
+// @Description retrieve if at least one user exists for the current instance of codebox
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.InitialUserExistsSerializer
+// @Failure 429 "Ratelimit exceeded"
+// @Router /api/v1/auth/initial-user-exists [get]
 func HandleRetrieveInitialUserExists(c *gin.Context) {
-	var usersCount int64
-	if err := dbconn.DB.Model(models.User{}).Count(&usersCount).Error; err != nil {
-		httperrors.RenderError(
+	count, err := models.CountAllUsers()
+	if err != nil {
+		utils.ErrorResponse(
 			c,
 			http.StatusInternalServerError,
 			"internal server error",
@@ -30,9 +33,10 @@ func HandleRetrieveInitialUserExists(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"exists": usersCount > 0,
-	})
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadInitialUserExistsSerializer(count > 0),
+	)
 }
 
 type SignUpRequestBody struct {
