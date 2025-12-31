@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Card, CardBody, Col, Row } from "reactstrap";
+import { Card, CardBody, Col, Row } from "reactstrap";
 
 export function SettingsFormPlaceholder() {
     return (

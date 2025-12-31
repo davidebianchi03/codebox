@@ -160,7 +160,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
           <div className="mb-3">
             <label className="form-check">
               <input
-                className="form-check-input"
+                className="form-check-input form-check-input-light"
                 type="checkbox"
                 name="usePublicUrl"
                 onChange={(e) => {

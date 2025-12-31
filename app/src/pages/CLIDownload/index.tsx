@@ -58,10 +58,10 @@ export function CLIDownloadPage() {
                                                     </a>
                                                 </p>
                                                 <p className="d-flex gap-2 mb-0">
-                                                    <Badge color="light" className="text-white">
+                                                    <Badge color="light" className="text-dark">
                                                         {build.architecture}
                                                     </Badge>
-                                                    <Badge color="light" className="text-white">
+                                                    <Badge color="light" className="text-dark">
                                                         {build.type}
                                                     </Badge>
                                                 </p>
@@ -95,10 +95,10 @@ export function CLIDownloadPage() {
                                                     </a>
                                                 </p>
                                                 <p className="d-flex gap-2 mb-0">
-                                                    <Badge color="light" className="text-white">
+                                                    <Badge color="light" className="text-dark">
                                                         {build.architecture}
                                                     </Badge>
-                                                    <Badge color="light" className="text-white">
+                                                    <Badge color="light" className="text-dark">
                                                         {build.type}
                                                     </Badge>
                                                 </p>
@@ -148,10 +148,10 @@ export function CLIDownloadPage() {
                                                     </a>
                                                 </p>
                                                 <p className="d-flex gap-2 mb-0">
-                                                    <Badge color="light" className="text-white">
+                                                    <Badge color="light" className="text-dark">
                                                         {build.architecture}
                                                     </Badge>
-                                                    <Badge color="light" className="text-white">
+                                                    <Badge color="light" className="text-dark">
                                                         {build.type}
                                                     </Badge>
                                                 </p>
