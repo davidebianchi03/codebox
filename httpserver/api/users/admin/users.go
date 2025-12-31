@@ -205,7 +205,7 @@ func HandleAdminUpdateUser(c *gin.Context) {
 	user.IsSuperuser = *requestBody.IsSuperuser
 	user.IsTemplateManager = *requestBody.IsTemplateManager
 	user.EmailVerified = *requestBody.EmailVerified
-	user.Approved = *requestBody.Approved
+	user.Approved = *requestBody.Approved || *requestBody.IsSuperuser
 
 	if err := models.UpdateUser(user); err != nil {
 		utils.ErrorResponse(c, 500, "internal server error")

@@ -28,7 +28,11 @@ type LoginRequestBody struct {
 // @Produce json
 // @Param request body LoginRequestBody true "Credentials"
 // @Success 200 {object} serializers.TokenSerializer
+// @Failure 400 "Invalid credentials or already logged in"
+// @Failure 406 "User not approved"
+// @Failure 412 "Email not verified"
 // @Failure 429 "Ratelimit exceeded"
+// @Failure 500 "Internal server error"
 // @Router /api/v1/auth/login [post]
 func HandleLogin(c *gin.Context) {
 	_, err := utils.GetUserFromContext(c)
@@ -41,21 +45,35 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
+	s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
 	var requestBody *LoginRequestBody
 
 	err = c.ShouldBindBodyWithJSON(&requestBody)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"detail": "missing or invalid field",
-		})
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"missing or invalid field",
+		)
 		return
 	}
 
 	user, err := models.RetrieveUserByEmail(requestBody.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"detail": "internal server error",
-		})
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
 		return
 	}
 
@@ -112,6 +130,14 @@ func HandleLogin(c *gin.Context) {
 			"the email address has not yet been verified",
 		)
 		return
+	}
+
+	if s.UsersMustBeApproved && !user.Approved {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotAcceptable,
+			"user not approved, your account need approval from ad admin",
+		)
 	}
 
 	token, err := models.CreateToken(*user, time.Duration(time.Hour*24*20))

@@ -96,6 +96,12 @@ export default function LoginPage() {
         password: "",
         nonFieldError: "Too many requests, try again later",
       });
+    } else if (code === APILoginCode.ACCOUNT_NOT_APPROVED) {
+      setErrors({
+        email: "",
+        password: "",
+        nonFieldError: "Account not approved, your account must be approved by an admin",
+      });
     } else {
       setErrors({
         email: "",

@@ -2,6 +2,7 @@ import axios, { isAxiosError } from "axios";
 
 export enum APILoginCode {
     SUCCESS,
+    ACCOUNT_NOT_APPROVED,
     EMAIL_NOT_VERIFIED,
     RATELIMIT,
     ERROR,
@@ -24,7 +25,12 @@ export async function APILogin(
         };
     } catch (error) {
         if (isAxiosError(error)) {
-            if (error.response?.status === 412) {
+            if (error.response?.status === 406) {
+                return {
+                    code: APILoginCode.ACCOUNT_NOT_APPROVED,
+                    token: null,
+                };
+            }else if (error.response?.status === 412) {
                 return {
                     code: APILoginCode.EMAIL_NOT_VERIFIED,
                     token: null,
