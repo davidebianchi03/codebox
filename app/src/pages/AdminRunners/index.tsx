@@ -57,7 +57,7 @@ export function AdminRunners() {
         </div>
         <div className="col-auto ms-auto d-print-none">
           <Button color="light" onClick={() => setCreateRunnerModal(true)}>
-            Add new runner
+            New runner
           </Button>
         </div>
       </div>
@@ -65,9 +65,9 @@ export function AdminRunners() {
         <Row>
           <Col md={12}>
             <Card style={{ borderRadius: 5 }}>
-              <CardBody className="bg-primary" style={{ borderRadius: 5 }}>
+              <CardBody style={{ borderRadius: 5, background: "rgba(var(--tblr-primary-rgb), 0.5)" }}>
                 <div className="d-flex justify-content-between">
-                  <h3>Runner has been created</h3>
+                  <h3>New runner has been created</h3>
                   <Button
                     className="bg-transparent p-0 m-0"
                     style={{ height: 25 }}
@@ -89,7 +89,7 @@ export function AdminRunners() {
                   </Label>
                   <Input
                     value={runnerId}
-                    style={{ background: "var(--tblr-primary-darken)" }}
+                    style={{ background: "transparent" }}
                     className="text-white"
                     disabled
                   />
@@ -109,7 +109,7 @@ export function AdminRunners() {
                   </Label>
                   <Input
                     value={runnerToken}
-                    style={{ background: "var(--tblr-primary-darken)" }}
+                    style={{ background: "transparent" }}
                     className="text-white"
                     disabled
                   />
@@ -147,7 +147,7 @@ export function AdminRunners() {
                           </Badge>
                         </React.Fragment>
                       )}
-                      {recommendedRunnerVersion !== runner.version && (
+                      {recommendedRunnerVersion !== runner.version && runner.version && (
                         <React.Fragment>
                           <Badge
                             color="warning"

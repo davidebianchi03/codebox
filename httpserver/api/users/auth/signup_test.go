@@ -174,6 +174,7 @@ func TestSignupFirstUser(t *testing.T) {
 
 		assert.True(t, user.IsSuperuser, "first signed up user should be a superuser")
 		assert.True(t, user.EmailVerified, "first signed up user's email should be verified")
+		assert.True(t, user.Approved, "first signed up user should be approved")
 	})
 }
 
@@ -528,5 +529,78 @@ func TestSignupMissingFields(t *testing.T) {
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 		}
+	})
+}
+
+/*
+Test the auto approve behavior
+*/
+func TestSignupUserMatchingAutoApprovedRegex(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
+		if err != nil {
+			t.Fatalf("Failed to retrieve instance settings: '%s'", err)
+			return
+		}
+		// enable signup in config
+		s.IsSignUpOpen = true
+		// add an entry to auto approved users regex
+		s.ApprovedByDefaultEmailRegex = `^.*@autoapproved\.com$`
+		if err := models.SaveSingletonModel(s); err != nil {
+			t.Fatalf("Failed to update instance settings: '%s'", err)
+			return
+		}
+
+		loginReqBody := auth.SignUpRequestBody{
+			Email:     "pippo@pluto.com",
+			FirstName: "pippo",
+			LastName:  "pluto",
+			Password:  "Password.123455",
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/signup",
+			"POST",
+			loginReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		user, err := models.RetrieveUserByEmail("pippo@pluto.com")
+		if err != nil || user == nil {
+			t.Fatalf("Failed to retrieve test user: '%s'", err)
+		}
+		// this user should not be approved
+		assert.False(t, user.Approved)
+
+		// now signup with an email that ends with autoapproved.com
+		loginReqBody = auth.SignUpRequestBody{
+			Email:     "pippo@autoapproved.com",
+			FirstName: "pippo",
+			LastName:  "pluto",
+			Password:  "Password.123455",
+		}
+
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/signup",
+			"POST",
+			loginReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+		user, err = models.RetrieveUserByEmail("pippo@autoapproved.com")
+		if err != nil || user == nil {
+			t.Fatalf("Failed to retrieve test user: '%s'", err)
+		}
+		// this user should be approved
+		assert.True(t, user.Approved)
 	})
 }

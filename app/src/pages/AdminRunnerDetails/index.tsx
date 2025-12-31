@@ -178,7 +178,7 @@ export function AdminRunnerDetails() {
 
         {runner && (
           <React.Fragment>
-            {recommendedRunnerVersion !== runner.version && (
+            {runner.version && recommendedRunnerVersion !== runner.version && (
               <React.Fragment>
                 <Row className="mb-4">
                   <Col>

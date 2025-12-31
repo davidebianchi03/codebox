@@ -11,6 +11,7 @@ CREATE TABLE `authentication_settings` (
   `allowed_email_regex` text NULL,
   `blocked_email_regex` text NULL,
   `users_must_be_approved` bool NULL DEFAULT 0,
+  `approved_by_default_email_regex` text NULL,
   PRIMARY KEY (`id`),
   INDEX `idx_authentication_settings_deleted_at` (`deleted_at`)
 ) CHARSET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
