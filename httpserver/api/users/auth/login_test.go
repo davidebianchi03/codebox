@@ -285,3 +285,62 @@ func TestLoginRatelimit(t *testing.T) {
 		assert.Equal(t, 1, len(keys))
 	})
 }
+
+/*
+Try to login with a user that is not approved
+*/
+func TestLoginUserNotApproved(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Error(err)
+		}
+		user.Approved = false
+		if err := models.UpdateUser(user); err != nil {
+			t.Error(err)
+		}
+
+		loginReqBody := auth.LoginRequestBody{
+			Email:    "user1@user.com",
+			Password: "password",
+		}
+
+		// should succed because it's not required users approval by
+		// an admin
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/login",
+			"POST",
+			loginReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// try again, this time users must be approved to login
+		// should succed because it's not required users approval by
+		// an admin
+		s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
+		if err != nil {
+			t.Error(err)
+		}
+		s.UsersMustBeApproved = true
+		if err := models.SaveSingletonModel(s); err != nil {
+			t.Error(err)
+		}
+
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/login",
+			"POST",
+			loginReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotAcceptable, w.Code)
+	})
+}

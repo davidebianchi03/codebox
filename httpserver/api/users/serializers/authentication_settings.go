@@ -1,6 +1,10 @@
 package serializers
 
-import "gitlab.com/codebox4073715/codebox/db/models"
+import (
+	"encoding/json"
+
+	"gitlab.com/codebox4073715/codebox/db/models"
+)
 
 type AuthenticationSettingsSerializer struct {
 	IsSignUpOpen                bool   `json:"is_signup_open"`
@@ -24,6 +28,14 @@ func LoadAuthenticationSettingsSerializer(s *models.AuthenticationSettings) *Aut
 		UsersMustBeApproved:         s.UsersMustBeApproved,
 		ApprovedByDefaultEmailRegex: s.ApprovedByDefaultEmailRegex,
 	}
+}
+
+func AuthenticationSettingsSerializerFromJSON(data string) (AuthenticationSettingsSerializer, error) {
+	var as AuthenticationSettingsSerializer
+	if err := json.Unmarshal([]byte(data), &as); err != nil {
+		return AuthenticationSettingsSerializer{}, err
+	}
+	return as, nil
 }
 
 type EmailServiceConfiguredSerializer struct {
