@@ -152,7 +152,7 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace }: Props) {
               >
                 Close
               </Button>
-              <Button color="primary" className="ms-2" type="submit">
+              <Button color="light" className="ms-2" type="submit">
                 Save
               </Button>
             </div>

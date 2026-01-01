@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Button, Input, InputGroup, InputGroupText, Row } from "reactstrap";
+import React, { useState } from "react";
 import { faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, InputGroup, Form } from "react-bootstrap";
+import { TrashIcon } from "../icons/Tabler";
 
 interface EnvEditorProps {
     value?: string;
@@ -17,7 +18,7 @@ export function EnvEditor({ value = "", onChange = () => { }, invalid }: EnvEdit
         <React.Fragment>
             {advancedModeEnabled ? (
                 <React.Fragment>
-                    <Button color="link" className="p-0 my-2" onClick={(e) => {
+                    <Button variant="link" className="p-0 my-2" onClick={(e) => {
                         e.preventDefault();
                         setAdvancedModeEnabled(false);
                         onChange(value.trimEnd())
@@ -35,7 +36,7 @@ export function EnvEditor({ value = "", onChange = () => { }, invalid }: EnvEdit
                 </React.Fragment>
             ) : (
                 <React.Fragment>
-                    <Button color="link" className="p-0 my-2" onClick={(e) => {
+                    <Button variant="link" className="p-0 my-2" onClick={(e) => {
                         e.preventDefault();
                         setAdvancedModeEnabled(true);
                     }}>
@@ -59,7 +60,7 @@ export function EnvEditor({ value = "", onChange = () => { }, invalid }: EnvEdit
                         ))
                     }
                     <Button
-                        color="accent"
+                        variant="accent"
                         className="mt-3"
                         onClick={(e) => {
                             e.preventDefault();
@@ -94,30 +95,34 @@ export function EnvEditorRow({ value = "", onChange, onDelete = () => { } }: Env
         <React.Fragment>
             <div className="d-flex gap-3 my-2">
                 <InputGroup>
-                    <InputGroupText>
+                    <InputGroup.Text>
                         name*
-                    </InputGroupText>
-                    <Input
+                    </InputGroup.Text>
+                    <Form.Control
                         placeholder="VAR1"
                         value={name}
                         onChange={(e) => onChange?.(`${e.target.value}=${val}`)}
                     />
                 </InputGroup>
                 <InputGroup>
-                    <InputGroupText>
+                    <InputGroup.Text>
                         value
-                    </InputGroupText>
-                    <Input
+                    </InputGroup.Text>
+                    <Form.Control
                         placeholder="VALUE1"
                         value={val}
                         onChange={(e) => onChange?.(`${name}=${e.target.value}`)}
                     />
                 </InputGroup>
-                <Button color="danger" onClick={(e) => {
-                    e.preventDefault();
-                    onDelete();
-                }}>
-                    <FontAwesomeIcon icon={faTrashCan} />
+                <Button
+                    variant="danger"
+                    className="d-flex btn-icon-only btn-remove-env-item"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onDelete();
+                    }}
+                >
+                    <TrashIcon />
                 </Button>
             </div>
         </React.Fragment>

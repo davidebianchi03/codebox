@@ -1,5 +1,5 @@
 import { SidebarItem } from "./Sidebar";
-import { BackhoeIcon, HomeIcon, UserIcon } from "../icons/Tabler";
+import { BackhoeIcon, HomeIcon, ShieldIcon, UserIcon } from "../icons/Tabler";
 
 export const SuperUserSidebarItems: SidebarItem[] = [
     {
@@ -24,30 +24,14 @@ export const SuperUserSidebarItems: SidebarItem[] = [
         icon: <BackhoeIcon />, type: "link", link: "/admin/runners",
         activeOnLinks: ["/admin/runners", "/admin/runners/:id"]
     },
-    // {
-    //     title: "System",
-    //     type: "header"
-    // },
-    // {
-    //     title: "Authentication",
-    //     icon: <PasswordUserIcon />,
-    //     type: "link",
-    //     link: "/admin/auth"
-    // },
-    // {
-    //     title: "Credits",
-    //     type: "header"
-    // },
-    // {
-    //     title: "License",
-    //     icon: <LicenseIcon />,
-    //     type: "link",
-    //     link: "/admin/license"
-    // },
-    // {
-    //     title: "Third party packages",
-    //     icon: <PackagesIcon />,
-    //     type: "link",
-    //     link: "/admin/3rd-packages"
-    // },
+    {
+        title: "Instance Settings",
+        type: "header"
+    },
+    {
+        title: "Authentication",
+        icon: <ShieldIcon />,
+        type: "link",
+        link: "/admin/authentication-settings"
+    },
 ];

@@ -1,0 +1,8 @@
+{{ define "title" }}Sign-up Attempt Notice{{ end }}
+
+{{ define "content" }}
+Someone recently attempted to sign up for a Codebox account using this email address. However, this email is already linked to an existing account.
+If this was you, no further action is needed — you can simply sign in to your existing account.
+If you did not attempt to sign up, you can safely ignore this message.
+However, if you notice any unusual activity on your account, consider changing your password to protect your account.
+{{ end }}

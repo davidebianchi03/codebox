@@ -1,0 +1,9 @@
+{{ define "title" }}Verify your email address{{ end }}
+
+{{ define "content" }}
+Visit the url below to verify your email address for your codebox account:
+
+{{ .verification_url }}
+
+If you did not create this account, no further action is required.
+{{ end }}

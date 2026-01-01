@@ -20,7 +20,7 @@ curl --output docker-compose.yml "https://gitlab.com/api/v4/projects/68940432/re
 
 The stack requires two environment variables to start:
 
-- `CODEBOX_EXTERNAL_URL`: the url of the codebox instance
+- `CODEBOX_EXTERNAL_URL`: the url of the codebox instance. e.g. `https://codebox.example.com`
 - `CODEBOX_WILDCARD_DOMAIN`: codebox allows you to expose ports running HTTP-based services either public or with password authentication. The ports will be exposed through subdomains of this domain. You will need to define a DNS record with a name such as `*.codebox.my-domain.com`.
 
 You can see the list of all available parameters [here](./configuration.md).

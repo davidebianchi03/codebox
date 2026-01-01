@@ -25,7 +25,9 @@ type User struct {
 	SshPublicKey       string         `gorm:"column:ssh_public_key; not null;" json:"-"`
 	IsSuperuser        bool           `gorm:"column:is_superuser; column:is_superuser; default:false" json:"is_superuser"`
 	IsTemplateManager  bool           `gorm:"column:is_template_manager; default:false" json:"is_template_manager"`
+	Approved           bool           `gorm:"column:approved; default: false;" json:"-"`
 	DeletionInProgress bool           `gorm:"column:deletion_in_progress;default:false;not null;"`
+	EmailVerified      bool           `gorm:"column:email_verified;default:false;not null;"`
 	CreatedAt          time.Time      `json:"-"`
 	UpdatedAt          time.Time      `json:"-"`
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
@@ -92,6 +94,10 @@ the most recent token creation time.
 If the user has never logged in, it returns nil.
 */
 func (u *User) GetLastLogin() (*time.Time, error) {
+	if u.ID <= 0 {
+		return nil, nil
+	}
+
 	var token Token
 	result := dbconn.DB.Where("user_id = ?", u.ID).Order("created_at DESC").First(&token)
 	if result.Error != nil {
@@ -134,6 +140,8 @@ func CreateUser(
 	password string,
 	isSuperUser bool,
 	isTemplateManager bool,
+	emailVerified bool,
+	approved bool,
 ) (*User, error) {
 	password, err := HashPassword(password)
 	if err != nil {
@@ -148,6 +156,8 @@ func CreateUser(
 		Password:          password,
 		IsSuperuser:       isSuperUser,
 		IsTemplateManager: isTemplateManager,
+		EmailVerified:     emailVerified,
+		Approved:          approved,
 	}
 
 	r := dbconn.DB.Create(&newUser)
@@ -178,6 +188,9 @@ RetrieveUserByEmail retrieves a user by their email address.
 func RetrieveUserByEmail(email string) (user *User, err error) {
 	result := dbconn.DB.Where("email=?", email).Find(&user)
 	if result.Error != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 

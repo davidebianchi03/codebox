@@ -120,7 +120,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
           HandleCloseModal(null, null);
         }}
       >
-        Add new runner
+        Register a new runner
       </ModalHeader>
       <ModalBody>
         <form
@@ -160,7 +160,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
           <div className="mb-3">
             <label className="form-check">
               <input
-                className="form-check-input"
+                className="form-check-input form-check-input-light"
                 type="checkbox"
                 name="usePublicUrl"
                 onChange={(e) => {
@@ -196,7 +196,7 @@ export function CreateRunnerModal({ isOpen, onClose }: Props) {
             >
               Cancel
             </Button>
-            <Button type="submit" color="primary">
+            <Button type="submit" color="light">
               Create
             </Button>
           </div>

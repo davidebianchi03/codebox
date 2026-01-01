@@ -29,13 +29,6 @@ export const ThirdPartyPackages: ThirdPartyPackage[] = [
         url: "https://github.com/reduxjs/redux"
     },
     {
-        name: "Apex Charts",
-        author: "",
-        license: "Community License",
-        description: "",
-        url: "https://github.com/apexcharts/apexcharts.js"
-    },
-    {
         name: "Axios",
         author: "axios",
         license: "MIT",

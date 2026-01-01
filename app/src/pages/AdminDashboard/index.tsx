@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { AdminRetrieveStats } from "../../api/admin";
 import { AdminStats } from "../../types/admin";
 import { LoginsInLast7Days } from "./LoginsInLast7Days";
-import { TimeSince } from "../../common/time";
 import { UsersListTable } from "./UsersListTable";
 import { RunnersListTable } from "./RunnersListTable";
 import { useSelector } from "react-redux";
@@ -38,28 +37,22 @@ export function AdminDashboard() {
                 <Row>
                     <Col md={12} className="mt-5">
                         <Row>
-                            <Col md={3} className="mb-4">
+                            <Col md={4} className="mb-3">
                                 <Card body>
                                     <h3>Total Users</h3>
                                     <h1>{stats?.total_users}</h1>
                                 </Card>
                             </Col>
-                            <Col md={3} className="mb-4">
+                            <Col md={4} className="mb-3">
                                 <Card body>
                                     <h3>Active Workspaces</h3>
                                     <h1>{stats?.online_workspaces}</h1>
                                 </Card>
                             </Col>
-                            <Col md={3} className="mb-4">
+                            <Col md={4} className="mb-3">
                                 <Card body>
                                     <h3>Online Runners</h3>
                                     <h1>{stats?.online_runners}</h1>
-                                </Card>
-                            </Col>
-                            <Col md={3} className="mb-4">
-                                <Card body>
-                                    <h3>Last Login</h3>
-                                    <h1>{user?.last_login ? TimeSince(new Date(user.last_login)) : "N/A"}</h1>
                                 </Card>
                             </Col>
                         </Row>

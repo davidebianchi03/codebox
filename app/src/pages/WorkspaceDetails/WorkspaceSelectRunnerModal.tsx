@@ -126,7 +126,7 @@ export function WorkspaceSelectRunnerModal({ isOpen, onClose, workspace }: Props
                 Close
               </Button>
               <Button
-                color="primary"
+                color="light"
                 className="ms-2"
                 type="submit"
                 disabled={saving}

@@ -11,6 +11,9 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
+/*
+Authenticate an http request
+*/
 func AuthenticateHttpRequest(t *testing.T, req *http.Request, user models.User) {
 	// create a fake token for the user
 	token, err := models.CreateToken(user, time.Duration(time.Hour*24*20))
@@ -22,6 +25,9 @@ func AuthenticateHttpRequest(t *testing.T, req *http.Request, user models.User) 
 	req.Header.Set("Authorization", "Bearer "+token.Token)
 }
 
+/*
+Create an http request with a json serialized body
+*/
 func CreateRequestWithJSONBody(t *testing.T, url, method string, body interface{}) *http.Request {
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
@@ -29,13 +35,16 @@ func CreateRequestWithJSONBody(t *testing.T, url, method string, body interface{
 		t.FailNow()
 	}
 
-	jsonBody, err := json.Marshal(body)
-	if err != nil {
-		t.Errorf("Failed to marshal request body: '%s'\n", err)
-		t.FailNow()
+	if body != nil {
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			t.Errorf("Failed to marshal request body: '%s'\n", err)
+			t.FailNow()
+		}
+
+		req.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
+		req.Header.Set("Content-Type", "application/json")
 	}
 
-	req.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
-	req.Header.Set("Content-Type", "application/json")
 	return req
 }

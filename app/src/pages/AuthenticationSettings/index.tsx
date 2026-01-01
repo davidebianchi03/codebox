@@ -1,0 +1,125 @@
+import { useFormik } from "formik";
+import React, { useCallback, useEffect, useState } from "react";
+import { Button, Card, CardBody, Col, Container, Row } from "reactstrap";
+import {
+    APIAdminEmailServiceConfigured,
+    APIAdminRetrieveAuthenticationSettings,
+    APIAdminUpdateAuthenticationSettings
+} from "../../api/common";
+import { toast, ToastContainer } from "react-toastify";
+import { SignSignUpCard } from "./SignSignUpCard";
+import { SettingsFormPlaceholder } from "./SettingsFormPlaceholder";
+
+export function AdminAuthenticationSettingsPage() {
+    const [loading, setLoading] = useState<boolean>(true);
+    const [emailServiceConfigured, setEmailServiceConfigured] = useState<boolean>(true);
+
+    const validation = useFormik({
+        initialValues: {
+            signUpOpen: false,
+            signUpRestricted: false,
+            allowedEmailRegex: "",
+            blacklistedEmailRegex: "",
+            usersMustBeApproved: false,
+            autoApprovedUsersRegex: "",
+        },
+        validateOnBlur: false,
+        validateOnChange: false,
+        onSubmit: async (values) => {
+            const r = await APIAdminUpdateAuthenticationSettings(
+                values.signUpOpen,
+                values.signUpRestricted,
+                values.allowedEmailRegex,
+                values.blacklistedEmailRegex,
+                values.usersMustBeApproved,
+                values.autoApprovedUsersRegex,
+            )
+
+            if (r) {
+                toast.success("Settings have been updated");
+                fetchConfig();
+            } else {
+                toast.error("An error occured, please try again later");
+            }
+        }
+    })
+
+    const fetchConfig = useCallback(async () => {
+        setLoading(true);
+        const s = await APIAdminRetrieveAuthenticationSettings();
+        if (s) {
+            validation.setValues({
+                signUpOpen: s.is_signup_open,
+                signUpRestricted: s.is_signup_restricted,
+                allowedEmailRegex: s.allowed_emails_regex,
+                blacklistedEmailRegex: s.blocked_emails_regex,
+                usersMustBeApproved: s.users_must_be_approved,
+                autoApprovedUsersRegex: s.approved_by_default_emails_regex,
+            })
+        } else {
+            toast.error("Failed to fetch settings, try again later");
+        }
+
+        const configured = await APIAdminEmailServiceConfigured();
+        setEmailServiceConfigured(configured);
+
+        setLoading(false);
+    }, []);
+
+    useEffect(() => {
+        fetchConfig();
+    }, [fetchConfig]);
+
+    return (
+        <React.Fragment>
+            <Container>
+                <div>
+                    <h2 className="mb-1">Authentication Settings</h2>
+                    <span className="text-muted">Manage sign-up and login</span>
+                </div>
+                {loading ? (
+                    <React.Fragment>
+                        <SettingsFormPlaceholder />
+                    </React.Fragment>
+                ) : (
+                    <React.Fragment>
+                        <form onSubmit={validation.handleSubmit}>
+                            <Row className="mt-4">
+                                <Col>
+                                    {emailServiceConfigured ? (
+                                        <React.Fragment>
+                                            <SignSignUpCard validation={validation} />
+                                            <Card className="mt-3">
+                                                <CardBody className="d-flex justify-content-end">
+                                                    <Button color="accent" className="me-2" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        validation.resetForm();
+                                                        fetchConfig();
+                                                    }}>
+                                                        Discard
+                                                    </Button>
+                                                    <Button color="light" type="submit">
+                                                        Save
+                                                    </Button>
+                                                </CardBody>
+                                            </Card>
+                                        </React.Fragment>
+                                    ) : (
+                                        <React.Fragment>
+                                            <div className="alert alert-warning">
+                                                Email server is not configured. Configure email server to enable instance settings.
+                                            </div>
+                                        </React.Fragment>
+                                    )}
+                                </Col>
+                            </Row>
+                        </form>
+                    </React.Fragment>
+                )}
+                <ToastContainer
+                    toastClassName={"bg-dark"}
+                />
+            </Container>
+        </React.Fragment >
+    )
+}

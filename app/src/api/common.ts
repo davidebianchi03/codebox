@@ -1,6 +1,6 @@
 import axios from "axios";
 import { CurrentUser, User } from "../types/user";
-import { InstanceSettings } from "../types/settings";
+import { AuthenticationSettings } from "../types/settings";
 
 export async function RetrieveCurrentUserDetails(): Promise<CurrentUser | undefined> {
     try {
@@ -44,9 +44,35 @@ export async function Logout(): Promise<boolean> {
     }
 }
 
-export async function RetrieveInstanceSettings(): Promise<InstanceSettings | undefined> {
+export async function APIAdminRetrieveAuthenticationSettings(): Promise<AuthenticationSettings | undefined> {
     try {
-        const response = await axios.get<InstanceSettings>(`/api/v1/instance-settings`);
+        const response = await axios.get<AuthenticationSettings>(`/api/v1/admin/authentication-settings`);
+        return response.data;
+    } catch {
+        return undefined;
+    }
+}
+
+export async function APIAdminUpdateAuthenticationSettings(
+    isSignupOpen: boolean,
+    isSignupRestricted: boolean,
+    allowedEmailsRegex: string,
+    blockedEmailsRegex: string,
+    usersMustBeApproved: boolean,
+    approvedByDefaultEmailsRegex: string,
+): Promise<AuthenticationSettings | undefined> {
+    try {
+        const response = await axios.put<AuthenticationSettings>(
+            `/api/v1/admin/authentication-settings`,
+            {
+                is_signup_open: isSignupOpen,
+                is_signup_restricted: isSignupRestricted,
+                allowed_emails_regex: allowedEmailsRegex,
+                blocked_emails_regex: blockedEmailsRegex,
+                users_must_be_approved: usersMustBeApproved,
+                approved_by_default_emails_regex: approvedByDefaultEmailsRegex,
+            }
+        );
         return response.data;
     } catch {
         return undefined;
@@ -59,6 +85,15 @@ export async function RequestApiToken(): Promise<string | undefined> {
         return response.data.token;
     } catch {
         return undefined;
+    }
+}
+
+export async function APISignUpOpen(): Promise<boolean> {
+    try {
+        const response = await axios.get<{ is_signup_open: boolean }>(`/api/v1/auth/is-signup-open`);
+        return response.data.is_signup_open;
+    } catch {
+        return false;
     }
 }
 
@@ -82,6 +117,15 @@ export async function APIChangePassword(currentPassword: string, newPassword: st
         );
         return true;
     } catch {
+        return false;
+    }
+}
+
+export async function APIAdminEmailServiceConfigured(): Promise<boolean> {
+    try {
+        const response = await axios.get<{ is_configured: boolean }>(`/api/v1/admin/email-service-configured`);
+        return response.data.is_configured;
+    } catch (error) {
         return false;
     }
 }

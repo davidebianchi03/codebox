@@ -32,6 +32,19 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Reset ratelimit",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "reset-ratelimit"
+            ],
+            "env": {
+                "DOCKER_API_VERSION": "1.45",
+            },
+        },
+        {
             "name": "Debug react - chrome",
             "type": "chrome",
             "request": "launch",
@@ -45,6 +58,6 @@
             "mode": "test",
             "program": "${fileDirname}",
             "cwd": "${workspaceFolder}",
-        }
+        },
     ]
 }

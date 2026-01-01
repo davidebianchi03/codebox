@@ -1,6 +1,7 @@
 import { Link, matchPath, useLocation } from "react-router-dom";
 import CodeboxLogo from "../assets/images/codebox-logo-white.png";
 import { UserDropdown } from "../components/UserDropdown";
+import { useEffect, useState } from "react";
 
 export interface SidebarItem {
     title: string;
@@ -16,6 +17,11 @@ interface SidebarProps {
 
 export const Sidebar = ({ sidebarItems }: SidebarProps) => {
     const location = useLocation();
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        setIsOpen(false);
+    }, [location]);
 
     return (
         <aside className="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
@@ -28,6 +34,7 @@ export const Sidebar = ({ sidebarItems }: SidebarProps) => {
                     aria-controls="sidebar-menu"
                     aria-expanded="false"
                     aria-label="Toggle navigation"
+                    onClick={() => setIsOpen(!isOpen)}
                 >
                     <span className="navbar-toggler-icon"></span>
                 </button>
@@ -39,7 +46,7 @@ export const Sidebar = ({ sidebarItems }: SidebarProps) => {
                 <div className="navbar-nav flex-row d-lg-none">
                     <UserDropdown />
                 </div>
-                <div className="navbar-collapse collapse" id="sidebar-menu">
+                <div className={`navbar-collapse collapse ${isOpen && "show"}`} id="sidebar-menu">
                     <ul className="navbar-nav pt-lg-3">
                         {
                             sidebarItems.map((item, index) => {

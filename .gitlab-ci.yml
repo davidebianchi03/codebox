@@ -13,31 +13,44 @@ unit_tests:
   services:
     - name: mysql:8.0.41
       alias: mysql
+    - name: redis:7.4.1
+      alias: redis
   variables:
     MYSQL_ROOT_PASSWORD: password
     MYSQL_DATABASE: codebox-test
     MYSQL_USER: codebox
     MYSQL_PASSWORD: password
+    GOPATH: "$CI_PROJECT_DIR/.go"
+    GOMODCACHE: "$GOPATH/pkg/mod"
+    GOCACHE: "$GOPATH/cache"
+  cache:
+    key: go-modules
+    paths:
+      - .go/pkg/mod
+      - .go/cache
   script:
     - cp .gitlab-ci/codebox.test.env codebox.env
     - go mod tidy
-    - export CODEBOX_BASE_DIR=$(pwd)
-    - export CODEBOX_ENV_FILE="${CODEBOX_BASE_DIR}/codebox.env"
-    - echo "CODEBOX_BASE_DIR is set to ${CODEBOX_BASE_DIR}"
+    - export GIN_MODE=release
+    - export BASE_DIR=$(pwd)
+    - export CODEBOX_ENV_FILE="${BASE_DIR}/codebox.env"
+    - export CODEBOX_TEMPLATES_FOLDER="${BASE_DIR}/templates"
     - echo "CODEBOX_ENV_FILE is set to ${CODEBOX_ENV_FILE}"
+    - echo "CODEBOX_TEMPLATES_FOLDER is set to ${CODEBOX_TEMPLATES_FOLDER}"
     - echo "Migrating test db..."
     - ./scripts/migrate-test-db.sh
     - echo "Running tests..."
-    - go test -v ./... -coverprofile=coverage.out
+    - go test -v -p 1 ./... -coverprofile=coverage.out
     - go tool cover -func=coverage.out | grep total | awk '{print $3}'
   artifacts:
     paths:
       - coverage.out
   coverage: '/total:\s+\(.*\)\s+([0-9\.]+)%/'
   rules:
-    - if: $CI_COMMIT_TAG
-      when: never 
-    - when: always  
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: always
 
 pages:
   stage: pages

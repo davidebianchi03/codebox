@@ -11,7 +11,16 @@ import (
 	cryptossh "golang.org/x/crypto/ssh"
 )
 
-func CloneRepo(repositoryURL string, referenceName string, outputFolder string, privateKey []byte, depth int) (err error) {
+/*
+Method to clone a Git repository, supporting both HTTP(S) and SSH authentication.
+*/
+func CloneRepo(
+	repositoryURL string,
+	referenceName string,
+	outputFolder string,
+	privateKey []byte,
+	depth int,
+) (err error) {
 	// manage authentication
 	var gitAuth transport.AuthMethod
 	if strings.HasPrefix(repositoryURL, "http") {
@@ -30,7 +39,7 @@ func CloneRepo(repositoryURL string, referenceName string, outputFolder string, 
 		&git.CloneOptions{
 			URL:             repositoryURL,
 			InsecureSkipTLS: true,
-			Depth:           depth, // retrieve only latest commit
+			Depth:           depth, // how many commits of history to clone
 			SingleBranch:    true,
 			ReferenceName:   plumbing.ReferenceName(referenceName),
 			Auth:            gitAuth,

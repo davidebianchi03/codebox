@@ -17,11 +17,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
-import { AdminListRunners } from "../../api/runner";
+import { AdminListRunners, AdminRetrieveRecommendedRunnerVersion } from "../../api/runner";
 import DataTable from "../../components/DataTable";
 import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
 
 export function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
@@ -29,7 +27,7 @@ export function AdminRunners() {
     useState<boolean>(false);
   const [runnerToken, setRunnerToken] = useState<string>("");
   const [runnerId, setRunnerID] = useState<string>("");
-  const settings = useSelector((state: RootState) => state.settings);
+  const [recommendedRunnerVersion, setRecommendedRunnerVersion] = useState<string>("");
 
   const FetchRunners = useCallback(async () => {
     const r = await AdminListRunners();
@@ -37,9 +35,18 @@ export function AdminRunners() {
       setRunners(r);
     }
   }, []);
+
+  const FetchRecommendedRunnerVersion = useCallback(async () => {
+    const r = await AdminRetrieveRecommendedRunnerVersion();
+    if (r) {
+      setRecommendedRunnerVersion(r);
+    }
+  }, []);
+
   useEffect(() => {
     FetchRunners();
-  }, [FetchRunners]);
+    FetchRecommendedRunnerVersion();
+  }, [FetchRunners, FetchRecommendedRunnerVersion]);
 
   return (
     <Container>
@@ -49,8 +56,8 @@ export function AdminRunners() {
           <p className="text-muted">List of all runners</p>
         </div>
         <div className="col-auto ms-auto d-print-none">
-          <Button color="primary" onClick={() => setCreateRunnerModal(true)}>
-            Add new runner
+          <Button color="light" onClick={() => setCreateRunnerModal(true)}>
+            New runner
           </Button>
         </div>
       </div>
@@ -58,9 +65,9 @@ export function AdminRunners() {
         <Row>
           <Col md={12}>
             <Card style={{ borderRadius: 5 }}>
-              <CardBody className="bg-primary" style={{ borderRadius: 5 }}>
+              <CardBody style={{ borderRadius: 5, background: "rgba(var(--tblr-primary-rgb), 0.5)" }}>
                 <div className="d-flex justify-content-between">
-                  <h3>Runner has been created</h3>
+                  <h3>New runner has been created</h3>
                   <Button
                     className="bg-transparent p-0 m-0"
                     style={{ height: 25 }}
@@ -82,7 +89,7 @@ export function AdminRunners() {
                   </Label>
                   <Input
                     value={runnerId}
-                    style={{ background: "var(--tblr-primary-darken)" }}
+                    style={{ background: "transparent" }}
                     className="text-white"
                     disabled
                   />
@@ -102,7 +109,7 @@ export function AdminRunners() {
                   </Label>
                   <Input
                     value={runnerToken}
-                    style={{ background: "var(--tblr-primary-darken)" }}
+                    style={{ background: "transparent" }}
                     className="text-white"
                     disabled
                   />
@@ -140,9 +147,12 @@ export function AdminRunners() {
                           </Badge>
                         </React.Fragment>
                       )}
-                      {settings.recommended_runner_version !== runner.version && (
+                      {recommendedRunnerVersion !== runner.version && runner.version && (
                         <React.Fragment>
-                          <Badge color="warning" className="text-white">
+                          <Badge
+                            color="warning"
+                            className="text-white"
+                          >
                             Version mismatch
                           </Badge>
                         </React.Fragment>

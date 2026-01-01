@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"gitlab.com/codebox4073715/codebox/db/models"
-	"gitlab.com/codebox4073715/codebox/proxy"
+	"gitlab.com/codebox4073715/codebox/httpserver/proxy"
 )
 
 type RunnerInterface struct {

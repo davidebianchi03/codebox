@@ -84,7 +84,7 @@ export function TemplateSettingsModal({ isOpen, onClose, template }: TemplateSet
                             <Button color="accent" onClick={HandleCloseModal}>
                                 Cancel
                             </Button>
-                            <Button color="primary" className="ms-1" type="submit">
+                            <Button color="light" className="ms-1" type="submit">
                                 Save
                             </Button>
                         </div>

@@ -30,11 +30,19 @@ type EnvVars struct {
 	AuthCookieName          string `env:"CODEBOX_AUTH_COOKIE_NAME" envDefault:"codebox_auth_token"`
 	SubdomainAuthCookieName string `env:"CODEBOX_SUBDOMAIN_AUTH_COOKIE_NAME" envDefault:"subdomain_codebox_auth_token"`
 	CliBinariesPath         string `env:"CODEBOX_CLI_BINARIES_PATH" envDefault:"./cli"`
-	BaseDir                 string `env:"CODEBOX_BASE_DIR" envDefault:""`
+	TemplatesFolder         string `env:"CODEBOX_TEMPLATES_FOLDER" envDefault:"./templates"`
+	// email related settings
+	EmailSMTPHost     string `env:"CODEBOX_EMAIL_SMTP_HOST"`
+	EmailSMTPPort     int    `env:"CODEBOX_EMAIL_SMTP_PORT"`
+	EmailSMTPUser     string `env:"CODEBOX_EMAIL_SMTP_USER"`
+	EmailSMTPPassword string `env:"CODEBOX_EMAIL_SMTP_PASSWORD"`
 }
 
 var Environment *EnvVars
 
+/*
+Load configuration from environment variables or from a .env file
+*/
 func InitCodeBoxEnv() error {
 	codeboxEnvFilename := os.Getenv("CODEBOX_ENV_FILE")
 	if codeboxEnvFilename == "" {
@@ -57,4 +65,12 @@ func InitCodeBoxEnv() error {
 
 	Environment = &e
 	return nil
+}
+
+/*
+Get if the email service is configured
+*/
+func IsEmailConfigured() bool {
+	return Environment.EmailSMTPHost != "" && Environment.EmailSMTPPort != 0 &&
+		Environment.EmailSMTPUser != "" && Environment.EmailSMTPPassword != ""
 }

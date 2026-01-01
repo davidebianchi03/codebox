@@ -4,79 +4,65 @@
   <h3>
     Remote Development Environments
   </h3>
-    <!-- <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size">
-    <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls"> -->
-
-  <img src="./docs/preview.png" style="max-width: 550px">
-
+    <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size">
+    <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls">
+    <img alt="License" src="https://img.shields.io/github/license/davidebianchi03/codebox">
   <br>
 </div>
 
 > [!WARNING]  
-> This software is still an alpha version, it has many bugs.
+> This software is still an beta version.
 
-**Codebox** is a service that allows developers to create remote workspaces. The structure of Codebox workspaces can be defined using standard spefications such as docker-compose, devcontainer, etc...
+Codebox is a self-hosted distributed provider of remote development environments.
 
+**What does that mean?** With Codebox you can define the resources and the structure of a workspace using standard formats like Docker Compose or Devcontainers. Moreover it provides connection to the workspaces through an SSH connection and the possibility to expose to everyone or with restrictions HTTP services running inside the containers.
+
+<!-- <div align="center">
+  <img src="./docs/preview.png" style="max-width: 550px">
+  <br>
+</div> -->
 
 
 ## Quickstart
 
-The easiest way to deploy your Codebox instance is using [docker compose](./docker-compose.yml) provided in this repository.
+The easiest way to deploy your Codebox instance is using the [docker compose](./docker-compose.yml) provided in this repository.
 
-```yaml
-version: '3'
-
-services:
-  redis:
-    image: redis:7.4.1
-    restart: always
-
-  db:
-    image: mysql:8.0.41
-    environment:
-      MYSQL_ROOT_PASSWORD: ${CODEBOX_DB_ROOT_PASSWORD:-password}
-      MYSQL_DATABASE: ${CODEBOX_DB_NAME:-codebox}
-      MYSQL_USER: ${CODEBOX_DB_USER:-codebox}
-      MYSQL_PASSWORD: ${CODEBOX_DB_PASSWORD:-password}
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-    volumes:
-      - codeboxdb:/var/lib/mysql
-    restart: always
-
-  codebox:
-    image: dadebia/codebox:${CODEBOX_VERSION:-latest}
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - ${CODEBOX_PORT:-12800}:8000
-    volumes:
-      - codeboxdata:/codebox/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - CODEBOX_EXTERNAL_URL=${CODEBOX_EXTERNAL_URL:-https://codebox.example.com}
-      - CODEBOX_WILDCARD_DOMAIN=${CODEBOX_WILDCARD_DOMAIN:-codebox.example.com}
-      - CODEBOX_USE_SUBDOMAINS=true
-      - CODEBOX_DB_NAME=${CODEBOX_DB_NAME:-codebox}
-      - CODEBOX_DB_USER=${CODEBOX_DB_USER:-codebox}
-      - CODEBOX_DB_PASSWORD=${CODEBOX_DB_PASSWORD:-password}
-    restart: always
-
-volumes:
-  codeboxdb:
-  codeboxdata:
+```bash
+curl --output docker-compose.yml "https://gitlab.com/api/v4/projects/68940432/repository/files/docker-compose.yml/raw?ref=master"
 ```
 
-## Runners
-Codebox cannot run workspaces by itself, you need to connect runners.
+You have to export some environment variables before starting docker containers:
+- `CODEBOX_EXTERNAL_URL`: the url of the codebox instance
+- `CODEBOX_WILDCARD_DOMAIN`: codebox allows you to expose ports running HTTP-based services either public or with password authentication. The ports will be exposed through subdomains of this domain. You will need to define a DNS record with a name such as *.codebox.my-domain.com. If you don't want do use this feature you can disable it using `CODEBOX_USE_SUBDOMAINS` environment variable.
 
-Codebox runners are services connected to the Codebox instance, they create and manage your workspaces. Each workspace type has its own runner.
+A list of all the settings is available [here](https://codebox4073715.gitlab.io/codebox/guide/server/configuration.html).
 
-Only a runner for docker-based workspaces is currently available, this runner can create workspaces using based on`docker compose` or `devcontainer`. The source code and a guide for this runner are available [here](https://gitlab.com/codebox4073715/codebox-docker-runner).
+Now you can start the docker stack with command:
+```bash
+docker compose up
+```
 
-## Connect to workspace container
+## How does codebox work?
 
-You can connect to a running workspace container using [**codebox-cli**](https://gitlab.com/codebox4073715/codebox-cli). Use official [**VS Code Extension**](https://gitlab.com/codebox4073715/codebox-vscode-extension) to open any workspace in VS Code with a single click.
+With Codebox you can define the resources and the structure of a workspace using standard formats like Docker Compose or Devcontainers. Moreover it provides connection to the workspaces through an SSH connection and the possibility to expose to everyone or with restrictions HTTP services running inside the containers.
+
+Codebox consists in four main parts:
+
+### 1. A central server with web UI
+This is where you can view, create and manage workspaces. The UI provides also an editor for workspace templates and admin tools to manage the server and the connected services. The source code is available [here](https://gitlab.com/codebox4073715/codebox), it's also mirrored on github [here](https://github.com/davidebianchi03/codebox).
+
+### 2. Runners that host and manage the workspaces
+Here’s where Codebox’s architecture becomes flexible. Workspaces are not managed directly from the server. Instead, you register runners, each capable of running different type of running one or more workspace types. This leads to several benefits including the fact that the workload can be divided between multiple machines.
+
+Runners must be able to reach the main server, but not the vice versa. In this way you can register runners from multiple locations without opening ports on routers. The source code is available [here](https://gitlab.com/codebox4073715/codebox-docker-runner)
+
+### 3. Agents running inside containers
+Agents are running inside workspaces, they provide the connections to the containers. They have an integrated SSH server. The SSH connection is tunneled over Web Sockets, in this way you don’t need to open other ports on your router. The source code is available [here](https://gitlab.com/codebox4073715/codebox-agent)
+
+### 4. A CLI for connecting via SSH (tunneled over HTTP)
+The CLI is a component to install on users’ PCs. It provides an SSH proxy to connect via an SSH connection to the workspaces. The source code is available [here](https://gitlab.com/codebox4073715/codebox-cli).
+
+You can also use the official VS Code extension that wraps the CLI and provides an easy way to connect to workspaces. The source code of the extension is available [here](https://gitlab.com/codebox4073715/codebox-vscode-extension)
+
+## Support
+Feel free to open an issue if you have any question, find a bug or have a feature request.

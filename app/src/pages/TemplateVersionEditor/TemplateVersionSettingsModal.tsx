@@ -149,7 +149,7 @@ export function TemplateVersionSettingsModal({
                             >
                                 Cancel
                             </Button>
-                            <Button className="ms-1" color="primary" type="submit">
+                            <Button className="ms-1" color="light" type="submit">
                                 {publish ? "Publish" : "Save"}
                             </Button>
                         </div>

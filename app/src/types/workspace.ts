@@ -47,6 +47,7 @@ export interface ContainerPort {
     service_name: string
     port_number: number
     public: boolean
+    port_url: string
     created_at: string
     updated_at: string
 }

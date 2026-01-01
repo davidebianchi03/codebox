@@ -44,7 +44,6 @@ export function TemplateDetailsPage() {
                     {template && user && (
                         <TemplateDetailsHeader
                             template={template}
-                            user={user}
                         />
                     )}
                     <Row className="mt-4">

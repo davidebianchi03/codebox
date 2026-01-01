@@ -121,7 +121,7 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
           HandleCloseModal(null);
         }}
       >
-        Create new user
+        New user
       </ModalHeader>
       <ModalBody>
         <form
@@ -167,7 +167,7 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
           <div className="mb-3">
             <label className="form-check">
               <input
-                className="form-check-input"
+                className="form-check-input form-check-input-light"
                 type="checkbox"
                 name="isAdmin"
                 onClick={validation.handleChange}
@@ -176,22 +176,19 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
               <span className="form-check-label">Admin</span>
             </label>
           </div>
-          {
-            !validation.values.isAdmin && (
-              <div className="mb-3">
-                <label className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    name="isTemplateManager"
-                    onClick={validation.handleChange}
-                    checked={validation.values.isTemplateManager}
-                  />
-                  <span className="form-check-label">Template Manager</span>
-                </label>
-              </div>
-            )
-          }
+          <div className="mb-3">
+            <label className="form-check">
+              <input
+                className="form-check-input form-check-input-light"
+                type="checkbox"
+                name="isTemplateManager"
+                onClick={validation.handleChange}
+                checked={validation.values.isTemplateManager || validation.values.isAdmin}
+                disabled={validation.values.isAdmin}
+              />
+              <span className="form-check-label">Template Manager</span>
+            </label>
+          </div>
           <div className="mb-3">
             <Label>Password</Label>
             <Input
@@ -228,7 +225,7 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
             >
               Cancel
             </Button>
-            <Button type="submit" color="primary">
+            <Button type="submit" color="light">
               Create
             </Button>
           </div>

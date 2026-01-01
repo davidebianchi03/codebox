@@ -103,3 +103,12 @@ export async function AdminDeleteRunner(
         return false;
     }
 }
+
+export async function AdminRetrieveRecommendedRunnerVersion(): Promise<string | undefined> {
+    try {
+        const r = await axios.get<{ version: string }>(`/api/v1/admin/recommended-runner-version`);
+        return r.data.version;
+    } catch {
+        return undefined;
+    }
+}
