@@ -30,7 +30,7 @@ type EnvVars struct {
 	AuthCookieName          string `env:"CODEBOX_AUTH_COOKIE_NAME" envDefault:"codebox_auth_token"`
 	SubdomainAuthCookieName string `env:"CODEBOX_SUBDOMAIN_AUTH_COOKIE_NAME" envDefault:"subdomain_codebox_auth_token"`
 	CliBinariesPath         string `env:"CODEBOX_CLI_BINARIES_PATH" envDefault:"./cli"`
-	TemplatesFolder         string `env:"CODEBOX_TEMPLATES_FOLDER" envDefault:"./html"`
+	TemplatesFolder         string `env:"CODEBOX_TEMPLATES_FOLDER" envDefault:"./templates"`
 	// email related settings
 	EmailSMTPHost     string `env:"CODEBOX_EMAIL_SMTP_HOST"`
 	EmailSMTPPort     int    `env:"CODEBOX_EMAIL_SMTP_PORT"`
