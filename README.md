@@ -4,9 +4,15 @@
   <h3>
     Remote Development Environments
   </h3>
-    <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size">
-    <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls">
-    <img alt="License" src="https://img.shields.io/github/license/davidebianchi03/codebox">
+    <a href="https://hub.docker.com/r/dadebia/codebox">
+      <img alt="Docker image size" src="https://badgen.net/docker/size/dadebia/codebox?icon=docker&label=image%20size">
+    </a>
+    <a href="https://hub.docker.com/r/dadebia/codebox">
+      <img alt="Docker image size" src="https://badgen.net/docker/pulls/dadebia/codebox?icon=docker&label=pulls">
+    </a>
+    <a href="./LICENSE.txt">
+      <img alt="License" src="https://img.shields.io/github/license/davidebianchi03/codebox">
+    </a>
   <br>
 </div>
 

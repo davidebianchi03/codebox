@@ -1,0 +1,42 @@
+build_server:
+  stage: build_sources
+  image: golang:1.24.1
+  tags:
+    - docker-linux
+  dependencies:
+    - retrieve_recommended_runner_version
+  variables:
+    GOOS: linux
+    GOARCH: amd64
+  script:
+    - export RECOMMENDED_RUNNER_VERSION=$(cat recommended_runner_version.txt)
+    - echo "Recommended Runner Version=${RECOMMENDED_RUNNER_VERSION}"
+    - rm -rf recommended_runner_version.txt
+    - mkdir -p bin
+    - go build -o bin/codebox -ldflags "-X gitlab.com/codebox4073715/codebox/config.ServerVersion=${CI_COMMIT_TAG} -X gitlab.com/codebox4073715/codebox/config.RecommendedRunnerVersion=${RECOMMENDED_RUNNER_VERSION}" main.go
+  artifacts:
+    paths:
+      - bin/codebox
+    expire_in: 1 hour
+  when: on_success
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build_frontend:
+  stage: build_sources
+  image: node:20.12.2
+  tags:
+    - docker-linux
+  script:
+    - cd app
+    - sed -i -e "s/{{ replace_me }}/$CI_COMMIT_TAG/g" .env.production
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - app/build/
+    expire_in: 1 hour
+  when: on_success
+  rules:
+    - if: $CI_COMMIT_TAG
+

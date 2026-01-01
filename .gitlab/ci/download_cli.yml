@@ -1,0 +1,14 @@
+download_cli:
+  stage: download_dependencies
+  image: dadebia/codebox-release-cli:latest
+  tags:
+    - docker-linux
+  script:
+    - ./scripts/download-cli.sh
+  artifacts:
+    paths:
+      - bin/cli
+    expire_in: 1 hour
+  when: on_success
+  rules:
+    - if: $CI_COMMIT_TAG
