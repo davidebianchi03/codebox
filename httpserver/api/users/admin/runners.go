@@ -287,7 +287,7 @@ func HandleAdminDeleteRunner(c *gin.Context) {
 // @Tags Admin
 // @Accept json
 // @Produce json
-// @Success 200 {object} serializer.RecommendedRunnerVersionSerializer
+// @Success 200 {object} serializers.RecommendedRunnerVersionSerializer
 // @Router /api/v1/admin/recommended-runner-version [get]
 func HandleRetrieveRecommendedRunnerVersion(c *gin.Context) {
 	c.JSON(
