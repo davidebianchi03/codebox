@@ -34,7 +34,7 @@ unit_tests:
     - export GIN_MODE=release
     - export BASE_DIR=$(pwd)
     - export CODEBOX_ENV_FILE="${BASE_DIR}/codebox.env"
-    - export CODEBOX_TEMPLATES_FOLDER="${BASE_DIR}/html"
+    - export CODEBOX_TEMPLATES_FOLDER="${BASE_DIR}/templates"
     - echo "CODEBOX_ENV_FILE is set to ${CODEBOX_ENV_FILE}"
     - echo "CODEBOX_TEMPLATES_FOLDER is set to ${CODEBOX_TEMPLATES_FOLDER}"
     - echo "Migrating test db..."
