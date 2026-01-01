@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/httpserver"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin/settings"
@@ -20,6 +21,12 @@ and at the end without authentication
 */
 func TestRetrieveAuthenticationSettings(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		// configure email service (required to edit authentication settings)
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "example@user.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		router := httpserver.SetupRouter()
 
 		adminUser, err := models.RetrieveUserByEmail("admin@admin.com")
@@ -90,6 +97,12 @@ Test endpoint to update authentication settings
 */
 func TestUpdateAuthenticationSettings(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		// configure email service (required to edit authentication settings)
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "example@user.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		router := httpserver.SetupRouter()
 
 		adminUser, err := models.RetrieveUserByEmail("admin@admin.com")
@@ -147,6 +160,12 @@ Test endpoint to update authentication settings with missing arguments
 */
 func TestUpdateAuthenticationSettingsMissingArg(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		// configure email service (required to edit authentication settings)
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "example@user.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		router := httpserver.SetupRouter()
 
 		adminUser, err := models.RetrieveUserByEmail("admin@admin.com")
@@ -256,6 +275,12 @@ a user that is not a superuser
 */
 func TestUpdateAuthenticationSettingsCommonUser(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		// configure email service (required to edit authentication settings)
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "example@user.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		router := httpserver.SetupRouter()
 
 		commonUser, err := models.RetrieveUserByEmail("user1@user.com")
@@ -299,6 +324,12 @@ authentication
 */
 func TestUpdateAuthenticationSettingsWithoutAuthentication(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		// configure email service (required to edit authentication settings)
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "example@user.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		router := httpserver.SetupRouter()
 
 		signupOpen := true
@@ -327,5 +358,54 @@ func TestUpdateAuthenticationSettingsWithoutAuthentication(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+}
+
+/*
+Test endpoint to update authentication settings without
+authentication
+*/
+func TestUpdateAuthenticationSettingsEmailServiceNotConfigured(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		// remove configuration of email service (required to edit authentication settings)
+		config.Environment.EmailSMTPHost = ""
+		config.Environment.EmailSMTPPort = 0
+		config.Environment.EmailSMTPUser = ""
+		config.Environment.EmailSMTPPassword = ""
+
+		adminUser, err := models.RetrieveUserByEmail("admin@admin.com")
+		if err != nil {
+			t.Error(err)
+		}
+
+		router := httpserver.SetupRouter()
+
+		signupOpen := true
+		signupRestricted := true
+		usersMustBeApproved := true
+		allowedEmailRegex := `^.*@example\.com$`
+		blockedEmailRegex := `^.*@blocked\.com$`
+		approvedByDefaultEmailRegex := `^.*@example\.com$`
+
+		requestBody := settings.HandleUpdateServerSettingsRequestBody{
+			IsSignUpOpen:                &signupOpen,
+			IsSignUpRestricted:          &signupRestricted,
+			UsersMustBeApproved:         &usersMustBeApproved,
+			AllowedEmailRegex:           &allowedEmailRegex,
+			BlockedEmailRegex:           &blockedEmailRegex,
+			ApprovedByDefaultEmailRegex: &approvedByDefaultEmailRegex,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/admin/authentication-settings",
+			"PUT",
+			requestBody,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *adminUser)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotAcceptable, w.Code)
 	})
 }
