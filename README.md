@@ -11,7 +11,7 @@
 </div>
 
 > [!WARNING]  
-> This software is still an beta version.
+> This software is in beta version, some important changes can be made.
 
 Codebox is a self-hosted distributed provider of remote development environments.
 

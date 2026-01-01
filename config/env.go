@@ -15,7 +15,7 @@ type EnvVars struct {
 	WildcardDomain          string `env:"CODEBOX_WILDCARD_DOMAIN,required"`
 	DebugEnabled            bool   `env:"CODEBOX_DEBUG" envDefault:"true"`
 	DBDriver                string `env:"CODEBOX_DB_DRIVER" envDefault:"mysql"`
-	DBHost                  string `env:"CODEBOX_DB_HOST" envDefault:"localhost"`
+	DBHost                  string `env:"CODEBOX_DB_HOST" envDefault:"db"`
 	DBPort                  int    `env:"CODEBOX_DB_PORT" envDefault:"3306"`
 	DBName                  string `env:"CODEBOX_DB_NAME" envDefault:"codebox"`
 	DBTestName              string `env:"CODEBOX_TEST_DB_NAME" envDefault:"codebox-test"`
@@ -23,7 +23,7 @@ type EnvVars struct {
 	DBPassword              string `env:"CODEBOX_DB_PASSWORD" envDefault:"password"`
 	ServerPort              int    `env:"CODEBOX_SERVER_PORT" envDefault:"8080"`
 	TasksConcurrency        int    `env:"CODEBOX_BG_TASKS_CONCURRENCY" envDefault:"5"`
-	RedisHost               string `env:"CODEBOX_REDIS_HOST" envDefault:"localhost"`
+	RedisHost               string `env:"CODEBOX_REDIS_HOST" envDefault:"redis"`
 	RedisPort               int    `env:"CODEBOX_REDIS_PORT" envDefault:"6379"`
 	UploadsPath             string `env:"CODEBOX_DATA_PATH" envDefault:"./data"`
 	UseSubDomains           bool   `env:"CODEBOX_USE_SUBDOMAINS" envDefault:"true"`
