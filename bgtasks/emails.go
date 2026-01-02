@@ -51,8 +51,8 @@ func SendEmailMessage(
 	message.SetHeader("To", recipient)
 	message.SetHeader("Subject", subject)
 
-	message.SetBody("text/html", htmlBody)
-	message.AddAlternative("text/plain", textBody)
+	message.SetBody("text/plain", textBody)
+	message.AddAlternative("text/html", htmlBody)
 
 	dialer := gomail.NewDialer(
 		config.Environment.EmailSMTPHost,
