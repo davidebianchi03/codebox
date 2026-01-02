@@ -37,22 +37,28 @@ export function AdminDashboard() {
                 <Row>
                     <Col md={12} className="mt-5">
                         <Row>
-                            <Col md={4} className="mb-3">
+                            <Col md={3} className="mb-3">
                                 <Card body>
                                     <h3>Total Users</h3>
                                     <h1>{stats?.total_users}</h1>
                                 </Card>
                             </Col>
-                            <Col md={4} className="mb-3">
+                            <Col md={3} className="mb-3">
                                 <Card body>
                                     <h3>Active Workspaces</h3>
                                     <h1>{stats?.online_workspaces}</h1>
                                 </Card>
                             </Col>
-                            <Col md={4} className="mb-3">
+                            <Col md={3} className="mb-3">
                                 <Card body>
                                     <h3>Online Runners</h3>
                                     <h1>{stats?.online_runners}</h1>
+                                </Card>
+                            </Col>
+                            <Col md={3} className="mb-3">
+                                <Card body>
+                                    <h3>Codebox Version</h3>
+                                    <h1>{import.meta.env.VITE_APP_VERSION}</h1>
                                 </Card>
                             </Col>
                         </Row>

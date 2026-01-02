@@ -170,7 +170,7 @@ export default function TemplatesList() {
                                   <small className="text-muted">{template.description}</small>
                                 </div>
                                 <div>
-                                  <Badge color="light" className="text-white">
+                                  <Badge color="light" className="text-dark">
                                     {(() => {
                                       var templateType = workspaceTypes.find((wt) => wt.id === template.type);
                                       return templateType ? templateType.name : template.type;

@@ -11,6 +11,7 @@ import (
 	docs "gitlab.com/codebox4073715/codebox/docs"
 	runnerapis "gitlab.com/codebox4073715/codebox/httpserver/api/runner"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin"
+	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin/email"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin/settings"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/auth"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/cli"
@@ -319,16 +320,20 @@ func V1ApiRoutes(router *gin.Engine) {
 			)
 			// instance settings related apis
 			adminApis.GET(
-				"/authentication-settings",
+				"authentication-settings",
 				permissions.AdminRequiredRoute(settings.HandleRetrieveAuthenticationSettings),
 			)
 			adminApis.PUT(
-				"/authentication-settings",
+				"authentication-settings",
 				permissions.AdminRequiredRoute(settings.HandleUpdateAuthenticationSettings),
 			)
 			adminApis.GET(
 				"email-service-configured",
 				permissions.AdminRequiredRoute(common.HandleAdminEmailServiceConfigured),
+			)
+			adminApis.POST(
+				"send-test-email",
+				permissions.AdminRequiredRoute(email.HandleSendTestEmail),
 			)
 		}
 	}

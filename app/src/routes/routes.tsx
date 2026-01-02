@@ -1,5 +1,5 @@
 import { AdminDashboard } from "../pages/AdminDashboard";
-import { AdminAuthenticationSettingsPage } from "../pages/AuthenticationSettings";
+import { AdminAuthenticationSettingsPage } from "../pages/AdminAuthenticationSettings";
 import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
 import { AdminRunners } from "../pages/AdminRunners";
 import { AdminUserDetails } from "../pages/AdminUserDetails";
@@ -19,6 +19,7 @@ import { TemplateVersionEditor } from "../pages/TemplateVersionEditor";
 import { VerifyEmailPage } from "../pages/VerifyEmail";
 import WorkspaceDetails from "../pages/WorkspaceDetails";
 import { Route } from "./types";
+import { AdminEmailSenderPage } from "../pages/AdminEmailSender";
 
 export const PublicRoutes: Route[] = [
   {
@@ -108,5 +109,9 @@ export const SuperUserRoutes: Route[] = [
   {
     path: "/admin/authentication-settings",
     element: <AdminAuthenticationSettingsPage />,
+  },
+  {
+    path: "/admin/email-sender",
+    element: <AdminEmailSenderPage />,
   },
 ];
