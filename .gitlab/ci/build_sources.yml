@@ -29,7 +29,12 @@ build_frontend:
     - docker-linux
   script:
     - cd app
-    - sed -i -e "s/{{ replace_me }}/$CI_COMMIT_TAG/g" .env.production
+    - VERSION_TAG=$CI_COMMIT_TAG
+    - |
+      if [ -z $CI_COMMIT_TAG ]; then
+        VERSION_TAG=debug
+      fi
+    - sed -i -e "s/{{ replace_me }}/$VERSION_TAG/g" .env.production
     - npm install
     - npm run build
   artifacts:

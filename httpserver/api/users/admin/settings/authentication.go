@@ -51,9 +51,9 @@ type HandleUpdateServerSettingsRequestBody struct {
 // @Produce json
 // @Param request body HandleUpdateServerSettingsRequestBody true "authentication settings"
 // @Success 200 {object} serializers.AuthenticationSettingsSerializer
-// @Failure 400 {object} utils.ErrorResponseBody "Bad request"
-// @Failure 406 {object} utils.ErrorResponseBody "Email server is not configured"
-// @Failure 500 {object} utils.ErrorResponseBody "Internal server error"
+// @Failure 400 "Bad request"
+// @Failure 406 "Email server is not configured"
+// @Failure 500 "Internal server error"
 // @Router /api/v1/admin/authentication-settings [put]
 func HandleUpdateAuthenticationSettings(c *gin.Context) {
 	if !config.IsEmailConfigured() {
