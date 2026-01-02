@@ -9,22 +9,22 @@ fi
 
 if [ -z "$CODEBOX_DB_PORT" ]; then
     echo "CODEBOX_DB_PORT not set, using default value";
-    export CODEBOX_DB_HOST=3306;
+    export CODEBOX_DB_PORT=3306;
 fi
 
 if [ -z "$CODEBOX_DB_NAME" ]; then
     echo "CODEBOX_DB_NAME not set, using default value";
-    export CODEBOX_DB_HOST=codebox;
+    export CODEBOX_DB_NAME=codebox;
 fi
 
 if [ -z "$CODEBOX_DB_USER" ]; then
     echo "CODEBOX_DB_USER not set, using default value";
-    export CODEBOX_DB_HOST=codebox;
+    export CODEBOX_DB_USER=codebox;
 fi
 
 if [ -z "$CODEBOX_DB_PASSWORD" ]; then
     echo "CODEBOX_DB_PASSWORD not set, using default value";
-    export CODEBOX_DB_HOST=password;
+    export CODEBOX_DB_PASSWORD=password;
 fi
 
 cd /codebox/bin

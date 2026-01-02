@@ -1,3 +1,5 @@
+# This job retrieves the latest runner version
+# and writes it into a file
 retrieve_recommended_runner_version:
   stage: download_dependencies
   image: dadebia/codebox-release-cli:latest

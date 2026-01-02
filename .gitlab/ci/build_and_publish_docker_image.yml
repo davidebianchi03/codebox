@@ -1,3 +1,9 @@
+# build_and_publish_docker_image
+# This cicd job builds the codebox docker image and pushes it
+# to dockerhub.
+# If the tag that triggered the pipeline contains 'alpha', 'beta', or 'rc'
+# in its name, the docker image won't be tagged as latest.
+
 build_and_publish_docker_image:
   stage: build_and_publish_docker_image
   image: docker:24.0.5-dind
@@ -11,10 +17,8 @@ build_and_publish_docker_image:
     - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
     - docker build -t dadebia/codebox:${CI_COMMIT_TAG} .
     - docker push dadebia/codebox:${CI_COMMIT_TAG}
-
-    # Tag and push docker image as latest only if is not a beta version
     - |
-      if ! [[ $CI_COMMIT_TAG =~ ^.*beta.* ]] ; then
+      if ! [[ $CI_COMMIT_TAG =~ ^.*alpha.* ]] && ! [[ $CI_COMMIT_TAG =~ ^.*beta.* ]] && ! [[ $CI_COMMIT_TAG =~ ^.*rc.* ]]; then
         docker tag dadebia/codebox:${CI_COMMIT_TAG} dadebia/codebox:latest
         docker push dadebia/codebox:latest;
       fi;

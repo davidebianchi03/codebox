@@ -1,3 +1,9 @@
+# build_source
+# This step contains two jobs:
+# - build_server: this job is run only on tags, it builds the
+# goland server binary.
+# - build_frontend: this jobs is run on every commit an tag, it builds
+# the react web app.
 build_server:
   stage: build_sources
   image: golang:1.24.1

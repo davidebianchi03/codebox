@@ -1,4 +1,6 @@
-
+# This job builds the documentation.
+# First, it generate APIs documentation using swagger, than
+# it generate documentation site using sphinx
 pages:
   stage: pages
   pages: true

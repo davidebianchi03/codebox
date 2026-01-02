@@ -1,3 +1,6 @@
+# Download all cli binaries from the codebox-cli repo
+# This job downloads the latest binaries for all OS and architectures
+# from the codebox cli repository's artifact registry
 download_cli:
   stage: download_dependencies
   image: dadebia/codebox-release-cli:latest
