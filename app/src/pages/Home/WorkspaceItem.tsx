@@ -51,7 +51,7 @@ export function WorkspaceItem({
                 </div>
                 <div className="d-flex flex-column align-items-end">
                     <Badge
-                        color={GetWorkspaceStatusColor(workspace.status)}
+                        bg={GetWorkspaceStatusColor(workspace.status)}
                         className="text-white mb-2"
                         style={{ fontSize: 11 }}
                     >
