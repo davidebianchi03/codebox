@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/emails"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
 )
 
@@ -35,6 +36,16 @@ func HandleVerifyEmailAddress(c *gin.Context) {
 			c,
 			http.StatusPreconditionFailed,
 			"logged in users cannot verify email",
+		)
+		return
+	}
+
+	s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
 		)
 		return
 	}
@@ -96,6 +107,12 @@ func HandleVerifyEmailAddress(c *gin.Context) {
 			"internal server error",
 		)
 		return
+	}
+
+	// if user need to be approved send an email to all the
+	// admins to notify that a new user has signed up
+	if s.UsersMustBeApproved && !u.Approved {
+		emails.SendUserWaitingForApprovalEmail(u)
 	}
 
 	c.JSON(

@@ -210,6 +210,10 @@ func HandleSignup(c *gin.Context) {
 		)
 	}
 
+	if usersCount == 0 {
+		autoApproved = true
+	}
+
 	_, err = models.CreateUser(
 		requestBody.Email,
 		requestBody.FirstName,
@@ -218,7 +222,7 @@ func HandleSignup(c *gin.Context) {
 		usersCount == 0,
 		usersCount == 0,
 		usersCount == 0,
-		usersCount == 0 || autoApproved,
+		autoApproved,
 	)
 
 	if err != nil {

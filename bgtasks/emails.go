@@ -3,6 +3,7 @@ package bgtasks
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gocraft/work"
 	"gitlab.com/codebox4073715/codebox/config"
@@ -11,6 +12,11 @@ import (
 
 /*
 SendEmailTask is the task used to send emails in background
+It takes the following arguments from the job context:
+- subject: the subject of the message
+- recipient: the address of the recipient, can be a csv list
+- textBody: the email text content
+- htmlBody: the body of the email rendered as an html document
 */
 func (jobContext *Context) SendEmailTask(job *work.Job) error {
 	subject := job.ArgString("subject")
@@ -19,7 +25,7 @@ func (jobContext *Context) SendEmailTask(job *work.Job) error {
 	textBody := job.ArgString("textBody")
 
 	if err := SendEmailMessage(
-		recipient,
+		strings.Split(recipient, ","),
 		subject,
 		htmlBody,
 		textBody,
@@ -36,7 +42,7 @@ This function send emails, this function can be invoked with sendemailtask to se
 messages using a background task, it can be also directly invokne
 */
 func SendEmailMessage(
-	recipient,
+	recipients []string,
 	subject,
 	htmlBody,
 	textBody string,
@@ -48,7 +54,7 @@ func SendEmailMessage(
 
 	message := gomail.NewMessage()
 	message.SetHeader("From", config.Environment.EmailSMTPUser)
-	message.SetHeader("To", recipient)
+	message.SetHeader("To", recipients...)
 	message.SetHeader("Subject", subject)
 
 	message.SetBody("text/plain", textBody)

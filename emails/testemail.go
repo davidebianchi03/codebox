@@ -35,7 +35,7 @@ func SendTestEmail(
 	}
 
 	if err := bgtasks.SendEmailMessage(
-		emailAddress,
+		[]string{emailAddress},
 		"Test Email",
 		html,
 		text,

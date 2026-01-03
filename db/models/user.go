@@ -188,7 +188,7 @@ RetrieveUserByEmail retrieves a user by their email address.
 func RetrieveUserByEmail(email string) (user *User, err error) {
 	result := dbconn.DB.Where("email=?", email).Find(&user)
 	if result.Error != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, result.Error
@@ -224,4 +224,20 @@ func CountAllUsers() (count int64, err error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+/*
+ListSuperUsers retrieve an array with all the superusers
+*/
+func ListSuperUsers() ([]User, error) {
+	users := []User{}
+	result := dbconn.DB.Where("is_superuser=?", true).Find(&users)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return []User{}, nil
+		}
+		return []User{}, result.Error
+	}
+
+	return users, nil
 }

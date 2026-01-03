@@ -1,0 +1,10 @@
+{{ define "email_user_waiting_for_approval" }}{{ end }}
+
+{{ define "title" }}User Waiting For Approval{{ end }}
+
+{{ define "content" }}
+<p>
+    User <b>{{ .user_email }}</b> has signed up and is now waiting for approval to log in.
+    Go to the Users Management section in the admin area to approve the user.
+</p>
+{{ end }}
