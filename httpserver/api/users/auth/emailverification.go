@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/emails"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
@@ -111,7 +112,7 @@ func HandleVerifyEmailAddress(c *gin.Context) {
 
 	// if user need to be approved send an email to all the
 	// admins to notify that a new user has signed up
-	if s.UsersMustBeApproved && !u.Approved {
+	if s.UsersMustBeApproved && !u.Approved && config.IsEmailConfigured() {
 		emails.SendUserWaitingForApprovalEmail(u)
 	}
 

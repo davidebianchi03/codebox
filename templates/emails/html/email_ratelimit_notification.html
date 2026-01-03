@@ -1,0 +1,10 @@
+{{ define "email_ratelimit_notification" }}{{ end }}
+
+{{ define "title" }}Ratelimit Excedeed Multiple Times{{ end }}
+
+{{ define "content" }}
+<p>
+    The rate limit on endpoint <b>{{ .endpoint }}</b> has been exceeded multiple times by IP address <b>{{ .ip_address }}</b>.
+    This IP address has been temporarily banned from this endpoint. Please consider taking appropriate action.
+</p>
+{{ end }}

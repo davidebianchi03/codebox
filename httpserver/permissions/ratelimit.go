@@ -8,6 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/cache"
+	"gitlab.com/codebox4073715/codebox/config"
+	"gitlab.com/codebox4073715/codebox/emails"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
 )
 
@@ -107,7 +109,12 @@ func IPRateLimitedRoute(
 				if violationsCount == 2 {
 					// this is the third violation (violations are enumerated before recording this one),
 					// notify it to the admins
-					// TODO: send an email to administrators if this setting is enabled
+					if config.IsEmailConfigured() {
+						emails.SendRatelimitExceededMultipleTimesEmail(
+							ipAddress,
+							requestPath,
+						)
+					}
 				}
 			}
 

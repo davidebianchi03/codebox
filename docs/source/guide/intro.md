@@ -22,7 +22,7 @@ Runners must be able to reach the main server, but not the vice versa. In this w
 
 Agents are running inside workspaces, they provide the connections to the containers. They have an integrated SSH server. The SSH connection is tunneled over Web Sockets, in this way you don’t need to open other ports on your router.
 
-### 4. A CLI for connecting via SSH (tunneled over HTTP)
+### 4. A CLI for connecting via SSH
 
 The CLI is a component to install on users’ PCs. It provides an SSH proxy to connect via an SSH connection to the workspaces. You can also use the official VS Code extension that wraps the CLI and provides an easy way to connect to workspaces.
 

@@ -65,7 +65,7 @@ Runners must be able to reach the main server, but not the vice versa. In this w
 ### 3. Agents running inside containers
 Agents are running inside workspaces, they provide the connections to the containers. They have an integrated SSH server. The SSH connection is tunneled over Web Sockets, in this way you don’t need to open other ports on your router. The source code is available [here](https://gitlab.com/codebox4073715/codebox-agent)
 
-### 4. A CLI for connecting via SSH (tunneled over HTTP)
+### 4. A CLI for connecting via SSH
 The CLI is a component to install on users’ PCs. It provides an SSH proxy to connect via an SSH connection to the workspaces. The source code is available [here](https://gitlab.com/codebox4073715/codebox-cli).
 
 You can also use the official VS Code extension that wraps the CLI and provides an easy way to connect to workspaces. The source code of the extension is available [here](https://gitlab.com/codebox4073715/codebox-vscode-extension)
