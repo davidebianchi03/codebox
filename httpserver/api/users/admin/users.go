@@ -8,6 +8,7 @@ import (
 	"github.com/gocraft/work"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/emails"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
 )
@@ -161,6 +162,11 @@ type AdminUpdateUserRequestBody struct {
 func HandleAdminUpdateUser(c *gin.Context) {
 	currentUser, _ := utils.GetUserFromContext(c)
 	email, _ := c.Params.Get("email")
+	s, err := models.GetSingletonModelInstance[models.AuthenticationSettings]()
+	if err != nil {
+		utils.ErrorResponse(c, 500, "internal server error")
+		return
+	}
 
 	var requestBody AdminUpdateUserRequestBody
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
@@ -199,6 +205,8 @@ func HandleAdminUpdateUser(c *gin.Context) {
 		return
 	}
 
+	accountApprovalStateChanged := *requestBody.Approved != user.Approved
+
 	// update fields
 	user.FirstName = requestBody.FirstName
 	user.LastName = requestBody.LastName
@@ -210,6 +218,12 @@ func HandleAdminUpdateUser(c *gin.Context) {
 	if err := models.UpdateUser(user); err != nil {
 		utils.ErrorResponse(c, 500, "internal server error")
 		return
+	}
+
+	// if user has been approved and users must bu approved
+	// before signing-in send a notification email to the user
+	if accountApprovalStateChanged && user.Approved && s.UsersMustBeApproved {
+		emails.SendUserApprovedEmail(*user)
 	}
 
 	c.JSON(http.StatusOK, serializers.LoadAdminUserSerializer(user))

@@ -1,0 +1,11 @@
+{{ define "email_user_approved" }}{{ end }}
+
+{{ define "title" }}Your Account Has Been Approved{{ end }}
+
+{{ define "content" }}
+<p>
+    Your Codebox account at <a href="{{ .serverURL }}">{{ .serverURL }}</a> 
+    has been approved by an admin.
+    You can now sign in and create your first workspace.
+</p>
+{{ end }}
