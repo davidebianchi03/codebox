@@ -1,4 +1,4 @@
-# DevContainer
+# Devcontainer
 Codebox supports the DevContainers standard for defining the structure of a workspace.
 
 ## Devcontainer files

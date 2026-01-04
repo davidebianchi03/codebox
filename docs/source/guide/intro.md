@@ -26,7 +26,7 @@ Agents are running inside workspaces, they provide the connections to the contai
 
 The CLI is a component to install on users’ PCs. It provides an SSH proxy to connect via an SSH connection to the workspaces. You can also use the official VS Code extension that wraps the CLI and provides an easy way to connect to workspaces.
 
-## Sources
+### Sources
 
 The source code it's available here:
 

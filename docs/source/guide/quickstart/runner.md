@@ -1,4 +1,4 @@
-# Quickstart
+# Runner
 
 To run workspaces, a runner is required. The runner connects to the Codebox server and is used to manage workspaces. You can find a guide here on how to set up a runner.
 
@@ -6,13 +6,13 @@ To run workspaces, a runner is required. The runner connects to the Codebox serv
    A runner can be connected to only one server. If you want to share a machine across multiple Codebox instances, you need to define a separate runner for each instance.
 ```
 
-## Registration of a new runner
-
-Before starting a new runner instance, you must first create it on the Codebox server. This process will generate a token and an ID for the runner. You can find a guide on how to create a new runner here.
-
 ```{warning}
    A runner can be registered only by administrators.
 ```
+
+## Register new runner
+
+Before starting a new runner instance, you must first register it on the Codebox server. This process will generate a token and an ID for the runner. You can find a guide on how to create a new runner here:
 
 1. Go to the Admin Area by clicking on 'Admin Area' in the dropdown menu under your user details in the top-right corner.
 
@@ -28,7 +28,7 @@ Before starting a new runner instance, you must first create it on the Codebox s
 
 4. Copy the ID and token — you're now ready to install the Runner.
 
-## Installation
+## Deploy the runner
 The recommended installation procedure involves using the Docker stack defined in the `docker-compose.yml` file found in the [runner repository](https://gitlab.com/codebox4073715/codebox-docker-runner).
 
 ```{warning}

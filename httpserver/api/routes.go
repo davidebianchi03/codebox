@@ -37,11 +37,7 @@ func V1ApiRoutes(router *gin.Engine) {
 		{
 			authApis.GET(
 				"/initial-user-exists",
-				permissions.IPRateLimitedRoute(
-					auth.HandleRetrieveInitialUserExists,
-					5,
-					10,
-				),
+				auth.HandleRetrieveInitialUserExists,
 			)
 			authApis.POST(
 				"/login",
