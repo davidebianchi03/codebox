@@ -70,3 +70,13 @@ myst_enable_extensions = [
 myst_substitutions = {
     "server_base_url": server_base_url,
 }
+
+myst_html_meta = {
+    "description": "Documentation for Codebox, self-hosted remote development workspaces",
+    "keywords": "codebox, IDE, CLI, API, self-hosted, remote development, workspaces",
+    "author": author,
+}
+
+html_meta = {
+    "viewport": "width=device-width, initial-scale=1.0",
+}

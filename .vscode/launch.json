@@ -45,6 +45,21 @@
             },
         },
         {
+            "name": "Approve user",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "approve-user",
+                "--user-email",
+                "user@example.com"
+            ],
+            "env": {
+                "DOCKER_API_VERSION": "1.45",
+            },
+        },
+        {
             "name": "Debug react - chrome",
             "type": "chrome",
             "request": "launch",
