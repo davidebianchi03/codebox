@@ -1,0 +1,38 @@
+# this job mirrors the repo on github
+mirror_on_github:
+  stage: mirror
+  image: dadebia/codebox-release-cli:latest
+  tags:
+    - docker-linux
+  variables:
+    GIT_DEPTH: 0
+  script:
+    - git remote -v
+    - git rev-parse HEAD
+    - git remote add github https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_MIRROR_REPO.git
+    - git push github HEAD:refs/heads/$CI_DEFAULT_BRANCH --force
+    - git push github --tags --force
+    - |
+      response=$(curl -s -w "\n%{http_code}" -X POST \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        https://api.github.com/repos/$GITHUB_MIRROR_REPO/statuses/$CI_COMMIT_SHA \
+        -d "{
+              \"state\": \"pending\",
+              \"context\": \"GitLab CI\",
+              \"target_url\": \"$CI_PIPELINE_URL\"
+            }")
+
+      http_code=$(echo "$response" | tail -n1)
+      body=$(echo "$response" | head -n -1)
+          
+      if [ "$http_code" -ne 201 ]; then
+        echo "GitHub API request failed with HTTP code $http_code"
+        echo $http_code
+        exit 1
+      fi
+  after_script: []
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: always
+    - if: '$CI_COMMIT_TAG'
+      when: always

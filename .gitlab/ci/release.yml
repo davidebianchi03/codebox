@@ -1,0 +1,50 @@
+# this job creates release both on gitlab and github
+# for stable releases
+release:
+  stage: release
+  image: dadebia/codebox-release-cli:latest
+  tags:
+    - docker-linux
+  script:
+    - |
+      if [[ "$CI_COMMIT_TAG" =~ -rc$ ]] || [[ "$CI_COMMIT_TAG" =~ -beta$ ]] || [[ "$CI_COMMIT_TAG" =~ -alpha$ ]]; then
+        echo "Skipping pre-release tag: $CI_COMMIT_TAG"
+        exit 0
+      fi
+
+    - release_body=""
+    - export GITLAB_HOST=$CI_SERVER_URL
+    - glab auth login --job-token $CI_JOB_TOKEN --hostname $CI_SERVER_HOST --api-protocol $CI_SERVER_PROTOCOL
+    - |
+      if [ -z $release_body ]; then
+        glab release create ${CI_COMMIT_TAG}
+      else
+        glab release create ${CI_COMMIT_TAG} --notes $release_body
+      fi
+
+    - |
+      http_code=$(curl -s -o /dev/null -w "%{http_code}" -L \
+      -X POST \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer $GITHUB_TOKEN" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      https://api.github.com/repos/$GITHUB_MIRROR_REPO/releases \
+      -d "{
+        \"tag_name\":\"$CI_COMMIT_TAG\",
+        \"target_commitish\":\"$CI_COMMIT_BRANCH\",
+        \"name\":\"$CI_COMMIT_TAG\",
+        \"body\":\"$release_body\",
+        \"draft\":false,
+        \"prerelease\":false,
+        \"generate_release_notes\":false
+      }")
+
+      if [ "$http_code" -ne 201 ]; then
+        echo "GitHub API request failed with HTTP code $http_code"
+        exit 1
+      fi
+  when: on_success
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: always
+      
