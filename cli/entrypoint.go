@@ -21,6 +21,8 @@ func RunCommand(a CLIArgs) uint {
 		return commands.HandleResetRatelimits()
 	case "approve-user":
 		return commands.HandleApproveUser(a.Args.(args.ApproveUserCmdArgs))
+	case "verify-email":
+		return commands.HandleVerifyEmail(a.Args.(args.VerifyEmailCmdArgs))
 	default:
 		fmt.Printf(
 			"Invalid command '%s'\n", os.Args[1],

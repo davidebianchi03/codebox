@@ -59,6 +59,24 @@ func ParseCLIArgs() (CLIArgs, error) {
 			Command: "approve-user",
 			Args:    approveUserArgs,
 		}, nil
+	case "verify-email":
+		var verifyEmailArgs args.VerifyEmailCmdArgs
+		verifyEmailCmd := flag.NewFlagSet("verify-email", flag.ExitOnError)
+		verifyEmailCmd.StringVar(&verifyEmailArgs.Email, "email-address", "", "email address to verify")
+		verifyEmailCmd.Parse(os.Args[2:])
+
+		if verifyEmailArgs.Email == "" {
+			return CLIArgs{}, errors.New("arg 'email-address' is required")
+		}
+
+		if _, err := mail.ParseAddress(verifyEmailArgs.Email); err != nil {
+			return CLIArgs{}, errors.New("provided value for 'email-address' is not a valid email address")
+		}
+
+		return CLIArgs{
+			Command: "verify-email",
+			Args:    verifyEmailArgs,
+		}, nil
 	default:
 		return CLIArgs{}, fmt.Errorf("Invalid command '%s'", os.Args[1])
 	}
