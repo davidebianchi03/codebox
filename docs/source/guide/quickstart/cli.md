@@ -65,16 +65,32 @@ If you prefer not to use a package manager, you can install the CLI by downloadi
 
 ## Quick Start
 
+### init
+
 Before using the CLI, you must initialize the local environment. This command adds the required entry to your SSH configuration file.
 
 ```bash
 codebox-cli init
 ```
 
+This command also supports an optional parameter to specify the path to the SSH configuration file. The default value is `<user_home_dir>/.ssh/config`.
+
+```bash
+codebox-cli init --ssh-config-file /custom-path/.ssh/config
+```
+
+### login
+
 To authenticate with your Codebox instance, run the `login` command. You will be prompted to enter the server URL and paste the generated access token.
 
 ```bash
 codebox-cli login
+```
+
+This command also supports a non-interactive mode. You can provide the server URL and authentication token either as CLI arguments or via the `CODEBOX_SERVER_URL` and `CODEBOX_TOKEN` environment variables.
+
+```bash
+codebox-cli login --server-url https://codebox.mydomain.com --token fake-token
 ```
 
 ```{note}
