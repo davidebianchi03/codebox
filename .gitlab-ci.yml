@@ -28,7 +28,7 @@ default:
               -H "Authorization: token $GITHUB_TOKEN" \
               https://api.github.com/repos/$GITHUB_MIRROR_REPO/statuses/$CI_COMMIT_SHA \
               -d "{
-                    \"state\": \"pending\",
+                    \"state\": \"$gh_job_status\",
                     \"context\": \"GitLab CI\",
                     \"target_url\": \"$CI_PIPELINE_URL\"
                   }")
