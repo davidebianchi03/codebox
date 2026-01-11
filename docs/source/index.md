@@ -15,6 +15,9 @@
 <a href="https://github.com/davidebianchi03/codebox/blob/master/LICENSE.txt">
     <img src="https://img.shields.io/github/license/davidebianchi03/codebox" alt="License">
 </a>
+<a href="https://marketplace.visualstudio.com/items?itemName=davidebianchi.codebox-remote" style="text-decoration: none">
+    <img alt="License" src="https://vsmarketplacebadges.dev/version/davidebianchi.codebox-remote.svg">
+</a>
 
 Remote development workspaces, ready to use.
 No setup, no inconsistencies, no surprises.

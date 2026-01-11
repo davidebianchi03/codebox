@@ -2,6 +2,17 @@
 
 All changes will be reported in this file
 
+## [v0.0.54] - 2026-01-11
+
+### Added
+
+- Added support for user self-registration.
+- Administrators can now enable or disable user registration.
+- Registration can be restricted to approved users only.
+- Signup can be limited to specific allowed email addresses or domains.
+- Added email blacklisting to block registration from specific email addresses.
+- Improved validation and enforcement of signup rules during registration.
+
 ## [v0.0.53] - 2025-12-14
 
 ### Fix

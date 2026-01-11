@@ -13,6 +13,9 @@
     <a href="./LICENSE.txt" style="text-decoration: none">
       <img alt="License" src="https://img.shields.io/github/license/davidebianchi03/codebox">
     </a>
+    <a href="https://marketplace.visualstudio.com/items?itemName=davidebianchi.codebox-remote" style="text-decoration: none">
+      <img alt="License" src="https://vsmarketplacebadges.dev/version/davidebianchi.codebox-remote.svg">
+    </a>
   <br>
 </div>
 
