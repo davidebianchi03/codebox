@@ -11,6 +11,9 @@ import { APICreateWorkspace, APIListWorkspacesTypes } from "../../api/workspace"
 import { APIListTemplates, APIRetrieveTemplateLatestVersion } from "../../api/templates";
 import { EnvEditor } from "../../components/EnvEditor";
 import { Card, Col, Container, FormGroup, Row, Form, Button } from "react-bootstrap";
+import React from "react";
+import { TemplateSelector } from "./TemplateSelector";
+import { GitRepoSelector } from "./GitRepoSelector";
 
 export default function CreateWorkspace() {
   const [workspaceTypes, setWorkspaceTypes] = useState<WorkspaceType[]>([]);
@@ -157,7 +160,7 @@ export default function CreateWorkspace() {
                     />
                     <Form.Control.Feedback>{validation.errors.workspaceName}</Form.Control.Feedback>
                   </FormGroup>
-                  <FormGroup>
+                  <FormGroup className="mt-2">
                     <Form.Label>Workspace type</Form.Label>
                     <select
                       className={`form-control ${validation.errors.workspaceType ? "is-invalid" : ""}`}
@@ -196,7 +199,7 @@ export default function CreateWorkspace() {
                     </select>
                     <Form.Control.Feedback>{validation.errors.workspaceType}</Form.Control.Feedback>
                   </FormGroup>
-                  <FormGroup>
+                  <FormGroup className="mt-2">
                     <Form.Label>Runner</Form.Label>
                     <select
                       className={`form-control ${validation.errors.runner ? "is-invalid" : ""
@@ -295,82 +298,42 @@ export default function CreateWorkspace() {
                   </FormGroup>
                   {validation.values.configSource !== "" &&
                     (validation.values.configSource === "git" ? (
-                      <>
-                        <FormGroup>
-                          <Form.Label>Repository URL</Form.Label>
-                          <Form.Control
-                            name="gitRepositoryURL"
-                            placeholder="git@example.com/my-awesome-project"
-                            value={validation.values.gitRepositoryURL}
-                            onChange={validation.handleChange}
-                            isInvalid={
-                              validation.errors.gitRepositoryURL !== undefined
-                            }
-                          />
-                          <Form.Control.Feedback>
-                            {validation.errors.gitRepositoryURL}
-                          </Form.Control.Feedback>
-                        </FormGroup>
-                        <FormGroup>
-                          <Form.Label>Ref Name</Form.Label>
-                          <Form.Control
-                            name="gitRefName"
-                            placeholder="refs/heads/main"
-                            value={validation.values.gitRefName}
-                            onChange={validation.handleChange}
-                            isInvalid={validation.errors.gitRefName !== undefined}
-                          />
-                          <Form.Control.Feedback>
-                            {validation.errors.gitRefName}
-                          </Form.Control.Feedback>
-                        </FormGroup>
-                        <FormGroup>
-                          <Form.Label>Config files path</Form.Label>
-                          <Form.Control
-                            name="configFilesPath"
-                            placeholder={
-                              workspaceTypes.find(
-                                (t) => t.id === validation.values.workspaceType
-                              )?.config_files_default_path
-                            }
-                            value={validation.values.configFilesPath}
-                            onChange={validation.handleChange}
-                            isInvalid={
-                              validation.errors.configFilesPath !== undefined
-                            }
-                          />
-                          <Form.Control.Feedback>
-                            {validation.errors.configFilesPath}
-                          </Form.Control.Feedback>
-                        </FormGroup>
-                      </>
+                      <React.Fragment>
+                        <GitRepoSelector
+                          repoUrl={{
+                            value: validation.values.gitRepositoryURL,
+                            onChange: validation.handleChange,
+                            error: validation.errors.gitRepositoryURL,
+                          }}
+                          refName={{
+                            value: validation.values.gitRefName,
+                            onChange: validation.handleChange,
+                            error: validation.errors.gitRefName,
+                          }}
+                          configFilePath={{
+                            value: validation.values.configFilesPath,
+                            onChange: validation.handleChange,
+                            error: validation.errors.configFilesPath,
+                            placeholder: workspaceTypes.find(
+                              (t) => t.id === validation.values.workspaceType
+                            )?.config_files_default_path
+                          }}
+                        />
+                      </React.Fragment>
                     ) : (
-                      <>
-                        <FormGroup>
-                          <Form.Label>Template</Form.Label>
-                          <Form.Control
-                            name="template"
-                            type="select"
-                            value={validation.values.template}
-                            onChange={validation.handleChange}
-                            isInvalid={
-                              validation.errors.template !== undefined
-                            }
-                          >
-                            <option value={""}>Select a template</option>
-                            {
-                              templates.filter(
-                                (template) => template.type === validation.values.workspaceType
-                              ).map((template, index) => (
-                                <option key={index} value={template.id}>{template.name}</option>
-                              ))
-                            }
-                          </Form.Control>
-                          <Form.Control.Feedback>
-                            {validation.errors.template}
-                          </Form.Control.Feedback>
-                        </FormGroup>
-                      </>
+                      <React.Fragment>
+                        <TemplateSelector
+                          templates={templates.filter(
+                            (template) => template.type === validation.values.workspaceType
+                          )}
+                          value={validation.values.template}
+                          onChange={validation.handleChange}
+                          isInvalid={
+                            validation.errors.template !== undefined
+                          }
+                          error={validation.errors.template}
+                        />
+                      </React.Fragment>
                     ))}
                 </Card.Body>
               </Card>
