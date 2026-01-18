@@ -6,8 +6,24 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/config"
+	"gitlab.com/codebox4073715/codebox/httpserver/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
 )
+
+// HandleRetrieveCLIVersion godoc
+// @Summary Retrieve recommended cli version
+// @Schemes
+// @Description Retrieve recommended cli version
+// @Tags CLI
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.CLIVersionSerializer
+// @Router /api/v1/cli-version [get]
+func HandleRetrieveCLIVersion(c *gin.Context) {
+	c.JSON(http.StatusOK, serializers.CLIVersionSerializer{
+		Version: config.RecommendedCLIVersion,
+	})
+}
 
 // List cli godoc
 // @Summary List cli

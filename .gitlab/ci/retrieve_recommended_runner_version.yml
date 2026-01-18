@@ -7,9 +7,10 @@ retrieve_recommended_runner_version:
     - docker-linux
   script:
     - ./scripts/retrieve-latest-runner-version.sh
+    - echo "CODEBOX_RUNNER_VERSION=$(cat recommended_runner_version.txt)" > recommended_runner_version.env
   artifacts:
-    paths:
-      - recommended_runner_version.txt
+    reports:
+      dotenv: recommended_runner_version.env
     expire_in: 1 hour
   when: on_success
   rules:

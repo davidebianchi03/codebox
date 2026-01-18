@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -36,7 +37,8 @@ func main() {
 	// parse cli args
 	args, err := cli.ParseCLIArgs()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 		return
 	}
 

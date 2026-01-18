@@ -8,9 +8,14 @@ download_cli:
     - docker-linux
   script:
     - ./scripts/download-cli.sh
+    - |
+      cli_version=$(echo "$(./bin/cli/codebox-cli-linux-amd64 version)" | sed 's/Version: //g')
+    - echo CODEBOX_CLI_VERSION=$cli_version > cli_version.env
   artifacts:
     paths:
       - bin/cli
+    reports:
+      dotenv: cli_version.env
     expire_in: 1 hour
   when: on_success
   rules:

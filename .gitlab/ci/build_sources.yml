@@ -4,22 +4,27 @@
 # goland server binary.
 # - build_frontend: this jobs is run on every commit an tag, it builds
 # the react web app.
+
 build_server:
   stage: build_sources
   image: golang:1.24.1
   tags:
     - docker-linux
   dependencies:
+    - download_cli
     - retrieve_recommended_runner_version
   variables:
     GOOS: linux
     GOARCH: amd64
   script:
-    - export RECOMMENDED_RUNNER_VERSION=$(cat recommended_runner_version.txt)
-    - echo "Recommended Runner Version=${RECOMMENDED_RUNNER_VERSION}"
-    - rm -rf recommended_runner_version.txt
+    - echo "Building codebox server version ${CI_COMMIT_TAG}"
+    - echo "Using recommended runner version ${CODEBOX_RUNNER_VERSION}"
+    - echo "Using recommended cli version ${CODEBOX_CLI_VERSION}"
     - mkdir -p bin
-    - go build -o bin/codebox -ldflags "-X gitlab.com/codebox4073715/codebox/config.ServerVersion=${CI_COMMIT_TAG} -X gitlab.com/codebox4073715/codebox/config.RecommendedRunnerVersion=${RECOMMENDED_RUNNER_VERSION}" main.go
+    - | 
+      make build SERVER_VERSION=${CI_COMMIT_TAG} \
+      RECOMMENDED_RUNNER_VERSION=${CODEBOX_RUNNER_VERSION} \
+      RECOMMENDED_CLI_VERSION=${CODEBOX_CLI_VERSION}
   artifacts:
     paths:
       - bin/codebox
