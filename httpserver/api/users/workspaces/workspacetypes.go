@@ -15,7 +15,7 @@ import (
 // @Tags Workspaces
 // @Accept json
 // @Produce json
-// @Success 200 {object} serializers.WorkspaceTypeSerializer[]
+// @Success 200 {object} []serializers.WorkspaceTypeSerializer
 // @Router /api/v1/workspace-types [get]
 func HandleListWorkspaceTypes(c *gin.Context) {
 	c.JSON(
