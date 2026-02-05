@@ -20,6 +20,7 @@ import { VerifyEmailPage } from "../pages/VerifyEmail";
 import WorkspaceDetails from "../pages/WorkspaceDetails";
 import { Route } from "./types";
 import { AdminEmailSenderPage } from "../pages/AdminEmailSender";
+import { PasswordResetPage } from "../pages/PasswordReset";
 
 export const PublicRoutes: Route[] = [
   {
@@ -37,6 +38,10 @@ export const PublicRoutes: Route[] = [
   {
     path: "verify-email",
     element: <VerifyEmailPage />,
+  },
+  {
+    path: "password-reset",
+    element: <PasswordResetPage />,
   },
 ];
 

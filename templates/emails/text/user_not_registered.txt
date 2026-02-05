@@ -1,0 +1,9 @@
+{{ define "title" }}Password reset request{{ end }}
+
+{{ define "content" }}
+A password reset was requested for this email address on Codebox. 
+However, there is no account associated with this email address in our system.
+
+If you have a Codebox account, please try again using the email address you used during registration. 
+If you do not have an account, you can safely ignore this message.
+{{ end }}

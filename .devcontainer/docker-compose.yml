@@ -3,7 +3,7 @@ version: '3'
 services:
   redis:
     image: redis:7.4.1
-    restart: always
+    restart: unless-stopped
 
   db:
     image: mysql:8.0.41
@@ -18,7 +18,7 @@ services:
       retries: 10
     volumes:
       - codeboxdb:/var/lib/mysql
-    restart: always
+    restart: unless-stopped
 
   phpmyadmin:
     depends_on:
@@ -31,6 +31,16 @@ services:
     labels:
       - com.codebox.port.phpmyadmin=80
       - com.codebox.port.phpmyadmin.public=false
+    restart: unless-stopped
+
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    restart: unless-stopped
+    volumes:
+      - smtp4dev-data:/smtp4dev
+    labels:
+      - com.codebox.port.smtp4dev=80
+      - com.codebox.port.smtp4dev.public=false
 
   codebox:
     build: .
@@ -42,9 +52,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - vscode_server:/vscode-server
       - gobin:/gobin
-    restart: always
+    restart: unless-stopped
 
 volumes:
   codeboxdb:
   vscode_server:
   gobin:
+  smtp4dev-data:

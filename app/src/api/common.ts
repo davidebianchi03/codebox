@@ -129,3 +129,12 @@ export async function APIAdminEmailServiceConfigured(): Promise<boolean> {
         return false;
     }
 }
+
+export async function APICanResetPassword(): Promise<boolean> {
+    try {
+        const response = await axios.get<{ can_reset_password: boolean }>(`/api/v1/auth/can-reset-password`);
+        return response.data.can_reset_password;
+    } catch {
+        return false;
+    }
+}

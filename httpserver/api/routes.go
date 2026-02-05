@@ -99,6 +99,18 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/verify-email-address",
 				auth.HandleVerifyEmailAddress,
 			)
+			authApis.GET(
+				"/can-reset-password",
+				auth.HandleCanResetPassword,
+			)
+			authApis.POST(
+				"/request-password-reset",
+				permissions.IPRateLimitedRoute(
+					auth.HandleRequestPasswordReset,
+					5,
+					60,
+				),
+			)
 		}
 
 		// workspace related apis

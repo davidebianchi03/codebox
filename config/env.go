@@ -36,6 +36,7 @@ type EnvVars struct {
 	EmailSMTPPort     int    `env:"CODEBOX_EMAIL_SMTP_PORT"`
 	EmailSMTPUser     string `env:"CODEBOX_EMAIL_SMTP_USER"`
 	EmailSMTPPassword string `env:"CODEBOX_EMAIL_SMTP_PASSWORD"`
+	RunnerTokenHeader string `env:"CODEBOX_RUNNER_TOKEN_HEADER" envDefault:"X-Codebox-Runner-Token"`
 }
 
 var Environment *EnvVars

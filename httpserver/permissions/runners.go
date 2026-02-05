@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
 )
@@ -28,7 +29,7 @@ func RunnerTokenAuthenticationRequired(handler gin.HandlerFunc) gin.HandlerFunc 
 			return
 		}
 
-		runnerToken := c.Request.Header.Get("X-Codebox-Runner-Token")
+		runnerToken := c.Request.Header.Get(config.Environment.RunnerTokenHeader)
 
 		runner, err := models.RetrieveRunnerByID(uint(runnerId))
 		if err != nil {
