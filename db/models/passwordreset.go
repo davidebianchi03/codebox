@@ -6,6 +6,7 @@ import (
 	"time"
 
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
+	"gorm.io/gorm"
 )
 
 /*
@@ -56,6 +57,9 @@ func GetPasswordResetToken(token string) (*PasswordResetToken, error) {
 		First(&prt)
 
 	if r.Error != nil {
+		if r.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
 		return nil, r.Error
 	}
 

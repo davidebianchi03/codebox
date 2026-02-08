@@ -1,11 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faApple, faLinux, faWindows } from '@fortawesome/free-brands-svg-icons'
+import { faApple, faLinux } from '@fortawesome/free-brands-svg-icons'
 import React, { useCallback, useEffect, useState } from "react";
-import { Badge, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { CLIBuild } from "../../types/cli";
 import { ListCLIBuilds } from "../../api/cli";
 import { toast } from "react-toastify";
 import { WindowsIcon } from "../../icons/Tabler";
+import { Badge, Card, Col, Row, Table } from "react-bootstrap";
 
 
 export function CLIDownloadPage() {
@@ -40,13 +40,20 @@ export function CLIDownloadPage() {
             <Row className="mt-3">
                 <Col md={12}>
                     <Card>
-                        <CardHeader>
+                        <Card.Header className="d-flex flex-column  align-items-start">
                             <h2 className="mb-0 d-flex align-items-center">
                                 <span className="pe-2 mb-1">Windows</span>
                                 <WindowsIcon />
                             </h2>
-                        </CardHeader>
-                        <CardBody>
+                            <p className="mb-0">
+                                <small>
+                                    Warning: Windows Defender may flag the CLI as a false positive,
+                                    this is because the CLI is not signed with a valid certificate,
+                                    you can safely ignore this warning and allow the CLI to run on your system.
+                                </small>
+                            </p>
+                        </Card.Header>
+                        <Card.Body>
                             <Table responsive className="mb-0">
                                 <tbody>
                                     {cliBuilds.filter(b => b.os === "windows").map(build => (
@@ -58,10 +65,10 @@ export function CLIDownloadPage() {
                                                     </a>
                                                 </p>
                                                 <p className="d-flex gap-2 mb-0">
-                                                    <Badge color="light" className="text-dark">
+                                                    <Badge bg="light" className="text-dark">
                                                         {build.architecture}
                                                     </Badge>
-                                                    <Badge color="light" className="text-dark">
+                                                    <Badge bg="light" className="text-dark">
                                                         {build.type}
                                                     </Badge>
                                                 </p>
@@ -70,20 +77,20 @@ export function CLIDownloadPage() {
                                     ))}
                                 </tbody>
                             </Table>
-                        </CardBody>
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>
             <Row className="mt-3">
                 <Col md={12}>
                     <Card>
-                        <CardHeader>
+                        <Card.Header>
                             <h2 className="mb-0">
                                 <span className="pe-2">Linux</span>
                                 <FontAwesomeIcon icon={faLinux as any} />
                             </h2>
-                        </CardHeader>
-                        <CardBody>
+                        </Card.Header>
+                        <Card.Body>
                             <Table responsive className="mb-0">
                                 <tbody>
                                     {cliBuilds.filter(b => b.os === "linux").map(build => (
@@ -95,10 +102,10 @@ export function CLIDownloadPage() {
                                                     </a>
                                                 </p>
                                                 <p className="d-flex gap-2 mb-0">
-                                                    <Badge color="light" className="text-dark">
+                                                    <Badge bg="light" className="text-dark">
                                                         {build.architecture}
                                                     </Badge>
-                                                    <Badge color="light" className="text-dark">
+                                                    <Badge bg="light" className="text-dark">
                                                         {build.type}
                                                     </Badge>
                                                 </p>
@@ -107,20 +114,20 @@ export function CLIDownloadPage() {
                                     ))}
                                 </tbody>
                             </Table>
-                        </CardBody>
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>
             <Row className="mt-3">
                 <Col md={12}>
                     <Card>
-                        <CardHeader>
+                        <Card.Header>
                             <h2 className="mb-0">
                                 <span className="pe-2">MacOS</span>
                                 <FontAwesomeIcon icon={faApple as any} />
                             </h2>
-                        </CardHeader>
-                        <CardBody>
+                        </Card.Header>
+                        <Card.Body>
                             <p>
                                 <h4>Install codebox-cli using brew:</h4>
                                 <div className="w-100 p-2 rounded" style={{ fontFamily: "Consolas", background: "var(--tblr-dark-bg-subtle)" }}>
@@ -148,10 +155,10 @@ export function CLIDownloadPage() {
                                                     </a>
                                                 </p>
                                                 <p className="d-flex gap-2 mb-0">
-                                                    <Badge color="light" className="text-dark">
+                                                    <Badge bg="light" className="text-dark">
                                                         {build.architecture}
                                                     </Badge>
-                                                    <Badge color="light" className="text-dark">
+                                                    <Badge bg="light" className="text-dark">
                                                         {build.type}
                                                     </Badge>
                                                 </p>
@@ -160,7 +167,7 @@ export function CLIDownloadPage() {
                                     ))}
                                 </tbody>
                             </Table>
-                        </CardBody>
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>

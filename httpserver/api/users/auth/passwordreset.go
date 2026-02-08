@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/config"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/emails"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/serializers"
@@ -43,6 +44,7 @@ type RequestPasswordResetTokenBody struct {
 // @Success 200 {object} serializers.RequestPasswordResetSerializer
 // @Failure 400 "Missing or invalid field"
 // @Failure 406 "Password reset is not available"
+// @Failure 429 "Rate limit exceeded"
 // @Failure 500 "Internal server error"
 // @Router /api/v1/auth/request-password-reset [post]
 func HandleRequestPasswordReset(c *gin.Context) {
@@ -130,4 +132,115 @@ func HandleRequestPasswordReset(c *gin.Context) {
 			true, requestBody.Email,
 		),
 	)
+}
+
+type HandlePasswordResetFromTokenBody struct {
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+// HandlePasswordResetFromToken godoc
+// @Summary Reset Password From Token
+// @Schemes
+// @Description Reset password using a token
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body HandlePasswordResetFromTokenBody true "Request Data"
+// @Success 200 "Password reset successfully"
+// @Failure 400 "Missing or invalid field"
+// @Failure 404 "Invalid or expired token"
+// @Failure 406 "Password reset is not available"
+// @Failure 429 "Rate limit exceeded"
+// @Failure 500 "Internal server error"
+// @Router /api/v1/auth/password-reset-from-token [post]
+func HandlePasswordResetFromToken(c *gin.Context) {
+	_, err := utils.GetUserFromContext(c)
+	if err == nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"already logged in",
+		)
+		return
+	}
+
+	if !config.IsEmailConfigured() {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotAcceptable,
+			"password reset is not available",
+		)
+		return
+	}
+
+	var requestBody *HandlePasswordResetFromTokenBody
+	err = c.ShouldBindBodyWithJSON(&requestBody)
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"missing or invalid field",
+		)
+		return
+	}
+
+	// delete expired tokens
+	if err := models.DeleteExpiredPasswordResetTokens(); err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	// get password reset token from db
+	prt, err := models.GetPasswordResetToken(requestBody.Token)
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	if prt == nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"invalid or expired token",
+		)
+		return
+	}
+
+	// validate the new password
+	// passwordmust be at least 10 characters long and
+	// include at least one uppercase letter and one special symbol (!_-,.?!)
+	if err := models.ValidatePassword(requestBody.NewPassword); err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			err.Error(),
+		)
+		return
+	}
+
+	// hash password and store it into db
+	user := prt.User
+	user.Password, err = models.HashPassword(requestBody.NewPassword)
+	if err != nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	dbconn.DB.Save(&user)
+	c.JSON(http.StatusOK, gin.H{
+		"detail": "password has been reset successfully",
+	})
 }

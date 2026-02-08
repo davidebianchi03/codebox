@@ -17,7 +17,7 @@ func SendPasswordResetEmail(
 	emailAddress string,
 	token string,
 ) (err error) {
-	resetPasswordUrl := fmt.Sprintf("%s/reset-password?token=%s",
+	resetPasswordUrl := fmt.Sprintf("%s/password-reset/from-token?token=%s",
 		config.Environment.ExternalUrl,
 		token,
 	)

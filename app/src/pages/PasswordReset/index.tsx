@@ -1,13 +1,16 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { PageWithCardLayout } from "../../layouts/PageWithCardLayout";
 import { Button, Form } from "react-bootstrap";
 import { APICanResetPassword, APIInitialUserExists, RetrieveCurrentUserDetails } from "../../api/common";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { APIRequestPasswordReset } from "../../api/auth";
+import { NonFieldError } from "../../components/NonFieldError";
 
 export function PasswordResetPage() {
     const navigate = useNavigate();
+    const [nonFieldError, setNonFieldError] = useState<string>("");
 
     const checkUserState = useCallback(async () => {
         const user = await RetrieveCurrentUserDetails();
@@ -45,7 +48,12 @@ export function PasswordResetPage() {
                 .email("A valid email address is required"),
         }),
         onSubmit: async (values) => {
-            
+            if(await APIRequestPasswordReset(values.email)) {
+                navigate("/password-reset/sent");
+                setNonFieldError("");
+            } else {
+                setNonFieldError("An error occurred while sending the reset instructions. Please try again later.");
+            }
         }
     })
 
@@ -73,7 +81,7 @@ export function PasswordResetPage() {
                             We'll send you an email with instructions to reset your password.
                         </Form.Text>
                     </Form.Group>
-
+                    {nonFieldError && <NonFieldError error={nonFieldError} />}
                     <Button variant="light" type="submit" className="w-100">
                         Send reset instructions
                     </Button>

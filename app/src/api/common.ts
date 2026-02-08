@@ -13,7 +13,7 @@ export async function RetrieveCurrentUserDetails(): Promise<CurrentUser | undefi
 
 export async function APIUpdateCurrentUserDetails(firstName: string, lastName: string) {
     try {
-        await axios.patch(
+        await axios.put(
             `/api/v1/auth/user-details`,
             {
                 first_name: firstName,

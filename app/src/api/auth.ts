@@ -107,3 +107,42 @@ export async function APIVerifyEmailAddress(code: string): Promise<APIVerifyEmai
         return APIVerifyEmailCode.UNKNOWN_ERROR;
     }
 }
+
+export async function APIRequestPasswordReset(email: string): Promise<boolean> {
+    try {
+        await axios.post(`/api/v1/auth/request-password-reset`, {
+            email: email,
+        });
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+export enum APICanResetPasswordCode {
+    SUCCESS,
+    INVALID_TOKEN,
+    PASSWORD_RESET_NOT_AVAILABLE,
+    UNKNOWN_ERROR,
+}
+
+export async function APIResetPasswordFromToken(
+    token: string, newPassword: string,
+): Promise<APICanResetPasswordCode> {
+try {
+        await axios.post(`/api/v1/auth/password-reset-from-token`, {
+            token: token,
+            new_password: newPassword,
+        });
+        return APICanResetPasswordCode.SUCCESS;
+    } catch (error) {
+        if (isAxiosError(error)) {
+            if (error.response?.status === 404) {
+                return APICanResetPasswordCode.INVALID_TOKEN;
+            } else if (error.response?.status === 406) {
+                return APICanResetPasswordCode.PASSWORD_RESET_NOT_AVAILABLE;
+            }
+        }
+        return APICanResetPasswordCode.UNKNOWN_ERROR;
+    }
+}

@@ -21,6 +21,8 @@ import WorkspaceDetails from "../pages/WorkspaceDetails";
 import { Route } from "./types";
 import { AdminEmailSenderPage } from "../pages/AdminEmailSender";
 import { PasswordResetPage } from "../pages/PasswordReset";
+import { PasswordResetSentPage } from "../pages/PasswordResetSent";
+import { PasswordResetFromTokenPage } from "../pages/PasswordResetFromToken";
 
 export const PublicRoutes: Route[] = [
   {
@@ -42,6 +44,14 @@ export const PublicRoutes: Route[] = [
   {
     path: "password-reset",
     element: <PasswordResetPage />,
+  },
+  {
+    path: "password-reset/sent",
+    element: <PasswordResetSentPage />,
+  },
+  {
+    path: "password-reset/from-token",
+    element: <PasswordResetFromTokenPage />,
   },
 ];
 

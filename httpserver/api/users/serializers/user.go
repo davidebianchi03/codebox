@@ -143,3 +143,15 @@ func LoadInitialUserExistsSerializer(exists bool) InitialUserExistsSerializer {
 		Exists: exists,
 	}
 }
+
+/*
+ */
+type UserSshPublicKeySerializer struct {
+	PublicKey string `json:"public_key"`
+}
+
+func LoadUserSshPublicKeySerializer(publicKey string) UserSshPublicKeySerializer {
+	return UserSshPublicKeySerializer{
+		PublicKey: publicKey,
+	}
+}

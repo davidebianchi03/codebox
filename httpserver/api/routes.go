@@ -67,10 +67,6 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/user-details",
 				permissions.AuthenticationRequiredRoute(auth.HandleUpdateUserDetails),
 			)
-			authApis.PATCH(
-				"/user-details",
-				permissions.AuthenticationRequiredRoute(auth.HandleUpdateUserDetails),
-			)
 			authApis.GET(
 				"/user-ssh-public-key",
 				permissions.AuthenticationRequiredRoute(auth.HandleRetrieveUserPublicKey),
@@ -107,6 +103,14 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/request-password-reset",
 				permissions.IPRateLimitedRoute(
 					auth.HandleRequestPasswordReset,
+					5,
+					60,
+				),
+			)
+			authApis.POST(
+				"/password-reset-from-token",
+				permissions.IPRateLimitedRoute(
+					auth.HandlePasswordResetFromToken,
 					5,
 					60,
 				),

@@ -10,6 +10,7 @@ import * as Yup from "yup";
 import { APIInitialUserExists, APISignUpOpen, RetrieveCurrentUserDetails } from "../../api/common";
 import { APISignUp, APISignUpCode } from "../../api/auth";
 import { PageWithCardLayout } from "../../layouts/PageWithCardLayout";
+import { NonFieldError } from "../../components/NonFieldError";
 
 export default function SignUpPage() {
 
@@ -179,6 +180,7 @@ export default function SignUpPage() {
               {validation.errors.confirmPassword}
             </FormFeedback>
           </div>
+          {nonFieldError && <NonFieldError error={nonFieldError} />}
           <div className="d-flex justify-content-between">
             <Button color="light" className="w-75 mx-auto" type="submit">
               Sign up
