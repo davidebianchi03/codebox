@@ -239,6 +239,8 @@ func HandlePasswordResetFromToken(c *gin.Context) {
 		return
 	}
 
+	emails.SendPasswordResetDoneEmail(user.Email)
+
 	dbconn.DB.Save(&user)
 	c.JSON(http.StatusOK, gin.H{
 		"detail": "password has been reset successfully",

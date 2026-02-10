@@ -94,3 +94,41 @@ func SendUserNotRegisteredEmail(
 
 	return nil
 }
+
+/*
+SendPasswordResetDoneEmail renders and sends an email to inform
+the recipient that their password has been successfully reset.
+The message is sent as a background task.
+*/
+func SendPasswordResetDoneEmail(
+	emailAddress string,
+) (err error) {
+	html, err := RenderHtmlEmailTemplate(
+		"password_reset_done.html",
+		map[string]any{},
+	)
+	if err != nil {
+		// TODO: log error
+		return errors.New("failed to render html body for 'password_reset_done'")
+	}
+
+	text, err := RenderTextEmailTemplate(
+		"password_reset_done.txt",
+		map[string]any{},
+	)
+
+	if err != nil {
+		return errors.New("failed to render text body for 'password_reset_done'")
+	}
+
+	if err := bgtasks.SendEmailMessage(
+		[]string{emailAddress},
+		"Password Reset Done",
+		html,
+		text,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
