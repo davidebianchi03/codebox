@@ -30,7 +30,7 @@ func HandleCanResetPassword(c *gin.Context) {
 }
 
 type RequestPasswordResetTokenBody struct {
-	Email string `json:"email" binding:"required"`
+	Email string `json:"email" binding:"required,email"`
 }
 
 // HandleCanResetPassword godoc

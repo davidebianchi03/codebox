@@ -84,3 +84,36 @@ func DeleteExpiredPasswordResetTokens() error {
 		Delete(&PasswordResetToken{})
 	return r.Error
 }
+
+/*
+Count existing password reset tokens for a given user
+*/
+func CountPasswordResetTokensForUser(user User) (int64, error) {
+	var count int64
+	r := dbconn.DB.Model(&PasswordResetToken{}).Where("user_id = ?", user.ID).Count(&count)
+	if r.Error != nil {
+		return 0, r.Error
+	}
+	return count, nil
+}
+
+func CountAllPasswordResetTokens() (int64, error) {
+	var count int64
+	r := dbconn.DB.Model(&PasswordResetToken{}).Count(&count)
+	if r.Error != nil {
+		return 0, r.Error
+	}
+	return count, nil
+}
+
+/*
+Retrieve list of existing password reset tokens for a given user
+*/
+func GetPasswordResetTokensForUser(user User) ([]PasswordResetToken, error) {
+	var tokens []PasswordResetToken
+	r := dbconn.DB.Where("user_id = ?", user.ID).Find(&tokens)
+	if r.Error != nil {
+		return nil, r.Error
+	}
+	return tokens, nil
+}
