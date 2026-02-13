@@ -67,6 +67,13 @@ func GetPasswordResetToken(token string) (*PasswordResetToken, error) {
 }
 
 /*
+Upload passoword reset token
+*/
+func UpdatePasswordResetToken(token *PasswordResetToken) error {
+	return dbconn.DB.Save(token).Error
+}
+
+/*
 Delete a password reset token
 */
 func DeletePasswordResetToken(prt PasswordResetToken) error {

@@ -1,9 +1,11 @@
 package auth_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/codebox4073715/codebox/config"
@@ -296,5 +298,449 @@ func TestRequestPasswordResetEmailNotConfigured(t *testing.T) {
 			t.Fatalf("Failed to count password reset tokens: '%s'", err)
 		}
 		assert.Equal(t, 0, int(count))
+	})
+}
+
+/*
+Try to reset password
+*/
+func TestPasswordResetFromToken(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		// check password
+		assert.True(t, user.CheckPassword("password"))
+
+		// generate password reset token
+		token, err := models.CreatePasswordResetToken(*user)
+		if err != nil {
+			t.Fatalf("Failed to create password reset token, %s", err)
+		}
+
+		// try to reset the password with the token
+		newPassword := "NewPassword.123"
+		resetPasswordReqBody := auth.HandlePasswordResetFromTokenBody{
+			Token:       token.Token,
+			NewPassword: newPassword,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/password-reset-from-token",
+			"POST",
+			resetPasswordReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// check that the password was actually reset
+		user, err = models.RetrieveUserByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		assert.False(t, user.CheckPassword("password"))
+		assert.True(t, user.CheckPassword("NewPassword.123"))
+	})
+}
+
+/*
+Try to reset password with missing token
+*/
+func TestPasswordResetFromTokenMissingToken(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		// check password
+		assert.True(t, user.CheckPassword("password"))
+
+		// try to reset the password with the token
+		newPassword := "NewPassword.123"
+		resetPasswordReqBody := auth.HandlePasswordResetFromTokenBody{
+			NewPassword: newPassword,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/password-reset-from-token",
+			"POST",
+			resetPasswordReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "missing or invalid field")
+
+		// check that the password was actually reset
+		user, err = models.RetrieveUserByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		assert.True(t, user.CheckPassword("password"))
+	})
+}
+
+/*
+Try to reset password with missing token
+*/
+func TestPasswordResetFromTokenMissingPassword(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		// check password
+		assert.True(t, user.CheckPassword("password"))
+
+		// generate password reset token
+		token, err := models.CreatePasswordResetToken(*user)
+		if err != nil {
+			t.Fatalf("Failed to create password reset token, %s", err)
+		}
+
+		// try to reset the password with the token
+		resetPasswordReqBody := auth.HandlePasswordResetFromTokenBody{
+			Token: token.Token,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/password-reset-from-token",
+			"POST",
+			resetPasswordReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "missing or invalid field")
+
+		// check that the password was actually reset
+		user, err = models.RetrieveUserByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		assert.True(t, user.CheckPassword("password"))
+	})
+}
+
+/*
+Try to reset password with an invalid token
+*/
+func TestPasswordResetFromTokenInvalidToken(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		// check password
+		assert.True(t, user.CheckPassword("password"))
+
+		// try to reset the password with the token
+		newPassword := "NewPassword.123"
+		resetPasswordReqBody := auth.HandlePasswordResetFromTokenBody{
+			Token:       "invalid-token",
+			NewPassword: newPassword,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/password-reset-from-token",
+			"POST",
+			resetPasswordReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Contains(t, w.Body.String(), "invalid or expired token")
+
+		// check that the password was actually reset
+		user, err = models.RetrieveUserByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		assert.True(t, user.CheckPassword("password"))
+	})
+}
+
+/*
+Try to reset password with an expired token
+*/
+func TestPasswordResetFromTokenWithAnExpiredToken(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		// check password
+		assert.True(t, user.CheckPassword("password"))
+
+		// generate an expired password reset token
+		token, err := models.CreatePasswordResetToken(*user)
+		if err != nil {
+			t.Fatalf("Failed to create password reset token, %s", err)
+		}
+		token.Expiration = time.Now()
+		if err := models.UpdatePasswordResetToken(token); err != nil {
+			t.Fatalf("Failed to update password reset token, %s", err)
+		}
+
+		// try to reset the password with the token
+		newPassword := "NewPassword.123"
+		resetPasswordReqBody := auth.HandlePasswordResetFromTokenBody{
+			Token:       token.Token,
+			NewPassword: newPassword,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/password-reset-from-token",
+			"POST",
+			resetPasswordReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Contains(t, w.Body.String(), "invalid or expired token")
+
+		// check that the password was actually reset
+		user, err = models.RetrieveUserByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		assert.True(t, user.CheckPassword("password"))
+	})
+}
+
+/*
+Try to reset password with an invalid password
+*/
+func TestPasswordResetFromTokenWithAnInvalidPassword(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		// check password
+		assert.True(t, user.CheckPassword("password"))
+
+		// generate an expired password reset token
+		token, err := models.CreatePasswordResetToken(*user)
+		if err != nil {
+			t.Fatalf("Failed to create password reset token, %s", err)
+		}
+
+		// try to reset the password with the token
+		newPassword := "invalidpassword"
+		resetPasswordReqBody := auth.HandlePasswordResetFromTokenBody{
+			Token:       token.Token,
+			NewPassword: newPassword,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/password-reset-from-token",
+			"POST",
+			resetPasswordReqBody,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "invalid password")
+
+		// check that the password was actually reset
+		user, err = models.RetrieveUserByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		assert.True(t, user.CheckPassword("password"))
+	})
+}
+
+/*
+Try to reset password but user was logged in
+*/
+func TestPasswordResetFromTokenuserLoggedIn(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		user, err := models.RetrieveUserByEmail("user1@user.com")
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		// check password
+		assert.True(t, user.CheckPassword("password"))
+
+		// generate password reset token
+		token, err := models.CreatePasswordResetToken(*user)
+		if err != nil {
+			t.Fatalf("Failed to create password reset token, %s", err)
+		}
+
+		// try to reset the password with the token
+		newPassword := "NewPassword.123"
+		resetPasswordReqBody := auth.HandlePasswordResetFromTokenBody{
+			Token:       token.Token,
+			NewPassword: newPassword,
+		}
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/password-reset-from-token",
+			"POST",
+			resetPasswordReqBody,
+		)
+		testutils.AuthenticateHttpRequest(t, req, *user)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "already logged in")
+
+		// check that the password was actually reset
+		user, err = models.RetrieveUserByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Failed to retrieve user: '%s'", err)
+		}
+
+		if user == nil {
+			t.Fatal("User not found")
+		}
+
+		assert.True(t, user.CheckPassword("password"))
+	})
+}
+
+/*
+test api to check if password reset is available
+*/
+func TestPasswordResetAvailable(t *testing.T) {
+	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
+		router := httpserver.SetupRouter()
+
+		w := httptest.NewRecorder()
+		req := testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/can-reset-password",
+			"GET",
+			nil,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		var responseBody map[string]bool
+		if err := json.Unmarshal(w.Body.Bytes(), &responseBody); err != nil {
+			t.Fatalf("Failed to parse json, %s", err)
+		}
+
+		assert.True(t, responseBody["can_reset_password"])
+
+		// disable password reset and test again
+		config.Environment.EmailSMTPHost = ""
+		config.Environment.EmailSMTPPort = 0
+		config.Environment.EmailSMTPUser = ""
+		config.Environment.EmailSMTPPassword = ""
+
+		w = httptest.NewRecorder()
+		req = testutils.CreateRequestWithJSONBody(
+			t,
+			"/api/v1/auth/can-reset-password",
+			"GET",
+			nil,
+		)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		if err := json.Unmarshal(w.Body.Bytes(), &responseBody); err != nil {
+			t.Fatalf("Failed to parse json, %s", err)
+		}
+
+		assert.False(t, responseBody["can_reset_password"])
 	})
 }
