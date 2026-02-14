@@ -18,16 +18,16 @@ release:
     - |
       git fetch --tags
       if git rev-parse --is-shallow-repository | grep -q true; then
-          git fetch --unshallow
+        git fetch --unshallow
       fi
-    - LATEST_TAG=$(git tag --list  --sort=-creatordate | grep -vE '(-rc.*|-alpha.*|-beta.*)$' | head -n1)
+    - LATEST_TAG=$(git tag --list --sort=-creatordate | grep -vE '(-rc.*|-alpha.*|-beta.*)$' | head -n1)
     - RELEASE_BODY=""
     - |
       if [ -z "$LATEST_TAG" ]; then
         echo "No suitable tag found."
       else
         echo "Latest tag: $LATEST_TAG"
-        RELEASE_BODY=$(git diff "$LATEST_TAG"..HEAD -- "CHANGELOG.md" | grep '^+' | sed 's/^+//')
+        RELEASE_BODY=$(git diff "$LATEST_TAG" -- "./CHANGELOG.md" | grep '^+' | sed 's/^+//')
       fi
 
     - export GITLAB_HOST=$CI_SERVER_URL
