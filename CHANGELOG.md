@@ -2,6 +2,12 @@
 
 All changes will be reported in this file
 
+## [v0.0.55] - 2026-02-14
+
+### Added
+
+- Email-based password reset procedure to improve account recovery
+
 ## [v0.0.54] - 2026-01-11
 
 ### Added
