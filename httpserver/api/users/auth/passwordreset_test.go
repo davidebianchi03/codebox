@@ -22,6 +22,12 @@ func TestPasswordReset(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
 
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
 			t.Fatalf("Failed to retrieve user: '%s'", err)
@@ -113,6 +119,12 @@ func TestRequestPasswordResetNonExistentUser(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
 
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		count, err := models.CountAllPasswordResetTokens()
 		if err != nil {
 			t.Fatalf("Failed to count all password reset tokens: '%s'", err)
@@ -149,6 +161,12 @@ func TestRequestPasswordResetMissingEmail(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
 
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		passwordResetReqBody := auth.RequestPasswordResetTokenBody{}
 
 		w := httptest.NewRecorder()
@@ -171,6 +189,12 @@ Try to reset password, but invalid email
 func TestRequestPasswordResetInvalidEmail(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
+
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
 
 		passwordResetReqBody := auth.RequestPasswordResetTokenBody{
 			Email: "invalid-email",
@@ -196,6 +220,12 @@ user logged in, should not be able to request password reset
 func TestRequestPasswordResetLoggedIn(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
+
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
@@ -308,6 +338,12 @@ func TestPasswordResetFromToken(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
 
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
 			t.Fatalf("Failed to retrieve user: '%s'", err)
@@ -366,6 +402,12 @@ func TestPasswordResetFromTokenMissingToken(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
 
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
 			t.Fatalf("Failed to retrieve user: '%s'", err)
@@ -416,6 +458,12 @@ Try to reset password with missing token
 func TestPasswordResetFromTokenMissingPassword(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
+
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
@@ -473,6 +521,12 @@ func TestPasswordResetFromTokenInvalidToken(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
 
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
 			t.Fatalf("Failed to retrieve user: '%s'", err)
@@ -524,6 +578,12 @@ Try to reset password with an expired token
 func TestPasswordResetFromTokenWithAnExpiredToken(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
+
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
@@ -587,6 +647,12 @@ func TestPasswordResetFromTokenWithAnInvalidPassword(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
 
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
+
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
 			t.Fatalf("Failed to retrieve user: '%s'", err)
@@ -644,6 +710,12 @@ Try to reset password but user was logged in
 func TestPasswordResetFromTokenuserLoggedIn(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
+
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
 
 		user, err := models.RetrieveUserByEmail("user1@user.com")
 		if err != nil {
@@ -703,6 +775,12 @@ test api to check if password reset is available
 func TestPasswordResetAvailable(t *testing.T) {
 	testutils.WithSetupAndTearDownTestEnvironment(t, func(t *testing.T) {
 		router := httpserver.SetupRouter()
+
+		// configure email sender
+		config.Environment.EmailSMTPHost = "smtp.example.com"
+		config.Environment.EmailSMTPPort = 25
+		config.Environment.EmailSMTPUser = "user@example.com"
+		config.Environment.EmailSMTPPassword = "password"
 
 		w := httptest.NewRecorder()
 		req := testutils.CreateRequestWithJSONBody(

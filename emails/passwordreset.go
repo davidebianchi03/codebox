@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gocraft/work"
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/config"
 )
@@ -44,14 +45,12 @@ func SendPasswordResetEmail(
 		return errors.New("failed to render text body for 'password_reset'")
 	}
 
-	if err := bgtasks.SendEmailMessage(
-		[]string{emailAddress},
-		"Password Reset",
-		html,
-		text,
-	); err != nil {
-		return err
-	}
+	bgtasks.BgTasksEnqueuer.Enqueue("send_email", work.Q{
+		"subject":   "Password Reset",
+		"recipient": emailAddress,
+		"htmlBody":  html,
+		"textBody":  text,
+	})
 
 	return nil
 }
@@ -83,14 +82,12 @@ func SendUserNotRegisteredEmail(
 		return errors.New("failed to render text body for 'user_not_registered'")
 	}
 
-	if err := bgtasks.SendEmailMessage(
-		[]string{emailAddress},
-		"Password Reset Request",
-		html,
-		text,
-	); err != nil {
-		return err
-	}
+	bgtasks.BgTasksEnqueuer.Enqueue("send_email", work.Q{
+		"subject":   "Password Reset Request",
+		"recipient": emailAddress,
+		"htmlBody":  html,
+		"textBody":  text,
+	})
 
 	return nil
 }
@@ -121,14 +118,12 @@ func SendPasswordResetDoneEmail(
 		return errors.New("failed to render text body for 'password_reset_done'")
 	}
 
-	if err := bgtasks.SendEmailMessage(
-		[]string{emailAddress},
-		"Password Reset Done",
-		html,
-		text,
-	); err != nil {
-		return err
-	}
+	bgtasks.BgTasksEnqueuer.Enqueue("send_email", work.Q{
+		"subject":   "Password Reset Done",
+		"recipient": emailAddress,
+		"htmlBody":  html,
+		"textBody":  text,
+	})
 
 	return nil
 }
