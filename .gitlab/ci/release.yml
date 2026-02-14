@@ -27,7 +27,7 @@ release:
         echo "No suitable tag found."
       else
         echo "Latest tag: $LATEST_TAG"
-        RELEASE_BODY=$(git diff "$LATEST_TAG" -- "./CHANGELOG.md" | grep '^+' | sed 's/^+//')
+        RELEASE_BODY=$(git diff --unified=0 "$LATEST_TAG" -- "./CHANGELOG.md" | grep '^+[^+]' | sed 's/^+//')
       fi
 
     - echo "Publishing release to gitlab..."
