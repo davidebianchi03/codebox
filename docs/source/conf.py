@@ -21,7 +21,7 @@ extensions = [
     # 'sphinxcontrib.openapi',
     # 'sphinxcontrib.httpdomain',
     # 'sphinx.ext.extlinks',
-    'sphinxcontrib.redoc',
+    # 'sphinxcontrib.redoc',
 ]
 
 templates_path = ['_templates']
@@ -49,16 +49,16 @@ source_suffix = {
 master_doc = 'index'
 
 # redoc (Open API)
-redoc = [
-    {
-        'name': 'Codebox Server API',
-        'page': 'api/codebox-server/index',
-        'spec': '_specs/swagger.yaml',
-        'opts': {
-            'lazy-rendering': True
-        },
-    },
-]
+# redoc = [
+#     {
+#         'name': 'Codebox Server API',
+#         'page': 'api/codebox-server/index',
+#         'spec': '_specs/swagger.yaml',
+#         'opts': {
+#             'lazy-rendering': True
+#         },
+#     },
+# ]
 
 myst_enable_extensions = [
     "colon_fence",

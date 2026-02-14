@@ -1,0 +1,146 @@
+// Palette armonica
+$bg-dark: transparent;          // sfondo generale dei blocchi
+$bg-dark-alt: #3C3C3C;      // sfondo alternativo (parametri, risposte)
+$topbar-bg: #1F1F1F;        // topbar
+$text-light: #c9c7c7;       // testi principali
+$text-muted: #B0B0B0;       // testi secondari
+$border-color: #555555;     // bordiabc23a
+$method-colors: (
+  GET: #4FC3F7,
+  POST: #81C784,
+  PUT: #FFB74D,
+  DELETE: #E57373,
+  PATCH: #BA68C8,
+  HEAD: #FFD54F,
+  OPTIONS: #4DD0E1,
+  DEPRECATED: #9E9E9E
+);
+
+.swagger-ui {
+    .opblock-tag {
+        border: none;
+    }
+}
+
+// Mixin per stili dark
+@mixin dark-theme-styles {
+  .swagger-ui {
+    background: $bg-dark;
+    color: $text-light;
+    
+    .opblock-tag {
+        a {
+            color: $text-light !important;
+        }
+        
+        svg {
+            fill: $text-light
+        }
+    }
+    
+    .response-col_status {
+        button {
+            color: $text-light !important;
+        }
+    }
+    
+    .model-example {
+        color: $text-light !important;
+    }
+    
+    .opblock-description-wrapper p {
+        color: $text-light !important;
+    }
+
+    .opblock {
+      background: $bg-dark;
+      border-color: $border-color;
+
+      @each $method, $color in $method-colors {
+        &.opblock-#{lower-case($method)} {
+          .opblock-summary-method { background: $color; }
+          .opblock-summary { border-color: $border-color; }
+        }
+      }
+
+      &.opblock-deprecated {
+        opacity: .85;
+        .opblock-summary-method { background: map-get($method-colors, DEPRECATED); }
+        .opblock-summary { border-color: map-get($method-colors, DEPRECATED); }
+      }
+      
+      .opblock-tag a {
+        color: $text-light;
+      }
+
+      .opblock-summary-path,
+      .opblock-summary-path__deprecated,
+      .opblock-summary-description,
+      .parameter__name,
+      table thead tr td,
+      table thead tr th,
+      .parameters-col_description p {
+        color: $text-light;
+      }
+
+      .parameters-col_description p {
+        color: $text-muted;
+      }
+      
+      svg {
+          fill: $text-light
+      }
+    }
+
+    .topbar {
+      padding: 8px 30px;
+      background-color: $topbar-bg;
+
+      .download-url-wrapper {
+        input[type=text] {
+          min-width: 350px;
+          margin: 0;
+          border: 2px solid $border-color;
+          border-radius: 4px 0 0 4px;
+          outline: none;
+          background: $bg-dark-alt;
+          color: $text-light;
+        }
+
+        .download-url-button {
+          font-size: 16px;
+          font-weight: 700;
+          padding: 4px 40px;
+          border: none;
+          border-radius: 0 4px 4px 0;
+          background: $border-color;
+          color: $bg-dark;
+          font-family: Titillium Web, sans-serif;
+        }
+      }
+    }
+
+    .info a {
+      color: $text-light;
+      &:hover { color: $text-light; }
+    }
+
+    .btn.authorize {
+      color: $text-light;
+      border-color: $text-light;
+
+      svg { fill: $text-light; }
+    }
+  }
+}
+
+// Applicazione dark theme
+body[data-theme="dark"] {
+  @include dark-theme-styles;
+}
+
+body[data-theme="auto"] {
+  @media (prefers-color-scheme: dark) {
+    @include dark-theme-styles;
+  }
+}

@@ -19,6 +19,116 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/admin/authentication-settings": {
+            "get": {
+                "description": "Retrieve authentication settings, this api is available only to administrators",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Retrieve authentication settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.AuthenticationSettingsSerializer"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update authentication settings, this api is available only to administrators",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Update authentication settings",
+                "parameters": [
+                    {
+                        "description": "authentication settings",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/settings.HandleUpdateServerSettingsRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.AuthenticationSettingsSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "406": {
+                        "description": "Email server is not configured"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/email-service-configured": {
+            "get": {
+                "description": "Check if email service is configured, this api is available only to administrators",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Check if email service is configured",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.EmailServiceConfiguredSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/recommended-runner-version": {
+            "get": {
+                "description": "Retrieve the recommended version of runners, this api is available only to administrator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Retrieve recommended runner version",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.RecommendedRunnerVersionSerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/runners": {
             "get": {
                 "description": "List all available runners",
@@ -36,7 +146,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/serializers.AdminRunnersSerializer"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.AdminRunnersSerializer"
+                            }
                         }
                     }
                 }
@@ -140,6 +253,29 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/send-test-email": {
+            "post": {
+                "description": "Send an email to test email send service, the email is sent synchronously so it can take few seconds",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Send Test Email",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.TestEmailResponseSerializer"
+                        }
                     }
                 }
             }
@@ -369,6 +505,124 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/auth/can-reset-password": {
+            "get": {
+                "description": "Check if password reset is available",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Can Reset Password",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.CanResetPasswordSerializer"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/change-password": {
+            "put": {
+                "description": "Change password of the currently authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change user password",
+                "parameters": [
+                    {
+                        "description": "Request Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.ChangePasswordRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully"
+                    },
+                    "400": {
+                        "description": "Missing or invalid field"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "417": {
+                        "description": "Invalid current password"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/initial-user-exists": {
+            "get": {
+                "description": "retrieve if at least one user exists for the current instance of codebox",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Check if at lease one user exists",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.InitialUserExistsSerializer"
+                        }
+                    },
+                    "429": {
+                        "description": "Ratelimit exceeded"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/is-signup-open": {
+            "get": {
+                "description": "Check if signup is open",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Check if signup is open",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.IsSignUpOpenSerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/login": {
             "post": {
                 "description": "Login",
@@ -399,6 +653,21 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/serializers.TokenSerializer"
                         }
+                    },
+                    "400": {
+                        "description": "Invalid credentials or already logged in"
+                    },
+                    "406": {
+                        "description": "User not approved"
+                    },
+                    "412": {
+                        "description": "Email not verified"
+                    },
+                    "429": {
+                        "description": "Ratelimit exceeded"
+                    },
+                    "500": {
+                        "description": "Internal server error"
                     }
                 }
             }
@@ -419,6 +688,98 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/password-reset-from-token": {
+            "post": {
+                "description": "Reset password using a token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Reset Password From Token",
+                "parameters": [
+                    {
+                        "description": "Request Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.HandlePasswordResetFromTokenBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully"
+                    },
+                    "400": {
+                        "description": "Missing or invalid field"
+                    },
+                    "404": {
+                        "description": "Invalid or expired token"
+                    },
+                    "406": {
+                        "description": "Password reset is not available"
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/request-password-reset": {
+            "post": {
+                "description": "Check if password reset is available",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Can Reset Password",
+                "parameters": [
+                    {
+                        "description": "Request Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RequestPasswordResetTokenBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.RequestPasswordResetSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or invalid field"
+                    },
+                    "406": {
+                        "description": "Password reset is not available"
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded"
+                    },
+                    "500": {
+                        "description": "Internal server error"
                     }
                 }
             }
@@ -449,10 +810,155 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
+                        "description": "OK"
+                    },
+                    "429": {
+                        "description": "Ratelimit exceeded"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/user-details": {
+            "get": {
+                "description": "Retrieve details of the currently authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Retrieve user details",
+                "responses": {
+                    "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/serializers.UserSerializer"
+                            "$ref": "#/definitions/serializers.CurrentUserSerializer"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            },
+            "put": {
+                "description": "Update details of the currently authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Update user details",
+                "parameters": [
+                    {
+                        "description": "Request Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.HandleUpdateUserDetailsRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.CurrentUserSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or invalid field"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/user-ssh-public-key": {
+            "get": {
+                "description": "Retrieve user SSH public key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Retrieve user SSH public key",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.UserSshPublicKeySerializer"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/verify-email-address": {
+            "post": {
+                "description": "Verify Email Address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verify Email Address",
+                "parameters": [
+                    {
+                        "description": "Verification code",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.VerifyEmailAddressRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Missing or invalid field"
+                    },
+                    "406": {
+                        "description": "Invalid verification code"
+                    },
+                    "409": {
+                        "description": "Email already verified"
+                    },
+                    "412": {
+                        "description": "Logged in users cannot verify email"
+                    },
+                    "500": {
+                        "description": "Internal server error"
                     }
                 }
             }
@@ -478,6 +984,29 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/cli.CLIBuild"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cli-version": {
+            "get": {
+                "description": "Retrieve recommended cli version",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CLI"
+                ],
+                "summary": "Retrieve recommended cli version",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.CLIVersionSerializer"
                         }
                     }
                 }
@@ -524,6 +1053,32 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/runners": {
+            "get": {
+                "description": "List runners",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Runners"
+                ],
+                "summary": "List runners",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.RunnerSerializer"
+                            }
                         }
                     }
                 }
@@ -982,6 +1537,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/version": {
+            "get": {
+                "description": "Retrieve the version of the server",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Retrieve the version of the server",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.VersionSerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace": {
             "get": {
                 "description": "List workspaces created by the current user",
@@ -1057,7 +1635,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/serializers.WorkspaceTypeSerializer"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/serializers.WorkspaceTypeSerializer"
+                            }
                         }
                     }
                 }
@@ -1138,7 +1719,7 @@ const docTemplate = `{
         },
         "/api/v1/workspace/:id/start": {
             "post": {
-                "description": "Start a workspace",
+                "description": "Start a workspace, only stopped workspaces can be started",
                 "consumes": [
                     "application/json"
                 ],
@@ -1161,7 +1742,7 @@ const docTemplate = `{
         },
         "/api/v1/workspace/:id/stop": {
             "post": {
-                "description": "Stop a workspace",
+                "description": "Stop a workspace, only running workspaces can be stopped",
                 "consumes": [
                     "application/json"
                 ],
@@ -1174,10 +1755,7 @@ const docTemplate = `{
                 "summary": "Stop a workspace",
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
-                        }
+                        "description": "OK"
                     }
                 }
             }
@@ -1300,6 +1878,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/workspace/:workspaceId/set-runner": {
+            "post": {
+                "description": "Set the runner for a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Set the runner for a workspace",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspaces.SetRunnerForWorkspaceBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/serializers.WorkspaceSerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace/:workspaceId/update-config": {
             "post": {
                 "description": "Update workspace configuration, retrieving the configuration files from the git repository or template",
@@ -1387,7 +1999,21 @@ const docTemplate = `{
         },
         "admin.AdminUpdateUserRequestBody": {
             "type": "object",
+            "required": [
+                "approved",
+                "email_verified",
+                "first_name",
+                "is_superuser",
+                "is_template_manager",
+                "last_name"
+            ],
             "properties": {
+                "approved": {
+                    "type": "boolean"
+                },
+                "email_verified": {
+                    "type": "boolean"
+                },
                 "first_name": {
                     "type": "string"
                 },
@@ -1423,6 +2049,51 @@ const docTemplate = `{
                 }
             }
         },
+        "auth.ChangePasswordRequestBody": {
+            "type": "object",
+            "required": [
+                "current_password",
+                "new_password"
+            ],
+            "properties": {
+                "current_password": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.HandlePasswordResetFromTokenBody": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "token"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.HandleUpdateUserDetailsRequestBody": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
         "auth.LoginRequestBody": {
             "type": "object",
             "required": [
@@ -1438,6 +2109,17 @@ const docTemplate = `{
                 },
                 "remember_me": {
                     "type": "boolean"
+                }
+            }
+        },
+        "auth.RequestPasswordResetTokenBody": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
                 }
             }
         },
@@ -1460,6 +2142,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.VerifyEmailAddressRequestBody": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
                     "type": "string"
                 }
             }
@@ -1556,6 +2249,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "emailVerified": {
+                    "type": "boolean"
                 },
                 "first_name": {
                     "type": "string"
@@ -1691,6 +2387,9 @@ const docTemplate = `{
                 },
                 "use_public_url": {
                     "type": "boolean"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         },
@@ -1717,11 +2416,20 @@ const docTemplate = `{
         "serializers.AdminUserSerializer": {
             "type": "object",
             "properties": {
+                "approved": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },
+                "deletion_in_progress": {
+                    "type": "boolean"
+                },
                 "email": {
                     "type": "string"
+                },
+                "email_verified": {
+                    "type": "boolean"
                 },
                 "first_name": {
                     "type": "string"
@@ -1740,6 +2448,82 @@ const docTemplate = `{
                 }
             }
         },
+        "serializers.AuthenticationSettingsSerializer": {
+            "type": "object",
+            "properties": {
+                "allowed_emails_regex": {
+                    "type": "string"
+                },
+                "approved_by_default_emails_regex": {
+                    "type": "string"
+                },
+                "blocked_emails_regex": {
+                    "type": "string"
+                },
+                "is_signup_open": {
+                    "type": "boolean"
+                },
+                "is_signup_restricted": {
+                    "type": "boolean"
+                },
+                "users_must_be_approved": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "serializers.CLIVersionSerializer": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.CanResetPasswordSerializer": {
+            "type": "object",
+            "properties": {
+                "can_reset_password": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "serializers.CurrentUserSerializer": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "impersonated": {
+                    "type": "boolean"
+                },
+                "is_superuser": {
+                    "type": "boolean"
+                },
+                "is_template_manager": {
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.EmailServiceConfiguredSerializer": {
+            "type": "object",
+            "properties": {
+                "is_configured": {
+                    "type": "boolean"
+                }
+            }
+        },
         "serializers.GitWorkspaceSourceSerializer": {
             "type": "object",
             "properties": {
@@ -1751,6 +2535,41 @@ const docTemplate = `{
                 },
                 "repository_url": {
                     "type": "string"
+                }
+            }
+        },
+        "serializers.InitialUserExistsSerializer": {
+            "type": "object",
+            "properties": {
+                "exists": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "serializers.IsSignUpOpenSerializer": {
+            "type": "object",
+            "properties": {
+                "is_signup_open": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "serializers.RecommendedRunnerVersionSerializer": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.RequestPasswordResetSerializer": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1768,6 +2587,17 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "serializers.TestEmailResponseSerializer": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1796,6 +2626,22 @@ const docTemplate = `{
                 }
             }
         },
+        "serializers.UserSshPublicKeySerializer": {
+            "type": "object",
+            "properties": {
+                "public_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "serializers.VersionSerializer": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "serializers.WorkspaceContainerPort": {
             "type": "object",
             "properties": {
@@ -1804,6 +2650,9 @@ const docTemplate = `{
                 },
                 "port_number": {
                     "type": "integer"
+                },
+                "port_url": {
+                    "type": "string"
                 },
                 "public": {
                     "type": "boolean"
@@ -1926,6 +2775,37 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "settings.HandleUpdateServerSettingsRequestBody": {
+            "type": "object",
+            "required": [
+                "allowed_emails_regex",
+                "approved_by_default_emails_regex",
+                "blocked_emails_regex",
+                "is_signup_open",
+                "is_signup_restricted",
+                "users_must_be_approved"
+            ],
+            "properties": {
+                "allowed_emails_regex": {
+                    "type": "string"
+                },
+                "approved_by_default_emails_regex": {
+                    "type": "string"
+                },
+                "blocked_emails_regex": {
+                    "type": "string"
+                },
+                "is_signup_open": {
+                    "type": "boolean"
+                },
+                "is_signup_restricted": {
+                    "type": "boolean"
+                },
+                "users_must_be_approved": {
+                    "type": "boolean"
                 }
             }
         },
@@ -2113,6 +2993,14 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "workspaces.SetRunnerForWorkspaceBody": {
+            "type": "object",
+            "properties": {
+                "runner_id": {
+                    "type": "integer"
                 }
             }
         }

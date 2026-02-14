@@ -1,9 +1,7 @@
 # This job builds the documentation.
 # First, it generate APIs documentation using swagger, than
 # it generate documentation site using sphinx
-pages:
-  stage: pages
-  pages: true
+.build_pages_template:
   image: dadebia/codebox-release-cli:latest
   variables:
     LC_ALL: C.UTF-8
@@ -15,7 +13,7 @@ pages:
     - sed -i "s/{{version_placeholder}}/${CI_COMMIT_TAG}/g" main.go
     - go install github.com/swaggo/swag/cmd/swag@latest
     - swag init
-    - cp docs/swagger.yaml docs/source/_specs
+    - cp docs/swagger.json docs/source/_static
 
     # build docs using sphynx
     - python3 -m venv .venv
@@ -26,9 +24,20 @@ pages:
     - pip install -r requirements.txt
     - sphinx-build -M html ./source ./build
     - cp -r ./build/html ../public
+
+test_docs:
+  extends: .build_pages_template
+  stage: tests
+  pages: false
   when: always
+
+build_pages:
+  extends: .build_pages_template
+  stage: pages
+  pages: true
   artifacts:
     paths:
       - public
   rules:
     - if: $CI_COMMIT_TAG
+  when: always
