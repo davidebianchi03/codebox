@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	chserver "github.com/davidebianchi03/chisel/server"
 	chsettings "github.com/davidebianchi03/chisel/share/settings"
@@ -109,6 +110,7 @@ func HandleRunnerConnect(c *gin.Context) {
 		AuthCallback: func(r *chsettings.Remote) bool {
 			return r.LocalPort == strconv.Itoa(int(runner.Port))
 		},
+		KeepAlive: time.Second,
 	}
 	s, err := chserver.NewServer(&serverConfig)
 	if err != nil {
