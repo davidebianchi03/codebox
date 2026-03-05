@@ -221,7 +221,7 @@ func (ri *RunnerInterface) GetLogs(workspace *models.Workspace) (logs string, er
 }
 
 func (ri *RunnerInterface) StopWorkpace(workspace *models.Workspace) error {
-	url := fmt.Sprintf("%s/api/v1/workspace/%d/stop", ri.getRunnerBaseUrl(), workspace.ID)
+	url := fmt.Sprintf("%s/api/v1/workspace/%d/stop/", ri.getRunnerBaseUrl(), workspace.ID)
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)

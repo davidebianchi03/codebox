@@ -2,6 +2,12 @@
 
 All changes will be reported in this file
 
+## [v0.0.56] - 2026-03-05
+
+### Added
+
+- Added keep alive to chisel connections
+
 ## [v0.0.55] - 2026-02-14
 
 ### Added

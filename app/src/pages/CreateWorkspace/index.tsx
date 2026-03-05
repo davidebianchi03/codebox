@@ -158,7 +158,7 @@ export default function CreateWorkspace() {
                       value={validation.values.workspaceName}
                       isInvalid={validation.errors.workspaceName !== undefined}
                     />
-                    <Form.Control.Feedback>{validation.errors.workspaceName}</Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">{validation.errors.workspaceName}</Form.Control.Feedback>
                   </FormGroup>
                   <FormGroup className="mt-2">
                     <Form.Label>Workspace type</Form.Label>
@@ -197,7 +197,7 @@ export default function CreateWorkspace() {
                         </option>
                       ))}
                     </select>
-                    <Form.Control.Feedback>{validation.errors.workspaceType}</Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">{validation.errors.workspaceType}</Form.Control.Feedback>
                   </FormGroup>
                   <FormGroup className="mt-2">
                     <Form.Label>Runner</Form.Label>
@@ -250,7 +250,7 @@ export default function CreateWorkspace() {
                         return "";
                       })()}
                     </span>
-                    <Form.Control.Feedback>{validation.errors.runner}</Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">{validation.errors.runner}</Form.Control.Feedback>
                   </FormGroup>
                 </Card.Body>
               </Card>
