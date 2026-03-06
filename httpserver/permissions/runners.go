@@ -41,6 +41,15 @@ func RunnerTokenAuthenticationRequired(handler gin.HandlerFunc) gin.HandlerFunc 
 			return
 		}
 
+		if runner == nil {
+			utils.ErrorResponse(
+				c,
+				http.StatusUnauthorized,
+				"missing or invalid token",
+			)
+			return
+		}
+
 		if runner.Token != runnerToken {
 			utils.ErrorResponse(
 				c,
