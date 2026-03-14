@@ -33,7 +33,14 @@ const GitSSHPingInterval = 1 * time.Second
 func HandleRunnerGitSSH(c *gin.Context) {
 	runnerId, _ := utils.GetUIntParamFromContext(c, "runnerId")
 	workspaceId, _ := utils.GetUIntParamFromContext(c, "workspaceId")
+
+	// Container name is unused for now but we might need it in the future
+	// to do more checks or logging. For now we can't use it because the container
+	// instance may not exists when the ws connection is established.
+	// Containers are authenticated by runners
 	containerName, _ := c.Params.Get("containerName")
+	_ = containerName
+
 	runner, err := models.RetrieveRunnerByID(runnerId)
 	if err != nil {
 		utils.ErrorResponse(
@@ -79,26 +86,6 @@ func HandleRunnerGitSSH(c *gin.Context) {
 
 	// check that the workspace is running on the selected runner
 	if runner.ID != *workspace.RunnerID {
-		utils.ErrorResponse(
-			c,
-			http.StatusNotFound,
-			"workspace not found",
-		)
-		return
-	}
-
-	// retrieve container
-	container, err := models.RetrieveWorkspaceContainerByName(*workspace, containerName)
-	if err != nil {
-		utils.ErrorResponse(
-			c,
-			http.StatusInternalServerError,
-			"internal server error",
-		)
-		return
-	}
-
-	if container == nil {
 		utils.ErrorResponse(
 			c,
 			http.StatusNotFound,
