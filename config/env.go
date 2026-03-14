@@ -31,12 +31,13 @@ type EnvVars struct {
 	SubdomainAuthCookieName string `env:"CODEBOX_SUBDOMAIN_AUTH_COOKIE_NAME" envDefault:"subdomain_codebox_auth_token"`
 	CliBinariesPath         string `env:"CODEBOX_CLI_BINARIES_PATH" envDefault:"./cli"`
 	TemplatesFolder         string `env:"CODEBOX_TEMPLATES_FOLDER" envDefault:"./templates"`
+	RunnerTokenHeader       string `env:"CODEBOX_RUNNER_TOKEN_HEADER" envDefault:"X-Codebox-Runner-Token"`
+	RunnerTokenQueryParam   string `env:"CODEBOX_RUNNER_TOKEN_QUERY_PARAM" envDefault:"runner_token"`
 	// email related settings
 	EmailSMTPHost     string `env:"CODEBOX_EMAIL_SMTP_HOST"`
 	EmailSMTPPort     int    `env:"CODEBOX_EMAIL_SMTP_PORT"`
 	EmailSMTPUser     string `env:"CODEBOX_EMAIL_SMTP_USER"`
 	EmailSMTPPassword string `env:"CODEBOX_EMAIL_SMTP_PASSWORD"`
-	RunnerTokenHeader string `env:"CODEBOX_RUNNER_TOKEN_HEADER" envDefault:"X-Codebox-Runner-Token"`
 }
 
 var Environment *EnvVars

@@ -39,7 +39,7 @@ func (ri *RunnerInterface) GetRunnerVersion() (version string, err error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
+	req.Header.Set(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -138,7 +138,7 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 		return err
 	}
 
-	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
+	req.Header.Set(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -163,7 +163,7 @@ func (ri *RunnerInterface) GetDetails(workspace *models.Workspace) (response Run
 		return RunnerWorkspaceStatusResponse{}, err
 	}
 
-	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
+	req.Header.Set(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 	res, err := client.Do(req)
 	if err != nil {
 		return RunnerWorkspaceStatusResponse{}, err
@@ -196,7 +196,7 @@ func (ri *RunnerInterface) GetLogs(workspace *models.Workspace) (logs string, er
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
+	req.Header.Set(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 	res, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -238,7 +238,7 @@ func (ri *RunnerInterface) StopWorkpace(workspace *models.Workspace) error {
 		return err
 	}
 
-	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
+	req.Header.Set(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -271,7 +271,7 @@ func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
 		return err
 	}
 
-	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
+	req.Header.Set(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -301,7 +301,7 @@ func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool 
 		return false
 	}
 
-	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
+	req.Header.Set(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -325,12 +325,13 @@ func (ri *RunnerInterface) ForwardHttp(
 	req *http.Request,
 ) error {
 	url := fmt.Sprintf(
-		"%s/api/v1/workspace/%d/container/%s/http-reverse-proxy?request_protocol=http&target_port=%d&target_path=%s&runner_token=%s",
+		"%s/api/v1/workspace/%d/container/%s/http-reverse-proxy?request_protocol=http&target_port=%d&target_path=%s&%s=%s",
 		ri.getRunnerBaseUrl(),
 		workspace.ID,
 		container.ContainerName,
 		port.PortNumber,
 		url.QueryEscape(path),
+		config.Environment.RunnerTokenQueryParam,
 		url.QueryEscape(ri.Runner.Token),
 	)
 

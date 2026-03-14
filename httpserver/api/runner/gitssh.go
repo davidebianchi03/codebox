@@ -1,9 +1,9 @@
 package runners
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +18,8 @@ var upgrader = websocket.Upgrader{
 		return true // Accepting all requests
 	},
 }
+
+const GitSSHPingInterval = 1 * time.Second
 
 // RunnerGitSSH godoc
 // @Summary Handle ws connection to perform git pulls/pushs over ssh
@@ -163,50 +165,89 @@ func HandleRunnerGitSSH(c *gin.Context) {
 
 	cmd := fmt.Sprintf("%s %s", sshCmd, repoPath)
 
-	var wg sync.WaitGroup
-	wg.Add(3)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
+	// read from ws and forward to stdin
 	go func() {
-		defer wg.Done()
-		for {
-			mt, data, err := wsConn.ReadMessage()
-			if err != nil {
-				break
-			}
+		defer stdinPipe.Close()
 
-			if mt == websocket.BinaryMessage {
-				if _, err := stdinPipe.Write(data); err != nil {
-					break
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				wsConn.SetReadDeadline(time.Now().Add(2 * GitSSHPingInterval * time.Second))
+				mt, data, err := wsConn.ReadMessage()
+				if err != nil {
+					cancel()
+					return
+				}
+
+				if mt == websocket.BinaryMessage {
+					if _, err := stdinPipe.Write(data); err != nil {
+						cancel()
+						return
+					}
 				}
 			}
 		}
-		stdinPipe.Close()
 	}()
 
+	// read from stdout and forward to ws
 	go func() {
-		defer wg.Done()
 		buf := make([]byte, 1024)
 		for {
-			n, err := stdoutPipe.Read(buf)
-			if n > 0 {
-				if err := wsConn.WriteMessage(websocket.BinaryMessage, buf[:n]); err != nil {
-					break
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				n, err := stdoutPipe.Read(buf)
+				if err != nil {
+					cancel()
+					return
 				}
-			}
-			if err != nil {
-				break
+
+				if n > 0 {
+					if err := wsConn.WriteMessage(
+						websocket.BinaryMessage,
+						buf[:n],
+					); err != nil {
+						cancel()
+						return
+					}
+				}
 			}
 		}
 	}()
 
-	// start git ssh
+	// ping ws connection to detect disconnection
+	go func() {
+		ticker := time.NewTicker(GitSSHPingInterval * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := wsConn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+					cancel()
+					return
+				}
+			}
+		}
+	}()
+
+	// start the ssh command
 	if err := session.Start(cmd); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to start SSH session")
 		return
 	}
 
-	time.Sleep(500 * time.Millisecond) // add a little delay before closing connections
 	session.Wait()
+	<-ctx.Done()
+
 	wsConn.Close()
 	session.Close()
 }
