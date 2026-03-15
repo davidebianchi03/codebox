@@ -2,6 +2,18 @@
 
 All changes will be reported in this file
 
+## [Unreleased]
+
+### Fixed
+
+- Corrected the implementation of the Git SSH command.
+- Resolved WebSocket connection timeout issues.
+
+### Changed
+
+- Updated the CLI (v).
+- Updated the Runner (v).
+
 ## [v0.0.56] - 2026-03-05
 
 ### Added
