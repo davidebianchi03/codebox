@@ -48,7 +48,7 @@ func (ri *RunnerInterface) GetRunnerVersion() (version string, err error) {
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return "", fmt.Errorf("recived status %d", res.StatusCode)
+		return "", fmt.Errorf("receivedstatus %d", res.StatusCode)
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -147,7 +147,7 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return fmt.Errorf("recived status code: %d", res.StatusCode)
+		return fmt.Errorf("receivedstatus code: %d", res.StatusCode)
 	}
 
 	return nil
@@ -171,7 +171,7 @@ func (ri *RunnerInterface) GetDetails(workspace *models.Workspace) (response Run
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return RunnerWorkspaceStatusResponse{}, fmt.Errorf("recived status %d", res.StatusCode)
+		return RunnerWorkspaceStatusResponse{}, fmt.Errorf("receivedstatus %d", res.StatusCode)
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -204,7 +204,7 @@ func (ri *RunnerInterface) GetLogs(workspace *models.Workspace) (logs string, er
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return "", fmt.Errorf("recived status %d", res.StatusCode)
+		return "", fmt.Errorf("receivedstatus %d", res.StatusCode)
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -247,7 +247,7 @@ func (ri *RunnerInterface) StopWorkpace(workspace *models.Workspace) error {
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return fmt.Errorf("recived status %d", res.StatusCode)
+		return fmt.Errorf("receivedstatus %d", res.StatusCode)
 	}
 
 	return nil
@@ -280,7 +280,7 @@ func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return fmt.Errorf("recived status %d", res.StatusCode)
+		return fmt.Errorf("receivedstatus %d", res.StatusCode)
 	}
 
 	return nil
