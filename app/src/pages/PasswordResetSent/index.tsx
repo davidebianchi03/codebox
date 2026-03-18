@@ -2,7 +2,7 @@ import React from "react";
 import { PageWithCardLayout } from "../../layouts/PageWithCardLayout";
 import { Link } from "react-router-dom";
 
-export function PasswordResetSentPage() {
+export default function PasswordResetSentPage() {
     return (
         <React.Fragment>
             <PageWithCardLayout

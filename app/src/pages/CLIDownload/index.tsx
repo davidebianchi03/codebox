@@ -8,7 +8,7 @@ import { WindowsIcon } from "../../icons/Tabler";
 import { Badge, Card, Col, Row, Table } from "react-bootstrap";
 
 
-export function CLIDownloadPage() {
+export default function CLIDownloadPage() {
 
     const [cliBuilds, setCliBuilds] = useState<CLIBuild[]>([]);
 

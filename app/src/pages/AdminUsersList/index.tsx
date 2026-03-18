@@ -21,7 +21,7 @@ import { AuthenticationSettings } from "../../types/settings";
 import { APIAdminRetrieveAuthenticationSettings } from "../../api/common";
 import { UserListCardPlaceholder } from "./UserListCardPlaceholder";
 
-export function AdminUsersList() {
+export default function AdminUsersList() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [showCreateUserModal, setShowCreateUserModal] = useState<boolean>(false);
   const [authSettings, setAuthSettings] = useState<AuthenticationSettings>();

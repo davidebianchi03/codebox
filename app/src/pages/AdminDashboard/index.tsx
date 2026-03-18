@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 
 
-export function AdminDashboard() {
+export default function AdminDashboard() {
     const [stats, setStats] = useState<AdminStats>();
     const user = useSelector((state:RootState) => state.user);
 

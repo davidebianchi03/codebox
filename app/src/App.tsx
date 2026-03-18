@@ -13,8 +13,9 @@ import axios from "axios";
 import { NavbarLayout } from "./layouts/NavbarLayout";
 import { SidebarLayout } from "./layouts/SidebarLayout";
 import { SuperUserSidebarItems } from "./layouts/SidebarItems";
-import React from "react";
+import React, { Suspense } from "react";
 import { EmptyLayout } from "./layouts/EmptyLayout";
+import LoadingFallback from "./components/LoadingFallback";
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
@@ -24,28 +25,38 @@ export default function App() {
     <Router>
       <Routes>
         {PublicRoutes.map((r, i) => (
-          <Route path={r.path} element={r.element} key={i} />
+          <Route
+            path={r.path}
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                {r.element}
+              </Suspense>
+            }
+            key={i}
+          />
         ))}
         {AuthProtectedRoutes.map((r, i) => (
           <Route
             key={i}
             path={r.path}
             element={
-              <AuthRequired showNavbar={r.showNavbar}>
-                {r.showNavbar === true || r.showNavbar === undefined ? (
-                  <React.Fragment>
-                    <NavbarLayout>
-                      {r.element}
-                    </NavbarLayout>
-                  </React.Fragment>
-                ) : (
-                  <React.Fragment>
-                    <EmptyLayout>
-                      {r.element}
-                    </EmptyLayout>
-                  </React.Fragment>
-                )}
-              </AuthRequired>
+              <Suspense fallback={<LoadingFallback />}>
+                <AuthRequired showNavbar={r.showNavbar}>
+                  {r.showNavbar === true || r.showNavbar === undefined ? (
+                    <React.Fragment>
+                      <NavbarLayout>
+                        {r.element}
+                      </NavbarLayout>
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <EmptyLayout>
+                        {r.element}
+                      </EmptyLayout>
+                    </React.Fragment>
+                  )}
+                </AuthRequired>
+              </Suspense>
             }
           />
         ))}
@@ -55,11 +66,13 @@ export default function App() {
               key={i}
               path={r.path}
               element={
-                <SuperUserRequired showNavbar={r.showNavbar}>
-                  <SidebarLayout sidebarItems={SuperUserSidebarItems}>
-                    {r.element}
-                  </SidebarLayout>
-                </SuperUserRequired>
+                <Suspense fallback={<LoadingFallback />}>
+                  <SuperUserRequired showNavbar={r.showNavbar}>
+                    <SidebarLayout sidebarItems={SuperUserSidebarItems}>
+                      {r.element}
+                    </SidebarLayout>
+                  </SuperUserRequired>
+                </Suspense>
               }
             />
           );

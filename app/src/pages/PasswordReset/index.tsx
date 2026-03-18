@@ -8,7 +8,7 @@ import * as Yup from "yup";
 import { APIRequestPasswordReset } from "../../api/auth";
 import { NonFieldError } from "../../components/NonFieldError";
 
-export function PasswordResetPage() {
+export default function PasswordResetPage() {
     const navigate = useNavigate();
     const [nonFieldError, setNonFieldError] = useState<string>("");
 

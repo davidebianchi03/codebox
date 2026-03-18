@@ -11,7 +11,7 @@ import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { TemplateVersionSettingsModal } from "./TemplateVersionSettingsModal";
 import { APIRetrieveTemplateById, APIRetrieveTemplateVersion, APIRetrieveTemplateVersionEntry, APIUpdateTemplateVersionEntry } from "../../api/templates";
 
-export function TemplateVersionEditor() {
+export default function TemplateVersionEditor() {
     const { templateId, versionId } = useParams();
     const navigate = useNavigate();
     const [selectedItemPath, setSelectedItemPath] = useState<string | null>(null);

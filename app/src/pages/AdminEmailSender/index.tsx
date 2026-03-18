@@ -4,7 +4,7 @@ import { APIAdminEmailServiceConfigured } from "../../api/common";
 import { ToastContainer } from "react-toastify";
 import { AdminSendTestEmailResponse, APIAdminSendTestEmail } from "../../api/admin";
 
-export function AdminEmailSenderPage() {
+export default function AdminEmailSenderPage() {
 
     const [loading, setLoading] = useState<boolean>(true);
     const [sending, setSending] = useState<boolean>(false);

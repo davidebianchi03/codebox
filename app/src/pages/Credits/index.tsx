@@ -2,7 +2,7 @@ import React from "react";
 import { ThirdPartyPackages } from "./thirdPartyPackages";
 import { Badge, Card, Col, Row } from "react-bootstrap";
 
-export function CreditsPage() {
+export default function CreditsPage() {
     return (
         <React.Fragment>
             <div className="col mt-4">

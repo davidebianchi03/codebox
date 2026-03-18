@@ -6,7 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { APIVerifyEmailAddress, APIVerifyEmailCode } from "../../api/auth";
 
-export function VerifyEmailPage() {
+export default function VerifyEmailPage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 

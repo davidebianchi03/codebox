@@ -21,7 +21,7 @@ import { AdminListRunners, AdminRetrieveRecommendedRunnerVersion } from "../../a
 import DataTable from "../../components/DataTable";
 import React from "react";
 
-export function AdminRunners() {
+export default function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
   const [showCreateRunnerModal, setCreateRunnerModal] =
     useState<boolean>(false);

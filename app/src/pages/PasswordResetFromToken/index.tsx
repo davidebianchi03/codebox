@@ -9,7 +9,7 @@ import * as Yup from "yup";
 import { APIInitialUserExists, RetrieveCurrentUserDetails } from "../../api/common";
 import { toast } from "react-toastify";
 
-export function PasswordResetFromTokenPage() {
+export default function PasswordResetFromTokenPage() {
     const navigate = useNavigate();
     const [nonFieldError, setNonFieldError] = useState<string>("");
 

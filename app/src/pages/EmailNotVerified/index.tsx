@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, Col, Container, Row } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 
-export function EmailNotVerifiedPage() {
+export default function EmailNotVerifiedPage() {
     return (
         <React.Fragment>
             <div className="page page-center">

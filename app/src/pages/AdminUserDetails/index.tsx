@@ -28,7 +28,7 @@ import { RootState } from "../../redux/store";
 import { ImpersonationLogsModal } from "./ImpersonationLogsModal";
 import { UserDetailsPlaceholder } from "./UserDetailsPlaceholder";
 
-export function AdminUserDetails() {
+export default function AdminUserDetails() {
   const [user, setUser] = useState<AdminUser>();
   const [showChangePasswordModal, setShowChangePasswordModal] = useState<boolean>(false);
   const [showImpersonationLogsModal, setShowImpersonationLogsModal] = useState<boolean>(false);

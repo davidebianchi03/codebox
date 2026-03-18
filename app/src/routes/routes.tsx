@@ -1,28 +1,31 @@
-import { AdminDashboard } from "../pages/AdminDashboard";
-import { AdminAuthenticationSettingsPage } from "../pages/AdminAuthenticationSettings";
-import { AdminRunnerDetails } from "../pages/AdminRunnerDetails";
-import { AdminRunners } from "../pages/AdminRunners";
-import { AdminUserDetails } from "../pages/AdminUserDetails";
-import { AdminUsersList } from "../pages/AdminUsersList";
-import { CLIDownloadPage } from "../pages/CLIDownload";
-import CliLogin from "../pages/CliLogin";
-import CreateWorkspace from "../pages/CreateWorkspace";
-import { CreditsPage } from "../pages/Credits";
-import { EmailNotVerifiedPage } from "../pages/EmailNotVerified";
-import HomePage from "../pages/Home";
-import LoginPage from "../pages/Login";
-import Profile from "../pages/Profile";
-import SignUpPage from "../pages/SignUp";
-import { TemplateDetailsPage } from "../pages/TemplateDetails";
-import TemplatesList from "../pages/TemplatesList";
-import { TemplateVersionEditor } from "../pages/TemplateVersionEditor";
-import { VerifyEmailPage } from "../pages/VerifyEmail";
-import WorkspaceDetails from "../pages/WorkspaceDetails";
 import { Route } from "./types";
-import { AdminEmailSenderPage } from "../pages/AdminEmailSender";
-import { PasswordResetPage } from "../pages/PasswordReset";
-import { PasswordResetSentPage } from "../pages/PasswordResetSent";
-import { PasswordResetFromTokenPage } from "../pages/PasswordResetFromToken";
+import { lazy } from "react";
+
+const LoginPage = lazy(() => import("../pages/Login"));
+const SignUpPage = lazy(() => import("../pages/SignUp"));
+const HomePage = lazy(() => import("../pages/Home"));
+const CreateWorkspace = lazy(() => import("../pages/CreateWorkspace"));
+const WorkspaceDetails = lazy(() => import("../pages/WorkspaceDetails"));
+const Profile = lazy(() => import("../pages/Profile"));
+const CliLogin = lazy(() => import("../pages/CliLogin"));
+const TemplatesList = lazy(() => import("../pages/TemplatesList"));
+const TemplateDetailsPage = lazy(() => import("../pages/TemplateDetails"));
+const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
+const AdminUsersList = lazy(() => import("../pages/AdminUsersList"));
+const AdminUserDetails = lazy(() => import("../pages/AdminUserDetails"));
+const AdminRunners = lazy(() => import("../pages/AdminRunners"));
+const AdminRunnerDetails = lazy(() => import("../pages/AdminRunnerDetails"));
+const AdminAuthenticationSettingsPage = lazy(() => import("../pages/AdminAuthenticationSettings"));
+const AdminEmailSenderPage = lazy(() => import("../pages/AdminEmailSender"));
+const CLIDownloadPage = lazy(() => import("../pages/CLIDownload"));
+const CreditsPage = lazy(() => import("../pages/Credits"));
+const VerifyEmailPage = lazy(() => import("../pages/VerifyEmail"));
+const EmailNotVerifiedPage = lazy(() => import("../pages/EmailNotVerified"));
+const PasswordResetPage = lazy(() => import("../pages/PasswordReset"));
+const PasswordResetSentPage = lazy(() => import("../pages/PasswordResetSent"));
+const PasswordResetFromTokenPage = lazy(() => import("../pages/PasswordResetFromToken"));
+const TemplateVersionEditor = lazy(() => import("../pages/TemplateVersionEditor"));
+
 
 export const PublicRoutes: Route[] = [
   {

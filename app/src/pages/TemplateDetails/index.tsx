@@ -11,7 +11,7 @@ import { APIRetrieveTemplateById } from "../../api/templates";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 
-export function TemplateDetailsPage() {
+export default function TemplateDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [template, setTemplate] = useState<WorkspaceTemplate>();

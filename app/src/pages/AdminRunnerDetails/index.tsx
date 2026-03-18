@@ -27,7 +27,7 @@ import {
 } from "../../api/runner";
 import { ConfirmDeleteRunnerModal } from "./ConfirmDeleteRunnerModal";
 
-export function AdminRunnerDetails() {
+export default function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<boolean>(false);

@@ -10,7 +10,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { SignSignUpCard } from "./SignSignUpCard";
 import { SettingsFormPlaceholder } from "./SettingsFormPlaceholder";
 
-export function AdminAuthenticationSettingsPage() {
+export default function AdminAuthenticationSettingsPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [emailServiceConfigured, setEmailServiceConfigured] = useState<boolean>(true);
 
