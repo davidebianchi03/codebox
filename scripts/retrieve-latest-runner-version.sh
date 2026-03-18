@@ -33,7 +33,7 @@ latest_version=$(curl --header "${HEADER_NAME}: ${TOKEN}" \
   --silent \
   --location \
   "${CI_API_V4_URL}/projects/${RUNNER_REPO_ID}/repository/tags" \
-  | jq -r '[.[]][0].name')
+  | jq -r '[.[] | select(.name | test("-(alpha|beta|rc)$") | not)][0].name')
 
 if [[ -z "$latest_version" || "$latest_version" == "null" ]]; then
   echo "Failed to get latest runner version"
