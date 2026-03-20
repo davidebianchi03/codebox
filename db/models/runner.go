@@ -89,6 +89,16 @@ func DoesRunnerExistWithUrl(url string) (bool, error) {
 }
 
 /*
+CountAllRunners counts the total number of runners in the database.
+*/
+func CountAllRunners() (count int64, err error) {
+	if err = dbconn.DB.Model(Runner{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+/*
 CountOnlineRunners counts the number of online runners.
 A runner is considered online if its last contact time is within the last 5 minutes.
 */

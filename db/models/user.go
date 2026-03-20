@@ -227,6 +227,16 @@ func CountAllUsers() (count int64, err error) {
 }
 
 /*
+CountApprovedUsers counts the total number of approved users in the database.
+*/
+func CountApprovedUsers() (count int64, err error) {
+	if err = dbconn.DB.Model(User{}).Where("approved=?", true).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+/*
 ListSuperUsers retrieve an array with all the superusers
 */
 func ListSuperUsers() ([]User, error) {

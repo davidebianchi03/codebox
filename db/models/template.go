@@ -101,3 +101,13 @@ func ListWorkspacesByTemplate(wt WorkspaceTemplate) ([]Workspace, error) {
 func DeleteTemplate(wt WorkspaceTemplate) error {
 	return dbconn.DB.Unscoped().Delete(&wt).Error
 }
+
+/*
+CountAllTemplates counts the total number of templates in the database.
+*/
+func CountAllTemplates() (count int64, err error) {
+	if err = dbconn.DB.Model(WorkspaceTemplate{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
