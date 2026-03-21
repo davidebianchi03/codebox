@@ -11,6 +11,7 @@ import (
 	docs "gitlab.com/codebox4073715/codebox/docs"
 	runnerapis "gitlab.com/codebox4073715/codebox/httpserver/api/runner"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin"
+	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin/analytics"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin/email"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/admin/settings"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/auth"
@@ -347,6 +348,27 @@ func V1ApiRoutes(router *gin.Engine) {
 			adminApis.POST(
 				"send-test-email",
 				permissions.AdminRequiredRoute(email.HandleSendTestEmail),
+			)
+			// analytics related apis
+			adminApis.GET(
+				"analytics-data-preview",
+				permissions.AdminRequiredRoute(analytics.HandleGetAnalyticsDataPreview),
+			)
+			adminApis.GET(
+				"analytics-config",
+				permissions.AdminRequiredRoute(analytics.HandleGetAnalyticsConfig),
+			)
+			adminApis.PUT(
+				"analytics-config",
+				permissions.AdminRequiredRoute(analytics.HandleUpdateAnalyticsConfig),
+			)
+			adminApis.GET(
+				"analytics-banner-sent",
+				permissions.AdminRequiredRoute(analytics.HandleGetAnalyticsBannerSent),
+			)
+			adminApis.PUT(
+				"analytics-banner-sent",
+				permissions.AdminRequiredRoute(analytics.HandleUpdateAnalyticsBannerSent),
 			)
 		}
 	}

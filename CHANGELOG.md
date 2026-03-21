@@ -4,8 +4,10 @@ All changes will be reported in this file
 
 ## [Unreleased]
 
-### Fixed
+### Added
+- optional sending of usage information
 
+### Fixed
 - Corrected the implementation of the Git SSH command.
 - Resolved WebSocket connection timeout issues.
 
