@@ -1,5 +1,5 @@
 import { SidebarItem } from "./Sidebar";
-import { BackhoeIcon, EmailIcon, HomeIcon, ShieldIcon, UserIcon } from "../icons/Tabler";
+import { BackhoeIcon, EmailIcon, HomeIcon, ShieldIcon, StatsIcon, UserIcon } from "../icons/Tabler";
 
 export const SuperUserSidebarItems: SidebarItem[] = [
     {
@@ -39,5 +39,11 @@ export const SuperUserSidebarItems: SidebarItem[] = [
         icon: <EmailIcon />,
         type: "link",
         link: "/admin/email-sender"
+    },
+    {
+        title: "Analytics",
+        icon: <StatsIcon />,
+        type: "link",
+        link: "/admin/analytics"
     },
 ];

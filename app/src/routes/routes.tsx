@@ -1,3 +1,4 @@
+import { AdminAnalyticsPage } from "../pages/AdminAnalytics";
 import { Route } from "./types";
 import { lazy } from "react";
 
@@ -131,5 +132,9 @@ export const SuperUserRoutes: Route[] = [
   {
     path: "/admin/email-sender",
     element: <AdminEmailSenderPage />,
+  },
+  {
+    path: "/admin/analytics",
+    element: <AdminAnalyticsPage />,
   },
 ];

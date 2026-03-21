@@ -1,8 +1,7 @@
 import axios, { isAxiosError } from "axios";
-import { Workspace } from "../types/workspace";
-import { Runner, RunnerWithToken } from "../types/runner";
 import { AdminStats } from "../types/admin";
 import { ImpersonationLogs } from "../types/impersonationLogs";
+import { AnalyticsConfig } from "../types/analytics";
 
 export async function AdminRetrieveStats(): Promise<AdminStats | undefined> {
     try {
@@ -12,7 +11,6 @@ export async function AdminRetrieveStats(): Promise<AdminStats | undefined> {
         return undefined;
     }
 }
-
 
 export async function AdminListImpersonationLogs(
     userEmail: string
@@ -65,5 +63,41 @@ export async function APIAdminSendTestEmail(): Promise<{ response: AdminSendTest
                 description: `Unknown error`
             }
         }
+    }
+}
+
+export async function APIAdminGetAnalyticsConfig(): Promise<AnalyticsConfig | undefined> {
+    try {
+        const r = await axios.get<AnalyticsConfig>(
+            `/api/v1/admin/analytics-config`
+        );
+        return r.data;
+    } catch {
+        return undefined;
+    }
+}
+
+export async function APIAdminUpdateAnalyticsConfig(sendData: boolean): Promise<AnalyticsConfig | undefined> {
+    try {
+        const r = await axios.put<AnalyticsConfig>(
+            `/api/v1/admin/analytics-config`,
+            {
+                send_analytics_data: sendData,
+            }
+        );
+        return r.data;
+    } catch {
+        return undefined;
+    }
+}
+
+export async function APIAdminGetAnalyticsPreviewContent(): Promise<string | undefined> {
+    try {
+        const r = await axios.get<object>(
+            `/api/v1/admin/analytics-data-preview`
+        );
+        return JSON.stringify(r.data, null, "\t");
+    } catch {
+        return undefined;
     }
 }
