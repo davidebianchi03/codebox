@@ -27,6 +27,9 @@ export function AdminAnalyticsPage() {
                     <p className="text-muted mb-1">
                         We do not collect personal data or user content.
                     </p>
+                    <p className="mb-1">
+                        Analytics data is processed using a third-party service (PostHog).
+                    </p>
                     <p className="text-muted mb-1">
                         Each installation is identified using a pseudonymous identifier that does not directly identify you.
                     </p>

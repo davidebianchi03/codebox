@@ -54,6 +54,9 @@ export function AdminAnalyticsModal() {
                         We do not collect personal data or user content.
                     </p>
                     <p className="mb-1">
+                        Analytics data is processed using a third-party service (PostHog).
+                    </p>
+                    <p className="mb-1">
                         You can change this choice at any time from the administration interface.
                     </p>
                     <p className="mb-1">
