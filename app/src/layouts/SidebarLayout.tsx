@@ -3,6 +3,7 @@ import { Container } from "reactstrap";
 import React from "react";
 import { Sidebar, SidebarItem } from "./Sidebar";
 import { Footer } from "./Footer";
+import { AdminAnalyticsModal } from "../components/AdminAnalyticsModal";
 
 type SidebarLayoutProps = {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export function SidebarLayout({ children, sidebarItems }: SidebarLayoutProps) {
         <Container className="mt-4 mb-4" style={{ minHeight: "calc(100vh - 190px)" }}>
           {children}
         </Container>
+        <AdminAnalyticsModal />
         <Footer />
       </div>
     </React.Fragment>

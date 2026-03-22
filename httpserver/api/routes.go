@@ -366,7 +366,7 @@ func V1ApiRoutes(router *gin.Engine) {
 				"analytics-banner-sent",
 				permissions.AdminRequiredRoute(analytics.HandleGetAnalyticsBannerSent),
 			)
-			adminApis.PUT(
+			adminApis.POST(
 				"analytics-banner-sent",
 				permissions.AdminRequiredRoute(analytics.HandleUpdateAnalyticsBannerSent),
 			)

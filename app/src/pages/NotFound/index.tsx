@@ -29,11 +29,11 @@ export default function NotFound() {
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                     fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
                     <polyline points="15 6 9 12 15 18"></polyline>
                   </svg>

@@ -113,7 +113,7 @@ export function CreateTemplateModal({ isOpen, onClose }: CreateTemplateModalProp
                                     >
                                         <option value="">Select a workspace type</option>
                                         {workspaceTypes.map((wt) => (
-                                            <option value={wt.id}>{wt.name}</option>
+                                            <option value={wt.id} key={wt.id}>{wt.name}</option>
                                         ))}
                                     </Input>
                                     <FormFeedback>

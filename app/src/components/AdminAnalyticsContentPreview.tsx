@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card } from "react-bootstrap";
-import { APIAdminGetAnalyticsPreviewContent } from "../../api/admin";
+import { APIAdminGetAnalyticsPreviewContent } from "../api/admin";
 import { toast } from "react-toastify";
 
-export function AnalyticsContentPreview() {
+export function AdminAnalyticsContentPreview() {
     const [loading, setLoading] = useState<boolean>(true);
     const [content, setContent] = useState<string>("");
 

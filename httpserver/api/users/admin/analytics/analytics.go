@@ -129,10 +129,6 @@ func HandleGetAnalyticsBannerSent(c *gin.Context) {
 	c.JSON(http.StatusOK, serializers.LoadAnalyticsBannerSentSerializer(conf))
 }
 
-type UpdateAnalyticsBannerSentRequestBody struct {
-	AnalyticsBannerSent bool `json:"analytics_banner_sent"`
-}
-
 // HandleUpdateAnalyticsBannerSent godoc
 // @Summary Update Analytics Banner Sent
 // @Schemes
@@ -140,22 +136,11 @@ type UpdateAnalyticsBannerSentRequestBody struct {
 // @Tags Admin
 // @Accept json
 // @Produce json
-// @Param request body UpdateAnalyticsBannerSentRequestBody true "Request body"
 // @Success 200 {object} serializers.AnalyticsBannerSentSerializer
 // @Error 400
 // @Error 500
 // @Router /api/v1/admin/analytics-banner-sent [put]
 func HandleUpdateAnalyticsBannerSent(c *gin.Context) {
-	var req UpdateAnalyticsBannerSentRequestBody
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(
-			c,
-			http.StatusBadRequest,
-			"Invalid request body",
-		)
-		return
-	}
-
 	conf, err := models.GetSingletonModelInstance[models.AnalyticsConfig]()
 	if err != nil {
 		utils.ErrorResponse(
@@ -168,10 +153,10 @@ func HandleUpdateAnalyticsBannerSent(c *gin.Context) {
 
 	if conf == nil {
 		conf = &models.AnalyticsConfig{
-			AnalyticsBannerSent: req.AnalyticsBannerSent,
+			AnalyticsBannerSent: true,
 		}
 	} else {
-		conf.AnalyticsBannerSent = req.AnalyticsBannerSent
+		conf.AnalyticsBannerSent = true
 	}
 
 	if err := models.SaveSingletonModel(conf); err != nil {

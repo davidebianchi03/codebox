@@ -101,3 +101,23 @@ export async function APIAdminGetAnalyticsPreviewContent(): Promise<string | und
         return undefined;
     }
 }
+
+export async function APIAdminGetAnalyticsDataBannerSent(): Promise<boolean> {
+    try {
+        const r = await axios.get<{analytics_banner_sent: boolean}>(
+            `/api/v1/admin/analytics-banner-sent`
+        );
+        return r.data.analytics_banner_sent;
+    } catch {
+        return false;
+    }
+}
+
+export async function APIAdminSetAnalyticsDataBannerSent(): Promise<boolean> {
+    try {
+        await axios.post(`/api/v1/admin/analytics-banner-sent`);
+        return true;
+    } catch {
+        return false;
+    }
+}

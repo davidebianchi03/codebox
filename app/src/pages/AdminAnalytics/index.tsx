@@ -1,8 +1,8 @@
 import React from "react";
-import { Col, Container, Row } from "react-bootstrap";
-import { AnalyticsConfig } from "./AnalyticsConfig";
+import { Card, Col, Container, Row } from "react-bootstrap";
+import { AdminAnalyticsConfig } from "../../components/AdminAnalyticsConfig";
 import { ToastContainer } from "react-toastify";
-import { AnalyticsContentPreview } from "./AnalyticsExample";
+import { AdminAnalyticsContentPreview } from "../../components/AdminAnalyticsContentPreview";
 
 export function AdminAnalyticsPage() {
     return (
@@ -36,7 +36,9 @@ export function AdminAnalyticsPage() {
                 </div>
                 <Row className="mt-4">
                     <Col>
-                        <AnalyticsConfig />
+                        <Card body>
+                            <AdminAnalyticsConfig />
+                        </Card>
                     </Col>
                 </Row>
                 <p className="text-muted my-4">
@@ -44,7 +46,7 @@ export function AdminAnalyticsPage() {
                 </p>
                 <Row className="mt-4">
                     <Col>
-                        <AnalyticsContentPreview />
+                        <AdminAnalyticsContentPreview />
                     </Col>
                 </Row>
             </Container>
