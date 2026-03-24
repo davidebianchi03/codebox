@@ -5,7 +5,7 @@ All changes will be reported in this file
 ## [Unreleased]
 
 ### Added
-- optional sending of usage information
+- optional sending of usage information (posthog)
 
 ### Fixed
 - Corrected the implementation of the Git SSH command.
