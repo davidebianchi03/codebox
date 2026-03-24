@@ -150,6 +150,7 @@ func HandleRunnerGitSSH(c *gin.Context) {
 
 	stdinPipe, _ := session.StdinPipe()
 	stdoutPipe, _ := session.StdoutPipe()
+	stderrPipe, _ := session.StderrPipe()
 
 	cmd := fmt.Sprintf("%s %s", sshCmd, repoPath)
 
@@ -184,7 +185,7 @@ func HandleRunnerGitSSH(c *gin.Context) {
 
 	// read from stdout and forward to ws
 	go func() {
-		buf := make([]byte, 1024)
+		buf := make([]byte, 32*1024)
 		for {
 			select {
 			case <-ctx.Done():
@@ -205,6 +206,22 @@ func HandleRunnerGitSSH(c *gin.Context) {
 						return
 					}
 				}
+			}
+		}
+	}()
+
+	// read from stderr and forward to ws
+	go func() {
+		buf := make([]byte, 32*1024)
+		for {
+			n, err := stderrPipe.Read(buf)
+			if err != nil {
+				cancel()
+				return
+			}
+
+			if n > 0 {
+				wsConn.WriteMessage(websocket.BinaryMessage, buf[:n])
 			}
 		}
 	}()
@@ -241,7 +258,4 @@ func HandleRunnerGitSSH(c *gin.Context) {
 	// sideband packet" errors that occur when the connection closes before git
 	// receives the server's response.
 	time.Sleep(GitSSHCloseDelay)
-
-	wsConn.Close()
-	session.Close()
 }
