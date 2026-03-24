@@ -20,6 +20,7 @@ var upgrader = websocket.Upgrader{
 }
 
 const GitSSHPingInterval = 1 * time.Second
+const GitSSHCloseDelay = 100 * time.Millisecond
 
 // RunnerGitSSH godoc
 // @Summary Handle ws connection to perform git pulls/pushs over ssh
@@ -234,6 +235,11 @@ func HandleRunnerGitSSH(c *gin.Context) {
 
 	session.Wait()
 	<-ctx.Done()
+
+	// Add a small delay to allow goroutines to finish sending buffered data
+	// before closing connections. This prevents connection drops during git push
+	// confirmation messages.
+	time.Sleep(GitSSHCloseDelay)
 
 	wsConn.Close()
 	session.Close()

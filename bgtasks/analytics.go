@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -41,6 +42,7 @@ func (jobContext *Context) SendAnalyticsData(job *work.Job) error {
 			analyticsData, err := json.Marshal(analytics.GenerateAnalyticsData(config.AnalyticsApiKey))
 			if err != nil {
 				// TODO: log the error
+				log.Println("failed to send analytics:", err)
 				return nil
 			}
 
@@ -52,12 +54,14 @@ func (jobContext *Context) SendAnalyticsData(job *work.Job) error {
 			)
 			if err != nil {
 				// TODO: log the error
+				log.Println("failed to send analytics:", err)
 				return nil
 			}
 
 			res, err := client.Do(req)
 			if err != nil {
 				// TODO: log the error
+				log.Println("failed to send analytics:", err)
 				return nil
 			}
 			defer res.Body.Close()
@@ -67,6 +71,7 @@ func (jobContext *Context) SendAnalyticsData(job *work.Job) error {
 				analyticsConfig.LastAttempt = &now
 				models.SaveSingletonModel(analyticsConfig)
 				// TODO: log the error
+				log.Println("failed to send analytics:", err)
 				return nil
 			} else {
 				analyticsConfig.LastSuccessfullAttempt = &now
