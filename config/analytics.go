@@ -1,4 +1,4 @@
 package config
 
-const AnalyticsEndpoint = ""
-const AnalyticsApiKey = ""
+var AnalyticsEndpoint = ""
+var AnalyticsApiKey = ""

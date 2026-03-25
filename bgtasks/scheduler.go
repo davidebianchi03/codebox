@@ -46,7 +46,7 @@ func InitBgTasks(
 	pool.Job("delete_workspace", (*Context).DeleteWorkspaceTask)
 	pool.Job("update_workspace_config", (*Context).UpdateWorkspaceConfigFilesTask)
 	pool.Job("ping_agents", (*Context).PingAgentsTask)
-	pool.PeriodicallyEnqueue("0 */2 * * * *", "ping_agents") // every 5 minutes (0 */5 * * * *)
+	pool.PeriodicallyEnqueue("0 */2 * * * *", "ping_agents") // every 2 minutes (0 */2 * * * *)
 
 	// runners jobs
 	pool.Job("ping_runners", (*Context).PingRunnersTask)
@@ -61,7 +61,8 @@ func InitBgTasks(
 
 	// analytics jobs
 	pool.Job("send_analytics_data", (*Context).SendAnalyticsData)
-	pool.PeriodicallyEnqueue("0 */10 * * * *", "send_analytics_data") // every 10 minutes
+	pool.PeriodicallyEnqueue("0 */30 * * * *", "send_analytics_data") // every 30 minutes
+
 	pool.Start()
 	return nil
 }

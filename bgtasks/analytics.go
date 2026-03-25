@@ -24,6 +24,7 @@ func (jobContext *Context) SendAnalyticsData(job *work.Job) error {
 	analyticsConfig, err := models.GetSingletonModelInstance[models.AnalyticsConfig]()
 	if err != nil {
 		// log the error and return nil to prevent retrying the task
+		log.Println("failed to retrieve analytics config:", err)
 		return nil
 	}
 
@@ -42,7 +43,7 @@ func (jobContext *Context) SendAnalyticsData(job *work.Job) error {
 			analyticsData, err := json.Marshal(analytics.GenerateAnalyticsData(config.AnalyticsApiKey))
 			if err != nil {
 				// TODO: log the error
-				log.Println("failed to send analytics:", err)
+				log.Println("failed to generate analytics request body:", err)
 				return nil
 			}
 
@@ -54,7 +55,7 @@ func (jobContext *Context) SendAnalyticsData(job *work.Job) error {
 			)
 			if err != nil {
 				// TODO: log the error
-				log.Println("failed to send analytics:", err)
+				log.Println("failed to create analytics request:", err)
 				return nil
 			}
 
@@ -71,7 +72,7 @@ func (jobContext *Context) SendAnalyticsData(job *work.Job) error {
 				analyticsConfig.LastAttempt = &now
 				models.SaveSingletonModel(analyticsConfig)
 				// TODO: log the error
-				log.Println("failed to send analytics:", err)
+				log.Printf("recived status %d from analytics server", res.StatusCode)
 				return nil
 			} else {
 				analyticsConfig.LastSuccessfullAttempt = &now

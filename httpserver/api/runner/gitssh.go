@@ -3,6 +3,7 @@ package runners
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -150,99 +151,86 @@ func HandleRunnerGitSSH(c *gin.Context) {
 
 	stdinPipe, _ := session.StdinPipe()
 	stdoutPipe, _ := session.StdoutPipe()
-	stderrPipe, _ := session.StderrPipe()
+	// stderrPipe, _ := session.StderrPipe()
 
 	cmd := fmt.Sprintf("%s %s", sshCmd, repoPath)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// read from ws and forward to stdin
+	// ws -> ssh stdin
 	go func() {
 		defer stdinPipe.Close()
 
 		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				wsConn.SetReadDeadline(time.Now().Add(2 * GitSSHPingInterval * time.Second))
-				mt, data, err := wsConn.ReadMessage()
-				if err != nil {
-					cancel()
-					return
-				}
-
-				if mt == websocket.BinaryMessage {
-					if _, err := stdinPipe.Write(data); err != nil {
-						cancel()
-						return
-					}
-				}
-			}
-		}
-	}()
-
-	// read from stdout and forward to ws
-	go func() {
-		buf := make([]byte, 32*1024)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				n, err := stdoutPipe.Read(buf)
-				if err != nil {
-					cancel()
-					return
-				}
-
-				if n > 0 {
-					if err := wsConn.WriteMessage(
-						websocket.BinaryMessage,
-						buf[:n],
-					); err != nil {
-						cancel()
-						return
-					}
-				}
-			}
-		}
-	}()
-
-	// read from stderr and forward to ws
-	go func() {
-		buf := make([]byte, 32*1024)
-		for {
-			n, err := stderrPipe.Read(buf)
+			_, r, err := wsConn.NextReader()
 			if err != nil {
 				cancel()
 				return
 			}
 
-			if n > 0 {
-				wsConn.WriteMessage(websocket.BinaryMessage, buf[:n])
-			}
-		}
-	}()
-
-	// ping ws connection to detect disconnection
-	go func() {
-		ticker := time.NewTicker(GitSSHPingInterval * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
+			if _, err := io.Copy(stdinPipe, r); err != nil {
+				cancel()
 				return
-			case <-ticker.C:
-				if err := wsConn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-					cancel()
-					return
-				}
 			}
 		}
 	}()
+
+	// ssh stdout -> ws
+	go func() {
+		for {
+			w, err := wsConn.NextWriter(websocket.BinaryMessage)
+			if err != nil {
+				cancel()
+				return
+			}
+
+			_, err = io.Copy(w, stdoutPipe)
+			w.Close()
+
+			if err != nil {
+				cancel()
+				return
+			}
+		}
+	}()
+
+	// // ssh stderr -> ws
+	// go func() {
+	// 	for {
+	// 		w, err := wsConn.NextWriter(websocket.BinaryMessage)
+	// 		if err != nil {
+	// 			cancel()
+	// 			return
+	// 		}
+
+	// 		_, err = io.Copy(w, stderrPipe)
+	// 		w.Close()
+
+	// 		if err != nil {
+	// 			cancel()
+	// 			return
+	// 		}
+	// 	}
+	// }()
+
+	// // ping ws connection to detect disconnection
+	// go func() {
+	// 	ticker := time.NewTicker(GitSSHPingInterval * time.Second)
+	// 	defer ticker.Stop()
+
+	// 	for {
+	// 		select {
+	// 		case <-ctx.Done():
+	// 			return
+	// 		case <-ticker.C:
+	// 			if err := wsConn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+	// 				cancel()
+	// 				return
+	// 			}
+	// 		}
+	// 	}
+	// }()
 
 	// start the ssh command
 	if err := session.Start(cmd); err != nil {
