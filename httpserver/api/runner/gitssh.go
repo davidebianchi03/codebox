@@ -1,11 +1,11 @@
 package runners
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io"
+	"log"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -20,8 +20,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-const GitSSHPingInterval = 1 * time.Second
-const GitSSHCloseDelay = 500 * time.Millisecond
+const EofMessage = "__GIT_SSH_EOF__"
 
 // RunnerGitSSH godoc
 // @Summary Handle ws connection to perform git pulls/pushs over ssh
@@ -163,74 +162,52 @@ func HandleRunnerGitSSH(c *gin.Context) {
 		defer stdinPipe.Close()
 
 		for {
-			_, r, err := wsConn.NextReader()
-			if err != nil {
-				cancel()
-				return
-			}
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					mt, data, err := wsConn.ReadMessage()
+					if err != nil {
+						cancel()
+						return
+					}
 
-			if _, err := io.Copy(stdinPipe, r); err != nil {
-				cancel()
-				return
+					switch mt {
+					case websocket.BinaryMessage:
+						if bytes.Equal(data, []byte(EofMessage)) {
+							stdinPipe.Close()
+							return
+						}
+
+						stdinPipe.Write(data)
+					default:
+						log.Println("recived websocket message of type", mt)
+					}
+
+				}
 			}
 		}
 	}()
 
 	// ssh stdout -> ws
 	go func() {
+		buffer := make([]byte, 1024)
 		for {
-			w, err := wsConn.NextWriter(websocket.BinaryMessage)
-			if err != nil {
-				cancel()
+			select {
+			case <-ctx.Done():
 				return
-			}
+			default:
+				n, err := stdoutPipe.Read(buffer)
+				if err != nil {
+					cancel()
+					return
+				}
 
-			_, err = io.Copy(w, stdoutPipe)
-			w.Close()
-
-			if err != nil {
-				cancel()
-				return
+				wsConn.WriteMessage(websocket.BinaryMessage, buffer[:n])
 			}
 		}
 	}()
-
-	// // ssh stderr -> ws
-	// go func() {
-	// 	for {
-	// 		w, err := wsConn.NextWriter(websocket.BinaryMessage)
-	// 		if err != nil {
-	// 			cancel()
-	// 			return
-	// 		}
-
-	// 		_, err = io.Copy(w, stderrPipe)
-	// 		w.Close()
-
-	// 		if err != nil {
-	// 			cancel()
-	// 			return
-	// 		}
-	// 	}
-	// }()
-
-	// // ping ws connection to detect disconnection
-	// go func() {
-	// 	ticker := time.NewTicker(GitSSHPingInterval * time.Second)
-	// 	defer ticker.Stop()
-
-	// 	for {
-	// 		select {
-	// 		case <-ctx.Done():
-	// 			return
-	// 		case <-ticker.C:
-	// 			if err := wsConn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-	// 				cancel()
-	// 				return
-	// 			}
-	// 		}
-	// 	}
-	// }()
 
 	// start the ssh command
 	if err := session.Start(cmd); err != nil {
@@ -240,10 +217,4 @@ func HandleRunnerGitSSH(c *gin.Context) {
 
 	session.Wait()
 	<-ctx.Done()
-
-	// Add a delay to allow goroutines to finish sending buffered data
-	// before closing connections. This prevents "unexpected disconnect while reading
-	// sideband packet" errors that occur when the connection closes before git
-	// receives the server's response.
-	time.Sleep(GitSSHCloseDelay)
 }
