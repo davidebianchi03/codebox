@@ -1,6 +1,5 @@
 <div align="center">
   <img src="./docs/codebox-logo.png" width="200">
-
   <h3>
     Remote Development Environments
   </h3>
