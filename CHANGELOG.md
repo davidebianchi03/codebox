@@ -8,7 +8,7 @@ All changes will be reported in this file
 - optional sending of usage information (posthog)
 
 ### Fixed
-- Corrected the implementation of the Git SSH command.
+- Corrected the implementation of the Git SSH command, missing EOF.
 - Resolved WebSocket connection timeout issues.
 
 ### Changed
