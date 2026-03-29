@@ -9,8 +9,11 @@ import (
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
-func HandleForwardSsh(ctx *gin.Context) {
-	container, err := retrieveContainerByWorkspaceAndName(ctx)
+/*
+Endpoint that handles ssh connection
+*/
+func HandleForwardSsh(c *gin.Context) {
+	container, err := retrieveContainerByWorkspaceAndName(c)
 	if err != nil {
 		return
 	}
@@ -19,23 +22,23 @@ func HandleForwardSsh(ctx *gin.Context) {
 
 	runner, err := models.RetrieveRunnerByID(*workspace.RunnerID)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if runner == nil {
-		utils.ErrorResponse(ctx, http.StatusNotFound, "runner not found")
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
 		return
 	}
 
 	ri := runnerinterface.RunnerInterface{
 		Runner: runner,
 	}
-	if err := ri.ForwardSsh(&workspace, container, ctx.Writer, ctx.Request); err != nil {
-		utils.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+	if err := ri.ForwardSsh(&workspace, container, c.Writer, c.Request); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	// If the connection is closed, we return a 418 status code
-	utils.ErrorResponse(ctx, http.StatusTeapot, "connection closed")
+	utils.ErrorResponse(c, http.StatusTeapot, "connection closed")
 }

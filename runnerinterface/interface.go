@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
@@ -33,7 +34,9 @@ func (ri *RunnerInterface) getRunnerBaseUrl() string {
 
 func (ri *RunnerInterface) GetRunnerVersion() (version string, err error) {
 	url := fmt.Sprintf("%s/api/v1/version/", ri.getRunnerBaseUrl())
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 
 	if err != nil {
@@ -294,7 +297,9 @@ func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool 
 		container.ContainerName,
 	)
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 
 	if err != nil {

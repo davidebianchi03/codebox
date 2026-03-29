@@ -2,19 +2,18 @@
 
 All changes will be reported in this file
 
-## [Unreleased]
+## [v0.0.57]
 
 ### Added
-- optional sending of usage information (posthog)
+- Introduced optional usage analytics collection via PostHog.
 
 ### Fixed
-- Corrected the implementation of the Git SSH command, missing EOF.
+- Fixed an issue in the Git SSH command implementation caused by a missing EOF.
 - Resolved WebSocket connection timeout issues.
 
 ### Changed
-
-- Updated the CLI (v).
-- Updated the Runner (v).
+- Updated CLI to version 0.1.13, improving WebSocket connectivity.
+- Updated Runner to version 0.0.29, improving WebSocket connectivity.
 
 ## [v0.0.56] - 2026-03-05
 
