@@ -2,7 +2,7 @@
 
 All changes will be reported in this file
 
-## [v0.0.57]
+## [v0.0.57] - 2026-03-29
 
 ### Added
 - Introduced optional usage analytics collection via PostHog.
