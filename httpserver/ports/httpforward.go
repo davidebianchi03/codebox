@@ -116,7 +116,7 @@ func ForwardHttpPort(
 		Runner: workspace.Runner,
 	}
 
-	if err := ri.ForwardHttp(workspace, container, port, path, c.Writer, c.Request); err != nil {
+	if err := ri.AgentForwardHttp(workspace, container, port, path, c.Writer, c.Request); err != nil {
 		httperrors.RenderError(c, http.StatusInternalServerError, "Unknown error")
 		return
 	}

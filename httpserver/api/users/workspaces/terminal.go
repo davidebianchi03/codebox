@@ -68,7 +68,7 @@ func HandleTerminal(ctx *gin.Context) {
 		Runner: workspace.Runner,
 	}
 
-	if err := ri.ForwardTerminal(
+	if err := ri.AgentForwardTerminal(
 		workspace,
 		container,
 		ctx.Writer,

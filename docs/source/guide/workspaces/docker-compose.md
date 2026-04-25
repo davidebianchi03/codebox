@@ -54,3 +54,11 @@ volumes:
     workspace:
 ```
 You can view the full source code and more examples [here](https://gitlab.com/codebox4073715/codebox/-/tree/master/examples/docker-compose).
+
+## Volumes
+
+Docker volumes can be used to store persistent data link in a normal docker stack.
+
+### Warning
+
+You should only use host folder binding to access host resources like docker sock, use docker volumes to store data.

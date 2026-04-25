@@ -34,7 +34,7 @@ func HandleForwardSsh(c *gin.Context) {
 	ri := runnerinterface.RunnerInterface{
 		Runner: runner,
 	}
-	if err := ri.ForwardSsh(&workspace, container, c.Writer, c.Request); err != nil {
+	if err := ri.AgentForwardSsh(&workspace, container, c.Writer, c.Request); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
