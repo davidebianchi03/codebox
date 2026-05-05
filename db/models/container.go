@@ -62,6 +62,7 @@ func RetrieveWorkspaceContainerByName(workspace Workspace, containerName string)
 	var container WorkspaceContainer
 	result := dbconn.DB.
 		Preload("Workspace").
+		Preload("Workspace.Runner").
 		Where("workspace_id = ? AND container_name = ?", workspace.ID, containerName).
 		First(&container)
 

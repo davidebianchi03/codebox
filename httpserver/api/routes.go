@@ -153,6 +153,16 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId/stop",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleStopWorkspace),
 			)
+			workspaceApis.POST(
+				"/:workspaceId/update-config",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspaceConfiguration),
+			)
+			workspaceApis.POST(
+				"/:workspaceId/set-runner",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleSetRunnerForWorkspace),
+			)
+			// container related apis
+
 			workspaceApis.GET(
 				"/:workspaceId/container",
 				permissions.AuthenticationRequiredRoute(workspaces.ListWorkspaceContainersByWorkspace),
@@ -185,14 +195,11 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId/container/:containerName/terminal",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleTerminal),
 			)
-			workspaceApis.POST(
-				"/:workspaceId/update-config",
-				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspaceConfiguration),
+			workspaceApis.Any(
+				"/:workspaceId/container/:containerName/fs/list-directory",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerListDirectory),
 			)
-			workspaceApis.POST(
-				"/:workspaceId/set-runner",
-				permissions.AuthenticationRequiredRoute(workspaces.HandleSetRunnerForWorkspace),
-			)
+
 		}
 		v1.GET("/workspace-types", permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes))
 

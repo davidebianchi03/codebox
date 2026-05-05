@@ -21,3 +21,15 @@ type RunnerWorkspaceStatusResponse struct {
 	Status     string            `json:"status"`
 	Containers []RunnerContainer `json:"containers"`
 }
+
+type ContainerFileInfo struct {
+	Name     string
+	Path     string
+	IsDir    bool
+	Size     int64
+	Mode     string
+	ModTime  int64
+	Owner    string
+	Group    string
+	MimeType string
+}

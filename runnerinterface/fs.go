@@ -1,7 +1,10 @@
 package runnerinterface
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -13,7 +16,7 @@ func (ri *RunnerInterface) ContainerListDir(
 	workspace *models.Workspace,
 	container *models.WorkspaceContainer,
 	path string,
-) error {
+) ([]ContainerFileInfo, error) {
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/list-directory?path=%s",
 		ri.getRunnerBaseUrl(),
@@ -26,17 +29,31 @@ func (ri *RunnerInterface) ContainerListDir(
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		return []ContainerFileInfo{}, err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add(config.Environment.RunnerTokenHeader, ri.Runner.Token)
 
-	resp, err := client.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
-		return err
+		return []ContainerFileInfo{}, err
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
-	return nil
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return []ContainerFileInfo{}, err
+	}
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return []ContainerFileInfo{}, fmt.Errorf("error from agent: %s", string(body))
+	}
+
+	var data []ContainerFileInfo
+	if err := json.Unmarshal(body, &data); err != nil {
+		return []ContainerFileInfo{}, errors.New("failed to parse runner response")
+	}
+
+	return data, nil
 }
