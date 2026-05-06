@@ -198,7 +198,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId/container/:containerName/fs/list-directory",
 				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerListDirectory),
 			)
-
+			workspaceApis.Any(
+				"/:workspaceId/container/:containerName/fs/get-item-info",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerGetItemInfo),
+			)
 		}
 		v1.GET("/workspace-types", permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes))
 
