@@ -162,7 +162,6 @@ func V1ApiRoutes(router *gin.Engine) {
 				permissions.AuthenticationRequiredRoute(workspaces.HandleSetRunnerForWorkspace),
 			)
 			// container related apis
-
 			workspaceApis.GET(
 				"/:workspaceId/container",
 				permissions.AuthenticationRequiredRoute(workspaces.ListWorkspaceContainersByWorkspace),

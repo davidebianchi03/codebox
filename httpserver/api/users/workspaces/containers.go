@@ -181,9 +181,24 @@ func WorkspaceContainerListDirectory(c *gin.Context) {
 		path,
 	)
 	if err != nil {
-		utils.ErrorResponse(
-			c, http.StatusInternalServerError, "internal server error",
-		)
+		if runnerinterface.IsPathNotExist(err) {
+			utils.ErrorResponse(
+				c, http.StatusNotFound, err.Error(),
+			)
+		} else if runnerinterface.IsPermissionDenied(err) {
+			utils.ErrorResponse(
+				c, http.StatusForbidden, err.Error(),
+			)
+		} else if runnerinterface.IsPathIsNotADir(err) {
+			utils.ErrorResponse(
+				c, http.StatusBadRequest, err.Error(),
+			)
+		} else {
+			// TODO: log error
+			utils.ErrorResponse(
+				c, http.StatusInternalServerError, "internal server error",
+			)
+		}
 		return
 	}
 

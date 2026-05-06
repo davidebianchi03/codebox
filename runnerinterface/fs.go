@@ -12,6 +12,27 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
+var (
+	ErrorPathIsNotADir    = errors.New("selected path is not a directory")
+	ErrorPermissionDenied = errors.New("permission denied")
+	ErrorPathNotExist     = errors.New("path does not exist")
+)
+
+func IsPathIsNotADir(err error) bool {
+	return err == ErrorPathIsNotADir
+}
+
+func IsPermissionDenied(err error) bool {
+	return err == ErrorPermissionDenied
+}
+
+func IsPathNotExist(err error) bool {
+	return err == ErrorPathNotExist
+}
+
+/*
+List content of a directory
+*/
 func (ri *RunnerInterface) ContainerListDir(
 	workspace *models.Workspace,
 	container *models.WorkspaceContainer,
@@ -47,13 +68,21 @@ func (ri *RunnerInterface) ContainerListDir(
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return []ContainerFileInfo{}, fmt.Errorf("error from agent: %s", string(body))
+		switch res.StatusCode {
+		case 400:
+			return []ContainerFileInfo{}, ErrorPathIsNotADir
+		case 403:
+			return []ContainerFileInfo{}, ErrorPermissionDenied
+		case 404:
+			return []ContainerFileInfo{}, ErrorPathNotExist
+		default:
+			return []ContainerFileInfo{}, fmt.Errorf("server returned status %d", res.StatusCode)
+		}
 	}
 
 	var data []ContainerFileInfo
 	if err := json.Unmarshal(body, &data); err != nil {
 		return []ContainerFileInfo{}, errors.New("failed to parse runner response")
 	}
-
 	return data, nil
 }
