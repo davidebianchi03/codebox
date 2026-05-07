@@ -277,3 +277,68 @@ func WorkspaceContainerGetItemInfo(c *gin.Context) {
 		serializers.LoadContainerFileInfoSerializer(files),
 	)
 }
+
+// WorkspaceContainerGetItemInfo godoc
+// @Summary WorkspaceContainerGetItemInfo
+// @Schemes
+// @Description Get detailed information about a file or directory
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param path query string true "File or directory path"
+// @Success 200 {object} serializers.ContainerFileInfoSerializer
+// @Failure 400 {object} serializers.ErrorSerializer "Bad request (e.g., missing or invalid 'path' parameter)"
+// @Failure 403 {object} serializers.ErrorSerializer "Forbidden (permission denied)"
+// @Failure 404 {object} serializers.ErrorSerializer "workspace, container or requested path not found"
+// @Failure 500 {object} serializers.ErrorSerializer "Internal server error"
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/get-item-info [get]
+func WorkspaceContainerCreateDirectory(c *gin.Context) {
+	container, err := retrieveWorkspaceContainerFromContext(c)
+	if err != nil {
+		return
+	}
+
+	ri := runnerinterface.RunnerInterface{
+		Runner: container.Workspace.Runner,
+	}
+
+	path := c.Query("path")
+	if path == "" {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "path query parameter is required",
+		)
+		return
+	}
+
+	files, err := ri.ContainerFsGetItemInfo(
+		&container.Workspace,
+		container,
+		path,
+	)
+	if err != nil {
+		if runnerinterface.IsPathNotExist(err) {
+			utils.ErrorResponse(
+				c, http.StatusNotFound, err.Error(),
+			)
+		} else if runnerinterface.IsPermissionDenied(err) {
+			utils.ErrorResponse(
+				c, http.StatusForbidden, err.Error(),
+			)
+		} else if runnerinterface.IsPathIsNotADir(err) {
+			utils.ErrorResponse(
+				c, http.StatusBadRequest, err.Error(),
+			)
+		} else {
+			// TODO: log error
+			utils.ErrorResponse(
+				c, http.StatusInternalServerError, "internal server error",
+			)
+		}
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadContainerFileInfoSerializer(files),
+	)
+}
