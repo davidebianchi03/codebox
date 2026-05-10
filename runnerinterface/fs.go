@@ -2,6 +2,7 @@ package runnerinterface
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,6 +20,8 @@ var (
 	ErrorPathAlreadyExists = errors.New("path already exists")
 	ErrorPermissionDenied  = errors.New("permission denied")
 	ErrorPathNotExist      = errors.New("path does not exist")
+	ErrorInvalidFileMode   = errors.New("invalid permissions format")
+	ErrorInvalidBase64     = errors.New("invalid base64 encoded string")
 )
 
 func IsPathIsNotADir(err error) bool {
@@ -39,6 +42,14 @@ func IsErrorPathAlreadyExists(err error) bool {
 
 func IsErrorPathIsADir(err error) bool {
 	return err == ErrorPathIsADir
+}
+
+func IsErrorInvalidFileMode(err error) bool {
+	return err == ErrorInvalidFileMode
+}
+
+func IsErrorInvalidBase64(err error) bool {
+	return err == ErrorInvalidBase64
 }
 
 /*
@@ -164,6 +175,10 @@ func (ri *RunnerInterface) ContainerFsCreateDir(
 	path string,
 	permissions string,
 ) (ContainerFileInfo, error) {
+	if !validatePermissionString(permissions) {
+		return ContainerFileInfo{}, ErrorInvalidFileMode
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/create-directory",
 		ri.getRunnerBaseUrl(),
@@ -402,6 +417,14 @@ func (ri *RunnerInterface) ContainerFsWriteFile(
 	content string, // base 64
 	permissions string,
 ) error {
+	if !validatePermissionString(permissions) {
+		return ErrorInvalidFileMode
+	}
+
+	if _, err := base64.StdEncoding.DecodeString(content); err != nil {
+		return ErrorInvalidBase64
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/write-file",
 		ri.getRunnerBaseUrl(),

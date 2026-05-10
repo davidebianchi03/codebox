@@ -1,10 +1,8 @@
 package workspaces
 
 import (
-	"encoding/base64"
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/db/models"
@@ -280,28 +278,6 @@ func WorkspaceContainerGetItemInfo(c *gin.Context) {
 	)
 }
 
-/*
-validates a permission string to ensure it is a valid octal
-representation of file permissions (e.g., "755").
-*/
-func validatePermissionString(perm string) bool {
-	if len(perm) != 3 {
-		return false
-	}
-
-	// convert to octal and check if it's a valid permission
-	octalPerm, err := strconv.ParseUint(perm, 8, 32)
-	if err != nil {
-		return false
-	}
-
-	if octalPerm > 0777 {
-		return false
-	}
-
-	return true
-}
-
 type CreateDirectoryRequest struct {
 	Path        string `json:"path" binding:"required"`
 	Permissions string `json:"permissions" binding:"required"` // octal string, e.g., "755"
@@ -339,13 +315,6 @@ func WorkspaceContainerCreateDirectory(c *gin.Context) {
 		return
 	}
 
-	if !validatePermissionString(req.Permissions) {
-		utils.ErrorResponse(
-			c, http.StatusBadRequest, "invalid permissions format",
-		)
-		return
-	}
-
 	files, err := ri.ContainerFsCreateDir(
 		&container.Workspace,
 		container,
@@ -362,6 +331,10 @@ func WorkspaceContainerCreateDirectory(c *gin.Context) {
 				c, http.StatusForbidden, err.Error(),
 			)
 		} else if runnerinterface.IsPathIsNotADir(err) {
+			utils.ErrorResponse(
+				c, http.StatusBadRequest, err.Error(),
+			)
+		} else if runnerinterface.IsErrorInvalidFileMode(err) {
 			utils.ErrorResponse(
 				c, http.StatusBadRequest, err.Error(),
 			)
@@ -627,20 +600,6 @@ func WorkspaceContainerWriteFile(c *gin.Context) {
 		return
 	}
 
-	if !validatePermissionString(req.Permissions) {
-		utils.ErrorResponse(
-			c, http.StatusBadRequest, "invalid permissions format",
-		)
-		return
-	}
-
-	if _, err := base64.StdEncoding.DecodeString(req.Content); err != nil {
-		utils.ErrorResponse(
-			c, http.StatusBadRequest, "content must be a valid base64 encoded string",
-		)
-		return
-	}
-
 	if err := ri.ContainerFsWriteFile(
 		&container.Workspace,
 		container,
@@ -659,6 +618,14 @@ func WorkspaceContainerWriteFile(c *gin.Context) {
 		} else if runnerinterface.IsErrorPathIsADir(err) {
 			utils.ErrorResponse(
 				c, http.StatusConflict, err.Error(),
+			)
+		} else if runnerinterface.IsErrorInvalidFileMode(err) {
+			utils.ErrorResponse(
+				c, http.StatusBadRequest, err.Error(),
+			)
+		} else if runnerinterface.IsErrorInvalidBase64(err) {
+			utils.ErrorResponse(
+				c, http.StatusBadRequest, err.Error(),
 			)
 		} else {
 			// TODO: log error
