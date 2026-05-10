@@ -39,3 +39,39 @@ func LoadMultipleContainerFileInfoSerializers(
 	}
 	return serializers
 }
+
+type FileContentSerializer struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+	Size    int64  `json:"size"`
+}
+
+func LoadFileContentSerializer(
+	file runnerinterface.ContainerReadFileResponse,
+) *FileContentSerializer {
+	return &FileContentSerializer{
+		Path:    file.Path,
+		Content: file.Content,
+		Size:    file.Size,
+	}
+}
+
+type CommandResultSerializer struct {
+	Command    string `json:"command"`
+	Stdout     string `json:"stdout"`
+	Stderr     string `json:"stderr"`
+	ExitCode   int    `json:"exit_code"`
+	WasSuccess bool   `json:"was_success"`
+}
+
+func LoadCommandResultSerializer(
+	file runnerinterface.ExecuteCommandResponse,
+) *CommandResultSerializer {
+	return &CommandResultSerializer{
+		Command:    file.Command,
+		Stdout:     file.Stdout,
+		Stderr:     file.Stderr,
+		ExitCode:   file.ExitCode,
+		WasSuccess: file.WasSuccess,
+	}
+}

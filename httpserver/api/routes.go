@@ -194,13 +194,38 @@ func V1ApiRoutes(router *gin.Engine) {
 				"/:workspaceId/container/:containerName/terminal",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleTerminal),
 			)
-			workspaceApis.Any(
+			// fs related apis
+			workspaceApis.GET(
 				"/:workspaceId/container/:containerName/fs/list-directory",
 				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerListDirectory),
 			)
-			workspaceApis.Any(
+			workspaceApis.GET(
 				"/:workspaceId/container/:containerName/fs/get-item-info",
 				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerGetItemInfo),
+			)
+			workspaceApis.POST(
+				"/:workspaceId/container/:containerName/fs/create-directory",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerCreateDirectory),
+			)
+			workspaceApis.DELETE(
+				"/:workspaceId/container/:containerName/fs/delete-item",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerDeleteItem),
+			)
+			workspaceApis.POST(
+				"/:workspaceId/container/:containerName/fs/rename-item",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerRenameItem),
+			)
+			workspaceApis.GET(
+				"/:workspaceId/container/:containerName/fs/read-file",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerReadFile),
+			)
+			workspaceApis.POST(
+				"/:workspaceId/container/:containerName/fs/write-file",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerWriteFile),
+			)
+			workspaceApis.POST(
+				"/:workspaceId/container/:containerName/fs/execute-command",
+				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerExecuteCommand),
 			)
 		}
 		v1.GET("/workspace-types", permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes))

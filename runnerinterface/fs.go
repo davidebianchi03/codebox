@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 
 	"gitlab.com/codebox4073715/codebox/config"
 	"gitlab.com/codebox4073715/codebox/db/models"
@@ -32,6 +31,14 @@ func IsPermissionDenied(err error) bool {
 
 func IsPathNotExist(err error) bool {
 	return err == ErrorPathNotExist
+}
+
+func IsErrorPathAlreadyExists(err error) bool {
+	return err == ErrorPathAlreadyExists
+}
+
+func IsErrorPathIsADir(err error) bool {
+	return err == ErrorPathIsADir
 }
 
 /*
@@ -155,7 +162,7 @@ func (ri *RunnerInterface) ContainerFsCreateDir(
 	workspace *models.Workspace,
 	container *models.WorkspaceContainer,
 	path string,
-	permissions os.FileMode,
+	permissions string,
 ) (ContainerFileInfo, error) {
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/create-directory",
@@ -393,6 +400,7 @@ func (ri *RunnerInterface) ContainerFsWriteFile(
 	container *models.WorkspaceContainer,
 	path string,
 	content string, // base 64
+	permissions string,
 ) error {
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/write-file",
@@ -404,8 +412,9 @@ func (ri *RunnerInterface) ContainerFsWriteFile(
 	client := ri.getRequestsClient()
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"path":    path,
-		"content": content,
+		"path":        path,
+		"content":     content,
+		"permissions": permissions,
 	})
 
 	req, err := http.NewRequest(
@@ -502,7 +511,7 @@ func (ri *RunnerInterface) ContainerFSExecuteCommand(
 	workDir string,
 ) (ExecuteCommandResponse, error) {
 	url := fmt.Sprintf(
-		"%s/api/v1/workspace/%d/container/%s/fs/system-info",
+		"%s/api/v1/workspace/%d/container/%s/fs/execute-command",
 		ri.getRunnerBaseUrl(),
 		workspace.ID,
 		container.ContainerName,

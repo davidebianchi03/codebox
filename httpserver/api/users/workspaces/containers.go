@@ -1,8 +1,10 @@
 package workspaces
 
 import (
+	"encoding/base64"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/db/models"
@@ -278,20 +280,47 @@ func WorkspaceContainerGetItemInfo(c *gin.Context) {
 	)
 }
 
-// WorkspaceContainerGetItemInfo godoc
-// @Summary WorkspaceContainerGetItemInfo
+/*
+validates a permission string to ensure it is a valid octal
+representation of file permissions (e.g., "755").
+*/
+func validatePermissionString(perm string) bool {
+	if len(perm) != 3 {
+		return false
+	}
+
+	// convert to octal and check if it's a valid permission
+	octalPerm, err := strconv.ParseUint(perm, 8, 32)
+	if err != nil {
+		return false
+	}
+
+	if octalPerm > 0777 {
+		return false
+	}
+
+	return true
+}
+
+type CreateDirectoryRequest struct {
+	Path        string `json:"path" binding:"required"`
+	Permissions string `json:"permissions" binding:"required"` // octal string, e.g., "755"
+}
+
+// WorkspaceContainerCreateDirectory godoc
+// @Summary WorkspaceContainerCreateDirectory
 // @Schemes
-// @Description Get detailed information about a file or directory
+// @Description Create a new directory
 // @Tags Workspaces
 // @Accept json
 // @Produce json
-// @Param path query string true "File or directory path"
+// @Param request body CreateDirectoryRequest true "Data for creating a directory"
 // @Success 200 {object} serializers.ContainerFileInfoSerializer
 // @Failure 400 {object} serializers.ErrorSerializer "Bad request (e.g., missing or invalid 'path' parameter)"
 // @Failure 403 {object} serializers.ErrorSerializer "Forbidden (permission denied)"
-// @Failure 404 {object} serializers.ErrorSerializer "workspace, container or requested path not found"
+// @Failure 404 {object} serializers.ErrorSerializer "Workspace or container not found"
 // @Failure 500 {object} serializers.ErrorSerializer "Internal server error"
-// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/get-item-info [get]
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/create-directory [post]
 func WorkspaceContainerCreateDirectory(c *gin.Context) {
 	container, err := retrieveWorkspaceContainerFromContext(c)
 	if err != nil {
@@ -302,18 +331,26 @@ func WorkspaceContainerCreateDirectory(c *gin.Context) {
 		Runner: container.Workspace.Runner,
 	}
 
-	path := c.Query("path")
-	if path == "" {
+	var req CreateDirectoryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ErrorResponse(
-			c, http.StatusBadRequest, "path query parameter is required",
+			c, http.StatusBadRequest, "invalid request body",
 		)
 		return
 	}
 
-	files, err := ri.ContainerFsGetItemInfo(
+	if !validatePermissionString(req.Permissions) {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "invalid permissions format",
+		)
+		return
+	}
+
+	files, err := ri.ContainerFsCreateDir(
 		&container.Workspace,
 		container,
-		path,
+		req.Path,
+		req.Permissions,
 	)
 	if err != nil {
 		if runnerinterface.IsPathNotExist(err) {
@@ -340,5 +377,371 @@ func WorkspaceContainerCreateDirectory(c *gin.Context) {
 	c.JSON(
 		http.StatusOK,
 		serializers.LoadContainerFileInfoSerializer(files),
+	)
+}
+
+// WorkspaceContainerDeleteItem godoc
+// @Summary WorkspaceContainerDeleteItem
+// @Schemes
+// @Description Delete a file or directory
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param path query string true "File or directory path to delete"
+// @Success 200
+// @Failure 400 {object} serializers.ErrorSerializer "Bad request"
+// @Failure 403 {object} serializers.ErrorSerializer "Forbidden (permission denied)"
+// @Failure 404 {object} serializers.ErrorSerializer "Workspace or container not found"
+// @Failure 500 {object} serializers.ErrorSerializer "Internal server error"
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/delete-item [delete]
+func WorkspaceContainerDeleteItem(c *gin.Context) {
+	container, err := retrieveWorkspaceContainerFromContext(c)
+	if err != nil {
+		return
+	}
+
+	ri := runnerinterface.RunnerInterface{
+		Runner: container.Workspace.Runner,
+	}
+
+	path := c.Query("path")
+	if path == "" {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "path query parameter is required",
+		)
+		return
+	}
+
+	if err := ri.ContainerFsDeleteItem(
+		&container.Workspace,
+		container,
+		path,
+	); err != nil {
+		if runnerinterface.IsPathNotExist(err) {
+			utils.ErrorResponse(
+				c, http.StatusNotFound, err.Error(),
+			)
+		} else if runnerinterface.IsPermissionDenied(err) {
+			utils.ErrorResponse(
+				c, http.StatusForbidden, err.Error(),
+			)
+		} else {
+			// TODO: log error
+			utils.ErrorResponse(
+				c, http.StatusInternalServerError, "internal server error",
+			)
+		}
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{"detail": "item deleted successfully"},
+	)
+}
+
+type RenameItemRequest struct {
+	Path    string `json:"path" binding:"required"`
+	NewPath string `json:"new_path" binding:"required"`
+}
+
+// WorkspaceContainerRenameItem godoc
+// @Summary WorkspaceContainerRenameItem
+// @Schemes
+// @Description Rename a file or directory
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param request body RenameItemRequest true "Data for renaming an item"
+// @Success 200 {object} serializers.ContainerFileInfoSerializer
+// @Failure 400 {object} serializers.ErrorSerializer "Bad request"
+// @Failure 403 {object} serializers.ErrorSerializer "Forbidden (permission denied)"
+// @Failure 404 {object} serializers.ErrorSerializer "Workspace, container or path not found"
+// @Failure 500 {object} serializers.ErrorSerializer "Internal server error"
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/rename-item [post]
+func WorkspaceContainerRenameItem(c *gin.Context) {
+	container, err := retrieveWorkspaceContainerFromContext(c)
+	if err != nil {
+		return
+	}
+
+	ri := runnerinterface.RunnerInterface{
+		Runner: container.Workspace.Runner,
+	}
+
+	var req RenameItemRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "invalid request body",
+		)
+		return
+	}
+
+	if err := ri.ContainerFsRenameItem(
+		&container.Workspace,
+		container,
+		req.Path,
+		req.NewPath,
+	); err != nil {
+		if runnerinterface.IsErrorPathAlreadyExists(err) {
+			utils.ErrorResponse(
+				c, http.StatusBadRequest, err.Error(),
+			)
+		} else if runnerinterface.IsPathNotExist(err) {
+			utils.ErrorResponse(
+				c, http.StatusNotFound, err.Error(),
+			)
+		} else if runnerinterface.IsPermissionDenied(err) {
+			utils.ErrorResponse(
+				c, http.StatusForbidden, err.Error(),
+			)
+		} else {
+			// TODO: log error
+			utils.ErrorResponse(
+				c, http.StatusInternalServerError, "internal server error",
+			)
+		}
+		return
+	}
+
+	item, err := ri.ContainerFsGetItemInfo(
+		&container.Workspace,
+		container,
+		req.NewPath,
+	)
+
+	if err != nil {
+		// TODO: log error
+		utils.ErrorResponse(
+			c, http.StatusInternalServerError, "internal server error",
+		)
+	}
+
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadContainerFileInfoSerializer(item),
+	)
+}
+
+// WorkspaceContainerReadFile godoc
+// @Summary WorkspaceContainerReadFile
+// @Schemes
+// @Description Read the content of a file in a container, returs the base64 encoded content, file size and mime type.
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.FileContentSerializer
+// @Failure 400 {object} serializers.ErrorSerializer "Bad request"
+// @Failure 403 {object} serializers.ErrorSerializer "Forbidden (permission denied)"
+// @Failure 404 {object} serializers.ErrorSerializer "Workspace, container or path not found"
+// @Failure 409 {object} serializers.ErrorSerializer "Conflict (e.g., the specified path is a directory, not a file)"
+// @Failure 500 {object} serializers.ErrorSerializer "Internal server error"
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/read-file [get]
+func WorkspaceContainerReadFile(c *gin.Context) {
+	container, err := retrieveWorkspaceContainerFromContext(c)
+	if err != nil {
+		return
+	}
+
+	ri := runnerinterface.RunnerInterface{
+		Runner: container.Workspace.Runner,
+	}
+
+	path := c.Query("path")
+	if path == "" {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "path query parameter is required",
+		)
+		return
+	}
+
+	content, err := ri.ContainerFsReadFile(
+		&container.Workspace,
+		container,
+		path,
+	)
+	if err != nil {
+		if runnerinterface.IsPathNotExist(err) {
+			utils.ErrorResponse(
+				c, http.StatusNotFound, err.Error(),
+			)
+		} else if runnerinterface.IsPermissionDenied(err) {
+			utils.ErrorResponse(
+				c, http.StatusForbidden, err.Error(),
+			)
+		} else if runnerinterface.IsErrorPathIsADir(err) {
+			utils.ErrorResponse(
+				c, http.StatusConflict, err.Error(),
+			)
+		} else {
+			// TODO: log error
+			utils.ErrorResponse(
+				c, http.StatusInternalServerError, "internal server error",
+			)
+		}
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadFileContentSerializer(content),
+	)
+}
+
+type WriteFileRequest struct {
+	Path        string `json:"path" binding:"required"`
+	Content     string `json:"content" binding:"required"`
+	Permissions string `json:"permissions" binding:"required"`
+}
+
+// WorkspaceContainerWriteFile godoc
+// @Summary WorkspaceContainerWriteFile
+// @Schemes
+// @Description Write the content of a file in a container.
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param request body WriteFileRequest true "Data for writing a file"
+// @Success 200 {object} serializers.FileContentSerializer
+// @Failure 400 {object} serializers.ErrorSerializer "Bad request"
+// @Failure 403 {object} serializers.ErrorSerializer "Forbidden (permission denied)"
+// @Failure 404 {object} serializers.ErrorSerializer "Workspace, container or path not found"
+// @Failure 409 {object} serializers.ErrorSerializer "Conflict (e.g., the specified path is a directory, not a file)"
+// @Failure 500 {object} serializers.ErrorSerializer "Internal server error"
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/write-file [post]
+func WorkspaceContainerWriteFile(c *gin.Context) {
+	container, err := retrieveWorkspaceContainerFromContext(c)
+	if err != nil {
+		return
+	}
+
+	ri := runnerinterface.RunnerInterface{
+		Runner: container.Workspace.Runner,
+	}
+
+	var req WriteFileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "invalid request body",
+		)
+		return
+	}
+
+	if !validatePermissionString(req.Permissions) {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "invalid permissions format",
+		)
+		return
+	}
+
+	if _, err := base64.StdEncoding.DecodeString(req.Content); err != nil {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "content must be a valid base64 encoded string",
+		)
+		return
+	}
+
+	if err := ri.ContainerFsWriteFile(
+		&container.Workspace,
+		container,
+		req.Path,
+		req.Content,
+		req.Permissions,
+	); err != nil {
+		if runnerinterface.IsPathNotExist(err) {
+			utils.ErrorResponse(
+				c, http.StatusNotFound, err.Error(),
+			)
+		} else if runnerinterface.IsPermissionDenied(err) {
+			utils.ErrorResponse(
+				c, http.StatusForbidden, err.Error(),
+			)
+		} else if runnerinterface.IsErrorPathIsADir(err) {
+			utils.ErrorResponse(
+				c, http.StatusConflict, err.Error(),
+			)
+		} else {
+			// TODO: log error
+			utils.ErrorResponse(
+				c, http.StatusInternalServerError, "internal server error",
+			)
+		}
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{"detail": "file written successfully"},
+	)
+}
+
+type ExecuteCommandRequest struct {
+	Command    string   `json:"command" binding:"required"`
+	Args       []string `json:"args"`
+	WorkingDir string   `json:"working_dir,omitempty"`
+}
+
+// WorkspaceContainerExecuteCommand godoc
+// @Summary WorkspaceContainerExecuteCommand
+// @Schemes
+// @Description Execute a command in a container.
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Param request body ExecuteCommandRequest true "Data for executing a command"
+// @Success 200 {object} serializers.CommandResultSerializer
+// @Failure 400 {object} serializers.ErrorSerializer "Bad request"
+// @Failure 403 {object} serializers.ErrorSerializer "Forbidden (permission denied)"
+// @Failure 404 {object} serializers.ErrorSerializer "Workspace, container or path not found"
+// @Failure 500 {object} serializers.ErrorSerializer "Internal server error"
+// @Router /api/v1/workspace/:workspaceId/container/:containerName/fs/execute-command [post]
+func WorkspaceContainerExecuteCommand(c *gin.Context) {
+	container, err := retrieveWorkspaceContainerFromContext(c)
+	if err != nil {
+		return
+	}
+
+	ri := runnerinterface.RunnerInterface{
+		Runner: container.Workspace.Runner,
+	}
+
+	var req ExecuteCommandRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(
+			c, http.StatusBadRequest, "invalid request body",
+		)
+		return
+	}
+
+	result, err := ri.ContainerFSExecuteCommand(
+		&container.Workspace,
+		container,
+		req.Command,
+		req.Args,
+		req.WorkingDir,
+	)
+	if err != nil {
+		if runnerinterface.IsPathNotExist(err) {
+			utils.ErrorResponse(
+				c, http.StatusNotFound, err.Error(),
+			)
+		} else if runnerinterface.IsPermissionDenied(err) {
+			utils.ErrorResponse(
+				c, http.StatusForbidden, err.Error(),
+			)
+		} else {
+			// TODO: log error
+			utils.ErrorResponse(
+				c,
+				http.StatusInternalServerError,
+				"internal server error",
+			)
+		}
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadCommandResultSerializer(result),
 	)
 }
