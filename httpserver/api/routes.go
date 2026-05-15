@@ -154,6 +154,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				permissions.AuthenticationRequiredRoute(workspaces.HandleStopWorkspace),
 			)
 			workspaceApis.POST(
+				"/:workspaceId/restart",
+				permissions.AuthenticationRequiredRoute(workspaces.HandleRestartWorkspace),
+			)
+			workspaceApis.POST(
 				"/:workspaceId/update-config",
 				permissions.AuthenticationRequiredRoute(workspaces.HandleUpdateWorkspaceConfiguration),
 			)

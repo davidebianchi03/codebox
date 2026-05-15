@@ -102,6 +102,15 @@ export async function APIStopWorkspace(workspaceId: number): Promise<boolean> {
     }
 }
 
+export async function APIRestartWorkspace(workspaceId: number): Promise<boolean> {
+    try {
+        await axios.post<Workspace>(`/api/v1/workspace/${workspaceId}/restart`);
+        return true
+    } catch {
+        return false;
+    }
+}
+
 export async function APIUpdateWorkspaceConfig(workspaceId: number): Promise<boolean> {
     try {
         await axios.post<Workspace>(`/api/v1/workspace/${workspaceId}/update-config`);

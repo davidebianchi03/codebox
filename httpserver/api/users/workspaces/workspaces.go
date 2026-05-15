@@ -408,6 +408,82 @@ func HandleStartWorkspace(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, serializers.LoadWorkspaceSerializer(workspace))
 }
 
+// HandleRestartWorkspace godoc
+// @Summary Restart a workspace
+// @Schemes
+// @Description Restart a workspace, only running workspaces can be restarted
+// @Tags Workspaces
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.WorkspaceSerializer
+// @Router /api/v1/workspace/:id/restart [post]
+func HandleRestartWorkspace(ctx *gin.Context) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	id, err := utils.GetUIntParamFromContext(ctx, "workspaceId")
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	workspace, err := models.RetrieveWorkspaceByUserAndId(user, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	if workspace == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"detail": "workspace not found",
+		})
+		return
+	}
+
+	// Only running workspaces can be restarted
+	if workspace.Status != models.WorkspaceStatusRunning {
+		ctx.JSON(http.StatusConflict, gin.H{
+			"detail": "workspace is not running",
+		})
+		return
+	}
+
+	workspace, err = models.UpdateWorkspace(
+		workspace,
+		workspace.Name,
+		models.WorkspaceStatusStopping,
+		workspace.Runner,
+		workspace.ConfigSource,
+		workspace.TemplateVersion,
+		workspace.GitSource,
+		workspace.EnvironmentVariables,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "internal server error",
+		})
+		return
+	}
+
+	workspace.ClearLogs()
+	workspace.AppendLogs("Restarting workspace...")
+
+	// start bg task for restart
+	bgtasks.BgTasksEnqueuer.Enqueue("restart_workspace", work.Q{"workspace_id": workspace.ID})
+
+	ctx.JSON(http.StatusOK, serializers.LoadWorkspaceSerializer(workspace))
+}
+
 type UpdateWorkspaceRequestBody struct {
 	GitRepoUrl           string   `json:"git_repo_url"`
 	GitRefName           string   `json:"git_ref_name"`

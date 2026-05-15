@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Workspace } from "../../types/workspace";
-import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace } from "../../api/workspace";
+import { APIDeleteWorkspace, APIRetrieveWorkspaceById, APIStartWorkspace, APIStopWorkspace, APIRestartWorkspace } from "../../api/workspace";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { GetBeautyNameForStatus, GetWorkspaceStatusColor } from "../../common/workspace";
@@ -44,6 +44,14 @@ export function WorkspaceStatusDropdown({
             onStatusChange();
         } else {
             toast.error(`Failed to stop workspace, try again later`);
+        }
+    }, [onStatusChange, workspace]);
+
+    const HandleRestartWorkspace = useCallback(async () => {
+        if (await APIRestartWorkspace(workspace.id)) {
+            onStatusChange();
+        } else {
+            toast.error(`Failed to restart workspace, try again later`);
         }
     }, [onStatusChange, workspace]);
 
@@ -111,6 +119,13 @@ export function WorkspaceStatusDropdown({
                                     ? "Stop workspace"
                                     : "Start workspace"}
                             </Dropdown.Item>
+                            {workspace.status === "running" && (
+                                <Dropdown.Item onClick={() => {
+                                    HandleRestartWorkspace();
+                                }}>
+                                    Restart workspace
+                                </Dropdown.Item>
+                            )}
                             <Dropdown.Item onClick={() => {
                                 HandleDeleteWorkspace(false);
                             }}>
