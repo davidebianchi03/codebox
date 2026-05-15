@@ -1,7 +1,6 @@
 package bgtasks
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -29,7 +28,11 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 		return nil
 	}
 	defer dbconn.DB.Save(&workspace)
+	StartWorkspace(workspace)
+	return nil
+}
 
+func StartWorkspace(workspace *models.Workspace) error {
 	// if workspace config source is a git repository retrieve latest version
 	if workspace.ConfigSource == models.WorkspaceConfigSourceGit {
 		if workspace.GitSource != nil {
@@ -51,7 +54,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 				if err != nil {
 					workspace.AppendLogs(fmt.Sprintf("failed to create tmp folder, %s", err.Error()))
 					workspace.Status = models.WorkspaceStatusError
-					return nil
+					return fmt.Errorf("failed to create tmp folder, %s", err.Error())
 				}
 				defer os.RemoveAll(tempDirPath)
 
@@ -64,7 +67,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 				); err != nil {
 					workspace.AppendLogs(fmt.Sprintf("failed to clone git repository, %s", err.Error()))
 					workspace.Status = models.WorkspaceStatusError
-					return nil
+					return fmt.Errorf("failed to clone git repository, %s", err.Error())
 				}
 
 				// create targz archive
@@ -72,7 +75,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 				if err = tgm.CompressFolder(tempDirPath); err != nil {
 					workspace.AppendLogs(fmt.Sprintf("failed to create targz archive, %s", err.Error()))
 					workspace.Status = models.WorkspaceStatusError
-					return nil
+					return fmt.Errorf("failed to create targz archive, %s", err.Error())
 				}
 
 				workspace.AppendLogs("the git repository has been cloned")
@@ -80,27 +83,27 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 		} else {
 			workspace.AppendLogs("git source is nil")
 			workspace.Status = models.WorkspaceStatusError
-			return nil
+			return fmt.Errorf("git source is nil")
 		}
 	} else {
 		// check if config files exist
 		if workspace.TemplateVersion.Sources == nil {
 			workspace.AppendLogs("Template version has no sources")
 			workspace.Status = models.WorkspaceStatusError
-			return nil
+			return fmt.Errorf("template version has no sources")
 		}
 
 		if !workspace.TemplateVersion.Sources.Exists() {
 			workspace.AppendLogs("Template version has no sources")
 			workspace.Status = models.WorkspaceStatusError
-			return nil
+			return fmt.Errorf("template version has no sources")
 		}
 	}
 
 	if workspace.Runner == nil {
 		workspace.AppendLogs("runner does not exist")
 		workspace.Status = models.WorkspaceStatusError
-		return nil
+		return fmt.Errorf("runner does not exist")
 	}
 
 	ri := runnerinterface.RunnerInterface{
@@ -110,14 +113,14 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 	if err := ri.StartWorkspace(workspace); err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to start workspace, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError
-		return errors.New("failed to start workspace")
+		return fmt.Errorf("failed to start workspace, %s", err.Error())
 	}
 
 	// fetch workspace details and logs
 	starting := true
 	logsIndex := 0
 	for starting {
-		details, err := ri.GetDetails(workspace)
+		details, err := ri.GetWorkspaceDetails(workspace)
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
@@ -130,7 +133,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 			starting = false
 		}
 
-		logs, err := ri.GetLogs(workspace)
+		logs, err := ri.GetWorkspaceLogs(workspace)
 		if err == nil {
 			if len(logs) > logsIndex {
 				logs = logs[logsIndex:]
@@ -141,7 +144,7 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	details, err := ri.GetDetails(workspace)
+	details, err := ri.GetWorkspaceDetails(workspace)
 	if err != nil {
 		workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 		workspace.Status = models.WorkspaceStatusError

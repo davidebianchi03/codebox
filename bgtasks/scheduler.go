@@ -43,6 +43,7 @@ func InitBgTasks(
 	// workspaces jobs
 	pool.Job("start_workspace", (*Context).StartWorkspaceTask)
 	pool.Job("stop_workspace", (*Context).StopWorkspaceTask)
+	pool.Job("restart_workspace", (*Context).RestartWorkspaceTask)
 	pool.Job("delete_workspace", (*Context).DeleteWorkspaceTask)
 	pool.Job("update_workspace_config", (*Context).UpdateWorkspaceConfigFilesTask)
 	pool.Job("ping_agents", (*Context).PingAgentsTask)

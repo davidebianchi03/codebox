@@ -43,7 +43,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 	}
 
 	stopping := true
-	if err := ri.StopWorkpace(workspace); err != nil {
+	if err := ri.StopWorkspace(workspace); err != nil {
 		stopping = false
 		if !skipErrors {
 			workspace.AppendLogs(fmt.Sprintf("failed to stop workspace, %s", err.Error()))
@@ -55,7 +55,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 	// fetch workspace details and logs
 	logsIndex := 0
 	for stopping {
-		details, err := ri.GetDetails(workspace)
+		details, err := ri.GetWorkspaceDetails(workspace)
 		if err != nil {
 			if !skipErrors {
 				workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
@@ -72,7 +72,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 			stopping = false
 		}
 
-		logs, err := ri.GetLogs(workspace)
+		logs, err := ri.GetWorkspaceLogs(workspace)
 		if err == nil {
 			if len(logs) > logsIndex {
 				logs = logs[logsIndex:]
@@ -83,7 +83,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	details, err := ri.GetDetails(workspace)
+	details, err := ri.GetWorkspaceDetails(workspace)
 	if err != nil {
 		if !skipErrors {
 			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))

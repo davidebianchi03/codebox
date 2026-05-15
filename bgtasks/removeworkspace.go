@@ -58,7 +58,7 @@ func RemoveWorkspace(workspace models.Workspace, skipErrors bool) error {
 			starting := true
 			logsIndex := 0
 			for starting {
-				details, err := ri.GetDetails(&workspace)
+				details, err := ri.GetWorkspaceDetails(&workspace)
 				if err != nil {
 					workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 					if skipErrors {
@@ -76,7 +76,7 @@ func RemoveWorkspace(workspace models.Workspace, skipErrors bool) error {
 					starting = false
 				}
 
-				logs, err := ri.GetLogs(&workspace)
+				logs, err := ri.GetWorkspaceLogs(&workspace)
 				if err == nil {
 					if len(logs) > logsIndex {
 						logs = logs[logsIndex:]
@@ -88,7 +88,7 @@ func RemoveWorkspace(workspace models.Workspace, skipErrors bool) error {
 			}
 		}
 
-		details, err := ri.GetDetails(&workspace)
+		details, err := ri.GetWorkspaceDetails(&workspace)
 		if err != nil {
 			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 			if !skipErrors {

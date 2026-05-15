@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/httpserver/api/users/serializers"
 )
 
 // get the current user from the request context
@@ -21,7 +22,7 @@ func GetUserFromContext(ctx *gin.Context) (models.User, error) {
 
 // GetTokenFromContext retrieves the token from the context
 func ErrorResponse(ctx *gin.Context, status int, message string) {
-	ctx.JSON(status, gin.H{
-		"detail": message,
+	ctx.JSON(status, serializers.ErrorSerializer{
+		Detail: message,
 	})
 }
