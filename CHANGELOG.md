@@ -2,6 +2,12 @@
 
 All changes will be reported in this file
 
+## [Unreleased]
+
+## Added
+- Added APIs to manage files in containers
+- Added task to restart a running workspace
+
 ## [v0.0.57] - 2026-03-29
 
 ### Added
