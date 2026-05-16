@@ -43,6 +43,7 @@ func HandleRunnerRequestPort(c *gin.Context) {
 
 	assignedPort := 0
 	lock.Lock()
+	defer lock.Unlock()
 
 	for i := minPort; i < maxPort; i++ {
 		var count int64
@@ -81,7 +82,6 @@ func HandleRunnerRequestPort(c *gin.Context) {
 			"no free ports available",
 		)
 	}
-	lock.Unlock()
 }
 
 // RunenrConnect godoc
