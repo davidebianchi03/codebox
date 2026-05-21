@@ -2,7 +2,7 @@
 
 All changes will be reported in this file
 
-## [Unreleased]
+## [v0.0.58] - 2026-05-21
 
 ## Added
 - Added APIs to manage files in containers

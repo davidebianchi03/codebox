@@ -18,9 +18,6 @@
   <br>
 </div>
 
-> [!WARNING]  
-> This software is in beta version, some important changes can be made.
-
 Codebox is a self-hosted distributed provider of remote development environments.
 
 **What does that mean?** With Codebox you can define the resources and the structure of a workspace using standard formats like Docker Compose or Devcontainers. Moreover it provides connection to the workspaces through an SSH connection and the possibility to expose to everyone or with restrictions HTTP services running inside the containers.
