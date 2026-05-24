@@ -12,6 +12,7 @@ import (
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/git"
+	"gitlab.com/codebox4073715/codebox/httpserver/notifications"
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
@@ -28,6 +29,8 @@ func (jobContext *Context) StartWorkspaceTask(job *work.Job) error {
 		return nil
 	}
 	defer dbconn.DB.Save(&workspace)
+
+	notifications.SendWorkspaceStartNotification(*workspace)
 	StartWorkspace(workspace)
 	return nil
 }

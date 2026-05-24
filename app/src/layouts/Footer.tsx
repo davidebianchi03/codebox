@@ -23,7 +23,15 @@ export function Footer() {
                             <ul className="list-inline list-inline-dots mb-0">
                                 <li className="list-inline-item">
                                     Copyright &copy; {new Date().getFullYear()} &nbsp;
-                                    <a href="https://github.com/davidebianchi03/codebox/" className="link-secondary">Codebox</a>. All rights reserved.
+                                    <a
+                                        href="https://github.com/davidebianchi03/codebox/"
+                                        className="link-secondary"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        Codebox
+                                    </a>.
+                                    All rights reserved.
                                 </li>
                                 {/* <li className="list-inline-item">
                                     <a href="./changelog.html" className="link-secondary" rel="noopener"> v1.4.0 </a>

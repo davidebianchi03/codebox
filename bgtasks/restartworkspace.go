@@ -6,6 +6,7 @@ import (
 	"github.com/gocraft/work"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/httpserver/notifications"
 )
 
 /*
@@ -24,6 +25,8 @@ func (jobContext *Context) RestartWorkspaceTask(job *work.Job) error {
 		return nil
 	}
 	defer dbconn.DB.Save(&workspace)
+
+	notifications.SendWorkspaceRestartNotification(*workspace)
 
 	// First stop the workspace, skip errors during stop to proceed with restart
 	workspace.AppendLogs("Stopping workspace...")

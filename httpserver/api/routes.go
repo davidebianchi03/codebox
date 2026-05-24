@@ -17,6 +17,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/auth"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/cli"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/common"
+	"gitlab.com/codebox4073715/codebox/httpserver/api/users/notifications"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/runners"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/templates"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/workspaces"
@@ -232,7 +233,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				permissions.AuthenticationRequiredRoute(workspaces.WorkspaceContainerExecuteCommand),
 			)
 		}
-		v1.GET("/workspace-types", permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes))
+		v1.GET(
+			"/workspace-types",
+			permissions.AuthenticationRequiredRoute(workspaces.HandleListWorkspaceTypes),
+		)
 
 		templatesApis := v1.Group("/templates")
 		{
@@ -282,8 +286,14 @@ func V1ApiRoutes(router *gin.Engine) {
 
 		templatesByName := v1.Group("/templates-by-name")
 		{
-			templatesByName.GET("", permissions.AuthenticationRequiredRoute(templates.HandleListTemplates))
-			templatesByName.GET(":templateName", permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplateByName))
+			templatesByName.GET(
+				"",
+				permissions.AuthenticationRequiredRoute(templates.HandleListTemplates),
+			)
+			templatesByName.GET(
+				":templateName",
+				permissions.AuthenticationRequiredRoute(templates.HandleRetrieveTemplateByName),
+			)
 		}
 
 		// runners related apis
@@ -305,7 +315,19 @@ func V1ApiRoutes(router *gin.Engine) {
 			cli.HandleDownloadCLI,
 		)
 
-		v1.POST("stop-impersonation", permissions.AuthenticationRequiredRoute(auth.HandleStopImpersonation))
+		// impersonation related apis
+		v1.POST(
+			"stop-impersonation",
+			permissions.AuthenticationRequiredRoute(auth.HandleStopImpersonation),
+		)
+
+		// notifications related apis
+		v1.Any(
+			"notifications",
+			permissions.AuthenticationRequiredRoute(
+				notifications.HandleWorkspaceNotifications,
+			),
+		)
 
 		// admin routes
 		adminApis := v1.Group("/admin")
