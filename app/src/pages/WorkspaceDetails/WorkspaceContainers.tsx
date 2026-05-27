@@ -44,10 +44,15 @@ export default function WorkspaceContainers({
 
   useEffect(() => {
     FetchContainers();
-    const interval = setInterval(FetchContainers, fetchInterval);
-    return () => {
-      clearInterval(interval);
-    };
+  }, [FetchContainers]);
+
+  useEffect(() => {
+    if (fetchInterval > 0) {
+      const interval = setInterval(FetchContainers, fetchInterval);
+      return () => {
+        clearInterval(interval);
+      };
+    }
   }, [FetchContainers, fetchInterval]);
 
   return (

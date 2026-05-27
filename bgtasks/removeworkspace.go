@@ -9,6 +9,7 @@ import (
 	"github.com/gocraft/work"
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
+	"gitlab.com/codebox4073715/codebox/httpserver/notifications"
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
@@ -31,6 +32,7 @@ func (jobContext *Context) DeleteWorkspaceTask(job *work.Job) error {
 		return nil
 	}
 
+	notifications.SendWorkspaceStopNotification(*workspace)
 	RemoveWorkspace(*workspace, skipErrors)
 	return nil
 }

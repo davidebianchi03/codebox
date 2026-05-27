@@ -107,5 +107,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 		dbconn.DB.Unscoped().Delete(&container)
 	}
 
+	notifications.SendWorkspaceStoppedNotification(*workspace)
+
 	return nil
 }

@@ -19,13 +19,20 @@ const NotificationTypeWorkspace = "workspace"
 const NotificationEventStart = "start"
 const NotificationEventStop = "stop"
 const NotificationEventRestart = "restart"
+const NotificationEventRunning = "running"
+const NotificationEventStopped = "stopped"
+
+type ClientChannel struct {
+	UserID int
+	Ch     chan NotificationMessage
+}
 
 type WorkspaceNotificationsHub struct {
-	channels []chan NotificationMessage
+	mu       sync.RWMutex
+	channels map[chan NotificationMessage]*ClientChannel
 }
 
 var singletonLock = &sync.Mutex{}
-var operationLock = &sync.Mutex{}
 var workspaceNotificationsHub *WorkspaceNotificationsHub
 
 /*
@@ -37,7 +44,7 @@ func GetWorkspaceNotificationsHub() *WorkspaceNotificationsHub {
 		defer singletonLock.Unlock()
 		if workspaceNotificationsHub == nil {
 			workspaceNotificationsHub = &WorkspaceNotificationsHub{
-				channels: make([]chan NotificationMessage, 0),
+				channels: make(map[chan NotificationMessage]*ClientChannel),
 			}
 		}
 	}
@@ -46,19 +53,24 @@ func GetWorkspaceNotificationsHub() *WorkspaceNotificationsHub {
 }
 
 /*
-add notification to queue
+add notification to queue - optimized to only send to affected users
 */
 func (q *WorkspaceNotificationsHub) SendNotification(
 	notification NotificationMessage,
 ) {
-	operationLock.Lock()
-	defer operationLock.Unlock()
+	q.mu.RLock()
+	defer q.mu.RUnlock()
 
-	for _, ch := range q.channels {
-		select {
-		case ch <- notification:
-		default:
-			// client is too slow
+	// Only send to clients of the workspace owner
+	targetUserID := notification.Workspace.UserID
+
+	for _, client := range q.channels {
+		if uint(client.UserID) == targetUserID {
+			select {
+			case client.Ch <- notification:
+			default:
+				// client is too slow, drop notification to prevent blocking
+			}
 		}
 	}
 }
@@ -67,12 +79,16 @@ func (q *WorkspaceNotificationsHub) SendNotification(
 get channel to listen for notifications, this is used by the websocket handler
 to send notifications to the client
 */
-func (q *WorkspaceNotificationsHub) GetChannel() chan NotificationMessage {
-	operationLock.Lock()
-	defer operationLock.Unlock()
+func (q *WorkspaceNotificationsHub) GetChannel(userID int) chan NotificationMessage {
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
-	ch := make(chan NotificationMessage, 100)
-	q.channels = append(q.channels, ch)
+	// Use buffered channel with smaller buffer to prevent slowloris
+	ch := make(chan NotificationMessage, 32)
+	q.channels[ch] = &ClientChannel{
+		UserID: userID,
+		Ch:     ch,
+	}
 	return ch
 }
 
@@ -81,15 +97,12 @@ remove channel from hub, this is used when the websocket connection is closed
 to stop sending notifications to the client
 */
 func (q *WorkspaceNotificationsHub) RemoveChannel(ch chan NotificationMessage) {
-	operationLock.Lock()
-	defer operationLock.Unlock()
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
-	for i, c := range q.channels {
-		if c == ch {
-			q.channels = append(q.channels[:i], q.channels[i+1:]...)
-			close(ch)
-			break
-		}
+	if _, exists := q.channels[ch]; exists {
+		delete(q.channels, ch)
+		close(ch)
 	}
 }
 
@@ -127,6 +140,32 @@ func SendWorkspaceRestartNotification(workspace models.Workspace) {
 	notification := NotificationMessage{
 		Type:      NotificationTypeWorkspace,
 		Event:     NotificationEventRestart,
+		Workspace: &workspace,
+	}
+	hub.SendNotification(notification)
+}
+
+/*
+send notification for workspace running
+*/
+func SendWorkspaceRunningNotification(workspace models.Workspace) {
+	hub := GetWorkspaceNotificationsHub()
+	notification := NotificationMessage{
+		Type:      NotificationTypeWorkspace,
+		Event:     NotificationEventRunning,
+		Workspace: &workspace,
+	}
+	hub.SendNotification(notification)
+}
+
+/*
+send notification for workspace stopped
+*/
+func SendWorkspaceStoppedNotification(workspace models.Workspace) {
+	hub := GetWorkspaceNotificationsHub()
+	notification := NotificationMessage{
+		Type:      NotificationTypeWorkspace,
+		Event:     NotificationEventStopped,
 		Workspace: &workspace,
 	}
 	hub.SendNotification(notification)

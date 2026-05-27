@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { Workspace } from "../../types/workspace";
+import { CodeboxNotification } from "../../types/notifications";
 import { Button, Col, Container, Row } from "reactstrap";
 import WorkspaceLogs from "./WorkspaceLogs";
 import WorkspaceContainers from "./WorkspaceContainers";
@@ -14,13 +15,14 @@ import { APIRetrieveTemplateById, APIRetrieveTemplateLatestVersion } from "../..
 import { WorkspaceTemplate } from "../../types/templates";
 import { WorkspaceSelectRunnerModal } from "./WorkspaceSelectRunnerModal";
 import { WorkspaceStatusDropdown } from "./WorkspaceStatusDropdown";
+import { useNotifications } from "../../hooks/useNotifications";
 
 export default function WorkspaceDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [workspace, setWorkspace] = useState<Workspace>();
   const [workspaceTemplate, setWorkspaceTemplate] = useState<WorkspaceTemplate | null>(null);
-  const [fetchInterval, setFetchInterval] = useState(10000);
+  const [fetchInterval, setFetchInterval] = useState(-1);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [canUpdateConfigFiles, setCanUpdateConfigFiles] = useState<boolean>(false);
   const [showSelectRunnerModal, setShowSelectRunnerModal] = useState<boolean>(false);
@@ -116,6 +118,16 @@ export default function WorkspaceDetails() {
     }
   }, [workspace]);
 
+  const handleNotification = useCallback((n: CodeboxNotification) => {
+    if (n.type === "workspace" && n.workspace?.id === workspace?.id) {
+      FetchWorkspace();
+    }
+  }, [workspace?.id, FetchWorkspace]);
+
+  useNotifications({
+    onNotification: handleNotification
+  });
+
   useEffect(() => {
     if (
       workspace?.status === "creating" ||
@@ -125,23 +137,31 @@ export default function WorkspaceDetails() {
     ) {
       setFetchInterval(800);
     } else {
-      setFetchInterval(10000);
-    }
-
-    if (workspace?.config_source === "git") {
-      setCanUpdateConfigFiles(true);
-    } else {
-      CheckNewTemplateVersionAvailable();
+      setFetchInterval(-1);
+      if (workspace?.config_source === "git") {
+        setCanUpdateConfigFiles(true);
+      } else {
+        CheckNewTemplateVersionAvailable();
+      }
     }
   }, [CheckNewTemplateVersionAvailable, workspace]);
 
   useEffect(() => {
-    FetchWorkspace();
-    const interval = setInterval(FetchWorkspace, fetchInterval);
+    let interval: NodeJS.Timeout | null = null;
+    if (fetchInterval > 0) {
+      interval = setInterval(FetchWorkspace, fetchInterval);
+    }
+
     return () => {
-      clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, [FetchWorkspace, fetchInterval]);
+
+  useEffect(() => {
+    FetchWorkspace();
+  }, [FetchWorkspace]);
 
   useEffect(() => {
     FetchWorkspaceTemplate();

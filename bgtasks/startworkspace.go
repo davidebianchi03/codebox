@@ -194,5 +194,10 @@ func StartWorkspace(workspace *models.Workspace) error {
 	}
 
 	workspace.Status = details.Status
+
+	if workspace.Status == models.WorkspaceStatusRunning {
+		notifications.SendWorkspaceRunningNotification(*workspace)
+	}
+
 	return nil
 }

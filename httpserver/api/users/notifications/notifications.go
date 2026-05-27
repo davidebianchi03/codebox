@@ -61,38 +61,34 @@ func HandleWorkspaceNotifications(c *gin.Context) {
 	}
 	defer wsConn.Close()
 
+	// Set read/write deadlines to prevent slowloris attacks
+	wsConn.SetReadDeadline(time.Now().Add(90 * time.Second))
+	wsConn.SetPongHandler(func(string) error {
+		wsConn.SetReadDeadline(time.Now().Add(90 * time.Second))
+		return nil
+	})
+
 	hub := notifications.GetWorkspaceNotificationsHub()
-	channel := hub.GetChannel()
+	channel := hub.GetChannel(int(currentUser.ID))
 	defer hub.RemoveChannel(channel)
 
 	pingTicker := time.NewTicker(30 * time.Second)
 	defer pingTicker.Stop()
 
 	for {
-		// send ping message to keep the connection alive
 		select {
 		case <-pingTicker.C:
 			if err := wsConn.WriteMessage(
 				websocket.PingMessage,
-				[]byte("ping")); err != nil {
+				[]byte{}); err != nil {
 				return
 			}
-		default:
-			// no ping to send
-		}
-
-		select {
 		case notification := <-channel:
-			// only send notifications related to the user's workspaces
-			if notification.Workspace.UserID == currentUser.ID {
-				if err := wsConn.WriteJSON(
-					serializers.LoadNotificationMessageSerializer(notification),
-				); err != nil {
-					return
-				}
+			if err := wsConn.WriteJSON(
+				serializers.LoadNotificationMessageSerializer(notification),
+			); err != nil {
+				return
 			}
-		default:
-			// no notifications to send
 		}
 	}
 }

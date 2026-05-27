@@ -26,14 +26,19 @@ export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
         }
       }
     }
-  }, [workspace, logs.length]);
+  }, [workspace.id, logs.length]);
 
   useEffect(() => {
     FetchLogs();
-    const interval = setInterval(FetchLogs, fetchInterval);
-    return () => {
-      clearInterval(interval);
-    };
+  }, [FetchLogs]);
+
+  useEffect(() => {
+    if (fetchInterval > 0) {
+      const interval = setInterval(FetchLogs, fetchInterval);
+      return () => {
+        clearInterval(interval);
+      };
+    }
   }, [FetchLogs, fetchInterval]);
 
   return (
