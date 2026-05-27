@@ -323,7 +323,7 @@ func V1ApiRoutes(router *gin.Engine) {
 
 		// notifications related apis
 		v1.Any(
-			"notifications",
+			"/notifications",
 			permissions.AuthenticationRequiredRoute(
 				notifications.HandleWorkspaceNotifications,
 			),
