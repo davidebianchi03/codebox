@@ -54,8 +54,8 @@ func validateEnvVars(e *EnvVars) error {
 		if err != nil {
 			return fmt.Errorf("CODEBOX_EXTERNAL_URL is not a valid URL: %w", err)
 		}
-		if parsedURL.Scheme != "https" {
-			return fmt.Errorf("CODEBOX_EXTERNAL_URL must use HTTPS scheme, got: %s", parsedURL.Scheme)
+		if parsedURL.Scheme != "https" && parsedURL.Scheme != "http" {
+			return fmt.Errorf("CODEBOX_EXTERNAL_URL must use HTTPS or HTTP scheme, got: %s", parsedURL.Scheme)
 		}
 	}
 
