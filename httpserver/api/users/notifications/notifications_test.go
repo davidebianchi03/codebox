@@ -2,6 +2,7 @@ package notifications_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -57,10 +58,23 @@ func TestWorkspaceNotifications(t *testing.T) {
 
 		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/api/v1/notifications"
 
+		fmt.Printf("Connecting to WebSocket at: %s\n", wsURL)
+
 		header := http.Header{}
 		header.Set("Authorization", "Bearer "+token.Token)
 
-		wsConn, _, err := websocket.DefaultDialer.Dial(wsURL, header)
+		wsConn, res, err := websocket.DefaultDialer.Dial(wsURL, header)
+
+		if err != nil {
+			fmt.Printf("Failed to connect to WebSocket: %s\n", err)
+			if res != nil {
+				fmt.Printf("HTTP response status: %d\n", res.StatusCode)
+				body := make([]byte, 1024)
+				n, _ := res.Body.Read(body)
+				fmt.Printf("HTTP response body: %s\n", string(body[:n]))
+			}
+		}
+
 		assert.NoError(t, err)
 		defer wsConn.Close()
 
