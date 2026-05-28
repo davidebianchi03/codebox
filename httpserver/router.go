@@ -20,7 +20,9 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	// middlewares
-	r.Use(middleware.PortForwardingMiddleware)
+	if config.Environment.UseSubDomains {
+		r.Use(middleware.PortForwardingMiddleware)
+	}
 	r.Use(middleware.CORSMiddleware)
 
 	// apis
