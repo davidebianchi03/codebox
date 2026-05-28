@@ -82,7 +82,7 @@
             "webRoot": "${workspaceFolder}/app"
         },
         {
-            "name": "Go: Run tests in this file",
+            "name": "Run tests in this module",
             "type": "go",
             "request": "launch",
             "mode": "test",
