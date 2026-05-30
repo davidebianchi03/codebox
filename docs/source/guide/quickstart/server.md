@@ -4,7 +4,15 @@ This document describes the procedure for deploying a self-hosted instance of Co
 
 ## Deploy the Server
 
-The recommended deployment method is to use the Docker stack defined in the `docker-compose.yml` file provided in the Codebox repository.
+The easiest way to deploy your Codebox instance is using the automated setup script. The script will handle the installation and configuration for you.
+
+The installer will guide you through the setup process, including configuring the required settings.
+
+```bash
+curl --output codebox-installer.sh "https://gitlab.com/api/v4/projects/68940432/packages/generic/codebox-installer/<version>/codebox-installer.sh"
+chmod +x codebox-installer.sh
+./codebox-installer.sh
+```
 
 ```{warning}
 Docker and Docker Compose are required. Ensure they are installed and available in your system PATH before continuing.
@@ -13,18 +21,12 @@ Docker and Docker Compose are required. Ensure they are installed and available 
 To deploy Codebox, first download the `docker-compose.yml` file:
 
 ```bash
-wget [https://gitlab.com/api/v4/projects/68940432/repository/files/docker-compose.yml/raw?ref=master](https://gitlab.com/api/v4/projects/68940432/repository/files/docker-compose.yml/raw?ref=master) -O docker-compose.yml
-```
-
-Alternatively, use `curl`:
-
-```bash
 curl --output docker-compose.yml "[https://gitlab.com/api/v4/projects/68940432/repository/files/docker-compose.yml/raw?ref=master](https://gitlab.com/api/v4/projects/68940432/repository/files/docker-compose.yml/raw?ref=master)"
 ```
 
-### Required Environment Variables
+### Settings
 
-The Docker stack requires the following environment variables in order to start correctly:
+The Docker stack requires some configuration before it can start correctly. If you're using the setup script, configure the required settings in the .env (e.g. /etc/codebox/codebox.env) file. Otherwise, when deploying the Docker stack directly, provide them as stack environment variables.
 
 * `CODEBOX_EXTERNAL_URL`: The externally accessible URL of the Codebox instance (for example, `https://codebox.my-domain.com`).
 * `CODEBOX_WILDCARD_DOMAIN`: Codebox supports exposing HTTP-based services through dynamically generated subdomains. This value defines the wildcard domain used for this purpose. A DNS record such as `*.codebox.my-domain.com` must be configured and point to the Codebox host.

@@ -22,30 +22,23 @@ Codebox is a self-hosted distributed provider of remote development environments
 
 **What does that mean?** With Codebox you can define the resources and the structure of a workspace using standard formats like Docker Compose or Devcontainers. Moreover it provides connection to the workspaces through an SSH connection and the possibility to expose to everyone or with restrictions HTTP services running inside the containers.
 
-<!-- <div align="center">
-  <img src="./docs/preview.png" style="max-width: 550px">
-  <br>
-</div> -->
-
-
 ## Quickstart
 
-The easiest way to deploy your Codebox instance is using the [docker compose](./docker-compose.yml) provided in this repository.
+The easiest way to deploy your Codebox instance is using the automated setup script. The script will handle the installation and configuration for you.
 
 ```bash
-curl --output docker-compose.yml "https://gitlab.com/api/v4/projects/68940432/repository/files/docker-compose.yml/raw?ref=master"
+curl --output codebox-installer.sh "https://gitlab.com/api/v4/projects/68940432/packages/generic/codebox-installer/<version>/codebox-installer.sh"
+chmod +x codebox-installer.sh
+./codebox-installer.sh
 ```
 
-You have to export some environment variables before starting docker containers:
-- `CODEBOX_EXTERNAL_URL`: the url of the codebox instance
-- `CODEBOX_WILDCARD_DOMAIN`: codebox allows you to expose ports running HTTP-based services either public or with password authentication. The ports will be exposed through subdomains of this domain. You will need to define a DNS record with a name such as *.codebox.my-domain.com. If you don't want do use this feature you can disable it using `CODEBOX_USE_SUBDOMAINS` environment variable.
+The installer will guide you through the setup process, including configuring the required settings.
 
 A list of all the settings is available [here](https://codebox4073715.gitlab.io/codebox/guide/server/configuration.html).
 
-Now you can start the docker stack with command:
-```bash
-docker compose up
-```
+> [!warning]
+> To start codebox you have to install docker before.
+
 
 ## How does codebox work?
 
