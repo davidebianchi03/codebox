@@ -15,14 +15,12 @@ release:
       fi
 
     # set tag variable in quick setup script
-    - sed -i "s/{{ version }}/$CI_COMMIT_TAG/g" ./scripts/codebox-quick-setup.sh
+    - sed -i "s/{{ version }}/$CI_COMMIT_TAG/g" ./scripts/codebox-installer.sh
 
     # upload quick setup script to gitlab artifact registry
-    - mkdir -p artifacts
-    - mv ./scripts/codebox-quick-setup.sh ./artifacts/codebox-quick-setup.sh
     - echo "Uploading quick setup script to GitLab artifact registry..."
     - |
-      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file ./artifacts/codebox-quick-setup.sh "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/codebox-quick-setup/$CI_COMMIT_TAG/codebox-quick-setup.sh"
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file ./scripts/codebox-installer.sh "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/codebox-installer/$CI_COMMIT_TAG/codebox-installer.sh"
 
     # generate release body
     - |

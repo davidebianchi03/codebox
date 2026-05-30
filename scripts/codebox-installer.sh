@@ -192,8 +192,9 @@ fi
 # start command
 if [ $command == "start" ]; then
     if [ ! -f "$env_file_path" ]; then
-        echo "Config file does not exist at $env_file_path. Please run the setup command first to create the config file."
-        exit 1
+        create_env_file "$env_file_path"
+
+        echo "Config file created successfully at $env_file_path. Edit this file to customize your Codebox instance and run the start command to start the stack."
     fi
 
     if is_stack_running "$stack_name"; then
