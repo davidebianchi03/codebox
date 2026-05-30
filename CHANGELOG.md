@@ -2,7 +2,7 @@
 
 All changes will be reported in this file
 
-## [Unreleased]
+## [v0.0.59] - 2026-05-30
 
 ## Added
 - Added real-time notification system to provide notifications about changing workspace status
