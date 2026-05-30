@@ -11,8 +11,10 @@ The installer will guide you through the setup process, including configuring th
 ```bash
 curl --output codebox-installer.sh "https://gitlab.com/api/v4/projects/68940432/packages/generic/codebox-installer/{version}/codebox-installer.sh"
 chmod +x codebox-installer.sh
-./codebox-installer.sh
+sudo ./codebox-installer.sh
 ```
+
+To upgrade the service, use the same commands used for installation.
 
 ```{warning}
 Docker and Docker Compose are required. Ensure they are installed and available in your system PATH before continuing.

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 version_tag="{{ version }}"
 
 print_logo() {
@@ -55,12 +57,15 @@ check_docker() {
     # check if Docker is installed
     if ! command -v docker &> /dev/null; then
         echo "Docker is not installed. Please install Docker and try again."
+        echo "For installation instructions, visit: https://docs.docker.com/get-docker/"
         exit 1
     fi
+}
 
-    # check if user can run Docker without sudo
-    if ! docker info &> /dev/null; then
-        echo "You do not have permission to run Docker commands. Please add your user to the docker group or run this script with sudo."
+# checks if user is a superuser
+check_superuser() {
+    if [ "$EUID" -ne 0 ]; then
+        echo "Please run this script as root or with sudo."
         exit 1
     fi
 }
@@ -158,9 +163,10 @@ print_help() {
 
 # sequentially execute the setup steps
 print_logo
+check_superuser
 check_docker
 
-if [ "$version_tag" = "{{ version }}" ]; then
+if [[ "$version_tag" == *version* ]]; then
     read -p "Enter the version tag of Codebox to install (e.g. v0.0.58): " version_tag
 fi
 
@@ -229,6 +235,7 @@ if [ $command == "start" ]; then
     docker compose -p "$stack_name" -f "$temp_dir/docker-compose.yml" up -d
 
     echo "Stack $stack_name started successfully!"
+    exit 0
 fi
 
 # stop command
@@ -241,6 +248,7 @@ if [ $command == "stop" ]; then
     stop_stack "$stack_name"
 
     echo "Stack $stack_name stopped successfully!"
+    exit 0
 fi
 
 # help command
