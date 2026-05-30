@@ -1,9 +1,14 @@
-version: '3'
+version: '3.8'
 
 services:
   redis:
     image: redis:7.4.1
-    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
 
   db:
     image: mysql:8.0.41
@@ -13,17 +18,20 @@ services:
       MYSQL_USER: ${CODEBOX_DB_USER:-codebox}
       MYSQL_PASSWORD: ${CODEBOX_DB_PASSWORD:-password}
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
+      start_period: 30s
     volumes:
       - codeboxdb:/var/lib/mysql
-    restart: always
+    restart: unless-stopped
 
   codebox:
     image: dadebia/codebox:${CODEBOX_VERSION:-latest}
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - ${CODEBOX_PORT:-12800}:8000
@@ -37,7 +45,12 @@ services:
       - CODEBOX_DB_NAME=${CODEBOX_DB_NAME:-codebox}
       - CODEBOX_DB_USER=${CODEBOX_DB_USER:-codebox}
       - CODEBOX_DB_PASSWORD=${CODEBOX_DB_PASSWORD:-password}
-    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health" ]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
 volumes:
   codeboxdb:
