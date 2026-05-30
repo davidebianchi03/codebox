@@ -18,7 +18,7 @@ Here’s where Codebox’s architecture becomes flexible. Workspaces are not man
 
 Runners must be able to reach the main server, but not the vice versa. In this way you can register runners from multiple locations without opening ports on routers.
 
-#### 3. Agents running inside containers
+### 3. Agents running inside containers
 
 Agents are running inside workspaces, they provide the connections to the containers. They have an integrated SSH server. The SSH connection is tunneled over Web Sockets, in this way you don’t need to open other ports on your router.
 

@@ -24,21 +24,7 @@ Codebox is a self-hosted distributed provider of remote development environments
 
 ## Quickstart
 
-The easiest way to deploy your Codebox instance is using the automated setup script. The script will handle the installation and configuration for you.
-
-```bash
-curl --output codebox-installer.sh "https://gitlab.com/api/v4/projects/68940432/packages/generic/codebox-installer/<version>/codebox-installer.sh"
-chmod +x codebox-installer.sh
-./codebox-installer.sh
-```
-
-The installer will guide you through the setup process, including configuring the required settings.
-
-A list of all the settings is available [here](https://codebox4073715.gitlab.io/codebox/guide/server/configuration.html).
-
-> [!warning]
-> To start codebox you have to install docker before.
-
+For complete installation and configuration instructions, please refer to the [Deployment Guide](https://codebox4073715.gitlab.io/codebox/guide/quickstart/server.html) in the documentation.
 
 ## How does codebox work?
 
