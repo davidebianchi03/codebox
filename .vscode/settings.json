@@ -1,6 +1,7 @@
 {
     "go.testEnvVars": {
         "CODEBOX_ENV_FILE": "${workspaceFolder}/codebox.env",
-        "CODEBOX_TEMPLATES_FOLDER": "${workspaceFolder}/templates"
+        "CODEBOX_TEMPLATES_FOLDER": "${workspaceFolder}/templates",
+        "CODEBOX_CLI_BINARIES_PATH": "${workspaceFolder}"
     }
 }

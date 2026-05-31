@@ -53,7 +53,6 @@ type EnvVars struct {
 }
 
 var Environment *EnvVars
-var SkipPathValidation = false
 
 func (e *EnvVars) ValidateExternalUrl() error {
 	if e.ExternalUrl != "" {
@@ -116,10 +115,6 @@ func (e *EnvVars) ValidateCliBinariesPath() error {
 		return errors.New("CODEBOX_CLI_BINARIES_PATH cannot be empty")
 	}
 
-	if SkipPathValidation {
-		return nil
-	}
-
 	info, err := os.Stat(e.CliBinariesPath)
 	if err != nil {
 		return fmt.Errorf("invalid value for CODEBOX_CLI_BINARIES_PATH %s", err.Error())
@@ -135,10 +130,6 @@ func (e *EnvVars) ValidateCliBinariesPath() error {
 func (e *EnvVars) ValidateTemplatesFolder() error {
 	if e.TemplatesFolder == "" {
 		return errors.New("CODEBOX_TEMPLATES_FOLDER cannot be empty")
-	}
-
-	if SkipPathValidation {
-		return nil
 	}
 
 	info, err := os.Stat(e.TemplatesFolder)
