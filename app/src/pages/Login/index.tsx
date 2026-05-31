@@ -163,7 +163,7 @@ export default function LoginPage() {
               checked={form.rememberMe}
               onChange={(e) => updateField("rememberMe", e.target.checked)}
             />
-            <Form.Label for="remember_me" className="mt-2 ms-2" style={{ userSelect: "none" }}>
+            <Form.Label htmlFor="remember_me" className="mt-2 ms-2" style={{ userSelect: "none" }}>
               Remember me
             </Form.Label>
           </Form.Group>

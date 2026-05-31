@@ -7,6 +7,7 @@ import (
 
 	"gitlab.com/codebox4073715/codebox/bgtasks"
 	"gitlab.com/codebox4073715/codebox/config"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/httpserver"
 )
 
@@ -15,12 +16,24 @@ Handle command to start codebox http server
 Returns an error if something fails
 */
 func HandleRunServer() uint {
+	// load config from env vars
+	err := config.InitCodeBoxEnv()
+	if err != nil {
+		log.Fatalf("Failed to load server configuration from environment: '%s'\n", err)
+		return 1
+	}
+
+	// init db connection
+	if err = dbconn.ConnectDB(); err != nil {
+		log.Fatalf("Cannot init connection with DB: '%s'\n", err)
+		return 1
+	}
+
 	// init bg tasks
-	err := bgtasks.InitBgTasks(
+	if err := bgtasks.InitBgTasks(
 		uint(config.Environment.TasksConcurrency),
 		"",
-	)
-	if err != nil {
+	); err != nil {
 		log.Println("Cannot start background tasks")
 		return 1
 	}

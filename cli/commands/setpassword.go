@@ -2,7 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"log"
 
+	"gitlab.com/codebox4073715/codebox/config"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 )
 
@@ -11,6 +14,19 @@ Handle command to reset the password for a user
 This is an interactive command
 */
 func HandleSetPassword() uint {
+	// load config from env vars
+	err := config.InitCodeBoxEnv()
+	if err != nil {
+		log.Fatalf("Failed to load server configuration from environment: '%s'\n", err)
+		return 1
+	}
+
+	// init db connection
+	if err = dbconn.ConnectDB(); err != nil {
+		log.Fatalf("Cannot init connection with DB: '%s'\n", err)
+		return 1
+	}
+
 	terminal := PrepareTerminal()
 	fmt.Print("Enter email: ")
 	email, err := terminal.ReadLine()

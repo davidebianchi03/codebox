@@ -23,7 +23,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                                 checked={validation.values.signUpOpen}
                                 onChange={validation.handleChange}
                             />
-                            <Label for="signUpOpen" className="ms-3">
+                            <Label htmlFor="signUpOpen" className="ms-3">
                                 Sign Up Open
                             </Label>
                         </div>
@@ -46,7 +46,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                                 onChange={validation.handleChange}
                                 disabled={!validation.values.signUpOpen}
                             />
-                            <Label for="usersMustBeApproved" className="ms-3">
+                            <Label htmlFor="usersMustBeApproved" className="ms-3">
                                 Users must be approved
                             </Label>
                         </div>
@@ -58,7 +58,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                         </p>
                     </FormGroup>
                     <FormGroup>
-                        <Label for="autoApprovedUsersRegex">
+                        <Label htmlFor="autoApprovedUsersRegex">
                             Auto Approved Email Regex
                         </Label>
                         <Input
@@ -90,7 +90,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                                 onChange={validation.handleChange}
                                 disabled={!validation.values.signUpOpen}
                             />
-                            <Label for="signUpRestricted" className="ms-3">
+                            <Label htmlFor="signUpRestricted" className="ms-3">
                                 Sign Up Restricted
                             </Label>
                         </div>
@@ -102,7 +102,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                         </p>
                     </FormGroup>
                     <FormGroup>
-                        <Label for="allowedEmailRegex">
+                        <Label htmlFor="allowedEmailRegex">
                             Allowed Email Addresses Regex
                         </Label>
                         <Input
@@ -124,7 +124,7 @@ export function SignSignUpCard({ validation }: SignSignUpCardProps) {
                         </p>
                     </FormGroup>
                     <FormGroup>
-                        <Label for="blacklistedEmailRegex">
+                        <Label htmlFor="blacklistedEmailRegex">
                             Blacklisted Email Addresses Regex
                         </Label>
                         <Input

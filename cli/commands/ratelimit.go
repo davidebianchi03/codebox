@@ -2,14 +2,30 @@ package commands
 
 import (
 	"fmt"
+	"log"
 
 	"gitlab.com/codebox4073715/codebox/cache"
+	"gitlab.com/codebox4073715/codebox/config"
+	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 )
 
 /*
 This function handles the command to reset ratelimits
 */
 func HandleResetRatelimits() uint {
+	// load config from env vars
+	err := config.InitCodeBoxEnv()
+	if err != nil {
+		log.Fatalf("Failed to load server configuration from environment: '%s'\n", err)
+		return 1
+	}
+
+	// init db connection
+	if err = dbconn.ConnectDB(); err != nil {
+		log.Fatalf("Cannot init connection with DB: '%s'\n", err)
+		return 1
+	}
+
 	// list ratelimit keys and remove them
 	fmt.Println("Listing ratelimit entries...")
 	ratelimitKeys, err := cache.GetKeysByPatternFromCache("ratelimit-*")

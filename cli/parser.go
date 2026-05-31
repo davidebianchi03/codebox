@@ -77,6 +77,11 @@ func ParseCLIArgs() (CLIArgs, error) {
 			Command: "verify-email",
 			Args:    verifyEmailArgs,
 		}, nil
+	case "check-env":
+		return CLIArgs{
+			Command: "check-env",
+			Args:    nil,
+		}, nil
 	default:
 		return CLIArgs{}, fmt.Errorf("Invalid command '%s'", os.Args[1])
 	}

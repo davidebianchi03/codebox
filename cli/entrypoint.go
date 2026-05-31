@@ -23,6 +23,8 @@ func RunCommand(a CLIArgs) uint {
 		return commands.HandleApproveUser(a.Args.(args.ApproveUserCmdArgs))
 	case "verify-email":
 		return commands.HandleVerifyEmail(a.Args.(args.VerifyEmailCmdArgs))
+	case "check-env":
+		return commands.HandleCheckEnv()
 	default:
 		fmt.Printf(
 			"Invalid command '%s'\n", os.Args[1],

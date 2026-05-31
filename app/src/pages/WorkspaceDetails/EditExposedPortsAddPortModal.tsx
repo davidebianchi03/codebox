@@ -158,7 +158,7 @@ export function EditExposedPortsAddPortModal({
                 checked={validation.values.public}
                 onChange={validation.handleChange}
               />
-              <Label className="ms-1" for="public">Is Public</Label>
+              <Label className="ms-1" htmlFor="public">Is Public</Label>
             </FormGroup>
             <div className="d-flex align-items-center justify-content-end">
               <Button
