@@ -24,6 +24,7 @@ unit_tests:
       - .go/cache
   script:
     - cp .gitlab/tests/codebox.test.env codebox.env
+    - mkdir -o bin/cli
     - go mod tidy
     - export GIN_MODE=release
     - export BASE_DIR=$(pwd)
