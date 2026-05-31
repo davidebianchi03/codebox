@@ -47,7 +47,7 @@ type EnvVars struct {
 	RedisPort int    `env:"CODEBOX_REDIS_PORT" envDefault:"6379"`
 	// email related settings
 	EmailSMTPHost     string `env:"CODEBOX_EMAIL_SMTP_HOST"`
-	EmailSMTPPort     int    `env:"CODEBOX_EMAIL_SMTP_PORT"`
+	EmailSMTPPort     int    `env:"CODEBOX_EMAIL_SMTP_PORT" envDefault:"0"`
 	EmailSMTPUser     string `env:"CODEBOX_EMAIL_SMTP_USER"`
 	EmailSMTPPassword string `env:"CODEBOX_EMAIL_SMTP_PASSWORD"`
 }
@@ -242,7 +242,7 @@ func (e *EnvVars) ValidateRedisPort() error {
 	return nil
 }
 func (e *EnvVars) ValidateEmailSMTPPort() error {
-	if e.EmailSMTPPort != -1 {
+	if e.EmailSMTPPort != 0 {
 		if e.EmailSMTPPort < 1 || e.EmailSMTPPort > 65535 {
 			return errors.New("CODEBOX_EMAIL_SMTP_PORT is not valid")
 		}
