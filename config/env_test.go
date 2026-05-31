@@ -804,14 +804,14 @@ func TestValidateEmailSMTPPort(t *testing.T) {
 			expectError:   false,
 		},
 		{
-			name:          "valid port -1 (not configured)",
+			name:          "invalid port",
 			emailSMTPPort: -1,
-			expectError:   false,
+			expectError:   true,
 		},
 		{
-			name:          "invalid port 0",
+			name:          "valid port 0 (not configured)",
 			emailSMTPPort: 0,
-			expectError:   true,
+			expectError:   false,
 		},
 		{
 			name:          "invalid port 65536",
