@@ -14,6 +14,8 @@ RUN chmod +x /codebox/runserver.sh && \
 
 EXPOSE 8000
 
+ENV CODEBOX_ENV_FILE=/codebox/bin/codebox.env
+
 WORKDIR /codebox
 
 VOLUME [ "/codebox/data" ]

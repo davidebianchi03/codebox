@@ -224,6 +224,13 @@ if [ $command == "start" ]; then
     export $(grep -v '^#' "$env_file_path" | xargs)
     export CODEBOX_VERSION="$version_tag"
 
+    # load env vars and pass to a docker container to check if they are valid
+    echo "Checking config file..."
+    if ! docker run --rm --env-file "$env_file_path" "dadebia/codebox:${version_tag}" /codebox/bin/codebox check-env; then
+        echo "Config file is invalid. Please fix the errors in the config file and run the start command again."
+        exit 1
+    fi
+
     # pull the images
     echo "Pulling Docker images..."
     docker compose -p "$stack_name" -f "$temp_dir/docker-compose.yml" pull
