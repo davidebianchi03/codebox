@@ -2,6 +2,14 @@
 
 All changes will be reported in this file
 
+## [v0.0.60] - 2026-06-01
+
+## Added
+- Added command to validate codebox config
+
+## Fixed
+- Fixed installer
+
 ## [v0.0.59] - 2026-05-30
 
 ## Added
