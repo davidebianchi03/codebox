@@ -137,7 +137,7 @@ export function ExposedPortsDropdown({
                     variant="accent"
                     className="d-flex align-items-center gap-2"
                 >
-                    Ports
+                    Exposed Ports
                     {containerExposedPorts.length > 0 && (
                         <span className="badge bg-light text-dark" style={{ fontSize: "0.7rem" }}>
                             {containerExposedPorts.length}

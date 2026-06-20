@@ -157,6 +157,19 @@ func (ri *RunnerInterface) GetWorkspaceDetails(workspace *models.Workspace) (res
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		if res.StatusCode == 520 {
+			decodedError := map[string]interface{}{}
+			body, err := io.ReadAll(res.Body)
+			err = json.Unmarshal(body, &decodedError)
+			if err != nil {
+				return RunnerWorkspaceStatusResponse{}, err
+			}
+
+			detail, ok := decodedError["detail"].(string)
+			if ok && detail != "" {
+				return RunnerWorkspaceStatusResponse{}, errors.New(detail)
+			}
+		}
 		return RunnerWorkspaceStatusResponse{}, fmt.Errorf("receivedstatus %d", res.StatusCode)
 	}
 

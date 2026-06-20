@@ -179,9 +179,19 @@ export default function WorkspaceDetails() {
           <p className="text-muted fs-6 fw-bolder mb-0 d-flex align-items-center">
             Config loaded from {workspace?.config_source === "git" ? "git repository" : "template"}&nbsp;
             {workspace?.config_source === "git" ? (
-              <small className="text-muted fs-6 fw-bolder badge bg-dark">
-                {workspace?.git_source?.repository_url}
-              </small>
+              <React.Fragment>
+                {workspace?.git_source?.repository_url.startsWith("http") ? (
+                  <a href={workspace.git_source?.repository_url} target="_blank" rel="noreferrer" className="text-decoration-none">
+                    <small className="text-muted fs-6 fw-bolder badge bg-dark">
+                      {workspace?.git_source?.repository_url}
+                    </small>
+                  </a>
+                ) : (
+                  <small className="text-muted fs-6 fw-bolder badge bg-dark">
+                    {workspace?.git_source?.repository_url}
+                  </small>
+                )}
+              </React.Fragment>
             ) : (
               workspaceTemplate && (
                 <Link to={`/templates/${workspaceTemplate.id}`} className="text-decoration-none">
