@@ -1,7 +1,6 @@
 package runners
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -13,6 +12,7 @@ import (
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
+	"gitlab.com/codebox4073715/codebox/logging"
 )
 
 var lock = &sync.Mutex{}
@@ -33,6 +33,15 @@ func HandleRunnerRequestPort(c *gin.Context) {
 			c,
 			http.StatusInternalServerError,
 			"internal server error",
+		)
+		return
+	}
+
+	if runner == nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"runner not found",
 		)
 		return
 	}
@@ -71,11 +80,21 @@ func HandleRunnerRequestPort(c *gin.Context) {
 		runner.Port = uint(assignedPort)
 		dbconn.DB.Save(&runner)
 
+		logging.Info(
+			"port %d has been assigned to runner %d",
+			runner.Port,
+			runner.ID,
+		)
+
 		c.JSON(http.StatusOK, gin.H{
 			"port": assignedPort,
 		})
 	} else {
-		log.Println("there are no free ports available")
+		logging.Error(
+			"cannot assign a port to runner %d, no free ports available",
+			runner.ID,
+		)
+
 		utils.ErrorResponse(
 			c,
 			http.StatusTeapot,
@@ -104,6 +123,15 @@ func HandleRunnerConnect(c *gin.Context) {
 		return
 	}
 
+	if runner == nil {
+		utils.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"runner not found",
+		)
+		return
+	}
+
 	// forward port using chisel
 	serverConfig := chserver.Config{
 		Reverse: true,
@@ -114,6 +142,12 @@ func HandleRunnerConnect(c *gin.Context) {
 	}
 	s, err := chserver.NewServer(&serverConfig)
 	if err != nil {
+		logging.Error(
+			"failed to setup port forwarding for runner %d, %s",
+			runner.ID,
+			err.Error(),
+		)
+
 		utils.ErrorResponse(
 			c,
 			http.StatusInternalServerError,
@@ -121,10 +155,24 @@ func HandleRunnerConnect(c *gin.Context) {
 		)
 		return
 	}
+
+	logging.Info(
+		"runner %d is connected",
+		runner.ID,
+	)
+
 	s.Debug = false
 	s.HandleClientHandler(c.Writer, c.Request)
 
 	// release the port
-	runner.Port = 0
-	dbconn.DB.Save(&runner)
+	runner, err = models.RetrieveRunnerByID(runnerId)
+	if err == nil && runner != nil {
+		runner.Port = 0
+		dbconn.DB.Save(&runner)
+	}
+
+	logging.Warn(
+		"runner %d disconnected",
+		runner.ID,
+	)
 }

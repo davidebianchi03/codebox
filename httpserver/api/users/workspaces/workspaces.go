@@ -541,7 +541,7 @@ func HandleUpdateWorkspace(ctx *gin.Context) {
 
 	var reqBody UpdateWorkspaceRequestBody
 	if err := ctx.ShouldBindBodyWithJSON(&reqBody); err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"detail": "missing or invalid request argument",
 		})
 		return
@@ -793,7 +793,7 @@ func HandleSetRunnerForWorkspace(ctx *gin.Context) {
 
 	var reqBody SetRunnerForWorkspaceBody
 	if err := ctx.ShouldBindBodyWithJSON(&reqBody); err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"detail": "missing or invalid request argument",
 		})
 		return

@@ -64,6 +64,10 @@ func InitBgTasks(
 	pool.Job("send_analytics_data", (*Context).SendAnalyticsData)
 	pool.PeriodicallyEnqueue("0 */30 * * * *", "send_analytics_data") // every 30 minutes
 
+	// logs jobs
+	pool.Job("rotate_logs", (*Context).RotateLogsTask)
+	pool.PeriodicallyEnqueue("0 0 0 * * *", "rotate_logs")
+
 	pool.Start()
 	return nil
 }
