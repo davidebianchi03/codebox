@@ -15,7 +15,7 @@ RUN chmod +x /codebox/runserver.sh && \
 EXPOSE 8000
 
 ENV CODEBOX_ENV_FILE=/codebox/bin/codebox.env
-ENV CODEBOX_CLI_BINARIES_PATH=/codebox/bin/codebox.env
+ENV CODEBOX_CLI_BINARIES_PATH=/codebox/bin
 ENV CODEBOX_TEMPLATES_FOLDER=/codebox/bin/templates
 
 WORKDIR /codebox
