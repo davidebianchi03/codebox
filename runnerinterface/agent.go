@@ -11,6 +11,10 @@ import (
 )
 
 func (ri *RunnerInterface) PingAgent(container *models.WorkspaceContainer) bool {
+	if container.Workspace.Runner.Port == 0 {
+		return false
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/agent-version",
 		ri.getRunnerBaseUrl(),

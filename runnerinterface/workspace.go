@@ -56,6 +56,10 @@ func (ri *RunnerInterface) GetRunnerVersion() (version string, err error) {
 }
 
 func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err error) {
+	if workspace.Runner.Port == 0 {
+		return errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf("%s/api/v1/workspace/", ri.getRunnerBaseUrl())
 
 	payload := &bytes.Buffer{}
@@ -140,6 +144,10 @@ func (ri *RunnerInterface) StartWorkspace(workspace *models.Workspace) (err erro
 }
 
 func (ri *RunnerInterface) GetWorkspaceDetails(workspace *models.Workspace) (response RunnerWorkspaceStatusResponse, err error) {
+	if workspace.Runner.Port == 0 {
+		return RunnerWorkspaceStatusResponse{}, errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf("%s/api/v1/workspace/%d/?type=%s", ri.getRunnerBaseUrl(), workspace.ID, workspace.Type)
 
 	client := ri.getRequestsClient()
@@ -187,6 +195,10 @@ func (ri *RunnerInterface) GetWorkspaceDetails(workspace *models.Workspace) (res
 }
 
 func (ri *RunnerInterface) GetWorkspaceLogs(workspace *models.Workspace) (logs string, err error) {
+	if workspace.Runner.Port == 0 {
+		return "", errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf("%s/api/v1/workspace/%d/logs", ri.getRunnerBaseUrl(), workspace.ID)
 
 	client := ri.getRequestsClient()
@@ -220,6 +232,10 @@ func (ri *RunnerInterface) GetWorkspaceLogs(workspace *models.Workspace) (logs s
 }
 
 func (ri *RunnerInterface) StopWorkspace(workspace *models.Workspace) error {
+	if workspace.Runner.Port == 0 {
+		return errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf("%s/api/v1/workspace/%d/stop/", ri.getRunnerBaseUrl(), workspace.ID)
 
 	payload := &bytes.Buffer{}
@@ -253,6 +269,10 @@ func (ri *RunnerInterface) StopWorkspace(workspace *models.Workspace) error {
 }
 
 func (ri *RunnerInterface) RemoveWorkspace(workspace *models.Workspace) error {
+	if workspace.Runner.Port == 0 {
+		return errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf("%s/api/v1/workspace/%d/remove", ri.getRunnerBaseUrl(), workspace.ID)
 
 	payload := &bytes.Buffer{}

@@ -60,6 +60,10 @@ func (ri *RunnerInterface) ContainerFsListDir(
 	container *models.WorkspaceContainer,
 	path string,
 ) ([]ContainerFileInfo, error) {
+	if workspace.Runner.Port == 0 {
+		return []ContainerFileInfo{}, errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/list-directory?path=%s",
 		ri.getRunnerBaseUrl(),
@@ -117,6 +121,10 @@ func (ri *RunnerInterface) ContainerFsGetItemInfo(
 	container *models.WorkspaceContainer,
 	path string,
 ) (ContainerFileInfo, error) {
+	if workspace.Runner.Port == 0 {
+		return ContainerFileInfo{}, errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/get-item-info?path=%s",
 		ri.getRunnerBaseUrl(),
@@ -177,6 +185,10 @@ func (ri *RunnerInterface) ContainerFsCreateDir(
 ) (ContainerFileInfo, error) {
 	if !validatePermissionString(permissions) {
 		return ContainerFileInfo{}, ErrorInvalidFileMode
+	}
+
+	if workspace.Runner.Port == 0 {
+		return ContainerFileInfo{}, errors.New("runner is not connected")
 	}
 
 	url := fmt.Sprintf(
@@ -248,6 +260,10 @@ func (ri *RunnerInterface) ContainerFsDeleteItem(
 	container *models.WorkspaceContainer,
 	path string,
 ) error {
+	if workspace.Runner.Port == 0 {
+		return errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/delete",
 		ri.getRunnerBaseUrl(),
@@ -302,6 +318,10 @@ func (ri *RunnerInterface) ContainerFsRenameItem(
 	path string,
 	newPath string,
 ) error {
+	if workspace.Runner.Port == 0 {
+		return errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/rename",
 		ri.getRunnerBaseUrl(),
@@ -358,6 +378,10 @@ func (ri *RunnerInterface) ContainerFsReadFile(
 	container *models.WorkspaceContainer,
 	path string,
 ) (ContainerReadFileResponse, error) {
+	if workspace.Runner.Port == 0 {
+		return ContainerReadFileResponse{}, errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/read-file?path=%s",
 		ri.getRunnerBaseUrl(),
@@ -417,6 +441,10 @@ func (ri *RunnerInterface) ContainerFsWriteFile(
 	content string, // base 64
 	permissions string,
 ) error {
+	if workspace.Runner.Port == 0 {
+		return errors.New("runner is not connected")
+	}
+
 	if !validatePermissionString(permissions) {
 		return ErrorInvalidFileMode
 	}
@@ -481,6 +509,10 @@ func (ri *RunnerInterface) ContainerFsGetSystemInfo(
 	workspace *models.Workspace,
 	container *models.WorkspaceContainer,
 ) (ContainerSystemInfo, error) {
+	if workspace.Runner.Port == 0 {
+		return ContainerSystemInfo{}, errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/system-info",
 		ri.getRunnerBaseUrl(),
@@ -533,6 +565,10 @@ func (ri *RunnerInterface) ContainerFSExecuteCommand(
 	args []string,
 	workDir string,
 ) (ExecuteCommandResponse, error) {
+	if workspace.Runner.Port == 0 {
+		return ExecuteCommandResponse{}, errors.New("runner is not connected")
+	}
+
 	url := fmt.Sprintf(
 		"%s/api/v1/workspace/%d/container/%s/fs/execute-command",
 		ri.getRunnerBaseUrl(),
