@@ -204,7 +204,7 @@ if [ $command == "start" ]; then
     fi
 
     if is_stack_running "$stack_name"; then
-        echo "Stack $stack_name is already running. Do you want to stop it and start a new instance? (y/n) "
+        echo "Stack $stack_name is already running. Do you want to stop and upgrade it? (y/n) "
         read answer
         if [[ "$answer" != "y" ]]; then
             echo "Aborting start..."
