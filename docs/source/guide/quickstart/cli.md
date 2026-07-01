@@ -41,6 +41,10 @@ brew install codebox/codebox-cli/codebox-cli
 
 On Windows, you can install the CLI by downloading the provided installer. The installer installs the Codebox CLI alongside other applications on your system.
 
+```{warning}
+   CLI setup files and executables are not digitally signed, so they may not be trusted by Windows. You may need to add the CLI binaries to the trusted items list in Windows Defender or your antivirus software.
+```
+
 Alternatively, you may download the standalone binaries if you prefer a manual installation.
 
 ### Linux (manual installation)

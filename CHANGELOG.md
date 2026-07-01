@@ -2,6 +2,11 @@
 
 All changes will be reported in this file
 
+## [v0.0.61] - 2026-07-01
+
+## Added
+- Save system logs to file
+
 ## [v0.0.60] - 2026-06-01
 
 ## Added
