@@ -2,6 +2,7 @@ import axios, { isAxiosError } from "axios";
 import { AdminStats } from "../types/admin";
 import { ImpersonationLogs } from "../types/impersonationLogs";
 import { AnalyticsConfig } from "../types/analytics";
+import { SystemLog } from "../types/logs";
 
 export async function AdminRetrieveStats(): Promise<AdminStats | undefined> {
     try {
@@ -119,5 +120,16 @@ export async function APIAdminSetAnalyticsDataBannerSent(): Promise<boolean> {
         return true;
     } catch {
         return false;
+    }
+}
+
+export async function APIAdminListSystemLogs(): Promise<SystemLog[] | undefined> {
+    try {
+        const r = await axios.get<SystemLog[]>(
+            `/api/v1/admin/system-logs`
+        );
+        return r.data;
+    } catch {
+        return undefined;
     }
 }

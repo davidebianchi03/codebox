@@ -1,4 +1,5 @@
 import { AdminAnalyticsPage } from "../pages/AdminAnalytics";
+import { AdminSystemLogsPage } from "../pages/AdminSystemLogs";
 import { Route } from "./types";
 import { lazy } from "react";
 
@@ -136,5 +137,9 @@ export const SuperUserRoutes: Route[] = [
   {
     path: "/admin/analytics",
     element: <AdminAnalyticsPage />,
+  },
+  {
+    path: "/admin/system-logs",
+    element: <AdminSystemLogsPage />,
   },
 ];

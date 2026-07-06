@@ -15,6 +15,14 @@ import (
 
 const logsFilePrefix = "codebox.logs.json."
 
+type LogRow struct {
+	Timestamp string `json:"timestamp"`
+	Module    string `json:"module"`
+	Function  string `json:"function"`
+	Level     string `json:"level"`
+	Log       string `json:"log"`
+}
+
 /*
 retrieve the path of the folder where log files are stored
 */
@@ -50,12 +58,12 @@ func formatLog(
 	level string,
 	msg string,
 ) string {
-	data, _ := json.Marshal(map[string]string{
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
-		"module":    module,
-		"function":  function,
-		"level":     level,
-		"log":       msg,
+	data, _ := json.Marshal(LogRow{
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Module:    module,
+		Function:  function,
+		Level:     level,
+		Log:       msg,
 	})
 	return string(data)
 }
@@ -208,4 +216,37 @@ func RotateLogs() error {
 	}
 
 	return nil
+}
+
+/*
+List all logs, return a list of LogRow
+*/
+func ListAllLogs() ([]LogRow, error) {
+	dirpath := getLogsDir()
+	entries, _ := os.ReadDir(dirpath)
+	logs := []LogRow{}
+	for _, entry := range entries {
+		// parse filename
+		if !entry.IsDir() &&
+			strings.Index(entry.Name(), logsFilePrefix) == 0 {
+			filepath := filepath.Join(dirpath, entry.Name())
+			file, err := os.Open(filepath)
+			if err != nil {
+				return nil, err
+			}
+			defer file.Close()
+
+			decoder := json.NewDecoder(file)
+			for decoder.More() {
+				var logRow LogRow
+				err := decoder.Decode(&logRow)
+				if err != nil {
+					return nil, err
+				}
+				logs = append(logs, logRow)
+			}
+		}
+	}
+
+	return logs, nil
 }

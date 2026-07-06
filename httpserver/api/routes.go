@@ -430,6 +430,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"analytics-banner-sent",
 				permissions.AdminRequiredRoute(analytics.HandleUpdateAnalyticsBannerSent),
 			)
+			adminApis.GET(
+				"system-logs",
+				permissions.AdminRequiredRoute(admin.HandleAdminListSystemLogs),
+			)
 		}
 	}
 
