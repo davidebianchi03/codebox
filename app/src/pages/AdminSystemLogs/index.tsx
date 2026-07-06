@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { AdminAnalyticsConfig } from "../../components/AdminAnalyticsConfig";
 import { ToastContainer } from "react-toastify";
 import { AdminAnalyticsContentPreview } from "../../components/AdminAnalyticsContentPreview";
@@ -18,6 +18,19 @@ export function AdminSystemLogsPage() {
         }
     }, []);
 
+    const downloadLogs = () => {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(logs)));
+        element.setAttribute('download', 'system-logs.json');
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
     useEffect(() => {
         fetchLogs();
     }, [fetchLogs]);
@@ -28,6 +41,11 @@ export function AdminSystemLogsPage() {
                 <div>
                     <h2 className="mb-1">System Logs</h2>
                     <small>View system logs</small>
+                </div>
+                <div className="d-flex justify-content-end">
+                    <Button className="mt-3" variant="outline-light" onClick={downloadLogs}>
+                        Download Logs
+                    </Button>
                 </div>
                 <Row className="mt-4">
                     <Col>
