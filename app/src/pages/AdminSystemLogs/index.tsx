@@ -56,7 +56,7 @@ export function AdminSystemLogsPage() {
                                         key: "level",
                                         label: "Level",
                                         render: (value: string) => (
-                                            <span className={`badge bg-${value === "error" ? "danger" : value === "warning" ? "warning" : "info"} text-dark`}>
+                                            <span className={`badge bg-${value === "error" ? "danger" : value === "warn" ? "warning" : "info"} text-light`}>
                                                 {value.toUpperCase()}
                                             </span>
                                         )
