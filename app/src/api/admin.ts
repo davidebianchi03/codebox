@@ -133,3 +133,14 @@ export async function APIAdminListSystemLogs(): Promise<SystemLog[] | undefined>
         return undefined;
     }
 }
+
+export async function APIAdminListRunnerLogs(runnerId: number): Promise<SystemLog[] | undefined> {
+    try {
+        const r = await axios.get<SystemLog[]>(
+            `/api/v1/admin/runners/${runnerId}/logs`
+        );
+        return r.data;
+    } catch {
+        return undefined;
+    }
+}

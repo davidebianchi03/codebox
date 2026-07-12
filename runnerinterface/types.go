@@ -58,3 +58,11 @@ type ExecuteCommandResponse struct {
 	ExitCode   int    `json:"exit_code"`
 	WasSuccess bool   `json:"was_success"`
 }
+
+type RunnerLogRow struct {
+	Timestamp string `json:"timestamp"`
+	Module    string `json:"module"`
+	Function  string `json:"function"`
+	Level     string `json:"level"`
+	Log       string `json:"log"`
+}

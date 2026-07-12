@@ -12,6 +12,8 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/users/serializers"
 	"gitlab.com/codebox4073715/codebox/httpserver/api/utils"
+	"gitlab.com/codebox4073715/codebox/logging"
+	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
 // AdminRunners godoc
@@ -293,5 +295,58 @@ func HandleRetrieveRecommendedRunnerVersion(c *gin.Context) {
 	c.JSON(
 		http.StatusOK,
 		serializers.GetRecommendedRunnerVersionSerializedResponse(),
+	)
+}
+
+// HandleAdminListRunnerLogs godoc
+// @Summary List logs for a runner
+// @Schemes
+// @Description List logs for a runner
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200 {object} serializers.RunnerLogRowSerializer
+// @Router /api/v1/admin/runners/:id/logs [get]
+func HandleAdminListRunnerLogs(c *gin.Context) {
+	runnerId, _ := c.Params.Get("runnerId")
+
+	id, err := strconv.Atoi(runnerId)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+		return
+	}
+
+	runner, err := models.RetrieveRunnerByID(uint(id))
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if runner == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+		return
+	}
+
+	ri := runnerinterface.RunnerInterface{
+		Runner: runner,
+	}
+	logs, err := ri.ListRunnerLogs()
+	if err != nil {
+		logging.Error(
+			"failed to list logs for runner %d, %s",
+			runner.ID,
+			err.Error(),
+		)
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"internal server error",
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		serializers.LoadMultipleRunnerLogRows(logs),
 	)
 }

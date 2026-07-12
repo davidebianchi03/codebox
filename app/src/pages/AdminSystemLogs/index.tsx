@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import { AdminAnalyticsConfig } from "../../components/AdminAnalyticsConfig";
 import { ToastContainer } from "react-toastify";
-import { AdminAnalyticsContentPreview } from "../../components/AdminAnalyticsContentPreview";
 import { SystemLog } from "../../types/logs";
 import { APIAdminListSystemLogs } from "../../api/admin";
-import DataTable from "../../components/DataTable";
+import { LogsViewer } from "../../components/LogsViewer";
 
 export function AdminSystemLogsPage() {
 
@@ -50,48 +48,7 @@ export function AdminSystemLogsPage() {
                 <Row className="mt-4">
                     <Col>
                         <Card body>
-                            <DataTable
-                                columns={[
-                                    {
-                                        key: "level",
-                                        label: "Level",
-                                        render: (value: string) => (
-                                            <span className={`badge bg-${value === "error" ? "danger" : value === "warn" ? "warning" : "info"} text-light`}>
-                                                {value.toUpperCase()}
-                                            </span>
-                                        )
-                                    },
-                                    {
-                                        key: "timestamp",
-                                        label: "Timestamp",
-                                        render: (value: string) => (
-                                            <small>
-                                                {new Date(value).toLocaleString()}
-                                            </small>
-                                        )
-                                    },
-                                    {
-                                        key: "log",
-                                        label: "Log",
-                                        render: (value: string) => (
-                                            <small>
-                                                {value}
-                                            </small>
-                                        )
-                                    },
-                                    {
-                                        key: "function",
-                                        label: "Function",
-                                        render: (value: string, row: SystemLog) => (
-                                            <small>
-                                                {row.module}.{value}
-                                            </small>
-                                        )
-                                    },
-                                ]}
-                                data={logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())}
-                                initialPageSize={20}
-                            />
+                            <LogsViewer logs={logs} />
                         </Card>
                     </Col>
                 </Row>
