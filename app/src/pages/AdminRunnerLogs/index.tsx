@@ -39,6 +39,9 @@ export function AdminRunnerLogsPage() {
             const r = await APIAdminListRunnerLogs(selectedRunner.id);
             if (r) {
                 setLogs(r);
+            } else {
+                toast.error("Failed to fetch logs");
+                setLogs([]);
             }
         } else {
             setLogs([]);
