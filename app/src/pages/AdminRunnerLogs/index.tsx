@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import { SystemLog } from "../../types/logs";
 import { APIAdminListRunnerLogs, APIAdminListSystemLogs } from "../../api/admin";
@@ -12,6 +12,7 @@ export function AdminRunnerLogsPage() {
     const [selectedRunner, setSelectedRunner] = useState<RunnerAdmin | null>(null);
     const [logs, setLogs] = useState<SystemLog[]>([]);
     const [loadingRunners, setLoadingRunners] = useState<boolean>(true);
+    const [loadingLogs, setLoadingLogs] = useState<boolean>(true);
 
     const FetchRunners = useCallback(async () => {
         setLoadingRunners(true);
@@ -33,6 +34,7 @@ export function AdminRunnerLogsPage() {
     }, [FetchRunners]);
 
     const fetchLogs = useCallback(async () => {
+        setLoadingLogs(true);
         if (selectedRunner) {
             const r = await APIAdminListRunnerLogs(selectedRunner.id);
             if (r) {
@@ -41,6 +43,7 @@ export function AdminRunnerLogsPage() {
         } else {
             setLogs([]);
         }
+        setLoadingLogs(false);
     }, [selectedRunner]);
 
     useEffect(() => {
@@ -68,42 +71,62 @@ export function AdminRunnerLogsPage() {
                     <h2 className="mb-1">Runner Logs</h2>
                     <small>View runner logs</small>
                 </div>
-                <div className="d-flex justify-content-end">
-                    <Button className="mt-3" variant="outline-light" onClick={downloadLogs}>
-                        Download Logs
-                    </Button>
-                </div>
-                <Row className="mt-4">
-                    <Col>
-                        <Card body>
-                            <Form.Group>
-                                <Form.Label>Runner</Form.Label>
-                                <Form.Select
-                                    onChange={(e) => {
-                                        setSelectedRunner(
-                                            runners.find(r => String(r.id) === e.target.value) || null
-                                        );
-                                    }}
-                                    value={selectedRunner?.id || ""}
-                                >
-                                    <option value="">Select a runner</option>
-                                    {runners.map((runner) => (
-                                        <option key={runner.id} value={runner.id}>
-                                            {runner.name} (ID: {runner.id})
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                        </Card>
-                    </Col>
-                </Row>
-                <Row className="mt-4">
-                    <Col>
-                        <Card body>
-                            <LogsViewer logs={logs} />
-                        </Card>
-                    </Col>
-                </Row>
+                {loadingRunners ? (
+                    <React.Fragment>
+                        <Spinner animation="border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </React.Fragment>
+                ) : (
+                    <React.Fragment>
+                        <div className="d-flex justify-content-end">
+                            <Button className="mt-3" variant="outline-light" onClick={downloadLogs}>
+                                Download Logs
+                            </Button>
+                        </div>
+                        <Row className="mt-4">
+                            <Col>
+                                <Card body>
+                                    <Form.Group>
+                                        <Form.Label>Runner</Form.Label>
+                                        <Form.Select
+                                            onChange={(e) => {
+                                                setSelectedRunner(
+                                                    runners.find(r => String(r.id) === e.target.value) || null
+                                                );
+                                            }}
+                                            value={selectedRunner?.id || ""}
+                                        >
+                                            <option value="">Select a runner</option>
+                                            {runners.map((runner) => (
+                                                <option key={runner.id} value={runner.id}>
+                                                    {runner.name} (ID: {runner.id})
+                                                </option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </Card>
+                            </Col>
+                        </Row>
+                        {loadingLogs ? (
+                            <React.Fragment>
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                            </React.Fragment>
+                        ) : (
+                            <React.Fragment>
+                                <Row className="mt-4">
+                                    <Col>
+                                        <Card body>
+                                            <LogsViewer logs={logs} />
+                                        </Card>
+                                    </Col>
+                                </Row>
+                            </React.Fragment>
+                        )}
+                    </React.Fragment>
+                )}
             </Container>
             <ToastContainer toastClassName={"bg-dark"} />
         </React.Fragment>
