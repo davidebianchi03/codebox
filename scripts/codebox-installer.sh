@@ -21,10 +21,10 @@ print_logo() {
   ╚██████╗╚██████╔╝██████╔╝███████╗██████╔╝╚██████╔╝██╔╝ ██╗
    ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝
 
-   echo "Codebox Installer version $version_tag"
 EOF
     year=$(date +"%Y")
     echo -e "${RESET}"
+    echo "Version: $version_tag"
     echo -e "Copyright (c) $year Davide Bianchi. All rights reserved.\n\n"
 
     echo -e "Welcome to the Codebox installer!"
