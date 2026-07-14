@@ -13,6 +13,7 @@ import (
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/git"
 	"gitlab.com/codebox4073715/codebox/httpserver/notifications"
+	"gitlab.com/codebox4073715/codebox/logging"
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 	"gitlab.com/codebox4073715/codebox/utils/targz"
 )
@@ -191,6 +192,63 @@ func StartWorkspace(workspace *models.Workspace) error {
 			workspaceContainer.AgentLastContact = &now
 			dbconn.DB.Save(&workspaceContainer)
 		}
+
+		// restore container ports from backup
+		portBackups, err := models.ListContainerPortBackupByWorkspace(*workspace)
+		if err != nil {
+			logging.Error(
+				"failed to list container port backups for workspace %s, %s",
+				workspace.Name,
+				err.Error(),
+			)
+			workspace.AppendLogs("server error")
+			workspace.Status = models.WorkspaceStatusError
+			return fmt.Errorf("failed to list container port backups, %s", err.Error())
+		}
+
+		for _, port := range portBackups {
+			if port.ContainerName == workspaceContainer.ContainerName {
+				portByName, err := models.RetrieveContainerPortByPortNumber(
+					workspaceContainer,
+					port.PortNumber,
+				)
+				if err != nil {
+					logging.Error("failed to retrieve container port, %s", err.Error())
+					continue
+				}
+
+				portByNumber, err := models.RetrieveContainerPortByPortNumber(
+					workspaceContainer,
+					port.PortNumber,
+				)
+				if err != nil {
+					logging.Error("failed to retrieve container port, %s", err.Error())
+					continue
+				}
+
+				if portByName == nil && portByNumber == nil {
+					_, err := models.CreateContainerPort(
+						workspaceContainer,
+						port.ServiceName,
+						port.PortNumber,
+						port.Public,
+					)
+					if err != nil {
+						logging.Error("failed to create container port, %s",
+							err.Error(),
+						)
+						continue
+					}
+				}
+			}
+		}
+	}
+
+	if err := models.DeleteWorkspaceContainerPortsBackups(*workspace); err != nil {
+		logging.Error(
+			"failed to delete container port backups, %s",
+			err.Error(),
+		)
 	}
 
 	workspace.Status = details.Status

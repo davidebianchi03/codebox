@@ -9,6 +9,7 @@ import (
 	dbconn "gitlab.com/codebox4073715/codebox/db/connection"
 	"gitlab.com/codebox4073715/codebox/db/models"
 	"gitlab.com/codebox4073715/codebox/httpserver/notifications"
+	"gitlab.com/codebox4073715/codebox/logging"
 	"gitlab.com/codebox4073715/codebox/runnerinterface"
 )
 
@@ -42,6 +43,53 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 
 	ri := runnerinterface.RunnerInterface{
 		Runner: workspace.Runner,
+	}
+
+	// create a backup of the exposed ports before stopping the workspace
+	containers, err := models.ListWorkspaceContainersByWorkspace(*workspace)
+	if err != nil {
+		if !skipErrors {
+			workspace.AppendLogs(fmt.Sprintf("failed to list workspace containers, %s", err.Error()))
+			workspace.Status = models.WorkspaceStatusError
+			return fmt.Errorf("failed to list workspace containers, %s", err.Error())
+		}
+	}
+
+	for _, container := range containers {
+		ports, err := models.ListContainerPortsByWorkspaceContainer(container)
+		if err != nil {
+			if !skipErrors {
+				logging.Error(
+					"failed to list container ports for container %s, %s",
+					container.ContainerName,
+					err.Error(),
+				)
+				workspace.AppendLogs("internal server error")
+				workspace.Status = models.WorkspaceStatusError
+				return fmt.Errorf("failed to list container ports for container %s, %s", container.ContainerName, err.Error())
+			}
+		}
+
+		for _, port := range ports {
+			_, err := models.CreateContainerPortBackup(
+				container,
+				port.ServiceName,
+				port.PortNumber,
+				port.Public,
+			)
+			if err != nil {
+				if !skipErrors {
+					logging.Error(
+						"failed to create container port backup for container %s, %s",
+						container.ContainerName,
+						err.Error(),
+					)
+					workspace.AppendLogs("internal server error")
+					workspace.Status = models.WorkspaceStatusError
+					return fmt.Errorf("failed to create container port backup for container %s, %s", container.ContainerName, err.Error())
+				}
+			}
+		}
 	}
 
 	stopping := true
@@ -96,15 +144,16 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 
 	workspace.Status = details.Status
 
-	var containers []models.WorkspaceContainer
-	dbconn.DB.Find(&containers, map[string]interface{}{
-		"workspace_id": workspace.ID,
-	})
 	for _, container := range containers {
-		dbconn.DB.Unscoped().Delete(&[]models.WorkspaceContainerPort{}, map[string]interface{}{
-			"container_id": container.ID,
-		})
-		dbconn.DB.Unscoped().Delete(&container)
+		if err := models.DeleteContainer(container); err != nil {
+			logging.Error(
+				"failed to delete container %s of workspace %s, %s",
+				container.ContainerName,
+				workspace.Name,
+				err.Error(),
+			)
+			return err
+		}
 	}
 
 	notifications.SendWorkspaceStoppedNotification(*workspace)

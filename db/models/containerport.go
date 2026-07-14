@@ -117,3 +117,9 @@ func DeleteContainerPort(port *WorkspaceContainerPort) error {
 	}
 	return nil
 }
+
+func DeleteContainerPortsByContainer(container WorkspaceContainer) error {
+	return dbconn.DB.Unscoped().Delete(&[]WorkspaceContainerPort{}, map[string]interface{}{
+		"container_id": container.ID,
+	}).Error
+}

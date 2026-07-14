@@ -18,6 +18,7 @@ type WorkspaceContainer struct {
 	ContainerUserName string         `gorm:"size:255" json:"container_user_name"`
 	AgentLastContact  *time.Time     `gorm:"column:agent_last_contact;" json:"agent_last_contact"`
 	WorkspacePath     string         `gorm:"column:workspace_path; size:255" json:"workspace_path"`
+	Order             *int           `gorm:"column:order;" json:"order"`
 	CreatedAt         time.Time      `gorm:"column:created_at;" json:"created_at"`
 	UpdatedAt         time.Time      `gorm:"column:updated_at;" json:"updated_at"`
 	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
@@ -73,4 +74,14 @@ func RetrieveWorkspaceContainerByName(workspace Workspace, containerName string)
 		return nil, result.Error
 	}
 	return &container, nil
+}
+
+/*
+DeleteContainer deletes a workspace container
+*/
+func DeleteContainer(container WorkspaceContainer) error {
+	if err := DeleteContainerPortsByContainer(container); err != nil {
+		return err
+	}
+	return dbconn.DB.Unscoped().Delete(&container).Error
 }
