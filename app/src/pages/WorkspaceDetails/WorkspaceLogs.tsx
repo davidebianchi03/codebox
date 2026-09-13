@@ -35,7 +35,10 @@ export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
   useEffect(() => {
     if (fetchInterval > 0) {
       const interval = setInterval(FetchLogs, fetchInterval);
+      
       return () => {
+        // fetch logs one last time before unmounting to ensure we have the latest logs
+        FetchLogs();
         clearInterval(interval);
       };
     }

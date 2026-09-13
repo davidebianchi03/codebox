@@ -30,7 +30,10 @@ func (jobContext *Context) StopWorkspaceTask(job *work.Job) error {
 	defer dbconn.DB.Save(&workspace)
 
 	notifications.SendWorkspaceStopNotification(*workspace)
-	StopWorkspace(workspace, false)
+	status, _ := StopWorkspace(workspace, false)
+	workspace.Status = status
+	dbconn.DB.Save(&workspace)
+
 	return nil
 }
 
@@ -38,7 +41,7 @@ func (jobContext *Context) StopWorkspaceTask(job *work.Job) error {
 Stop a running workspace,
 this is a separate function so it can be called from multiple places
 */
-func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
+func StopWorkspace(workspace *models.Workspace, skipErrors bool) (status string, err error) {
 	defer dbconn.DB.Save(&workspace)
 
 	ri := runnerinterface.RunnerInterface{
@@ -51,7 +54,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 		if !skipErrors {
 			workspace.AppendLogs(fmt.Sprintf("failed to list workspace containers, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
-			return fmt.Errorf("failed to list workspace containers, %s", err.Error())
+			return models.WorkspaceStatusError, fmt.Errorf("failed to list workspace containers, %s", err.Error())
 		}
 	}
 
@@ -66,7 +69,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 				)
 				workspace.AppendLogs("internal server error")
 				workspace.Status = models.WorkspaceStatusError
-				return fmt.Errorf("failed to list container ports for container %s, %s", container.ContainerName, err.Error())
+				return models.WorkspaceStatusError, fmt.Errorf("failed to list container ports for container %s, %s", container.ContainerName, err.Error())
 			}
 		}
 
@@ -86,7 +89,8 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 					)
 					workspace.AppendLogs("internal server error")
 					workspace.Status = models.WorkspaceStatusError
-					return fmt.Errorf("failed to create container port backup for container %s, %s", container.ContainerName, err.Error())
+					return models.WorkspaceStatusError,
+						fmt.Errorf("failed to create container port backup for container %s, %s", container.ContainerName, err.Error())
 				}
 			}
 		}
@@ -98,7 +102,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 		if !skipErrors {
 			workspace.AppendLogs(fmt.Sprintf("failed to stop workspace, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
-			return errors.New("failed to stop workspace")
+			return models.WorkspaceStatusError, errors.New("failed to stop workspace")
 		}
 	}
 
@@ -110,7 +114,7 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 			if !skipErrors {
 				workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 				workspace.Status = models.WorkspaceStatusError
-				return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
+				return models.WorkspaceStatusError, fmt.Errorf("failed to fetch workspace details, %s", err.Error())
 			} else {
 				break
 			}
@@ -138,11 +142,9 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 		if !skipErrors {
 			workspace.AppendLogs(fmt.Sprintf("failed to fetch workspace details, %s", err.Error()))
 			workspace.Status = models.WorkspaceStatusError
-			return fmt.Errorf("failed to fetch workspace details, %s", err.Error())
+			return models.WorkspaceStatusError, fmt.Errorf("failed to fetch workspace details, %s", err.Error())
 		}
 	}
-
-	workspace.Status = details.Status
 
 	for _, container := range containers {
 		if err := models.DeleteContainer(container); err != nil {
@@ -152,11 +154,11 @@ func StopWorkspace(workspace *models.Workspace, skipErrors bool) error {
 				workspace.Name,
 				err.Error(),
 			)
-			return err
+			return models.WorkspaceStatusError, err
 		}
 	}
 
 	notifications.SendWorkspaceStoppedNotification(*workspace)
 
-	return nil
+	return details.Status, nil
 }

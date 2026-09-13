@@ -101,7 +101,7 @@ export default function SignUpPage() {
   return (
     <React.Fragment>
       <PageWithCardLayout
-        title="Login to your account"
+        title="Sign Up to codebox"
       >
         <form
           onSubmit={(e) => {

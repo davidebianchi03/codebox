@@ -35,7 +35,7 @@ func (jobContext *Context) DeleteRunnerTask(job *work.Job) error {
 
 	// stop all workspaces and set runner as null
 	for _, w := range workspaces {
-		err := StopWorkspace(&w, true)
+		_, err := StopWorkspace(&w, true)
 		if err != nil {
 			runner.DeletionInProgress = false
 			models.UpdateRunner(*runner)

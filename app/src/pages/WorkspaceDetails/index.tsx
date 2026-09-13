@@ -175,6 +175,12 @@ export default function WorkspaceDetails() {
           <h2 className="page-title mb-2">{workspace?.name}</h2>
           <p className="text-muted fs-6 fw-bolder mb-0">
             {workspace?.type.replaceAll("_", " ").toUpperCase()}
+            {/* TODO: add card to format workspace details */}
+            {workspace?.runner && (
+              <small className="text-muted fs-6 ms-1">
+                | Runner: {workspace?.runner.name}
+              </small>
+            )}
           </p>
           <p className="text-muted fs-6 fw-bolder mb-0 d-flex align-items-center">
             Config loaded from {workspace?.config_source === "git" ? "git repository" : "template"}&nbsp;

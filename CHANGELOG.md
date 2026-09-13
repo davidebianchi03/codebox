@@ -2,6 +2,12 @@
 
 All changes will be reported in this file
 
+## [Unreleased]
+
+## Fixed
+
+- Fixed workspace restart task
+
 ## [v0.0.61] - 2026-07-01
 
 ## Added

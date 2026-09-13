@@ -30,7 +30,7 @@ func (jobContext *Context) RestartWorkspaceTask(job *work.Job) error {
 
 	// First stop the workspace, skip errors during stop to proceed with restart
 	workspace.AppendLogs("Stopping workspace...")
-	if err := StopWorkspace(workspace, false); err != nil {
+	if _, err := StopWorkspace(workspace, false); err != nil {
 		return nil
 	}
 
