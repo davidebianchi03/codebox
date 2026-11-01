@@ -1,3 +1,5 @@
+import { faArrowLeft, faArrowRight, faArrowsUpDown, faDownLong, faUpLong } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo, useState } from "react";
 
 // Make sure to install bootstrap in your project and import its CSS once (e.g. in index.tsx):
@@ -147,9 +149,9 @@ export default function DataTable({
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="table table-striped table-hover">
-          <thead className="table-light">
+      <div className="table-responsive" style={{ borderRadius: 7 }}>
+        <table className="table table-hover">
+          <thead className="table-light border-0">
             <tr>
               {columns.map((col) => (
                 <th
@@ -158,11 +160,17 @@ export default function DataTable({
                   style={{ cursor: col.sortable ? "pointer" : "default" }}
                   onClick={() => onSort(col)}
                   aria-sort={sortKey === col.key ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                  className="border-0"
                 >
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center py-2 text-muted">
                     <span>{col.label}</span>
                     {col.sortable && (
-                      <small className="ms-2 text-muted">{sortKey === col.key ? (sortDir === "asc" ? "▲" : "▼") : "↕"}</small>
+                      <small className="ms-2 text-muted fs-5">
+                        {sortKey === col.key ? (
+                          sortDir === "asc" ? <FontAwesomeIcon icon={faUpLong} /> : <FontAwesomeIcon icon={faDownLong} />)
+                          :
+                          <FontAwesomeIcon icon={faArrowsUpDown} />}
+                      </small>
                     )}
                   </div>
                 </th>
@@ -180,7 +188,7 @@ export default function DataTable({
               pageData.map((row, idx) => (
                 <tr key={idx}>
                   {columns.map((col) => (
-                    <td key={col.key}>
+                    <td key={col.key} className="align-middle">
                       {col.render ? col.render(row[col.key], row) : String(row[col.key] ?? "")}
                     </td>
                   ))}
@@ -192,15 +200,16 @@ export default function DataTable({
       </div>
 
       <nav aria-label="Table pagination" className="mt-3">
-        <ul className="pagination justify-content-center">
-          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-            <button className="page-link" onClick={() => setPage(1)} aria-label="First" disabled={currentPage === 1}>
-              «
-            </button>
-          </li>
-          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-            <button className="page-link" onClick={() => setPage((p) => clamp(p - 1, 1, totalPages))} aria-label="Previous" disabled={currentPage === 1}>
-              &#8249;
+        <ul className="pagination justify-content-end gap-1 mb-0">
+          <li className={`page-item me-2 ${currentPage === 1 ? "disabled" : ""}`}>
+            <button
+              className="page-link text-center text-white"
+              style={{ background: "var(--tblr-border-active-color)" }}
+              onClick={() => setPage((p) => clamp(p - 1, 1, totalPages))}
+              aria-label="Previous"
+              disabled={currentPage === 1}
+            >
+              <FontAwesomeIcon icon={faArrowLeft} fontSize={11}/>
             </button>
           </li>
 
@@ -212,7 +221,7 @@ export default function DataTable({
 
           {pageRange.map((p) => (
             <li key={p} className={`page-item ${p === currentPage ? "active" : ""}`}>
-              <button className="page-link" onClick={() => setPage(p)}>
+              <button className={`page-link ${p === currentPage ? " bg-white text-dark" : ""}`} onClick={() => setPage(p)}>
                 {p}
               </button>
             </li>
@@ -224,14 +233,15 @@ export default function DataTable({
             </li>
           )}
 
-          <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-            <button className="page-link" onClick={() => setPage((p) => clamp(p + 1, 1, totalPages))} aria-label="Next" disabled={currentPage === totalPages}>
-              &#8250;
-            </button>
-          </li>
-          <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-            <button className="page-link" onClick={() => setPage(totalPages)} aria-label="Last" disabled={currentPage === totalPages}>
-              »
+          <li className={`page-item ms-2 ${currentPage === totalPages ? "disabled" : ""}`}>
+            <button
+              className="page-link text-center text-white"
+              style={{ background: "var(--tblr-border-active-color)" }}
+              onClick={() => setPage((p) => clamp(p + 1, 1, totalPages))}
+              aria-label="Next"
+              disabled={currentPage === totalPages}
+            >
+              <FontAwesomeIcon icon={faArrowRight} fontSize={11}/>
             </button>
           </li>
         </ul>

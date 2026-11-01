@@ -14,12 +14,14 @@ import {
 import { RunnerAdmin } from "../../types/runner";
 import { CreateRunnerModal } from "./CreateRunnerModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCopy, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCopy, faPencilAlt, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
 import { AdminListRunners, AdminRetrieveRecommendedRunnerVersion } from "../../api/runner";
 import DataTable from "../../components/DataTable";
 import React from "react";
+import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
+import { TimeSince } from "../../common/time";
 
 export default function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
@@ -53,11 +55,12 @@ export default function AdminRunners() {
       <div className="row g-2 align-items-center mb-4">
         <div className="col">
           <h2 className="mb-0 mt-2">Runners</h2>
-          <p className="text-muted">List of all runners</p>
+          <p className="text-muted">Manage your runner instances</p>
         </div>
         <div className="col-auto ms-auto d-print-none">
           <Button color="light" onClick={() => setCreateRunnerModal(true)}>
-            New runner
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Add runner
           </Button>
         </div>
       </div>
@@ -138,56 +141,127 @@ export default function AdminRunners() {
                   key: "name",
                   render: (_, runner: RunnerAdmin) => (
                     <Link to={`/admin/runners/${runner.id}`} className="d-flex gap-2 align-items-center">
-                      <b>{runner.name}</b>
-                      {runner.deletion_in_progress && (
-                        <React.Fragment>
-                          <Badge color="orange" className="text-white">
-                            Deletion in progress
-                            <Spinner size="sm" />
-                          </Badge>
-                        </React.Fragment>
-                      )}
-                      {recommendedRunnerVersion !== runner.version && runner.version && (
-                        <React.Fragment>
-                          <Badge
-                            color="warning"
-                            className="text-white"
-                          >
-                            Version mismatch
-                          </Badge>
-                        </React.Fragment>
-                      )}
+                      <div className="d-flex align-items-center gap-3">
+                        <div
+                          className="d-flex align-items-center justify-content-center text-white text-primary fw-bold"
+                          style={{ width: 40, height: 40, borderRadius: 5, background: "rgba(var(--tblr-primary-rgb), 0.2)" }}
+                        >
+                          #{runner.id}
+                        </div>
+                        <div className="d-flex flex-column text-white">
+                          <h4 className="mb-1">{runner.name}</h4>
+                          {runner.deletion_in_progress ? (
+                            <React.Fragment>
+                              <Badge
+                                className="text-warning bg-warning-lt"
+                              >
+                                Deletion in progress
+                                <Spinner size="sm" className="ms-2" />
+                              </Badge>
+                            </React.Fragment>
+                          ) : (
+                            <small className="text-muted">
+                              {runner.description || "No description provided"}
+                            </small>
+                          )}
+                        </div>
+                      </div>
                     </Link>
                   ),
+                  sortable: true,
                 },
                 {
                   label: "Type",
                   key: "type",
-                },
-                {
-                  label: "Last contact",
-                  key: "last_contact",
+                  sortable: true,
                   render: (_, runner: RunnerAdmin) => (
-                    runner.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"
+                    <React.Fragment>
+                      <div className="d-flex align-items-center">
+                        <Badge
+                          className="text-primary bg-azure-lt"
+                        >
+                          {runner.type.at(0)?.toUpperCase() + runner.type.slice(1)}
+                        </Badge>
+                      </div>
+                    </React.Fragment>
                   ),
                 },
                 {
                   label: "Status",
-                  key: "_",
+                  key: "status",
+                  sortable: true,
                   render: (_, runner: RunnerAdmin) => (
                     <React.Fragment>
-                      {new Date(runner.last_contact) > new Date(Date.now() - 5 * 60 * 1000)
-                        ? (
+                      <div className="d-flex align-items-center">
+                        <AdminRunnerStatusBadge runner={runner} />
+                      </div>
+                    </React.Fragment>
+                  ),
+                },
+                {
+                  label: "Version",
+                  key: "version",
+                  sortable: true,
+                  render: (_, runner: RunnerAdmin) => (
+                    <React.Fragment>
+                      <div className="d-flex align-items-center gap-2">
+                        {runner.version ? (
                           <React.Fragment>
-                            <span className="text-success pe-1">●</span>
-                            Online
-                          </React.Fragment>
-                        ) : (
+                            <Badge
+                              className="text-white"
+                              style={{ background: "rgba(var(--tblr-white-rgb), 0.1) !important" }}
+                            >
+                              {runner.version}
+                            </Badge>
+                            {recommendedRunnerVersion !== runner.version && runner.version && (
+                              <React.Fragment>
+                                <Badge
+                                  className="text-warning bg-warning-lt"
+                                >
+                                  !
+                                </Badge>
+                              </React.Fragment>
+                            )}
+                          </React.Fragment>) : (
                           <React.Fragment>
-                            <span className="text-danger pe-1">●</span>
-                            Offline
+                            <Badge
+                              className="text-white"
+                              style={{ background: "rgba(var(--tblr-white-rgb), 0.1) !important" }}
+                            >
+                              -
+                            </Badge>
                           </React.Fragment>
                         )}
+                      </div>
+                    </React.Fragment>
+                  ),
+                },
+                {
+                  label: "Last contact",
+                  key: "last_contact",
+                  sortable: true,
+                  render: (_, runner: RunnerAdmin) => (
+
+                    <React.Fragment>
+                      <div className="d-flex align-items-center">
+                        {runner.last_contact ? (
+                          TimeSince(new Date(runner.last_contact))
+                        ) : "Never"}
+                      </div>
+                    </React.Fragment>
+                  ),
+                },
+                {
+                  label: "Actions",
+                  key: "actions",
+                  sortable: false,
+                  render: (_, runner: RunnerAdmin) => (
+                    <React.Fragment>
+                      <div className="d-flex align-items-center justify-content-end  gap-2">
+                        <Link to={`/admin/runners/${runner.id}`} className="btn btn-accent px-2 text-muted">
+                          <FontAwesomeIcon icon={faPencilAlt} />
+                        </Link>
+                      </div>
                     </React.Fragment>
                   ),
                 },

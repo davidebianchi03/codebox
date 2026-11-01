@@ -9,9 +9,8 @@ export function NonFieldError({ error }: NonFieldErrorProps) {
         <React.Fragment>
             <div className="mt-3">
                 <p
-                    className="border-0 d-flex justify-content-start px-3 py-2 mb-3 mt-2 text-danger"
+                    className="border-0 d-flex justify-content-start px-3 py-2 mb-3 mt-2 text-danger bg-danger-lt"
                     style={{
-                        background: "rgba(var(--tblr-danger-rgb), 0.1)",
                         borderLeft: "4px solid var(--tblr-danger) !important",
                         borderRadius: "4px",
                     }}

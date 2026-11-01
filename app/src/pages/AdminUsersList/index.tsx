@@ -20,6 +20,9 @@ import { RootState } from "../../redux/store";
 import { AuthenticationSettings } from "../../types/settings";
 import { APIAdminRetrieveAuthenticationSettings } from "../../api/common";
 import { UserListCardPlaceholder } from "./UserListCardPlaceholder";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPencilAlt, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { UserAvatar } from "../../components/UserAvatar";
 
 export default function AdminUsersList() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -66,13 +69,14 @@ export default function AdminUsersList() {
             <div className="row g-2 align-items-center mb-2">
               <div className="col">
                 <h2 className="mb-0 mt-2">Users</h2>
-                <p className="text-muted">List of all users</p>
+                <p className="text-muted">Manage your user accounts</p>
               </div>
               <div className="col-auto ms-auto d-print-none">
                 <Button
                   color="light"
                   onClick={() => setShowCreateUserModal(true)}
                 >
+                  <FontAwesomeIcon icon={faPlus} className="me-2" />
                   New User
                 </Button>
               </div>
@@ -87,43 +91,48 @@ export default function AdminUsersList() {
                         key: "email",
                         sortable: true,
                         render: (_, user: AdminUser) => (
-                          <Link to={`/admin/users/${user.email}`} className="d-flex gap-2 align-items-center">
+                          <Link to={`/admin/users/${user.email}`} className="d-flex gap-3 align-items-center">
+                            <UserAvatar
+                              firstName={user?.first_name}
+                              lastName={user?.last_name}
+                              email={user?.email}
+                            />
                             <div className="d-flex flex-column text-light">
                               <div>
                                 <b>{user.first_name} {user.last_name}</b>
                                 {user.is_superuser && (
                                   <React.Fragment>
-                                    <Badge color="info" className="text-white ms-2">
+                                    <Badge
+                                      className="text-info ms-2 bg-info-lt"
+                                    >
                                       Admin
                                     </Badge>
                                   </React.Fragment>
                                 )}
                                 {user.is_template_manager && !user.is_superuser && (
                                   <React.Fragment>
-                                    <Badge color="accent" className="text-white ms-2">
+                                    <Badge
+                                      className="text-white ms-2 bg-white-lt"
+                                    >
                                       Template Manager
                                     </Badge>
                                   </React.Fragment>
                                 )}
                                 {user.email === currentUser?.email && (
                                   <React.Fragment>
-                                    <Badge color="success" className="text-white ms-2">
+                                    <Badge
+                                      className="text-success ms-2 bg-success-lt"
+                                    >
                                       It's you
                                     </Badge>
                                   </React.Fragment>
                                 )}
                                 {!user.approved && authSettings?.users_must_be_approved && (
                                   <React.Fragment>
-                                    <Badge color="danger" className="text-white ms-2">
+                                    <Badge
+                                      className="text-danger ms-2 bg-danger-lt"
+                                    >
                                       Not Approved
-                                    </Badge>
-                                  </React.Fragment>
-                                )}
-                                {user.deletion_in_progress && (
-                                  <React.Fragment>
-                                    <Badge color="orange" className="text-white ms-2">
-                                      Deletion in progress
-                                      <Spinner size="sm" />
                                     </Badge>
                                   </React.Fragment>
                                 )}
@@ -139,14 +148,63 @@ export default function AdminUsersList() {
                         sortable: true,
                         render: (_, user: AdminUser) => (
                           <React.Fragment>
-                            <div className="mt-2">
-                              {user.last_login
-                                ? TimeSince(new Date(user.last_login))
-                                : "Never"}
+                            {user.last_login
+                              ? TimeSince(new Date(user.last_login))
+                              : "Never"}
+                          </React.Fragment>
+                        ),
+                      },
+                      {
+                        label: "Status",
+                        key: "status",
+                        sortable: true,
+                        render: (_, user: AdminUser) => (
+                          <React.Fragment>
+                            {user.deletion_in_progress ? (
+                              <React.Fragment>
+                                <Badge
+                                  className="text-orange ms-2 bg-orange-lt"
+                                >
+                                  Deletion in progress
+                                  <Spinner size="sm" className="ms-2" />
+                                </Badge>
+                              </React.Fragment>
+                            ) : (
+                              !user.approved && authSettings?.users_must_be_approved ? (
+                                <React.Fragment>
+                                  <Badge
+                                    className="text-danger ms-2 bg-danger-lt"
+                                  >
+                                    Not Approved
+                                  </Badge>
+                                </React.Fragment>
+                              ) : (
+                                <React.Fragment>
+                                  <Badge
+                                    className="text-success ms-2 bg-success-lt"
+                                  >
+                                    Active
+                                  </Badge>
+                                </React.Fragment>
+                              )
+                            )}
+                          </React.Fragment>
+                        ),
+                      },
+                      {
+                        label: "Actions",
+                        key: "actions",
+                        sortable: false,
+                        render: (_, user: AdminUser) => (
+                          <React.Fragment>
+                            <div className="d-flex align-items-center justify-content-end  gap-2">
+                              <Link to={`/admin/users/${user.email}`} className="btn btn-accent px-2 text-muted">
+                                <FontAwesomeIcon icon={faPencilAlt} />
+                              </Link>
                             </div>
                           </React.Fragment>
                         ),
-                      }
+                      },
                     ]}
                     data={users}
                     pageSizeOptions={[1, 5, 10, 20, 50, 100]}

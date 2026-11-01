@@ -7,8 +7,7 @@ export function AdminRunnerStatusBadge({ runner }: { runner: RunnerAdmin }) {
         return (
             <React.Fragment>
                 <Badge
-                    style={{ background: "rgba(var(--tblr-success-rgb), 0.1) !important" }}
-                    className="border-success"
+                    className="bg-success-lt"
                 >
                     <span className="text-success pe-1">●</span>
                     <span className="text-success">Online</span>
@@ -19,8 +18,7 @@ export function AdminRunnerStatusBadge({ runner }: { runner: RunnerAdmin }) {
         return (
             <React.Fragment>
                 <Badge
-                    style={{ background: "rgba(var(--tblr-danger-rgb), 0.1) !important" }}
-                    className="border-danger"
+                    className="bg-danger-lt"
                 >
                     <span className="text-danger pe-1">●</span>
                     <span className="text-danger">Offline</span>

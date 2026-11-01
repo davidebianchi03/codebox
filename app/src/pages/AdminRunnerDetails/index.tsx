@@ -181,17 +181,15 @@ export default function AdminRunnerDetails() {
                   <Col>
                     <Card
                       body
-                      style={{ backgroundColor: "rgba(var(--tblr-warning-rgb), 0.2)" }}
-                      className="border-warning border-2 p-4"
+                      className="border-warning border-2 p-4 bg-warning-lt"
                     >
                       <div className=" d-flex justify-content-center align-items-start gap-3">
                         <div>
                           <div
-                            className="d-flex justify-content-center align-items-center text-center"
+                            className="d-flex justify-content-center align-items-center text-center bg-warning-lt"
                             style={{
                               width: "40px",
                               height: "40px",
-                              backgroundColor: "rgba(var(--tblr-warning-rgb), 0.2)",
                               borderRadius: "7px"
                             }}
                           >
@@ -206,7 +204,7 @@ export default function AdminRunnerDetails() {
                           <p>
                             This runner is running version <b>{runner.version}</b>,
                             but the recommended version is <b>{recommendedRunnerVersion}</b>.
-                            Please consider updating the runner to ensure compatibility and access to the latest features.
+                            Please consider updating the runner to ensure compatibility and access to the latest features and a complete compatibility.
                           </p>
                         </div>
                       </div>
@@ -282,9 +280,8 @@ export default function AdminRunnerDetails() {
                   <h4 className="text-uppercase text-muted">
                     <b>Connectivity</b>
                   </h4>
-                  <div 
-                    className="d-flex justify-content-between align-items-center mb-3 p-3 rounded-2"
-                    style={{ backgroundColor: "rgba(var(--tblr-primary-rgb), 0.1)" }}
+                  <div
+                    className="d-flex justify-content-between align-items-center mb-3 p-3 rounded-2 bg-azure-lt"
                   >
                     <div>
                       <h3 className="mb-1">Direct Connection</h3>
@@ -381,9 +378,8 @@ export default function AdminRunnerDetails() {
                     </React.Fragment>
                   ) : (
                     <React.Fragment>
-                      <div 
-                        className="d-flex justify-content-between p-3 rounded-2 mb-3 align-items-center gap-3"
-                        style={{ backgroundColor: "rgba(var(--tblr-primary-rgb), 0.1)" }}
+                      <div
+                        className="d-flex justify-content-between p-3 rounded-2 mb-3 align-items-center gap-3 bg-azure-lt"
                       >
                         <div>
                           <h4 className="mb-1">Rotate runner token</h4>
@@ -401,12 +397,11 @@ export default function AdminRunnerDetails() {
                           </Button>
                         </div>
                       </div>
-                      <div 
-                        style={{ backgroundColor: "rgba(var(--tblr-danger-rgb), 0.1)" }}
-                        className="d-flex justify-content-between p-3 rounded-2 mb-3 align-items-center gap-3"
+                      <div
+                        className="d-flex justify-content-between p-3 rounded-2 mb-3 align-items-center gap-3 bg-danger-lt"
                       >
                         <div>
-                          <h4 className="mb-1">Remove runner</h4>
+                          <h4 className="mb-1 ">Remove runner</h4>
                           <small className="text-muted">
                             Disconnect and delete this runner.
                           </small>
@@ -430,7 +425,7 @@ export default function AdminRunnerDetails() {
               </Card>
             </Col>
           </Row>
-          <Row className="mt-4" style={{position: "sticky", bottom: 0, zIndex: 100}}>
+          <Row className="mt-4" style={{ position: "sticky", bottom: 0, zIndex: 100 }}>
             <Col>
               <Card body className="d-flex justify-content-end align-items-end gap-2">
                 <Button

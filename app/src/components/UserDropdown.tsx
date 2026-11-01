@@ -8,6 +8,7 @@ import { StopImpersonation } from "../api/users";
 import { toast } from "react-toastify";
 import { Dropdown } from "react-bootstrap";
 import { ShieldCogIcon, TemplateIcon, TerminalIcon, UserIcon, LogoutIcon, GhostOffIcon } from "../icons/Tabler";
+import { UserAvatar } from "./UserAvatar";
 
 export function UserDropdown() {
     const navigate = useNavigate();
@@ -49,14 +50,11 @@ export function UserDropdown() {
                                 variant="link"
                                 className="d-flex lh-1 p-0 px-2 text-white"
                             >
-                                <div
-                                    className="avatar avatar-sm bg-azure-lt text-white d-flex align-items-center justify-content-center"
-                                    style={{ width: '35px', height: '35px' }}
-                                >
-                                    {user?.first_name.length > 0 && user.first_name[0]}
-                                    &nbsp;
-                                    {user?.last_name.length > 0 && user.last_name[0]}
-                                </div>
+                                <UserAvatar
+                                    firstName={user?.first_name}
+                                    lastName={user?.last_name}
+                                    email={user?.email}
+                                />
                                 <div className="d-none d-xl-block ps-2 text-start">
                                     <div>
                                         <b>
