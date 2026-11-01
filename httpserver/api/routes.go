@@ -360,6 +360,10 @@ func V1ApiRoutes(router *gin.Engine) {
 				"runners/:runnerId/logs",
 				permissions.AdminRequiredRoute(admin.HandleAdminListRunnerLogs),
 			)
+			adminApis.POST(
+				"runners/:runnerId/rotate-token",
+				permissions.AdminRequiredRoute(admin.HandleAdminRotateRunnerToken),
+			)
 			adminApis.GET(
 				"recommended-runner-version",
 				permissions.AdminRequiredRoute(admin.HandleRetrieveRecommendedRunnerVersion),

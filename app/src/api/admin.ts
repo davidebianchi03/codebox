@@ -144,3 +144,14 @@ export async function APIAdminListRunnerLogs(runnerId: number): Promise<SystemLo
         return undefined;
     }
 }
+
+export async function APIAdminRotateRunnerToken(runnerId: number): Promise<{token: string} | undefined> {
+    try {
+        const r = await axios.post<{token: string}>(
+            `/api/v1/admin/runners/${runnerId}/rotate-token`
+        );
+        return r.data;
+    } catch {
+        return undefined;
+    }
+}

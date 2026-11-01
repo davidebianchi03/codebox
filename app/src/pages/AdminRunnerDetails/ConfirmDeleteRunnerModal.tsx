@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { Badge, Button, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import { Badge, Button, Form, Modal } from "react-bootstrap";
 
 interface ConfirmDeleteRunnerModalProps {
     isOpen: boolean;
@@ -19,23 +19,16 @@ export function ConfirmDeleteRunnerModal({
     return (
         <React.Fragment>
             <Modal
-                isOpen={isOpen}
-                toggle={() => {
-                    HandleCloseModal(false);
-                }}
+                show={isOpen}
+                onHide={() => HandleCloseModal(false)}
                 centered
                 size="lg"
-                modalClassName="modal-blur"
-                fade
+                className="modal-blur"
             >
-                <ModalHeader
-                    toggle={() => {
-                        HandleCloseModal(false);
-                    }}
-                >
-                    Delete Runner
-                </ModalHeader>
-                <ModalBody>
+                <Modal.Header closeButton>
+                    <Modal.Title>Delete Runner</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
                     <p>
                         Are you sure that you want to delete this runner?
                         Workspaces using this runner will be stopped,
@@ -43,35 +36,29 @@ export function ConfirmDeleteRunnerModal({
                         This could cause data loss.
                     </p>
                     <p>
-                        Enter <Badge color="accent">confirm</Badge> to confirm that you want to delete the runner
+                        Enter <Badge bg="accent">confirm</Badge> to confirm that you want to delete the runner
                     </p>
-                    <Input
+                    <Form.Control
                         placeholder="confirm"
                         onChange={(e) => setConfirmText(e.target.value)}
                         value={confirmText}
                     />
-                </ModalBody>
-                <ModalFooter>
+                </Modal.Body>
+                <Modal.Footer>
                     <Button
-                        color="accent"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            HandleCloseModal(false);
-                        }}
+                        variant="accent"
+                        onClick={() => HandleCloseModal(false)}
                     >
                         Cancel
                     </Button>
                     <Button
-                        color="danger"
+                        variant="danger"
                         disabled={confirmText !== "confirm"}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            HandleCloseModal(true);
-                        }}
+                        onClick={() => HandleCloseModal(true)}
                     >
                         Delete
                     </Button>
-                </ModalFooter>
+                </Modal.Footer>
             </Modal>
         </React.Fragment>
     )

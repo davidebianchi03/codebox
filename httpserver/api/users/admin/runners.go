@@ -350,3 +350,44 @@ func HandleAdminListRunnerLogs(c *gin.Context) {
 		serializers.LoadMultipleRunnerLogRows(logs),
 	)
 }
+
+// HandleAdminRotateRunnerToken godoc
+// @Summary Rotate runner token
+// @Schemes
+// @Description Rotate the token for a runner
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/admin/runners/:id/rotate-token [post]
+func HandleAdminRotateRunnerToken(c *gin.Context) {
+	runnerId, _ := c.Params.Get("runnerId")
+
+	id, err := strconv.Atoi(runnerId)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+		return
+	}
+
+	runner, err := models.RetrieveRunnerByID(uint(id))
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	if runner == nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "runner not found")
+		return
+	}
+
+	if err := models.RotateRunnerToken(runner); err != nil {
+		logging.Error("Failed to rotate token for runner %d, %s", runner.ID, err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"id":    runner.ID,
+		"token": runner.Token,
+	})
+}

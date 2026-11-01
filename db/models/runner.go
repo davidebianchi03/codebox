@@ -215,3 +215,26 @@ func DeleteRunner(r Runner) error {
 		Delete(&r).
 		Error
 }
+
+/*
+Rotate runner token
+*/
+func RotateRunnerToken(r *Runner) error {
+	// generate the token
+	token := ""
+	exists := false
+	for ok := true; ok; ok = exists {
+		token = fmt.Sprintf("cbrt-%s", generateToken(30))
+
+		if err := dbconn.DB.Model(Runner{}).
+			Select("count(*) > 0").
+			Where("token = ?", token).
+			Find(&exists).
+			Error; err != nil {
+			return err
+		}
+	}
+
+	r.Token = token
+	return dbconn.DB.Save(r).Error
+}

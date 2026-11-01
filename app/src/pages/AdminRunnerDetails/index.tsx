@@ -1,22 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Col,
-  Container,
-  FormFeedback,
-  Input,
-  Label,
-  Row,
-  Spinner,
-} from "reactstrap";
 import { RunnerAdmin, RunnerType } from "../../types/runner";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeftLong, faExclamation } from "@fortawesome/free-solid-svg-icons";
 import {
   AdminDeleteRunner,
   AdminListRunners,
@@ -26,11 +15,15 @@ import {
   ListRunnerTypes
 } from "../../api/runner";
 import { ConfirmDeleteRunnerModal } from "./ConfirmDeleteRunnerModal";
+import { RotateRunnerTokenModal } from "./RotateRunnerTokenModal";
+import { Badge, Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
 
 export default function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<boolean>(false);
+  const [showRotateTokenModal, setShowRotateTokenModal] = useState<boolean>(false);
   const [recommendedRunnerVersion, setRecommendedRunnerVersion] = useState<string>("");
 
   const { id } = useParams();
@@ -164,8 +157,12 @@ export default function AdminRunnerDetails() {
   return (
     <React.Fragment>
       <Container>
+        <h1 className="mb-1">Edit runner</h1>
+        <p className="text-muted">
+          Manage runner configuration, connectivity and health.
+        </p>
         <Button
-          color="accent"
+          variant="accent"
           className="me-2 mb-4"
           onClick={(e) => {
             e.preventDefault();
@@ -173,7 +170,7 @@ export default function AdminRunnerDetails() {
           }}
         >
           <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
-          Back
+          Back to runners
         </Button>
 
         {runner && (
@@ -182,11 +179,36 @@ export default function AdminRunnerDetails() {
               <React.Fragment>
                 <Row className="mb-4">
                   <Col>
-                    <Card body className="bg-warning">
-                      <div className="text-white">
-                        <b>Warning:</b> This runner is running version <b>{runner.version}</b>, 
-                        but the recommended version is <b>{recommendedRunnerVersion}</b>. 
-                        Please consider updating the runner to ensure compatibility and access to the latest features.
+                    <Card
+                      body
+                      style={{ backgroundColor: "rgba(var(--tblr-warning-rgb), 0.2)" }}
+                      className="border-warning border-2 p-4"
+                    >
+                      <div className=" d-flex justify-content-center align-items-start gap-3">
+                        <div>
+                          <div
+                            className="d-flex justify-content-center align-items-center text-center"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              backgroundColor: "rgba(var(--tblr-warning-rgb), 0.2)",
+                              borderRadius: "7px"
+                            }}
+                          >
+                            <FontAwesomeIcon
+                              icon={faExclamation}
+                              className="text-warning fs-2 fw-bold"
+                            />
+                          </div>
+                        </div>
+                        <div className="text-white">
+                          <h3 className="mb-1">Runner update available</h3>
+                          <p>
+                            This runner is running version <b>{runner.version}</b>,
+                            but the recommended version is <b>{recommendedRunnerVersion}</b>.
+                            Please consider updating the runner to ensure compatibility and access to the latest features.
+                          </p>
+                        </div>
                       </div>
                     </Card>
                   </Col>
@@ -195,141 +217,239 @@ export default function AdminRunnerDetails() {
             )}
           </React.Fragment>
         )}
-        <Row>
-          <Col md={12}>
-            <Card body>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  validation.handleSubmit();
-                  return false;
-                }}
-              >
-                <div className="mb-3">
-                  <Label>Runner name</Label>
-                  <Input
-                    name="runnerName"
-                    value={validation.values.runnerName}
-                    onChange={validation.handleChange}
-                    invalid={!!validation.errors.runnerName}
-                    disabled={runner?.deletion_in_progress}
-                  />
-                  <FormFeedback>{validation.errors.runnerName}</FormFeedback>
-                </div>
-                <div className="mb-3">
-                  <Label>Runner type</Label>
-                  <select
-                    name="runnerType"
-                    className={`form-control ${validation.errors.runnerType ? "is-invalid" : ""
-                      }`}
-                    onChange={validation.handleChange}
-                    value={validation.values.runnerType}
-                    disabled={runner?.deletion_in_progress}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            validation.handleSubmit();
+            return false;
+          }}
+        >
+          <Row>
+            <Col md={12}>
+              <Card>
+                <Card.Header className="d-flex flex-column align-items-start">
+                  <h3 className="mb-1">Runner Configuration</h3>
+                  <small className="text-muted">Basic details and how Codebox connects to this runner.</small>
+                </Card.Header>
+                <Card.Body>
+                  <h4 className="text-uppercase text-muted">
+                    <b>General</b>
+                  </h4>
+                  <div className="mb-3">
+                    <Form.Label>Runner name</Form.Label>
+                    <Form.Control
+                      name="runnerName"
+                      value={validation.values.runnerName}
+                      onChange={validation.handleChange}
+                      isInvalid={!!validation.errors.runnerName}
+                      disabled={runner?.deletion_in_progress}
+                    />
+                    <small className="text-muted">
+                      A unique name to identify this runner in your infrastructure.
+                    </small>
+                    <Form.Control.Feedback>
+                      {validation.errors.runnerName}
+                    </Form.Control.Feedback>
+                  </div>
+                  <div className="mb-3">
+                    <Form.Label>Runner type</Form.Label>
+                    <Form.Select
+                      name="runnerType"
+                      value={validation.values.runnerType}
+                      onChange={validation.handleChange}
+                      isInvalid={!!validation.errors.runnerType}
+                      disabled={runner?.deletion_in_progress}
+                    >
+                      <option value={""}>Select runner type</option>
+                      {runnerTypes.map((t) => (
+                        <option value={t.id} key={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <small className="text-muted">
+                      Supports {" "}
+                      {runnerTypes
+                        .find((r) => r.id === validation.values.runnerType)
+                        ?.supported_types.map((st) => st.name)
+                        .join(", ")}.
+                    </small>
+                    <Form.Control.Feedback type="invalid">
+                      {validation.errors.runnerType}
+                    </Form.Control.Feedback>
+                  </div>
+                  <hr className="my-4" />
+                  <h4 className="text-uppercase text-muted">
+                    <b>Connectivity</b>
+                  </h4>
+                  <div 
+                    className="d-flex justify-content-between align-items-center mb-3 p-3 rounded-2"
+                    style={{ backgroundColor: "rgba(var(--tblr-primary-rgb), 0.1)" }}
                   >
-                    <option value={""}>Select runner type</option>
-                    {runnerTypes.map((t) => (
-                      <option value={t.id} key={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                  <small className="text-muted">
-                    Supported workspaces:{" "}
-                    {runnerTypes
-                      .find((r) => r.id === validation.values.runnerType)
-                      ?.supported_types.map((st) => st.name)
-                      .join(", ")}
-                  </small>
-                  <FormFeedback>{validation.errors.runnerType}</FormFeedback>
-                </div>
-                <div className="mb-3">
-                  <label className="form-check">
-                    <input
-                      className="form-check-input form-check-input-light"
-                      type="checkbox"
+                    <div>
+                      <h3 className="mb-1">Direct Connection</h3>
+                      <small className="text-muted">
+                        Connect directly to this runner without using tunneling.
+                      </small>
+                    </div>
+                    <Form.Switch
                       name="usePublicUrl"
-                      onClick={(e) => {
-                        validation.handleChange(e);
-                      }}
+                      onChange={validation.handleChange}
                       checked={validation.values.usePublicUrl}
                       disabled={runner?.deletion_in_progress}
                     />
-                    <span className="form-check-label">Use public url</span>
-                  </label>
-                </div>
-                <div className="mb-3">
-                  <Label>Public url</Label>
-                  <Input
-                    placeholder="http://my-host.example.com:12345"
-                    name="publicUrl"
-                    onChange={validation.handleChange}
-                    value={validation.values.publicUrl}
-                    invalid={validation.errors.publicUrl ? true : false}
-                    disabled={!validation.values.usePublicUrl || runner?.deletion_in_progress}
-                  />
-                  <FormFeedback>{validation.errors.publicUrl}</FormFeedback>
-                </div>
-                <div className="mb-3">
-                  <Label>Status</Label>
-                  {new Date(runner?.last_contact || "") > new Date(Date.now() - 5 * 60 * 1000)
-                    ? (
-                      <React.Fragment>
-                        <span className="text-success pe-1">●</span>
-                        Online
-                      </React.Fragment>
-                    ) : (
-                      <React.Fragment>
-                        <span className="text-danger pe-1">●</span>
-                        Offline
-                      </React.Fragment>
-                    )}
-                </div>
-                <div className="mb-3">
-                  <Label>Last contact</Label>
-                  {runner?.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"}
-                </div>
-                {runner?.deletion_in_progress ? (
-                  <React.Fragment>
-                    <div className="d-flex justify-content-end mt-4">
-                      <div className="btn btn-orange text-white">
-                        Deletion in progress
-                        <Spinner size="sm" className="ms-2" />
+                  </div>
+                  {validation.values.usePublicUrl && (
+
+                    <div className="mb-3">
+                      <Form.Label>Runner URL</Form.Label>
+                      <Form.Control
+                        placeholder="http://my-host.example.com:12345"
+                        name="publicUrl"
+                        onChange={validation.handleChange}
+                        value={validation.values.publicUrl}
+                        isInvalid={!!validation.errors.publicUrl}
+                        disabled={!validation.values.usePublicUrl || runner?.deletion_in_progress}
+                      />
+                      <Form.Control.Feedback>
+                        {validation.errors.publicUrl}
+                      </Form.Control.Feedback>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+          <Row className="mt-4">
+            <Col md={6}>
+              <Card>
+                <Card.Header className="d-flex flex-column align-items-start">
+                  <h3 className="mb-1">Runner health</h3>
+                  <small className="text-muted">Live connection information</small>
+                </Card.Header>
+                <Card.Body>
+                  <div>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <p className="mb-0 fw-bold text-muted">Connection</p>
+                      <div>
+                        {runner && <AdminRunnerStatusBadge runner={runner} />}
                       </div>
                     </div>
-                  </React.Fragment>
-                ) : (
-                  <React.Fragment>
-                    <div className="d-flex justify-content-end mt-4">
-                      <Button
-                        color="danger"
-                        className="me-2"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setShowConfirmDeleteModal(true);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                      <Button
-                        color="accent"
-                        className="me-2"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          FetchRunner();
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" color="light">
-                        Save
-                      </Button>
+                  </div>
+                  <div className="mt-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <p className="mb-0 fw-bold text-muted">Last contact</p>
+                      <div>
+                        {runner?.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"}
+                      </div>
                     </div>
-                  </React.Fragment>
-                )}
-              </form>
-            </Card>
-          </Col>
-        </Row>
+                  </div>
+                  <div className="mt-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <p className="mb-0 fw-bold text-muted">Runner ID</p>
+                      <div>
+                        {runner?.id || "Unknown"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <p className="mb-0 fw-bold text-muted">Version</p>
+                      <div>
+                        {runner?.version || "Unknown"}
+                      </div>
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card>
+                <Card.Header className="d-flex flex-column align-items-start">
+                  <h3 className="mb-1">Security & maintenance</h3>
+                  <small className="text-muted">Manage runner credentials and lifecycle.</small>
+                </Card.Header>
+                <Card.Body>
+                  {runner?.deletion_in_progress ? (
+                    <React.Fragment>
+                      <div className="d-flex justify-content-end mt-4">
+                        <div className="btn btn-orange text-white">
+                          Deletion in progress
+                          <Spinner size="sm" className="ms-2" />
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <div 
+                        className="d-flex justify-content-between p-3 rounded-2 mb-3 align-items-center gap-3"
+                        style={{ backgroundColor: "rgba(var(--tblr-primary-rgb), 0.1)" }}
+                      >
+                        <div>
+                          <h4 className="mb-1">Rotate runner token</h4>
+                          <small className="text-muted">
+                            Rotate the runner token to invalidate the current token and generate a new one.
+                          </small>
+                        </div>
+                        <div>
+                          <Button
+                            variant="accent"
+                            className="me-2"
+                            onClick={() => setShowRotateTokenModal(true)}
+                          >
+                            Rotate
+                          </Button>
+                        </div>
+                      </div>
+                      <div 
+                        style={{ backgroundColor: "rgba(var(--tblr-danger-rgb), 0.1)" }}
+                        className="d-flex justify-content-between p-3 rounded-2 mb-3 align-items-center gap-3"
+                      >
+                        <div>
+                          <h4 className="mb-1">Remove runner</h4>
+                          <small className="text-muted">
+                            Disconnect and delete this runner.
+                          </small>
+                        </div>
+                        <div>
+                          <Button
+                            variant="outline-danger"
+                            className="me-2"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setShowConfirmDeleteModal(true);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+          <Row className="mt-4" style={{position: "sticky", bottom: 0, zIndex: 100}}>
+            <Col>
+              <Card body className="d-flex justify-content-end align-items-end gap-2">
+                <Button
+                  variant="accent"
+                  className="me-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    FetchRunner();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="light">
+                  Save
+                </Button>
+              </Card>
+            </Col>
+          </Row>
+        </form>
         <ConfirmDeleteRunnerModal
           isOpen={showConfirmDeleteModal}
           onClose={(deleteConfirmed) => {
@@ -339,6 +459,13 @@ export default function AdminRunnerDetails() {
             }
           }}
         />
+        {runner && (
+          <RotateRunnerTokenModal
+            isOpen={showRotateTokenModal}
+            runnerId={runner.id}
+            onClose={() => setShowRotateTokenModal(false)}
+          />
+        )}
         <ToastContainer
           toastClassName={"bg-dark"}
         />
