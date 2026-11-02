@@ -162,6 +162,10 @@ export default function AdminUserDetails() {
   return (
     <React.Fragment>
       <Container>
+        <h1 className="mb-1">Edit user</h1>
+        <p className="text-muted">
+          Manage the user's profile, permissions and account security.
+        </p>
         <Button
           color="accent"
           className="me-2 mb-4"
@@ -171,7 +175,7 @@ export default function AdminUserDetails() {
           }}
         >
           <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
-          Back
+          Back to users
         </Button>
         {loading ? (
           <React.Fragment>
@@ -188,20 +192,54 @@ export default function AdminUserDetails() {
                     </div>
                     <div>
                       <h2 className="mb-2">{user?.first_name} {user?.last_name}</h2>
-                      <p className="text-muted">{user?.email}</p>
+                      <p className="text-muted mb-2">({user?.email})</p>
                     </div>
                   </div>
                 </Card>
               </Col>
             </Row>
-            <Row>
-              <Col md={6} className="mt-4">
+            {!validation.values.approved && (
+              <Row className="my-4">
+                <Col>
+                  <Card
+                    body
+                    className="bg-warning-lt border-warning-lt"
+                    style={{ borderLeft: "5px solid var(--tblr-warning)" }}
+                  >
+                    <React.Fragment>
+                      <Row className="align-items-center">
+                        <Col md={10}>
+                          <h3>User not approved</h3>
+                          <p className="text-white mb-0">
+                            This user has not been approved yet, they will not be able to log in until they are approved.
+                          </p>
+                        </Col>
+                        <Col md={2}>
+                          <Button
+                            color="outline-warning w-100"
+                            onClick={() => validation.setFieldValue("approved", true)}
+                          >
+                            Approve user
+                          </Button>
+                        </Col>
+                      </Row>
+                    </React.Fragment>
+                  </Card>
+                </Col>
+              </Row>
+            )}
+            <Row className="mt-4">
+              <Col>
                 <Card>
-                  <CardHeader className="pb-0 border-0">
-                    <h3>Basic Information</h3>
+                  <CardHeader className="pb-0 border-0 flex-column align-items-start mb-4">
+                    <h3 className="mb-0">Basic Information</h3>
+                    <p className="text-muted mb-0">
+                      <small>Update the user's profile, approval status, email verification and roles.</small>
+                    </p>
                   </CardHeader>
                   <CardBody className="pt-0">
                     <form
+                      id="user-details-form"
                       onSubmit={(e) => {
                         e.preventDefault();
                         validation.handleSubmit();
@@ -239,26 +277,11 @@ export default function AdminUserDetails() {
                         />
                         <FormFeedback>{validation.errors.lastName}</FormFeedback>
                       </div>
-                      <div className="d-flex align-items-center">
-                        <div className="mb-3">
-                          <label className="form-check">
-                            <input
-                              className="form-check-input form-check-input-light"
-                              type="checkbox"
-                              name="approved"
-                              checked={validation.values.approved}
-                              onClick={validation.handleChange}
-                              disabled={user?.is_superuser || user?.deletion_in_progress}
-                            />
-                            <span className="form-check-label">Approved</span>
-                          </label>
-                        </div>
-                      </div>
                       <p>
                         <b>Email</b>
                       </p>
-                      <div className="d-flex align-items-center">
-                        <div className="mb-3">
+                      <div className="mb-4">
+                        <div>
                           <label className="form-check">
                             <input
                               className="form-check-input form-check-input-light"
@@ -271,12 +294,15 @@ export default function AdminUserDetails() {
                             <span className="form-check-label">Email Verified</span>
                           </label>
                         </div>
+                        <p className="form-text text-muted mb-3">
+                          Confirms that the user has verified their email address.
+                        </p>
                       </div>
                       <p>
                         <b>Roles</b>
                       </p>
-                      <div className="d-flex align-items-center">
-                        <div className="mb-3">
+                      <Row>
+                        <Col md={6}>
                           <label className="form-check">
                             <input
                               className="form-check-input form-check-input-light"
@@ -291,8 +317,11 @@ export default function AdminUserDetails() {
                             />
                             <span className="form-check-label">Admin</span>
                           </label>
-                        </div>
-                        <div className="mb-3 ms-5">
+                          <p className="form-text text-muted mb-3">
+                            Full access to the administration area, including user and instance management.
+                          </p>
+                        </Col>
+                        <Col md={6}>
                           <label className="form-check">
                             <input
                               className="form-check-input form-check-input-light"
@@ -304,116 +333,127 @@ export default function AdminUserDetails() {
                             />
                             <span className="form-check-label">Template Manager</span>
                           </label>
-                        </div>
-                      </div>
-                      {!user?.deletion_in_progress && (
-                        <div className="d-flex justify-content-end">
-                          <Button
-                            color="accent"
-                            className="me-2"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              FetchUser();
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button type="submit" color="light">
-                            Save
-                          </Button>
-                        </div>
-                      )}
+                          <p className="form-text text-muted mb-3">
+                            Can create and manage templates without access to other administrative settings.
+                          </p>
+                        </Col>
+                      </Row>
                     </form>
                   </CardBody>
                 </Card>
               </Col>
-              <Col md={6} className="mt-4">
-                <Row>
-                  <Col md={12}>
-                    <Card>
-                      <CardHeader className="pb-0 border-0" r>
-                        <h3>Security</h3>
-                      </CardHeader>
-                      <CardBody className="pt-0">
-                        <Row>
-                          <Col md={6}>
-                            <p className="mb-2">
-                              <b>Last Login:</b>
-                            </p>
-                            <p>
-                              {user?.last_login ? new Date(user.last_login).toLocaleString() : "Never logged in"}
-                            </p>
-                          </Col>
-                          <Col md={6}>
-                            <p className="mb-2">
-                              <b>Created At:</b>
-                            </p>
-                            <p>
-                              {new Date(user?.created_at || "").toLocaleString()}
-                            </p>
-                          </Col>
-                        </Row>
-                        {!user?.deletion_in_progress && (
-                          <Button
-                            type="submit"
-                            color="light"
-                            className="me-2 mt-4"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setShowChangePasswordModal(true);
-                              return false;
-                            }}
-                          >
-                            Change password
-                          </Button>
-                        )}
-                      </CardBody>
-                    </Card>
-                  </Col>
-                </Row>
-                <Row className="mt-4">
-                  <Col md={12}>
-                    {user?.deletion_in_progress ? (
-                      <Card body className="pt-0 pb-4">
-                        <div className="d-flex justify-content-start mt-4">
-                          <div className="btn btn-orange text-white">
-                            Deletion in progress
-                            <Spinner size="sm" className="ms-2" />
-                          </div>
-                        </div>
-                      </Card>
-                    ) : (
-                      <Card>
-                        <CardHeader className="pb-0 border-0">
-                          <h3>Actions</h3>
-                        </CardHeader>
-                        <CardBody className="pt-0 d-flex gap-2">
-                          {user?.email !== currentUser?.email && !user?.is_superuser && (
-                            <React.Fragment>
-                              <Button color="accent" onClick={HandleImpersonateUser}>
-                                Impersonate
-                              </Button>
-                              <Button color="accent" onClick={() => setShowImpersonationLogsModal(true)}>
-                                View Impersonation logs
-                              </Button>
-                            </React.Fragment>
-                          )}
-                          {user?.email !== currentUser?.email && (
-                            <Button color="danger" onClick={HandleDeleteUser}>
-                              Delete
-                            </Button>
-                          )}
-                          {user?.email === currentUser?.email && (
-                            <p>No actions available for this user</p>
-                          )}
-                        </CardBody>
-                      </Card>
+            </Row>
+            <Row className="mt-4">
+              <Col md={12}>
+                <Card>
+                  <CardHeader className="pb-0 border-0 flex-column align-items-start mb-4">
+                    <h3 className="mb-0">Security</h3>
+                    <p className="text-muted mb-0">
+                      <small>Review account activity and change the user's password.</small>
+                    </p>
+                  </CardHeader>
+                  <CardBody className="pt-0">
+                    <Row>
+                      <Col md={6}>
+                        <p className="mb-2">
+                          <b>Last Login:</b>
+                        </p>
+                        <p>
+                          {user?.last_login ? new Date(user.last_login).toLocaleString() : "Never logged in"}
+                        </p>
+                      </Col>
+                      <Col md={6}>
+                        <p className="mb-2">
+                          <b>Created At:</b>
+                        </p>
+                        <p>
+                          {new Date(user?.created_at || "").toLocaleString()}
+                        </p>
+                      </Col>
+                    </Row>
+                    {!user?.deletion_in_progress && (
+                      <Button
+                        type="submit"
+                        color="light"
+                        className="me-2 mt-4"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowChangePasswordModal(true);
+                          return false;
+                        }}
+                      >
+                        Change password
+                      </Button>
                     )}
-                  </Col>
-                </Row>
+                  </CardBody>
+                </Card>
+              </Col>
+            </Row>
+            <Row className="mt-4">
+              <Col md={12}>
+                {user?.deletion_in_progress ? (
+                  <Card body className="pt-0 pb-4">
+                    <div className="d-flex justify-content-start mt-4">
+                      <div className="btn btn-orange text-white">
+                        Deletion in progress
+                        <Spinner size="sm" className="ms-2" />
+                      </div>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardHeader className="pb-0 border-0 flex-column align-items-start mb-4">
+                      <h3 className="mb-0">Actions</h3>
+                      <p className="text-muted mb-0">
+                        <small>Manage account access, review impersonation activity or delete the user.</small>
+                      </p>
+                    </CardHeader>
+                    <CardBody className="pt-0 d-flex gap-2">
+                      {user?.email !== currentUser?.email && !user?.is_superuser && (
+                        <React.Fragment>
+                          <Button color="accent" onClick={HandleImpersonateUser}>
+                            Impersonate
+                          </Button>
+                          <Button color="accent" onClick={() => setShowImpersonationLogsModal(true)}>
+                            View Impersonation logs
+                          </Button>
+                        </React.Fragment>
+                      )}
+                      {user?.email !== currentUser?.email && (
+                        <Button color="danger" onClick={HandleDeleteUser}>
+                          Delete
+                        </Button>
+                      )}
+                      {user?.email === currentUser?.email && (
+                        <p>No actions available for this user</p>
+                      )}
+                    </CardBody>
+                  </Card>
+                )}
               </Col>
             </Row>
           </React.Fragment>
+        )}
+        {user && !user.deletion_in_progress && (
+          <Row className="mt-4" style={{ position: "sticky", bottom: 0, zIndex: 100 }}>
+            <Col>
+              <Card body className="d-flex justify-content-end flex-row align-items-end gap-2">
+                <Button
+                  color="accent"
+                  className="me-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    FetchUser();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" color="light" form="user-details-form">
+                  Save
+                </Button>
+              </Card>
+            </Col>
+          </Row>
         )}
         <ToastContainer
           toastClassName={"bg-dark"}

@@ -181,9 +181,10 @@ export default function AdminRunnerDetails() {
                   <Col>
                     <Card
                       body
-                      className="border-warning border-2 p-4 bg-warning-lt"
+                      className="bg-warning-lt border-warning-lt"
+                      style={{ borderLeft: "5px solid var(--tblr-warning)" }}
                     >
-                      <div className=" d-flex justify-content-center align-items-start gap-3">
+                      <div className="d-flex justify-content-center align-items-start gap-3">
                         <div>
                           <div
                             className="d-flex justify-content-center align-items-center text-center bg-warning-lt"
@@ -199,9 +200,9 @@ export default function AdminRunnerDetails() {
                             />
                           </div>
                         </div>
-                        <div className="text-white">
+                        <div>
                           <h3 className="mb-1">Runner update available</h3>
-                          <p>
+                          <p className="text-white mb-1">
                             This runner is running version <b>{runner.version}</b>,
                             but the recommended version is <b>{recommendedRunnerVersion}</b>.
                             Please consider updating the runner to ensure compatibility and access to the latest features and a complete compatibility.
