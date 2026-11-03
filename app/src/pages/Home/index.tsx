@@ -59,12 +59,13 @@ export default function HomePage() {
   const filteredAndSortedWorkspaces = useMemo(() => {
     return allWorkspaces
       .filter((w) => w.name.toLowerCase().includes(searchText.toLowerCase()))
-      .sort((w1: any, w2: any) => {
-        const d1 = new Date(w1.updated_at);
-        const d2 = new Date(w2.updated_at);
-        if (d1 < d2) return 1;
-        else if (d1 > d2) return -1;
-        else return 0;
+      .sort((w1, w2) => {
+        const activeOrder = Number(w2.status === "running") - Number(w1.status === "running");
+        if (activeOrder !== 0) {
+          return activeOrder;
+        }
+
+        return new Date(w2.updated_at).getTime() - new Date(w1.updated_at).getTime();
       });
   }, [allWorkspaces, searchText]);
 
