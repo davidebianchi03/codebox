@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import { SystemLog } from "../../types/logs";
 import { APIAdminListSystemLogs } from "../../api/admin";
 import { LogsViewer } from "../../components/LogsViewer";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export function AdminSystemLogsPage() {
 
@@ -36,15 +37,15 @@ export function AdminSystemLogsPage() {
     return (
         <React.Fragment>
             <Container>
-                <div>
-                    <h2 className="mb-1">System Logs</h2>
-                    <small>View system logs</small>
-                </div>
-                <div className="d-flex justify-content-end">
-                    <Button className="mt-3" variant="outline-light" onClick={downloadLogs}>
+                <AdminPageHeader
+                    title="System Logs"
+                    description="View system logs"
+                    actions={
+                      <Button variant="outline-light" onClick={downloadLogs}>
                         Download Logs
-                    </Button>
-                </div>
+                      </Button>
+                    }
+                />
                 <Row className="mt-4">
                     <Col>
                         <Card body>

@@ -23,6 +23,7 @@ import { UserListCardPlaceholder } from "./UserListCardPlaceholder";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencilAlt, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { UserAvatar } from "../../components/UserAvatar";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminUsersList() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -66,12 +67,10 @@ export default function AdminUsersList() {
         ) : (
           <React.Fragment>
 
-            <div className="row g-2 align-items-center mb-2">
-              <div className="col">
-                <h2 className="mb-0 mt-2">Users</h2>
-                <p className="text-muted">Manage your user accounts</p>
-              </div>
-              <div className="col-auto ms-auto d-print-none">
+            <AdminPageHeader
+              title="Users"
+              description="Manage your user accounts"
+              actions={
                 <Button
                   color="light"
                   onClick={() => setShowCreateUserModal(true)}
@@ -79,8 +78,8 @@ export default function AdminUsersList() {
                   <FontAwesomeIcon icon={faPlus} className="me-2" />
                   New User
                 </Button>
-              </div>
-            </div>
+              }
+            />
             <Row className="mt-2">
               <Col md={12}>
                 <Card body>

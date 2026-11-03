@@ -3,14 +3,17 @@ import { Card, Col, Container, Row } from "react-bootstrap";
 import { AdminAnalyticsConfig } from "../../components/AdminAnalyticsConfig";
 import { ToastContainer } from "react-toastify";
 import { AdminAnalyticsContentPreview } from "../../components/AdminAnalyticsContentPreview";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export function AdminAnalyticsPage() {
     return (
         <React.Fragment>
             <Container>
+                <AdminPageHeader
+                    title="Analytics"
+                    description="Help us improve Codebox"
+                />
                 <div>
-                    <h2 className="mb-1">Analytics</h2>
-                    <h4>Help us improve Codebox</h4>
                     <p className="text-muted mb-1">
                         Codebox can send technical usage statistics to help us understand how the product is used and how to improve it.
                     </p>

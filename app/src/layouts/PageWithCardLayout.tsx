@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Container } from "react-bootstrap";
 import CodeboxLogo from "../assets/images/codebox-logo-white.png";
 import { ToastContainer } from "react-toastify";
+import { ParticlesBackground } from "../components/ParticlesBackground";
 
 export interface PageWithCardLayoutProps {
     title: string;
@@ -11,7 +12,8 @@ export interface PageWithCardLayoutProps {
 export function PageWithCardLayout({ title, children }: PageWithCardLayoutProps) {
     return (
         <React.Fragment>
-            <div className="page page-center">
+            <ParticlesBackground />
+            <div className="page page-center auth-page-content">
                 <Container className="container-tight py-4">
                     <div className="text-center mb-4">
                         <div className="navbar-brand navbar-brand-autodark">

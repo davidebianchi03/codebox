@@ -27,6 +27,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { ImpersonationLogsModal } from "./ImpersonationLogsModal";
 import { UserDetailsPlaceholder } from "./UserDetailsPlaceholder";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminUserDetails() {
   const [user, setUser] = useState<AdminUser>();
@@ -162,21 +163,22 @@ export default function AdminUserDetails() {
   return (
     <React.Fragment>
       <Container>
-        <h1 className="mb-1">Edit user</h1>
-        <p className="text-muted">
-          Manage the user's profile, permissions and account security.
-        </p>
-        <Button
-          color="accent"
-          className="me-2 mb-4"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate("/admin/users");
-          }}
-        >
-          <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
-          Back to users
-        </Button>
+        <AdminPageHeader
+          title="Edit user"
+          description="Manage the user's profile, permissions and account security."
+          actions={
+            <Button
+              color="accent"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/admin/users");
+              }}
+            >
+              <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
+              Back to users
+            </Button>
+          }
+        />
         {loading ? (
           <React.Fragment>
             <UserDetailsPlaceholder />

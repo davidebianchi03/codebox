@@ -2,11 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Container } from "reactstrap";
 import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
+import { ParticlesBackground } from "../../components/ParticlesBackground";
 
 export default function NotFound() {
   return (
     <React.Fragment>
-      <div className="page page-center">
+      <ParticlesBackground />
+      <div className="page page-center auth-page-content">
         <Container className="w-100 d-flex justify-content-center">
           <div className="mb-5">
             <div className="section-header">

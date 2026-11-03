@@ -22,6 +22,7 @@ import DataTable from "../../components/DataTable";
 import React from "react";
 import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
 import { TimeSince } from "../../common/time";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
@@ -52,18 +53,16 @@ export default function AdminRunners() {
 
   return (
     <Container>
-      <div className="row g-2 align-items-center mb-4">
-        <div className="col">
-          <h2 className="mb-0 mt-2">Runners</h2>
-          <p className="text-muted">Manage your runner instances</p>
-        </div>
-        <div className="col-auto ms-auto d-print-none">
+      <AdminPageHeader
+        title="Runners"
+        description="Manage your runner instances"
+        actions={
           <Button color="light" onClick={() => setCreateRunnerModal(true)}>
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             Add runner
           </Button>
-        </div>
-      </div>
+        }
+      />
       {runnerToken.length > 0 && runnerId.length > 0 && (
         <Row>
           <Col md={12}>

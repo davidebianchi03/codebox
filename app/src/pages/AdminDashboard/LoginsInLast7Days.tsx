@@ -18,7 +18,7 @@ export function LoginsInLast7Days({ data }: LoginsInLast7DaysProps) {
 
     return (
         <Card body className="dashboard-panel dashboard-activity h-100">
-            <div className="dashboard-panel-heading">
+            <div className="dashboard-panel-heading mb-3">
                 <div className="dashboard-panel-title">
                     <h2>Recent activity</h2>
                 </div>

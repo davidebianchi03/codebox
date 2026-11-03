@@ -3,6 +3,7 @@ import { Badge, Button, Card, Col, Container, Row, Spinner } from "react-bootstr
 import { APIAdminEmailServiceConfigured } from "../../api/common";
 import { ToastContainer } from "react-toastify";
 import { AdminSendTestEmailResponse, APIAdminSendTestEmail } from "../../api/admin";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminEmailSenderPage() {
 
@@ -39,9 +40,10 @@ export default function AdminEmailSenderPage() {
     return (
         <React.Fragment>
             <Container>
-                <div>
-                    <h2 className="mb-1">Email Sender</h2>
-                    <p className="text-muted">
+                <AdminPageHeader
+                    title="Email Sender"
+                    description={
+                      <p className="mb-0">
                         Email Sender is the SMTP service used to send emails to users.
                         You may choose not to configure it, but it is recommended.
                         Some features (such as user sign-up) are disabled if the
@@ -49,8 +51,9 @@ export default function AdminEmailSenderPage() {
                         it using stack environment variables. Refer to the &nbsp;
                         <a href="https://codebox4073715.gitlab.io/codebox/" target="_blank">documentation</a>
                         &nbsp; for configuration details.
-                    </p>
-                </div>
+                      </p>
+                    }
+                />
 
                 {loading ? (
                     <React.Fragment>

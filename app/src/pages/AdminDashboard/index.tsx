@@ -11,6 +11,7 @@ import { RunnersListTable } from "./RunnersListTable";
 import { AdminRunnerStatusBadge, IsRunnerOnline } from "../../components/AdminRunnerStatusBadge";
 import { BackhoeIcon, PackagesIcon, StatsIcon, UserIcon } from "../../icons/Tabler";
 import { Link } from "react-router-dom";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState<AdminStats>();
@@ -76,13 +77,10 @@ export default function AdminDashboard() {
 
     return (
         <Container className="admin-dashboard">
-            <div className="dashboard-heading">
-                <div className="dashboard-heading-icon"><StatsIcon /></div>
-                <div>
-                    <h1 className="mb-1">Overview</h1>
-                    <p className="mb-0 text-muted">A quick look at your Codebox instance</p>
-                </div>
-            </div>
+            <AdminPageHeader
+                title="Overview"
+                description="A quick look at your Codebox instance"
+            />
 
             <Row className="g-3 dashboard-metrics">
                 {metrics.map((metric) => (
@@ -110,7 +108,7 @@ export default function AdminDashboard() {
                             </div>
                             <Link to="/admin/runners" className="dashboard-panel-link">View runners <span aria-hidden="true">→</span></Link>
                         </div>
-                        <div className="dashboard-runner-content">
+                        <div className="dashboard-runner-content mt-3">
                             <div
                                 className={`dashboard-runner-ring${runnersLoading || !runners?.length ? " is-empty" : ""}`}
                                 style={{

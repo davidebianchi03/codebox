@@ -19,6 +19,7 @@ import { RotateRunnerTokenModal } from "./RotateRunnerTokenModal";
 import { RunnerLogsModal } from "./RunnerLogsModal";
 import { Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { AdminRunnerStatusBadge, IsRunnerOnline } from "../../components/AdminRunnerStatusBadge";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
@@ -159,21 +160,22 @@ export default function AdminRunnerDetails() {
   return (
     <React.Fragment>
       <Container>
-        <h1 className="mb-1">Edit runner</h1>
-        <p className="text-muted">
-          Manage runner configuration, connectivity and health.
-        </p>
-        <Button
-          variant="accent"
-          className="me-2 mb-4"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate("/admin/runners");
-          }}
-        >
-          <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
-          Back to runners
-        </Button>
+        <AdminPageHeader
+          title="Edit runner"
+          description="Manage runner configuration, connectivity and health."
+          actions={
+            <Button
+              variant="accent"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/admin/runners");
+              }}
+            >
+              <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
+              Back to runners
+            </Button>
+          }
+        />
         {runner && (
           <React.Fragment>
             {runner.version && recommendedRunnerVersion !== runner.version && (

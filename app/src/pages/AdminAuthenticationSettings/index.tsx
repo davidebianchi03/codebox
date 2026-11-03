@@ -9,6 +9,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import { SignSignUpCard } from "./SignSignUpCard";
 import { SettingsFormPlaceholder } from "./SettingsFormPlaceholder";
+import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminAuthenticationSettingsPage() {
     const [loading, setLoading] = useState<boolean>(true);
@@ -73,10 +74,10 @@ export default function AdminAuthenticationSettingsPage() {
     return (
         <React.Fragment>
             <Container>
-                <div>
-                    <h2 className="mb-1">Authentication Settings</h2>
-                    <span className="text-muted">Manage sign-up and login</span>
-                </div>
+                <AdminPageHeader
+                    title="Authentication Settings"
+                    description="Manage sign-up and login"
+                />
                 {loading ? (
                     <React.Fragment>
                         <SettingsFormPlaceholder />

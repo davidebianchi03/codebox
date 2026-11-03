@@ -5,6 +5,7 @@ import CodeboxLogo from "../../assets/images/codebox-logo-white.png";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { APIVerifyEmailAddress, APIVerifyEmailCode } from "../../api/auth";
+import { ParticlesBackground } from "../../components/ParticlesBackground";
 
 export default function VerifyEmailPage() {
     const [searchParams] = useSearchParams();
@@ -50,7 +51,8 @@ export default function VerifyEmailPage() {
 
     return (
         <React.Fragment>
-            <div className="page page-center">
+            <ParticlesBackground />
+            <div className="page page-center auth-page-content">
                 <Container className="w-100 d-flex justify-content-center">
                     <div className="d-flex flex-column align-items-center">
                         <div className="d-flex align-items-center justify-content-center">
