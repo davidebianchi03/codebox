@@ -19,14 +19,21 @@ export function UsersListTable() {
     }, [FetchUsers]);
 
     return (
-        <React.Fragment>
-            <Card body>
-                <h3 className="mb-2">Users</h3>
-                <Table className="table table-vcenter card-table">
-                    <thead>
-                        <th className="p-2">Name</th>
-                        <th className="p-2">Email</th>
-                        <th className="p-2">Last Login</th>
+        <Card body className="dashboard-panel dashboard-table">
+            <div className="dashboard-panel-heading">
+                <div className="dashboard-panel-title">
+                    <h2>Users</h2>
+                </div>
+                <Link to="/admin/users" className="dashboard-panel-link">View all users <span aria-hidden="true">→</span></Link>
+            </div>
+            <div className="table-responsive dashboard-data-table-wrapper mt-3">
+                <Table className="table table-hover dashboard-data-table">
+                    <thead className="table-light border-0">
+                        <tr className="border-0">
+                            <th scope="col" className="border-0"><div className="d-flex align-items-center py-2 text-muted">Name</div></th>
+                            <th scope="col" className="border-0"><div className="d-flex align-items-center py-2 text-muted">Email</div></th>
+                            <th scope="col" className="border-0"><div className="d-flex align-items-center py-2 text-muted">Last login</div></th>
+                        </tr>
                     </thead>
                     <tbody>
                         {users.map((u, idx) => (
@@ -40,14 +47,9 @@ export function UsersListTable() {
                                 <td className="p-2">{u.last_login ? new Date(u.last_login).toLocaleString() : "Never logged in"}</td>
                             </tr>
                         ))}
-                        <tr>
-                            <td colSpan={3} className="p-2 text-center">
-                                <Link to="/admin/users">View all users</Link>
-                            </td>
-                        </tr>
                     </tbody>
                 </Table>
-            </Card>
-        </React.Fragment>
-    )
+            </div>
+        </Card>
+    );
 }

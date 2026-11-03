@@ -1,84 +1,68 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
 import { Card, Table } from "reactstrap";
 import { RunnerAdmin } from "../../types/runner";
-import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import { AdminListRunners } from "../../api/runner";
+import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
 
-export function RunnersListTable() {
-    const [runners, setRunners] = useState<RunnerAdmin[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+interface RunnersListTableProps {
+    runners: RunnerAdmin[] | undefined;
+    loading: boolean;
+}
 
-    const fetchRunners = useCallback(async () => {
-        const r = await AdminListRunners(5);
-        if (r) {
-            setRunners(r);
-        } else {
-            toast.error("Failed to fetch runners");
-        }
-        setLoading(false);
-    }, []);
-
-    useEffect(() => {
-        fetchRunners();
-    }, [fetchRunners]);
-
+export function RunnersListTable({ runners, loading }: RunnersListTableProps) {
     return (
-        <React.Fragment>
-            <Card body>
-                <h3 className="mb-2">Runners</h3>
-                <Table>
-                    <thead>
-                        <th className="p-2">Name</th>
-                        <th className="p-2">Type</th>
-                        <th className="p-2">Last Contact</th>
-                        <th className="p-2">Status</th>
+        <Card body className="dashboard-panel dashboard-table">
+            <div className="dashboard-panel-heading">
+                <div className="dashboard-panel-title">
+                    <h2>Runners</h2>
+                </div>
+                <Link to="/admin/runners" className="dashboard-panel-link">View all runners <span aria-hidden="true">→</span></Link>
+            </div>
+            <div className="table-responsive dashboard-data-table-wrapper mt-3">
+                <Table className="table table-hover dashboard-data-table">
+                    <thead className="table-light border-0">
+                        <tr>
+                            <th scope="col" className="border-0"><div className="d-flex align-items-center py-2 text-muted">Name</div></th>
+                            <th scope="col" className="border-0"><div className="d-flex align-items-center py-2 text-muted">Type</div></th>
+                            <th scope="col" className="border-0"><div className="d-flex align-items-center py-2 text-muted">Last contact</div></th>
+                            <th scope="col" className="border-0"><div className="d-flex align-items-center py-2 text-muted">Status</div></th>
+                        </tr>
                     </thead>
                     <tbody>
-                        {!loading && (
+                        {loading ? (
+                            <tr><td colSpan={4} className="text-center p-2">Loading runners...</td></tr>
+                        ) : runners === undefined ? (
+                            <tr><td colSpan={4} className="text-center p-2">Runner data is unavailable.</td></tr>
+                        ) : runners.length === 0 ? (
+                            <tr><td colSpan={4} className="text-center p-2">No runners found.</td></tr>
+                        ) : (
                             <React.Fragment>
-                                {runners.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="text-center p-2">
-                                            No runners found.
-                                        </td>
-                                    </tr>
-                                )}
-                                {runners.map((runner) => (
-                                    <tr key={runner.id}>
-                                        <td className="p-2">
-                                            <Link to={`/admin/runners/${runner.id}`}>
-                                                <b>{runner.name}</b>
-                                            </Link>
-                                        </td>
-                                        <td className="p-2">{runner.type}</td>
-                                        <td className="p-2">{runner.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"}</td>
-                                        <td className="p-2">
-                                            {
-                                                new Date().getTime() - new Date(runner.last_contact || "").getTime() < 5 * 60 * 1000 ?
-                                                    (
-                                                        <React.Fragment>
-                                                            <span className="text-success">●</span> Online
-                                                        </React.Fragment>
-                                                    ) : (
-                                                        <React.Fragment>
-                                                            <span className="text-danger">●</span> Offline
-                                                        </React.Fragment>
-                                                    )
-                                            }
-                                        </td>
-                                    </tr>
-                                ))}
+                                {runners.slice(0, 5).map((runner) => {
+                                    return (
+                                        <tr key={runner.id}>
+                                            <td className="p-2">
+                                                <Link to={`/admin/runners/${runner.id}`}>
+                                                    <b>{runner.name}</b>
+                                                </Link>
+                                            </td>
+                                            <td className="p-2">{runner.type}</td>
+                                            <td className="p-2">{runner.last_contact ? new Date(runner.last_contact).toLocaleString() : "Never"}</td>
+                                            <td className="p-2">
+                                                <AdminRunnerStatusBadge runner={runner} />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                                 <tr>
                                     <td colSpan={4} className="text-center p-2">
-                                        <Link to="/admin/runners">View All Runners</Link>
+                                        <Link to="/admin/runners">View all runners</Link>
                                     </td>
                                 </tr>
                             </React.Fragment>
                         )}
                     </tbody>
                 </Table>
-            </Card>
-        </React.Fragment>
-    )
+            </div>
+        </Card>
+    );
 }

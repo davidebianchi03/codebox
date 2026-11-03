@@ -4,7 +4,6 @@ import React from "react";
 import { Sidebar, SidebarItem } from "./Sidebar";
 import { Footer } from "./Footer";
 import { AdminAnalyticsModal } from "../components/AdminAnalyticsModal";
-
 type SidebarLayoutProps = {
   children: React.ReactNode;
   sidebarItems: SidebarItem[];
@@ -12,18 +11,18 @@ type SidebarLayoutProps = {
 
 export function SidebarLayout({ children, sidebarItems }: SidebarLayoutProps) {
   return (
-    <React.Fragment>
+    <div className="admin-layout">
       <Sidebar sidebarItems={sidebarItems} />
-      <div className="page-wrapper">
-        <div className="superuser-navbar">
-          <Navbar showLogo={false} />
-        </div>
-        <Container className="mt-4 mb-4" style={{ minHeight: "calc(100vh - 190px)" }}>
+      <div className="superuser-navbar">
+        <Navbar showLogo={false} />
+      </div>
+      <div className="page-wrapper wrapper-sidebar">
+        <Container className="mt-4 mb-4 admin-page-content">
           {children}
         </Container>
         <AdminAnalyticsModal />
         <Footer />
       </div>
-    </React.Fragment>
+    </div>
   );
 }

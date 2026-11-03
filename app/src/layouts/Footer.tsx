@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export function Footer() {
     return (
         <React.Fragment>
-            <footer className="footer footer-transparent d-print-none">
+            <footer className="footer footer-transparent d-print-none px-3">
                 <div className="container-xl">
                     <div className="row text-center align-items-center flex-row-reverse">
                         <div className="col-lg-auto ms-lg-auto">

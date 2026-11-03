@@ -1,29 +1,25 @@
-import React from "react";
 import { RunnerAdmin } from "../types/runner";
-import { Badge } from "reactstrap";
 
-export function AdminRunnerStatusBadge({ runner }: { runner: RunnerAdmin }) {
-    if (new Date(runner?.last_contact || "") > new Date(Date.now() - 5 * 60 * 1000)) {
-        return (
-            <React.Fragment>
-                <Badge
-                    className="bg-success-lt"
-                >
-                    <span className="text-success pe-1">●</span>
-                    <span className="text-success">Online</span>
-                </Badge>
-            </React.Fragment>
-        )
-    } else {
-        return (
-            <React.Fragment>
-                <Badge
-                    className="bg-danger-lt"
-                >
-                    <span className="text-danger pe-1">●</span>
-                    <span className="text-danger">Offline</span>
-                </Badge>
-            </React.Fragment>
-        )
-    }
+type RunnerStatus = "online" | "offline";
+
+type AdminRunnerStatusBadgeProps =
+    | { runner: Pick<RunnerAdmin, "last_contact">; status?: never; label?: string }
+    | { runner?: never; status: RunnerStatus; label?: string };
+
+export function IsRunnerOnline(runner: Pick<RunnerAdmin, "last_contact">, now = Date.now()) {
+    return now - new Date(runner.last_contact || "").getTime() < 5 * 60 * 1000;
+}
+
+export function AdminRunnerStatusBadge(props: AdminRunnerStatusBadgeProps) {
+    const status = props.runner
+        ? (IsRunnerOnline(props.runner) ? "online" : "offline")
+        : props.status;
+    const label = props.label ?? (status === "online" ? "Online" : "Offline");
+
+    return (
+        <span className={`runner-status-badge is-${status}`}>
+            <span className="runner-status-dot" />
+            {label}
+        </span>
+    );
 }

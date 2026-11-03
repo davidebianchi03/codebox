@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeftLong, faExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeftLong, faFileLines } from "@fortawesome/free-solid-svg-icons";
 import {
   AdminDeleteRunner,
   AdminListRunners,
@@ -16,14 +16,16 @@ import {
 } from "../../api/runner";
 import { ConfirmDeleteRunnerModal } from "./ConfirmDeleteRunnerModal";
 import { RotateRunnerTokenModal } from "./RotateRunnerTokenModal";
-import { Badge, Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
-import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
+import { RunnerLogsModal } from "./RunnerLogsModal";
+import { Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { AdminRunnerStatusBadge, IsRunnerOnline } from "../../components/AdminRunnerStatusBadge";
 
 export default function AdminRunnerDetails() {
   const [runner, setRunner] = useState<RunnerAdmin>();
   const [runnerTypes, setRunnerTypes] = useState<RunnerType[]>([]);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<boolean>(false);
   const [showRotateTokenModal, setShowRotateTokenModal] = useState<boolean>(false);
+  const [showRunnerLogsModal, setShowRunnerLogsModal] = useState<boolean>(false);
   const [recommendedRunnerVersion, setRecommendedRunnerVersion] = useState<string>("");
 
   const { id } = useParams();
@@ -172,7 +174,6 @@ export default function AdminRunnerDetails() {
           <FontAwesomeIcon icon={faArrowLeftLong} className="me-2" />
           Back to runners
         </Button>
-
         {runner && (
           <React.Fragment>
             {runner.version && recommendedRunnerVersion !== runner.version && (
@@ -186,22 +187,9 @@ export default function AdminRunnerDetails() {
                     >
                       <div className="d-flex justify-content-center align-items-start gap-3">
                         <div>
-                          <div
-                            className="d-flex justify-content-center align-items-center text-center bg-warning-lt"
-                            style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "7px"
-                            }}
-                          >
-                            <FontAwesomeIcon
-                              icon={faExclamation}
-                              className="text-warning fs-2 fw-bold"
-                            />
-                          </div>
                         </div>
                         <div>
-                          <h3 className="mb-1">Runner update available</h3>
+                          <h3 className="mb-1">Runner version mismatch</h3>
                           <p className="text-white mb-1">
                             This runner is running version <b>{runner.version}</b>,
                             but the recommended version is <b>{recommendedRunnerVersion}</b>.
@@ -320,7 +308,7 @@ export default function AdminRunnerDetails() {
           </Row>
           <Row className="mt-4">
             <Col md={6}>
-              <Card>
+              <Card className="h-100">
                 <Card.Header className="d-flex flex-column align-items-start">
                   <h3 className="mb-1">Runner health</h3>
                   <small className="text-muted">Live connection information</small>
@@ -358,11 +346,43 @@ export default function AdminRunnerDetails() {
                       </div>
                     </div>
                   </div>
+                  <div
+                    className="d-flex justify-content-between p-3 rounded-2 mb-3 align-items-center gap-3 bg-azure-lt mt-3"
+                  >
+                    <div>
+                      <h4 className="mb-1">Runner logs</h4>
+                      <small className="text-muted">
+                        Inspect runner logs
+                      </small>
+                    </div>
+                    {runner && (
+                      <React.Fragment>
+                        {IsRunnerOnline(runner) ? (
+                          <Button
+                            variant="accent"
+                            onClick={() => setShowRunnerLogsModal(true)}
+                          >
+                            <FontAwesomeIcon icon={faFileLines} className="me-2" />
+                            View logs
+                          </Button>
+                        ) : (
+                          <React.Fragment>
+                            <Button
+                              variant="outline-light"
+                              disabled
+                            >
+                              Runner is offline
+                            </Button>
+                          </React.Fragment>
+                        )}
+                      </React.Fragment>
+                    )}
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
             <Col md={6}>
-              <Card>
+              <Card className="h-100">
                 <Card.Header className="d-flex flex-column align-items-start">
                   <h3 className="mb-1">Security & maintenance</h3>
                   <small className="text-muted">Manage runner credentials and lifecycle.</small>
@@ -460,6 +480,14 @@ export default function AdminRunnerDetails() {
             isOpen={showRotateTokenModal}
             runnerId={runner.id}
             onClose={() => setShowRotateTokenModal(false)}
+          />
+        )}
+        {runner && (
+          <RunnerLogsModal
+            isOpen={showRunnerLogsModal}
+            runnerId={runner.id}
+            runnerName={runner.name}
+            onClose={() => setShowRunnerLogsModal(false)}
           />
         )}
         <ToastContainer
