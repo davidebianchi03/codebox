@@ -280,6 +280,7 @@ type AdminSetUserPasswordRequestBody struct {
 // @Produce json
 // @Param request body AdminSetUserPasswordRequestBody true "User info"
 // @Success 200
+// @Failure 403 "Cannot change the password of an admin user"
 // @Router /api/v1/admin/users/{email}/set-password [post]
 func HandleAdminSetUserPassword(c *gin.Context) {
 	email, _ := c.Params.Get("email")
@@ -298,6 +299,11 @@ func HandleAdminSetUserPassword(c *gin.Context) {
 
 	if user == nil {
 		utils.ErrorResponse(c, 404, "user not found")
+		return
+	}
+
+	if user.IsSuperuser {
+		utils.ErrorResponse(c, http.StatusForbidden, "cannot change the password of an admin user")
 		return
 	}
 

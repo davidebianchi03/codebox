@@ -351,7 +351,10 @@ export default function AdminUserDetails() {
                   <CardHeader className="pb-0 border-0 flex-column align-items-start mb-4">
                     <h3 className="mb-0">Security</h3>
                     <p className="text-muted mb-0">
-                      <small>Review account activity and change the user's password.</small>
+                      <small>
+                        Review account activity
+                        {!user?.is_superuser && " and manage the user's password"}.
+                      </small>
                     </p>
                   </CardHeader>
                   <CardBody className="pt-0">
@@ -373,7 +376,9 @@ export default function AdminUserDetails() {
                         </p>
                       </Col>
                     </Row>
-                    {!user?.deletion_in_progress && (
+                    {!user?.deletion_in_progress &&
+                      !user?.is_superuser &&
+                      !validation.values.isAdmin && (
                       <Button
                         type="submit"
                         color="light"
@@ -460,7 +465,7 @@ export default function AdminUserDetails() {
         <ToastContainer
           toastClassName={"bg-dark"}
         />
-        {user && (
+        {user && !user.is_superuser && !validation.values.isAdmin && (
           <React.Fragment>
             <AdminChangePasswordModal
               isOpen={showChangePasswordModal}
