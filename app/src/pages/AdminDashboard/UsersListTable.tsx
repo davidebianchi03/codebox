@@ -47,6 +47,11 @@ export function UsersListTable() {
                                 <td className="p-2">{u.last_login ? new Date(u.last_login).toLocaleString() : "Never logged in"}</td>
                             </tr>
                         ))}
+                        <tr>
+                            <td colSpan={3} className="text-center p-2">
+                                <Link to="/admin/users">View all users</Link>
+                            </td>
+                        </tr>
                     </tbody>
                 </Table>
             </div>
