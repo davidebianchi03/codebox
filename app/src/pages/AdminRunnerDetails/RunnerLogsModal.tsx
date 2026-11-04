@@ -91,7 +91,7 @@ export function RunnerLogsModal({
       </Modal.Body>
       <Modal.Footer>
         <Button
-          variant="outline-light"
+          variant="accent"
           onClick={downloadLogs}
           disabled={loading || logs.length === 0}
         >

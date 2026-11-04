@@ -3,20 +3,16 @@ import {
   Badge,
   Button,
   Card,
-  CardBody,
   Col,
   Container,
-  Input,
-  Label,
   Row,
   Spinner,
 } from "reactstrap";
 import { RunnerAdmin } from "../../types/runner";
-import { CreateRunnerModal } from "./CreateRunnerModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCopy, faPencilAlt, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { toast, ToastContainer } from "react-toastify";
-import { Link } from "react-router-dom";
+import { faPencilAlt, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { ToastContainer } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
 import { AdminListRunners, AdminRetrieveRecommendedRunnerVersion } from "../../api/runner";
 import DataTable from "../../components/DataTable";
 import React from "react";
@@ -26,11 +22,8 @@ import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminRunners() {
   const [runners, setRunners] = useState<RunnerAdmin[]>([]);
-  const [showCreateRunnerModal, setCreateRunnerModal] =
-    useState<boolean>(false);
-  const [runnerToken, setRunnerToken] = useState<string>("");
-  const [runnerId, setRunnerID] = useState<string>("");
   const [recommendedRunnerVersion, setRecommendedRunnerVersion] = useState<string>("");
+  const navigate = useNavigate();
 
   const FetchRunners = useCallback(async () => {
     const r = await AdminListRunners();
@@ -57,79 +50,12 @@ export default function AdminRunners() {
         title="Runners"
         description="Manage your runner instances"
         actions={
-          <Button color="light" onClick={() => setCreateRunnerModal(true)}>
+          <Button color="light" onClick={() => navigate("/admin/runners/create")}>
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             Add runner
           </Button>
         }
       />
-      {runnerToken.length > 0 && runnerId.length > 0 && (
-        <Row>
-          <Col md={12}>
-            <Card style={{ borderRadius: 5 }}>
-              <CardBody style={{ borderRadius: 5, background: "rgba(var(--tblr-primary-rgb), 0.5)" }}>
-                <div className="d-flex justify-content-between">
-                  <h3>New runner has been created</h3>
-                  <Button
-                    className="bg-transparent p-0 m-0"
-                    style={{ height: 25 }}
-                    onClick={() => {
-                      setRunnerToken("");
-                      setRunnerID("");
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faXmark} />
-                  </Button>
-                </div>
-                <p>
-                  Use the following ID and token to register the runner, the token will not
-                  longer be visible
-                </p>
-                <div className="d-flex align-items-center">
-                  <Label className="mt-2 me-6">
-                    ID
-                  </Label>
-                  <Input
-                    value={runnerId}
-                    style={{ background: "transparent" }}
-                    className="text-white"
-                    disabled
-                  />
-                  <Button
-                    className="bg-transparent"
-                    onClick={() => {
-                      navigator.clipboard.writeText(runnerId);
-                      toast.info("Copied to clipboard");
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faCopy} />
-                  </Button>
-                </div>
-                <div className="d-flex align-items-center mt-2">
-                  <Label className="mt-2 me-3">
-                    Token
-                  </Label>
-                  <Input
-                    value={runnerToken}
-                    style={{ background: "transparent" }}
-                    className="text-white"
-                    disabled
-                  />
-                  <Button
-                    className="bg-transparent"
-                    onClick={() => {
-                      navigator.clipboard.writeText(runnerToken);
-                      toast.info("Copied to clipboard");
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faCopy} />
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      )}
       <Row className="mt-4">
         <Col md={12}>
           <Card body>
@@ -270,20 +196,6 @@ export default function AdminRunners() {
           </Card>
         </Col>
       </Row>
-      <CreateRunnerModal
-        isOpen={showCreateRunnerModal}
-        onClose={(id, token) => {
-          setCreateRunnerModal(false);
-          FetchRunners();
-          if (token && id) {
-            setRunnerToken(token);
-            setRunnerID(id);
-          } else {
-            setRunnerToken("");
-            setRunnerID("");
-          }
-        }}
-      />
       <ToastContainer
         toastClassName={"bg-dark"}
       />

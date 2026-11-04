@@ -14,8 +14,11 @@ const TemplatesList = lazy(() => import("../pages/TemplatesList"));
 const TemplateDetailsPage = lazy(() => import("../pages/TemplateDetails"));
 const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
 const AdminUsersList = lazy(() => import("../pages/AdminUsersList"));
+const AdminCreateUser = lazy(() => import("../pages/AdminCreateUser"));
 const AdminUserDetails = lazy(() => import("../pages/AdminUserDetails"));
 const AdminRunners = lazy(() => import("../pages/AdminRunners"));
+const AdminCreateRunner = lazy(() => import("../pages/AdminCreateRunner"));
+const AdminRunnerCreated = lazy(() => import("../pages/AdminRunnerCreated"));
 const AdminRunnerDetails = lazy(() => import("../pages/AdminRunnerDetails"));
 const AdminAuthenticationSettingsPage = lazy(() => import("../pages/AdminAuthenticationSettings"));
 const AdminEmailSenderPage = lazy(() => import("../pages/AdminEmailSender"));
@@ -115,12 +118,24 @@ export const SuperUserRoutes: Route[] = [
     element: <AdminUsersList />,
   },
   {
+    path: "/admin/users/create",
+    element: <AdminCreateUser />,
+  },
+  {
     path: "/admin/users/:email",
     element: <AdminUserDetails />,
   },
   {
     path: "/admin/runners",
     element: <AdminRunners />,
+  },
+  {
+    path: "/admin/runners/create",
+    element: <AdminCreateRunner />,
+  },
+  {
+    path: "/admin/runners/created",
+    element: <AdminRunnerCreated />,
   },
   {
     path: "/admin/runners/:id",

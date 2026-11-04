@@ -8,7 +8,6 @@ import {
   Row,
   Spinner,
 } from "reactstrap";
-import { CreateUserModal } from "./CreateUserModal";
 import { toast, ToastContainer } from "react-toastify";
 import { AdminUser } from "../../types/user";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,7 +26,6 @@ import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminUsersList() {
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [showCreateUserModal, setShowCreateUserModal] = useState<boolean>(false);
   const [authSettings, setAuthSettings] = useState<AuthenticationSettings>();
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -73,7 +71,7 @@ export default function AdminUsersList() {
               actions={
                 <Button
                   color="light"
-                  onClick={() => setShowCreateUserModal(true)}
+                  onClick={() => navigate("/admin/users/create")}
                 >
                   <FontAwesomeIcon icon={faPlus} className="me-2" />
                   New User
@@ -214,15 +212,6 @@ export default function AdminUsersList() {
             </Row>
           </React.Fragment>
         )}
-        <CreateUserModal
-          isOpen={showCreateUserModal}
-          onClose={(user) => {
-            setShowCreateUserModal(false);
-            if (user) {
-              navigate(`/admin/users/${user.email}`);
-            }
-          }}
-        />
         <ToastContainer
           toastClassName={"bg-dark"}
         />

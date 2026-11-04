@@ -5,6 +5,8 @@ import { SystemLog } from "../../types/logs";
 import { APIAdminListSystemLogs } from "../../api/admin";
 import { LogsViewer } from "../../components/LogsViewer";
 import { AdminPageHeader } from "../../components/AdminPageHeader";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
 export function AdminSystemLogsPage() {
 
@@ -41,9 +43,10 @@ export function AdminSystemLogsPage() {
                     title="System Logs"
                     description="View system logs"
                     actions={
-                      <Button variant="outline-light" onClick={downloadLogs}>
-                        Download Logs
-                      </Button>
+                        <Button variant="accent" onClick={downloadLogs}>
+                            <FontAwesomeIcon icon={faDownload} className="me-2" />
+                            Download Logs
+                        </Button>
                     }
                 />
                 <Row className="mt-4">
