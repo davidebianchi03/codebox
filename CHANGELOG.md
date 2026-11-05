@@ -4,9 +4,18 @@ All changes will be reported in this file
 
 ## [Unreleased]
 
+## Added
+
+- Added `description` field to runner
+
 ## Fixed
 
 - Fixed workspace restart task
+- Fixed runner token generation
+
+## Changed
+
+- Restyling admin interface
 
 ## [v0.0.61] - 2026-07-01
 
