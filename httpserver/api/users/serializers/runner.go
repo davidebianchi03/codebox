@@ -38,6 +38,7 @@ func LoadMultipleRunnerSerializer(runners []models.Runner) []RunnerSerializer {
 type AdminRunnersSerializer struct {
 	ID                 uint       `json:"id"`
 	Name               string     `json:"name"`
+	Description        string     `json:"description"`
 	Type               string     `json:"type"`
 	LastContact        *time.Time `json:"last_contact"`
 	UsePublicUrl       bool       `json:"use_public_url"`
@@ -53,6 +54,7 @@ func LoadAdminRunnerSerializer(runner *models.Runner) *AdminRunnersSerializer {
 	return &AdminRunnersSerializer{
 		ID:                 runner.ID,
 		Name:               runner.Name,
+		Description:        runner.Description,
 		Type:               runner.Type,
 		LastContact:        runner.LastContact,
 		UsePublicUrl:       runner.UsePublicUrl,

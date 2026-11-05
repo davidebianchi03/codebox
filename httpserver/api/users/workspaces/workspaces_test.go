@@ -606,7 +606,7 @@ func TestStartWorkspaceNoRunner(t *testing.T) {
 
 		// try to start the workspace with another user
 		user2, err := models.RetrieveUserByEmail("user2@user.com")
-		if err != nil || user == nil {
+		if err != nil {
 			t.Fatalf("Failed to retrieve test user: '%s'", err)
 		}
 
@@ -1240,6 +1240,7 @@ func TestSetWorkspaceRunner(t *testing.T) {
 		runner2, err := models.CreateRunner(
 			"docker-runner-2",
 			"docker",
+			"this is a runner",
 			false,
 			"",
 		)
@@ -1305,7 +1306,7 @@ func TestSetWorkspaceRunner(t *testing.T) {
 
 		// set the runner of a workspace with another user
 		user2, err := models.RetrieveUserByEmail("user2@user.com")
-		if err != nil || user == nil {
+		if err != nil {
 			t.Fatalf("Failed to retrieve test user: '%s'", err)
 		}
 		w = httptest.NewRecorder()

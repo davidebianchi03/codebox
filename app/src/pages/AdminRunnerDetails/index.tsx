@@ -49,6 +49,7 @@ export default function AdminRunnerDetails() {
   const validation = useFormik({
     initialValues: {
       runnerName: "",
+      description: "",
       runnerType: "",
       usePublicUrl: false,
       publicUrl: "",
@@ -107,14 +108,17 @@ export default function AdminRunnerDetails() {
           parseInt(id),
           values.runnerName,
           values.runnerType,
+          values.description,
           values.usePublicUrl,
           values.publicUrl
         );
         if (r) {
           setRunner(r);
+          toast.success("Runner has been updated");
         } else {
           validation.resetForm();
           FetchRunner();
+          toast.error("An error occured while updating runner details");
         }
       }
     },
@@ -150,6 +154,7 @@ export default function AdminRunnerDetails() {
   useEffect(() => {
     validation.setValues({
       runnerName: runner?.name || "",
+      description: runner?.description || "",
       runnerType: runner?.type || "",
       usePublicUrl: runner?.use_public_url || false,
       publicUrl: runner?.public_url || "",
@@ -266,6 +271,18 @@ export default function AdminRunnerDetails() {
                     <Form.Control.Feedback type="invalid">
                       {validation.errors.runnerType}
                     </Form.Control.Feedback>
+                  </div>
+                  <div className="mb-3">
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Describe this runner"
+                      name="description"
+                      value={validation.values.description}
+                      onChange={validation.handleChange}
+                      disabled={runner?.deletion_in_progress}
+                    />
                   </div>
                   <hr className="my-4" />
                   <h4 className="text-uppercase text-muted">

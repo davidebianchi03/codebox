@@ -49,6 +49,7 @@ export async function AdminRetrieveRunnerById(runnerId: number): Promise<RunnerA
 export async function AdminCreateRunner(
     name: string,
     type: string,
+    description: string,
     use_public_url: boolean,
     public_url: string,
 ): Promise<RunnerWithToken | undefined> {
@@ -58,6 +59,7 @@ export async function AdminCreateRunner(
             {
                 name: name,
                 type: type,
+                description: description,
                 use_public_url: use_public_url,
                 public_url: public_url,
             }
@@ -72,6 +74,7 @@ export async function AdminUpdateRunner(
     runnerId: number,
     name: string,
     type: string,
+    description: string,
     use_public_url: boolean,
     public_url: string,
 ): Promise<RunnerAdmin | undefined> {
@@ -81,6 +84,7 @@ export async function AdminUpdateRunner(
             {
                 name: name,
                 type: type,
+                description: description,
                 use_public_url: use_public_url,
                 public_url: public_url,
             }

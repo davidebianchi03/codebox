@@ -41,6 +41,7 @@ export default function AdminCreateRunnerPage() {
   const validation = useFormik({
     initialValues: {
       runnerName: "",
+      description: "",
       runnerType: "",
       usePublicUrl: false,
       publicUrl: "",
@@ -61,6 +62,7 @@ export default function AdminCreateRunnerPage() {
       const runner = await AdminCreateRunner(
         values.runnerName,
         values.runnerType,
+        values.description,
         values.usePublicUrl,
         values.publicUrl,
       );
@@ -110,6 +112,17 @@ export default function AdminCreateRunnerPage() {
                       invalid={Boolean(validation.errors.runnerName)}
                     />
                     <FormFeedback>{validation.errors.runnerName}</FormFeedback>
+                  </div>
+                  <div className="mb-3">
+                    <Label>Description</Label>
+                    <Input
+                      type="textarea"
+                      rows={3}
+                      placeholder="Describe this runner"
+                      name="description"
+                      onChange={validation.handleChange}
+                      value={validation.values.description}
+                    />
                   </div>
                   <div className="mb-3">
                     <Label>Runner type</Label>

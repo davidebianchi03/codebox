@@ -50,6 +50,7 @@ func SetupDBForTests() error {
 	if _, err := models.CreateRunner(
 		"docker-runner",
 		"docker",
+		"description",
 		false,
 		"",
 	); err != nil {

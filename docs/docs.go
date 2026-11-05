@@ -1983,6 +1983,9 @@ const docTemplate = `{
                 "use_public_url"
             ],
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2035,6 +2038,9 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },

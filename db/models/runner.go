@@ -14,6 +14,7 @@ type Runner struct {
 	ID                 uint           `gorm:"primarykey" json:"id"`
 	Name               string         `gorm:"column:name; size:255;unique;not null;" json:"name"`
 	Token              string         `gorm:"column:token; size:255;unique;not null;" json:"-"`
+	Description        string         `gorm:"column:description; type:text;" json:"description"`
 	Port               uint           `gorm:"column:port; default:0;" json:"-"`
 	Type               string         `gorm:"column:type; size:255;" json:"type"`
 	Restricted         bool           `gorm:"column:restricted; default:false;" json:"-"`
@@ -146,6 +147,7 @@ Create a new runner
 func CreateRunner(
 	runnerName string,
 	runnerType string,
+	description string,
 	usePublicUrl bool,
 	publicUrl string,
 ) (*Runner, error) {
@@ -168,6 +170,7 @@ func CreateRunner(
 		Name:         runnerName,
 		Type:         runnerType,
 		Token:        token,
+		Description:  description,
 		UsePublicUrl: usePublicUrl,
 		PublicUrl:    publicUrl,
 	}

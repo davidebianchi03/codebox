@@ -86,6 +86,7 @@ func HandleAdminRetrieveRunners(c *gin.Context) {
 
 type HandleAdminCreateRunnerRequestBody struct {
 	Name         string `json:"name" binding:"required"`
+	Description  string `json:"description"`
 	Type         string `json:"type" binding:"required"`
 	UsePublicUrl bool   `json:"use_public_url"`
 	PublicUrl    string `json:"public_url"`
@@ -162,6 +163,7 @@ func HandleAdminCreateRunner(c *gin.Context) {
 	runner, err = models.CreateRunner(
 		parsedBody.Name,
 		parsedBody.Type,
+		parsedBody.Description,
 		parsedBody.UsePublicUrl,
 		parsedBody.PublicUrl,
 	)
@@ -180,10 +182,11 @@ func HandleAdminCreateRunner(c *gin.Context) {
 }
 
 type AdminUpdateRunnerRequestBody struct {
-	Name         string `json:"name" binding:"required"`
-	Type         string `json:"type" binding:"required"`
-	UsePublicUrl *bool  `json:"use_public_url" binding:"required"`
-	PublicUrl    string `json:"public_url" binding:"required"`
+	Name         string  `json:"name" binding:"required"`
+	Description  string  `json:"description"`
+	Type         string  `json:"type" binding:"required"`
+	UsePublicUrl *bool   `json:"use_public_url" binding:"required"`
+	PublicUrl    *string `json:"public_url" binding:"required"`
 }
 
 // HandleAdminCreateRunner godoc
@@ -223,9 +226,10 @@ func HandleAdminUpdateRunner(c *gin.Context) {
 	}
 
 	runner.Name = reqBody.Name
+	runner.Description = reqBody.Description
 	runner.Type = reqBody.Type
 	runner.UsePublicUrl = *reqBody.UsePublicUrl
-	runner.PublicUrl = reqBody.PublicUrl
+	runner.PublicUrl = *reqBody.PublicUrl
 
 	if err := models.UpdateRunner(*runner); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
