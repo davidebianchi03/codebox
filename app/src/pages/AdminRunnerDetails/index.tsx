@@ -18,7 +18,7 @@ import { ConfirmDeleteRunnerModal } from "./ConfirmDeleteRunnerModal";
 import { RotateRunnerTokenModal } from "./RotateRunnerTokenModal";
 import { RunnerLogsModal } from "./RunnerLogsModal";
 import { Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
-import { AdminRunnerStatusBadge, IsRunnerOnline } from "../../components/AdminRunnerStatusBadge";
+import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
 import { AdminPageHeader } from "../../components/AdminPageHeader";
 
 export default function AdminRunnerDetails() {
@@ -376,7 +376,7 @@ export default function AdminRunnerDetails() {
                     </div>
                     {runner && (
                       <React.Fragment>
-                        {IsRunnerOnline(runner) ? (
+                        {runner.online ? (
                           <Button
                             variant="accent"
                             onClick={() => setShowRunnerLogsModal(true)}

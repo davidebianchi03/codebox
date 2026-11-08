@@ -12,6 +12,7 @@ type RunnerSerializer struct {
 	Name        string     `json:"name"`
 	Type        string     `json:"type"`
 	LastContact *time.Time `json:"last_contact"`
+	Online      bool       `json:"online"`
 }
 
 func LoadRunnerSerializer(runner *models.Runner) *RunnerSerializer {
@@ -23,6 +24,7 @@ func LoadRunnerSerializer(runner *models.Runner) *RunnerSerializer {
 		Name:        runner.Name,
 		Type:        runner.Type,
 		LastContact: runner.LastContact,
+		Online:      runner.IsOnline(),
 	}
 }
 
@@ -40,6 +42,7 @@ type AdminRunnersSerializer struct {
 	Name               string     `json:"name"`
 	Description        string     `json:"description"`
 	Type               string     `json:"type"`
+	Online             bool       `json:"online"`
 	LastContact        *time.Time `json:"last_contact"`
 	UsePublicUrl       bool       `json:"use_public_url"`
 	PublicUrl          string     `json:"public_url"`
@@ -56,6 +59,7 @@ func LoadAdminRunnerSerializer(runner *models.Runner) *AdminRunnersSerializer {
 		Name:               runner.Name,
 		Description:        runner.Description,
 		Type:               runner.Type,
+		Online:             runner.IsOnline(),
 		LastContact:        runner.LastContact,
 		UsePublicUrl:       runner.UsePublicUrl,
 		PublicUrl:          runner.PublicUrl,

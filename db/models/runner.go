@@ -29,6 +29,13 @@ type Runner struct {
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+func (r *Runner) IsOnline() bool {
+	if r.LastContact != nil {
+		return r.LastContact.Before(time.Now().Add(-(5 * time.Minute)))
+	}
+	return false
+}
+
 /*
 ListRunners retrieves a list of runners with pagination support.
 If limit is -1, it retrieves all runners.

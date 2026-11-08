@@ -1,8 +1,10 @@
 import React from "react";
 import { Workspace, WorkspaceType } from "../../types/workspace";
 import { GetBeautyNameForStatus, GetWorkspaceStatusColor } from "../../common/workspace";
-import { Badge } from "react-bootstrap";
+import { OverlayTrigger, Popover } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 
 export interface WorkspaceItemProps {
     workspace: Workspace;
@@ -50,13 +52,39 @@ export function WorkspaceItem({
                     </div>
                 </div>
                 <div className="d-flex flex-column align-items-end">
-                    <Badge
-                        bg={GetWorkspaceStatusColor(workspace.status)}
-                        className="text-white mb-2"
-                        style={{ fontSize: 11 }}
-                    >
-                        {GetBeautyNameForStatus(workspace.status)}
-                    </Badge>
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                        {!workspace.healthy && (
+                            <OverlayTrigger
+                                trigger={["hover", "focus", "click"]}
+                                placement="left"
+                                overlay={
+                                    <Popover
+                                        id={`workspace-health-${workspace.id}`}
+                                    >
+                                        <Popover.Header as="h3">
+                                            Workspace is unhealthy
+                                        </Popover.Header>
+                                        <Popover.Body>
+                                            One or more containers are offline. Some services may be unavailable.
+                                        </Popover.Body>
+                                    </Popover>
+                                }
+                            >
+                                <button
+                                    type="button"
+                                    className="btn btn-link p-0 text-warning text-decoration-none"
+                                    aria-label="Workspace is unhealthy"
+                                >
+                                    <FontAwesomeIcon icon={faTriangleExclamation} />
+                                </button>
+                            </OverlayTrigger>
+                        )}
+                        <span
+                            className={`badge rounded-pill px-2 py-1 border border-${GetWorkspaceStatusColor(workspace.status)} bg-${GetWorkspaceStatusColor(workspace.status)}-lt text-${GetWorkspaceStatusColor(workspace.status)}`}
+                        >
+                            {GetBeautyNameForStatus(workspace.status)}
+                        </span>
+                    </div>
                     <p
                         className="mb-0 text-muted"
                         style={{ fontSize: 12 }}

@@ -122,6 +122,26 @@ func (w *Workspace) GetDefaultEnvironmentVariables() []string {
 }
 
 /*
+Checks if a workspace is healthy
+*/
+func (workspace *Workspace) IsHealthy() bool {
+	switch workspace.Status {
+	case WorkspaceStatusRunning:
+		if workspace.Runner != nil {
+			if workspace.Runner.IsOnline() {
+				online, _ := AreAllWorkspaceContainersOnline(*workspace)
+				return online
+			}
+		}
+		return false
+	case WorkspaceStatusError:
+		return false
+	default:
+		return true
+	}
+}
+
+/*
 Filter workspaces by owner
 */
 func ListUserWorkspaces(user User) ([]Workspace, error) {

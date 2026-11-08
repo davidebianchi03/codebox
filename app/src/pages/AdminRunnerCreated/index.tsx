@@ -7,7 +7,7 @@ import { faArrowLeftLong, faCopy, faInfoCircle, faKey, faLock, faRocket, faServe
 import { AdminPageHeader } from "../../components/AdminPageHeader";
 import { AdminRetrieveRecommendedRunnerVersion, AdminRetrieveRunnerById } from "../../api/runner";
 import { RunnerAdmin } from "../../types/runner";
-import { AdminRunnerStatusBadge, IsRunnerOnline } from "../../components/AdminRunnerStatusBadge";
+import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
 
 const RUNNER_STATUS_POLL_INTERVAL = 5000;
 
@@ -136,8 +136,6 @@ export default function AdminRunnerCreatedPage() {
     return null;
   }
 
-  const isOnline = runner ? IsRunnerOnline(runner) : false;
-
   return (
     <>
       <Container>
@@ -205,18 +203,18 @@ export default function AdminRunnerCreatedPage() {
               <CardBody className="text-center">
                 {runner ? (
                   <div className="mb-3">
-                    <div className={`runner-connection-icon ${isOnline ? "is-online" : "is-offline"}`}>
+                    <div className={`runner-connection-icon ${runner.online ? "is-online" : "is-offline"}`}>
                       <FontAwesomeIcon icon={faServer} />
                     </div>
                     <h3 className="mt-3 mb-2">
-                      {isOnline
+                      {runner.online
                         ? "Runner connected"
                         : runner.last_contact
                           ? "Runner is offline"
                           : "Waiting for first connection"}
                     </h3>
                     <p className="text-muted mb-1">
-                      {isOnline
+                      {runner.online
                         ? "Your runner is online and ready to use."
                         : "Start the runner with the installation command below. This page will update when it connects."}
                     </p>
@@ -239,7 +237,7 @@ export default function AdminRunnerCreatedPage() {
                 <div className="runner-setup-steps text-start mt-3">
                   {["Install the runner", "Configure the token", "Start the service"].map((step, index) => (
                     <div
-                      className={`runner-setup-step ${isOnline ? "is-complete" : runner && index === 0 ? "is-active" : ""
+                      className={`runner-setup-step ${runner?.online ? "is-complete" : runner && index === 0 ? "is-active" : ""
                         }`}
                       key={step}
                     >

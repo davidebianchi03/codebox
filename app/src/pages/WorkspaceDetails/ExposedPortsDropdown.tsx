@@ -112,13 +112,13 @@ export function ExposedPortsDropdown({
         if (!addingPublic) {
             publicFormik.resetForm();
         }
-    }, [addingPublic, publicFormik]);
+    }, [addingPublic, publicFormik.resetForm]);
 
     useEffect(() => {
         if (!addingPrivate) {
             privateFormik.resetForm();
         }
-    }, [addingPrivate, privateFormik]);
+    }, [addingPrivate, privateFormik.resetForm]);
 
     useEffect(() => {
         FetchSelectedContainerPorts();

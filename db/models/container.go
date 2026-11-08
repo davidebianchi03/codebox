@@ -57,6 +57,26 @@ func ListWorkspaceContainersByWorkspace(workspace Workspace) ([]WorkspaceContain
 }
 
 /*
+AreAllWorkspaceContainersOnline checks if all workspace containers are online
+*/
+func AreAllWorkspaceContainersOnline(workspace Workspace) (bool, error) {
+	var count int64
+	result := dbconn.DB.
+		Preload("Workspace").
+		Where(
+			"workspace_id = ? AND agent_last_contact < ?",
+			workspace.ID,
+			time.Now().Add(-5*time.Minute),
+		).
+		Count(&count)
+
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return count > 0, nil
+}
+
+/*
 RetrieveWorkspaceContainerByName retrieves a specific container by name in a workspace.
 */
 func RetrieveWorkspaceContainerByName(workspace Workspace, containerName string) (*WorkspaceContainer, error) {

@@ -4,6 +4,7 @@ export interface Runner {
     id: number;
     name: string;
     type: string;
+    online: boolean;
     last_contact: string;
 }
 
@@ -14,6 +15,7 @@ export interface RunnerAdmin {
     description: string;
     use_public_url: boolean;
     public_url: string;
+    online: boolean;
     last_contact: string;
     version: string;
     deletion_in_progress: boolean;

@@ -8,7 +8,7 @@ import { RunnerAdmin } from "../../types/runner";
 import { LoginsInLast7Days } from "./LoginsInLast7Days";
 import { UsersListTable } from "./UsersListTable";
 import { RunnersListTable } from "./RunnersListTable";
-import { AdminRunnerStatusBadge, IsRunnerOnline } from "../../components/AdminRunnerStatusBadge";
+import { AdminRunnerStatusBadge } from "../../components/AdminRunnerStatusBadge";
 import { BackhoeIcon, PackagesIcon, StatsIcon, UserIcon } from "../../icons/Tabler";
 import { Link } from "react-router-dom";
 import { AdminPageHeader } from "../../components/AdminPageHeader";
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
         fetchRunners();
     }, [fetchAdminStats, fetchRunners]);
 
-    const onlineRunnerCount = runners?.filter((runner) => IsRunnerOnline(runner)).length ?? 0;
+    const onlineRunnerCount = runners?.filter((runner) => runner.online).length ?? 0;
     const offlineRunnerCount = (runners?.length ?? 0) - onlineRunnerCount;
     const onlineRunnerPercentage = runners?.length
         ? (onlineRunnerCount / runners.length) * 100

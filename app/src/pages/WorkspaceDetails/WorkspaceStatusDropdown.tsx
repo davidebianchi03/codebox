@@ -93,6 +93,9 @@ export function WorkspaceStatusDropdown({
         setStatusName(GetBeautyNameForStatus(workspace.status));
     }, [workspace.status]);
 
+    const statusColor = GetWorkspaceStatusColor(workspace.status);
+    const statusButtonClassName = `border-${statusColor} bg-${statusColor}-lt text-${statusColor}`;
+
     return (
         <React.Fragment>
             {
@@ -100,7 +103,11 @@ export function WorkspaceStatusDropdown({
                     workspace.status != "stopping" &&
                     workspace.status != "deleting" ? (
                     <Dropdown>
-                        <Dropdown.Toggle variant={GetWorkspaceStatusColor(workspace.status)} id="dropdown-basic">
+                        <Dropdown.Toggle
+                            variant="light"
+                            className={statusButtonClassName}
+                            id="dropdown-basic"
+                        >
                             {statusName}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
@@ -141,7 +148,10 @@ export function WorkspaceStatusDropdown({
                         </Dropdown.Menu>
                     </Dropdown>
                 ) : (
-                    <Button variant={GetWorkspaceStatusColor(workspace.status)}>
+                    <Button
+                        variant="light"
+                        className={statusButtonClassName}
+                    >
                         {statusName}
                     </Button>
                 )}

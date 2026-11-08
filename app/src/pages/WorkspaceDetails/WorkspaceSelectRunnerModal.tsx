@@ -108,9 +108,9 @@ export function WorkspaceSelectRunnerModal({ isOpen, onClose, workspace }: Props
               </Input>
               <FormFeedback>{error}</FormFeedback>
               {selectedRunner && (
-                new Date().getTime() - new Date(selectedRunner.last_contact).getTime() > 5 * 1000 * 60 && (
+                !selectedRunner.online && (
                   <span className="text-warning">
-                    Warning: last contact with this runner was more than 5 minutes ago.
+                    Warning: this runner is offline.
                   </span>
                 )
               )}

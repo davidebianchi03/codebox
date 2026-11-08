@@ -39,7 +39,10 @@ func HandleListWorkspaces(ctx *gin.Context) {
 		})
 		return
 	}
-	ctx.JSON(http.StatusOK, serializers.LoadMultipleWorkspaceSerializer(workspaces))
+	ctx.JSON(
+		http.StatusOK,
+		serializers.LoadMultipleWorkspaceSerializer(workspaces),
+	)
 }
 
 // HandleRetrieveWorkspace godoc

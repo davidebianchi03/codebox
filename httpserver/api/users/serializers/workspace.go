@@ -12,6 +12,7 @@ type WorkspaceSerializer struct {
 	Name                 string                              `json:"name"`
 	User                 *UserSerializer                     `json:"user"`
 	Status               string                              `json:"status"`
+	Healthy              bool                                `json:"healthy"`
 	Type                 string                              `json:"type"`
 	Runner               *RunnerSerializer                   `json:"runner"`
 	ConfigSource         string                              `json:"config_source"`
@@ -32,6 +33,7 @@ func LoadWorkspaceSerializer(workspace *models.Workspace) *WorkspaceSerializer {
 		Name:                 workspace.Name,
 		User:                 LoadUserSerializer(workspace.User),
 		Status:               workspace.Status,
+		Healthy:              workspace.IsHealthy(),
 		Type:                 workspace.Type,
 		Runner:               LoadRunnerSerializer(workspace.Runner),
 		ConfigSource:         workspace.ConfigSource,

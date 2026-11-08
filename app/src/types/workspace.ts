@@ -14,6 +14,7 @@ export interface Workspace {
     name: string
     user: User
     status: string
+    healthy: boolean
     type: string
     runner: Runner | null
     config_source: string
