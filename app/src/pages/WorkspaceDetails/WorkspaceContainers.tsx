@@ -1,5 +1,4 @@
 import {
-  Badge,
   Card,
   CardBody,
   CardHeader,
@@ -87,21 +86,17 @@ export default function WorkspaceContainers({
                                 c?.agent_last_contact || ""
                               ).getTime() >
                               5 * 60 * 1000 ? (
-                              <Badge
-                                color="warning"
-                                className="text-white"
-                                style={{ opacity: c.container_id === c?.container_id ? "1" : "0.7" }}
+                              <span
+                                className="badge rounded-pill px-2 py-1 border border-warning bg-warning-lt text-warning"
                               >
                                 Not connected
-                              </Badge>
+                              </span>
                             ) : (
-                              <Badge
-                                color="success"
-                                className="text-white"
-                                style={{ opacity: c.container_id === c?.container_id ? "1" : "0.7" }}
+                              <span
+                                className="badge rounded-pill px-2 py-1 border border-success bg-success-lt text-success"
                               >
                                 Connected
-                              </Badge>
+                              </span>
                             )}
                           </div>
                           <small className="text-muted">{c.container_image}</small>

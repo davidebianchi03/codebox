@@ -1,6 +1,6 @@
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { Workspace } from "../../types/workspace";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { APIRetrieveWorkspaceLogs } from "../../api/workspace";
 
 interface Props {
@@ -10,35 +10,34 @@ interface Props {
 
 export default function WorkspaceLogs({ workspace, fetchInterval }: Props) {
   const [logs, setLogs] = useState<string>("");
-  const logsContainerRef = useRef<any>(null);
+  const logsContainerRef = useRef<HTMLDivElement>(null);
+  const latestRequestRef = useRef(0);
 
   const FetchLogs = useCallback(async () => {
+    const requestId = ++latestRequestRef.current;
     const l = await APIRetrieveWorkspaceLogs(workspace.id);
 
-    if (l) {
-      var scrollToBottom = l.length !== logs.length;
+    if (requestId === latestRequestRef.current && l !== undefined) {
       setLogs(l);
-      // if length of logs has changed scroll to the last row of logs
-      if (scrollToBottom) {
-        var logsContainer = logsContainerRef.current;
-        if (logsContainer) {
-          logsContainer.scrollTop = logsContainer.scrollHeight;
-        }
-      }
     }
-  }, [workspace.id, logs.length]);
+  }, [workspace.id]);
 
   useEffect(() => {
     FetchLogs();
   }, [FetchLogs]);
 
+  useLayoutEffect(() => {
+    const logsContainer = logsContainerRef.current;
+    if (logsContainer) {
+      logsContainer.scrollTop = logsContainer.scrollHeight;
+    }
+  }, [logs]);
+
   useEffect(() => {
     if (fetchInterval > 0) {
       const interval = setInterval(FetchLogs, fetchInterval);
-      
+
       return () => {
-        // fetch logs one last time before unmounting to ensure we have the latest logs
-        FetchLogs();
         clearInterval(interval);
       };
     }
